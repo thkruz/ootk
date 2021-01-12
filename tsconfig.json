@@ -1,27 +1,22 @@
 {
-  "include": ["./src/**/*"],
   "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
     "outDir": "./built",
-    "allowJs": true,
+    // "allowJs": true,
     "declaration": true,
-    "noImplicitAny": true,
-    "removeComments": true,
+    // "noImplicitAny": true,
+    // "removeComments": true,
     "experimentalDecorators": true,
-    "rootDir": ".",
-    "sourceMap": true,
+    "rootDir": "./src",
+    // "sourceMap": true,
     "listFiles": true,
     "newLine": "LF",
-    "noEmitOnError": true
-},
-"filesGlob": [
-    "./**/*.ts",
-    "./**/*.tsx",
-    "!./**/*.d.ts",
-    "!./gulpfile.ts",
-    "./typings/**/*.d.ts",
-    "!./node_modules/**/*.ts",
-    "./node_modules/typescript/lib/lib.es6.d.ts"
-],
+    "skipLibCheck": true,
+    "noEmitOnError": true,
+    "types": []
+  },
+  "filesGlob": ["./src/**/*.ts", "./src/**/*.tsx", "!./src/**/*.d.ts", "./**/*.d.ts"],
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules", "dist", "__tests__"]
 }

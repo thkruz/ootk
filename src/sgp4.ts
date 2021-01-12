@@ -133,6 +133,71 @@ const step2 = 259200.0;
 // prettier-ignore
 let axnl,aynl,xl,u,ktr,ecose,esine,el2,pl,rl,rdotl,rvdotl,betal,sinu,cosu,sin2u,coseo1,sineo1,cosip,sinip,cosisq,delm,delomg,eo1,argpm,argpp,su,t3,t4,tc,tem5,temp,tempa,tempe,templ,inclm,mm,nm,nodem,xincp,xlm,mp,nodep,xmdf,argpdf,nodedf,t2,delmtemp,em,dspaceOptions,dspaceResult,am,ep,cosim,sinim,dpperResult,dpperParameters,method,ts70,ds70,c1,tfrac,thgr70,fk5r,c1p2p,dndt,ft,delt,xndt,xldot,xnddt,x2omi,xomi,x2li,theta,tut1,snodm,cnodm,sinomm,cosomm,betasq,rtemsq,peo,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,cc,x1,x2,x3,x4,x5,x6,x7,x8,zcosg,zsing,zcosh,zsinh,zcosi,zsini,ss1,ss2,ss3,ss4,ss5,ss6,ss7,sz1,sz2,sz3,sz11,sz12,sz13,sz21,sz22,sz23,sz31,sz32,sz33,s1,s2,s3,s4,s5,s6,s7,z1,z2,z3,z11,z12,z13,z21,z22,z23,z31,z32,z33,f220,f221,f311,f321,f322,f330,f441,f442,f522,f523,f542,f543,g200,g201,g211,g300,g310,g322,g410,g422,g520,g521,g532,g533,sini2,temp1,xno2,ainv2,aonv,cos2u,mrt,temp2,xnode,xinc,mvt,rvdot,sinsu,cossu,snod,cnod,cosi,sini,xmx,xmy,ux,uy,uz,vx,vy,vz,r,v,year,satrec,dsinitResult,dsinitOptions,ao,mon,day,hr,minute,sec,ss,qzms24temp,qzms2ttemp,initlOptions,initlResult,cosio,delmotemp,dscomOptions,dscomResult,dpperOptions,sinio,qzms2t,con42,cosio2,lmonth,dayofyr,inttemp,i,eccsq,omeosq,rteosq,ak,d1,adel,po,ses,sis,sls,sghs,shs,sel,sil,sll,con41,ainv,posq,rp,sghl,shll,PInco,plo,pho,ctem,zcosil,zsinhl,stem,zsingl,zsinil,gam,zy,pgho,zcoshl,xnoi,zcosgl,zmol,zmos,se2,se3,si2,si3,sl2,sl3,sl4,sgh2,xnodce,sh3,sgh4,sh2,ee2,e3,xi2,xi3,xl2,xl3,xl4,sgh3,xgh2,xgh3,xgh4,xh2,xh3,sgs,emo,emsqo,eoc,alfdp,betdp,cosop,sinop,dalf,dbet,dls,f2,f3,pe,pgh,ph,PInc,sinzf,xls,xnoh,zf,zm,cc1sq,cc2,cc3,coef,coef1,cosio4,emsq,eeta,etasq,perige,PInvsq,psisq,qzms24,sfour,temp3,tsi,xPIdot,xhdot1,leadingChar,gsto,lsflg,j2,j3,j3oj2,j4,xke,mus,radiusearthkm,tumin;
 
+interface SatelliteRecord {
+  a: number;
+  alta: number;
+  altp: number;
+  argpdot: number;
+  argpo: number;
+  aycof: number;
+  bstar: number;
+  cc1: number;
+  cc4: number;
+  cc5: number;
+  con41: number;
+  d2: number;
+  d3: number;
+  d4: number;
+  delmo: number;
+  ecco: number;
+  epochdays: number;
+  epochyr: number;
+  error: number;
+  eta: number;
+  gsto: number;
+  inclo: number;
+  init: string;
+  isimp: number;
+  jdsatepoch: number;
+  mdot: number;
+  method: string;
+  mo: number;
+  nddot: number;
+  ndot: number;
+  no: number;
+  nodecf: number;
+  nodedot: number;
+  nodeo: number;
+  omgcof: number;
+  operationmode: string;
+  satnum: string;
+  sinmao: number;
+  t: number;
+  t2cof: number;
+  t3cof: number;
+  t4cof: number;
+  t5cof: number;
+  x1mth2: number;
+  x7thm1: number;
+  xlcof: number;
+  xmcof: number;
+}
+
+interface StateVector {
+  position: {
+    x: number;
+    y: number;
+    z: number;
+  } | boolean;
+  velocity: {
+    x: number;
+    y: number;
+    z: number;
+  } | boolean;
+}
+
+type vec3 = [number, number, number];
+
 class Sgp4Js {
   /* -----------------------------------------------------------------------------
  *
@@ -200,10 +265,21 @@ class Sgp4Js {
  *    hoots, schumacher and glover 2004
  *    vallado, crawford, hujsak, kelso  2006
  ----------------------------------------------------------------------------*/
-  static dpper(satrec, options) {
+  static dpper(
+    satrec: SatelliteRecord,
+    options: {
+      ep: number;
+      inclp: number;
+      nodep: number;
+      argpp: number;
+      mp: number;
+      opsmode: string;
+      init: string;
+    },
+  ): { ep: number; inclp: number; nodep: number; argpp: number; mp: number } {
     options = options ?? {};
 
-    let {
+    const {
       e3,
       ee2,
       peo,
@@ -238,9 +314,8 @@ class Sgp4Js {
       zmos,
     } = satrec;
 
-    let { init, opsmode, ep, inclp, nodep, argpp, mp } = options;
-
-    opsmode = opsmode ?? 'i';
+    let { ep, inclp, nodep, argpp, mp } = options;
+    const { opsmode = i, init } = options;
 
     //  ---------------------- constants -----------------------------
     /** Sgp4Js -- Declared outside the class at the top */
@@ -426,8 +501,98 @@ class Sgp4Js {
  *    hoots, schumacher and glover 2004
  *    vallado, crawford, hujsak, kelso  2006
  ----------------------------------------------------------------------------*/
-  static dscom(options) {
-    let { epoch, ep, argpp, tc, inclp, nodep, np } = options;
+  static dscom(options: {
+    epoch: number;
+    ep: number;
+    argpp: number;
+    tc: number;
+    inclp: number;
+    nodep: number;
+    np: number;
+  }): {
+    snodm: number;
+    cnodm: number;
+    sinim: number;
+    cosim: number;
+    sinomm: number;
+    cosomm: number;
+    day: number;
+    e3: number;
+    ee2: number;
+    em: number;
+    emsq: number;
+    gam: number;
+    peo: number;
+    pgho: number;
+    pho: number;
+    PInco: number;
+    plo: number;
+    rtemsq: number;
+    se2: number;
+    se3: number;
+    sgh2: number;
+    sgh3: number;
+    sgh4: number;
+    sh2: number;
+    sh3: number;
+    si2: number;
+    si3: number;
+    sl2: number;
+    sl3: number;
+    sl4: number;
+    s1: number;
+    s2: number;
+    s3: number;
+    s4: number;
+    s5: number;
+    s6: number;
+    s7: number;
+    ss1: number;
+    ss2: number;
+    ss3: number;
+    ss4: number;
+    ss5: number;
+    ss6: number;
+    ss7: number;
+    sz1: number;
+    sz2: number;
+    sz3: number;
+    sz11: number;
+    sz12: number;
+    sz13: number;
+    sz21: number;
+    sz22: number;
+    sz23: number;
+    sz31: number;
+    sz32: number;
+    sz33: number;
+    xgh2: number;
+    xgh3: number;
+    xgh4: number;
+    xh2: number;
+    xh3: number;
+    xi2: number;
+    xi3: number;
+    xl2: number;
+    xl3: number;
+    xl4: number;
+    nm: number;
+    z1: number;
+    z2: number;
+    z3: number;
+    z11: number;
+    z12: number;
+    z13: number;
+    z21: number;
+    z22: number;
+    z23: number;
+    z31: number;
+    z32: number;
+    z33: number;
+    zmol: number;
+    zmos: number;
+  } {
+    const { epoch, ep, argpp, tc, inclp, nodep, np } = options;
 
     // -------------------------- constants -------------------------
     /** Sgp4Js -- These are declared outside the class at the top of the file */
@@ -764,8 +929,113 @@ class Sgp4Js {
  *    hoots, schumacher and glover 2004
  *    vallado, crawford, hujsak, kelso  2006
  ----------------------------------------------------------------------------*/
-  static dsinit(options) {
-    let {
+  static dsinit(options: {
+    xke: number;
+    cosim: number;
+    argpo: number;
+    s1: number;
+    s2: number;
+    s3: number;
+    s4: number;
+    s5: number;
+    sinim: number;
+    ss1: number;
+    ss2: number;
+    ss3: number;
+    ss4: number;
+    ss5: number;
+    sz1: number;
+    sz3: number;
+    sz11: number;
+    sz13: number;
+    sz21: number;
+    sz23: number;
+    sz31: number;
+    sz33: number;
+    t: number;
+    tc: number;
+    gsto: number;
+    mo: number;
+    mdot: number;
+    no: number;
+    nodeo: number;
+    nodedot: number;
+    xPIdot: number;
+    z1: number;
+    z3: number;
+    z11: number;
+    z13: number;
+    z21: number;
+    z23: number;
+    z31: number;
+    z33: number;
+    ecco: number;
+    eccsq: number;
+    emsq: number;
+    em: number;
+    argpm: number;
+    inclm: number;
+    mm: number;
+    nm: number;
+    nodem: number;
+    irez: number;
+    atime: number;
+    d2201: number;
+    d2211: number;
+    d3210: number;
+    d3222: number;
+    d4410: number;
+    d4422: number;
+    d5220: number;
+    d5232: number;
+    d5421: number;
+    d5433: number;
+    dedt: number;
+    didt: number;
+    dmdt: number;
+    dnodt: number;
+    domdt: number;
+    del1: number;
+    del2: number;
+    del3: number;
+    xfact: number;
+    xlamo: number;
+    xli: number;
+    xni: number;
+  }): {
+    em: number;
+    argpm: number;
+    inclm: number;
+    mm: number;
+    nm: number;
+    nodem: number;
+    irez: number;
+    atime: number;
+    d2201: number;
+    d2211: number;
+    d3210: number;
+    d3222: number;
+    d4410: number;
+    d4422: number;
+    d5220: number;
+    d5232: number;
+    d5421: number;
+    d5433: number;
+    dedt: number;
+    didt: number;
+    dmdt: number;
+    dndt: number;
+    dnodt: number;
+    domdt: number;
+    del1: number;
+    del2: number;
+    del3: number;
+    xfact: number;
+    xlamo: number;
+    xli: number;
+    xni: number;
+  } {
+    const {
       // sgp4fix just send in xke as a constant and eliminate getgravconst call
       // gravconsttype whichconst,
       xke,
@@ -809,6 +1079,9 @@ class Sgp4Js {
       z33,
       ecco,
       eccsq,
+    } = options;
+
+    let {
       emsq,
       em,
       argpm,
@@ -1145,8 +1418,56 @@ class Sgp4Js {
  *    hoots, schumacher and glover 2004
  *    vallado, crawford, hujsak, kelso  2006
  ----------------------------------------------------------------------------*/
-  static dspace(options) {
-    let {
+  static dspace(options: {
+    irez: number;
+    d2201: number;
+    d2211: number;
+    d3210: number;
+    d3222: number;
+    d4410: number;
+    d4422: number;
+    d5220: number;
+    d5232: number;
+    d5421: number;
+    d5433: number;
+    dedt: number;
+    del1: number;
+    del2: number;
+    del3: number;
+    didt: number;
+    dmdt: number;
+    dnodt: number;
+    domdt: number;
+    argpo: number;
+    argpdot: number;
+    t: number;
+    tc: number;
+    gsto: number;
+    xfact: number;
+    xlamo: number;
+    no: number;
+    atime: number;
+    em: number;
+    argpm: number;
+    inclm: number;
+    xli: number;
+    mm: number;
+    xni: number;
+    nodem: number;
+    nm: number;
+  }): {
+    atime: number;
+    em: number;
+    argpm: number;
+    inclm: number;
+    xli: number;
+    mm: number;
+    xni: number;
+    nodem: number;
+    dndt: number;
+    nm: number;
+  } {
+    const {
       irez,
       d2201,
       d2211,
@@ -1174,16 +1495,8 @@ class Sgp4Js {
       xfact,
       xlamo,
       no,
-      atime,
-      em,
-      argpm,
-      inclm,
-      xli,
-      mm,
-      xni,
-      nodem,
-      nm,
     } = options;
+    let { atime, em, argpm, inclm, xli, mm, xni, nodem, nm } = options;
 
     /** Sgp4Js -- Declared at the top of the file instead */
     // fasx2 = 0.13130908;
@@ -1382,12 +1695,37 @@ class Sgp4Js {
  *    hoots, schumacher and glover 2004
  *    vallado, crawford, hujsak, kelso  2006
  ----------------------------------------------------------------------------*/
-  static initl(options) {
+  static initl(options: {
+    opsmode: string;
+    ecco: number;
+    epoch: number;
+    inclo: number;
+    xke: number;
+    j2: number;
+    no: number;
+  }): {
+    no: number;
+    method: string;
+    ainv: number;
+    ao: number;
+    con41: number;
+    con42: number;
+    cosio: number;
+    cosio2: number;
+    eccsq: number;
+    omeosq: number;
+    posq: number;
+    rp: number;
+    rteosq: number;
+    sinio: number;
+    gsto: number;
+  } {
     // sgp4fix satn not needed. include in satrec in case needed later
     // int satn,
     // sgp4fix just pass in xke and j2
     // gravconsttype whichconst,
-    let { opsmode, ecco, epoch, inclo, no, xke, j2 } = options;
+    const { opsmode, ecco, epoch, inclo, xke, j2 } = options;
+    let no = options.no;
 
     /* --------------------- local variables ------------------------ */
     /** Sgp4Js -- Declared at the top of the file */
@@ -1550,14 +1888,31 @@ class Sgp4Js {
  *    hoots, schumacher and glover 2004
  *    vallado, crawford, hujsak, kelso  2006
  ----------------------------------------------------------------------------*/
-  static sgp4init(satrec, options) {
+  static sgp4init(
+    satrec: SatelliteRecord,
+    options?: {
+      whichconst?: string;
+      opsmode?: string;
+      satn?: string;
+      epoch: number;
+      xbstar: number;
+      xecco: number;
+      xargpo: number;
+      xinclo: number;
+      xndot: number;
+      xnddot: number;
+      xmo: number;
+      xno: number;
+      xnodeo: number;
+    },
+  ): SatelliteRecord {
     /* eslint-disable no-param-reassign */
 
     options = options ?? {};
 
-    let {
-      whichconst,
-      opsmode,
+    const {
+      whichconst = 'wgs72',
+      opsmode = i,
       satn = satrec.satnum,
       epoch,
       xbstar,
@@ -1570,9 +1925,6 @@ class Sgp4Js {
       xno,
       xnodeo,
     } = options;
-
-    opsmode = opsmode ?? 'i';
-    whichconst = whichconst ?? 'wgs72';
 
     /* --------------------- local variables ------------------------ */
     /** Sgp4Js -- Declared at the top of the file */
@@ -1673,7 +2025,7 @@ class Sgp4Js {
     /* ------------------------ earth constants ----------------------- */
     // sgp4fix identify constants and allow alternate values
     // this is now the only call for the constants
-    let gravResults = Sgp4Js.getgravconst(whichconst);
+    const gravResults = Sgp4Js.getgravconst(whichconst);
     satrec.tumin = gravResults.tumin;
     satrec.mus = gravResults.mus;
     satrec.radiusearthkm = gravResults.radiusearthkm;
@@ -1744,7 +2096,7 @@ class Sgp4Js {
 
     initlResult = Sgp4Js.initl(initlOptions);
 
-    let { ao, con42, cosio, cosio2, eccsq, omeosq, posq, rp, rteosq, sinio } = initlResult;
+    const { ao, con42, cosio, cosio2, eccsq, omeosq, posq, rp, rteosq, sinio } = initlResult;
 
     satrec.no = initlResult.no;
     satrec.con41 = initlResult.con41;
@@ -1930,7 +2282,7 @@ class Sgp4Js {
         satrec.sl3 = dscomResult.sl3;
         satrec.sl4 = dscomResult.sl4;
 
-        let {
+        const {
           sinim,
           cosim,
           em,
@@ -2215,7 +2567,7 @@ class Sgp4Js {
  *    hoots, schumacher and glover 2004
  *    vallado, crawford, hujsak, kelso  2006
  ----------------------------------------------------------------------------*/
-  static sgp4(satrec, tsince) {
+  static sgp4(satrec: SatelliteRecord, tsince: number): StateVector {
     /* ------------------ set mathematical constants --------------- */
     // sgp4fix divisor for divide by zero check on inclination
     // the old check used 1.0 + cos(PI-1.0e-9), but then compared it to
@@ -2554,7 +2906,18 @@ class Sgp4Js {
   *    vallado, crawford, hujsak, kelso  2006
   --------------------------------------------------------------------------- */
 
-  static getgravconst(whichconst) {
+  static getgravconst(
+    whichconst: string,
+  ): {
+    tumin: number;
+    mus: number;
+    radiusearthkm: number;
+    xke: number;
+    j2: number;
+    j3: number;
+    j4: number;
+    j3oj2: number;
+  } {
     switch (whichconst) {
       // -- wgs-72 low precision str#3 constants --
       case 'wgs72old':
@@ -2643,7 +3006,12 @@ class Sgp4Js {
  *    norad spacetrack report #3
  *    vallado, crawford, hujsak, kelso  2006
  --------------------------------------------------------------------------- */
-  static twoline2rv(longstr1, longstr2, whichconst = 'wgs72', opsmode = 'i') {
+  static twoline2rv(
+    tleLine1: string,
+    tleLine2: string,
+    whichconst = 'wgs72',
+    opsmode = 'i',
+  ): SatelliteRecord {
     // xpdotp = 1440.0 / (2.0 * PI); // 229.1831180523293;
     year = 0;
 
@@ -2654,25 +3022,25 @@ class Sgp4Js {
 
     satrec.error = 0;
 
-    satrec.satnum = longstr1.substring(2, 7);
+    satrec.satnum = tleLine1.substring(2, 7);
 
-    satrec.epochyr = parseInt(longstr1.substring(18, 20));
-    satrec.epochdays = parseFloat(longstr1.substring(20, 32));
-    satrec.ndot = parseFloat(longstr1.substring(33, 43));
+    satrec.epochyr = parseInt(tleLine1.substring(18, 20));
+    satrec.epochdays = parseFloat(tleLine1.substring(20, 32));
+    satrec.ndot = parseFloat(tleLine1.substring(33, 43));
     satrec.nddot = parseFloat(
-      `${longstr1.substring(44, 45)}.${longstr1.substring(45, 50)}E${longstr1.substring(50, 52)}`
+      `${tleLine1.substring(44, 45)}.${tleLine1.substring(45, 50)}E${tleLine1.substring(50, 52)}`,
     );
     satrec.bstar = parseFloat(
-      `${longstr1.substring(53, 54)}.${longstr1.substring(54, 59)}E${longstr1.substring(59, 61)}`
+      `${tleLine1.substring(53, 54)}.${tleLine1.substring(54, 59)}E${tleLine1.substring(59, 61)}`,
     );
 
-    // satrec.satnum = longstr2.substring(2, 7);
-    satrec.inclo = parseFloat(longstr2.substring(8, 16));
-    satrec.nodeo = parseFloat(longstr2.substring(17, 25));
-    satrec.ecco = parseFloat(`.${longstr2.substring(26, 33)}`);
-    satrec.argpo = parseFloat(longstr2.substring(34, 42));
-    satrec.mo = parseFloat(longstr2.substring(43, 51));
-    satrec.no = parseFloat(longstr2.substring(52, 63));
+    // satrec.satnum = tleLine2.substring(2, 7);
+    satrec.inclo = parseFloat(tleLine2.substring(8, 16));
+    satrec.nodeo = parseFloat(tleLine2.substring(17, 25));
+    satrec.ecco = parseFloat(`.${tleLine2.substring(26, 33)}`);
+    satrec.argpo = parseFloat(tleLine2.substring(34, 42));
+    satrec.mo = parseFloat(tleLine2.substring(43, 51));
+    satrec.no = parseFloat(tleLine2.substring(52, 63));
 
     // ---- find no, ndot, nddot ----
     satrec.no /= xpdotp; //   rad/min
@@ -2711,9 +3079,9 @@ class Sgp4Js {
       year = satrec.epochyr + 1900;
     }
 
-    let { mon, day, hr, minute, sec } = Sgp4Js.days2mdhms(year, satrec.epochdays);
+    const { mon, day, hr, minute, sec } = Sgp4Js.days2mdhms(year, satrec.epochdays);
 
-    let jdayRes = Sgp4Js.jday(year, mon, day, hr, minute, sec);
+    const jdayRes = Sgp4Js.jday(year, mon, day, hr, minute, sec);
 
     satrec.jdsatepoch = jdayRes.jd + jdayRes.jdFrac;
 
@@ -2762,7 +3130,7 @@ class Sgp4Js {
    *  references    :
    *    vallado       2004, 191, eq 3-45
    * --------------------------------------------------------------------------- */
-  static _gstime(jdut1) {
+  static _gstime(jdut1: number): number {
     tut1 = (jdut1 - 2451545.0) / 36525.0;
 
     let temp =
@@ -2780,9 +3148,15 @@ class Sgp4Js {
     return temp;
   }
 
-  static gstime(...args) {
+  static gstime(
+    ...args:
+      | { year: number; mon: number; day: number; hr: number; minute: number; sec: number }
+      | number
+  ): number {
     if (args[0] instanceof Date || args.length > 1) {
-      return Sgp4Js._gstime(Sgp4Js.jday(args));
+      const { jd, jdFrac } = Sgp4Js.jday(args);
+      const jdut1 = jd + jdFrac;
+      return Sgp4Js._gstime(jdut1);
     }
     return Sgp4Js._gstime(args);
   }
@@ -2808,7 +3182,7 @@ class Sgp4Js {
    *    none.
    * --------------------------------------------------------------------------- */
 
-  static mag(x) {
+  static mag(x: vec3): number {
     return Math.sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
   } // mag
 
@@ -2834,8 +3208,8 @@ class Sgp4Js {
   *    mag           magnitude of a vector
   ---------------------------------------------------------------------------- */
 
-  static cross(vec1, vec2) {
-    let outvec = [0, 0, 0];
+  static cross(vec1: vec3, vec2: vec3): vec3 {
+    const outvec = [0, 0, 0];
     outvec[0] = vec1[1] * vec2[2] - vec1[2] * vec2[1];
     outvec[1] = vec1[2] * vec2[0] - vec1[0] * vec2[2];
     outvec[2] = vec1[0] * vec2[1] - vec1[1] * vec2[0];
@@ -2864,7 +3238,7 @@ class Sgp4Js {
    *    none.
    * --------------------------------------------------------------------------- */
 
-  static dot(x, y) {
+  static dot(x: vec3, y: vec3): number {
     return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
   } // dot
 
@@ -2892,12 +3266,12 @@ class Sgp4Js {
    *    dot           dot product of two vectors
    * --------------------------------------------------------------------------- */
 
-  static angle(vec1, vec2) {
-    let small = 0.00000001;
-    let unknown = 999999.1; /** Sgp4Js -- original 'undefined' is protected in JS */
+  static angle(vec1: vec3, vec2: vec3): number {
+    const small = 0.00000001;
+    const unknown = 999999.1; /** Sgp4Js -- original 'undefined' is protected in JS */
 
-    let magv1 = Sgp4Js.mag(vec1);
-    let magv2 = Sgp4Js.mag(vec2);
+    const magv1 = Sgp4Js.mag(vec1);
+    const magv2 = Sgp4Js.mag(vec2);
 
     if (magv1 * magv2 > small * small) {
       temp = Sgp4Js.dot(vec1, vec2) / (magv1 * magv2);
@@ -2927,7 +3301,7 @@ class Sgp4Js {
    *    none.
    * --------------------------------------------------------------------------- */
 
-  static asinh(xval) {
+  static asinh(xval: number): number {
     return Math.log(xval + Math.sqrt(xval * xval + 1.0));
   } // asinh
 
@@ -2966,11 +3340,17 @@ class Sgp4Js {
    *    vallado       2013, 77, alg 5
    * --------------------------------------------------------------------------- */
 
-  static newtonnu(ecc, nu) {
+  static newtonnu(
+    ecc: number,
+    nu: number,
+  ): {
+    e0: number;
+    m: number;
+  } {
     // ---------------------  implementation   ---------------------
     let e0 = 999999.9;
     let m = 999999.9;
-    let small = 0.00000001;
+    const small = 0.00000001;
 
     // --------------------------- circular ------------------------
     if (Math.abs(ecc) < small) {
@@ -2979,15 +3359,15 @@ class Sgp4Js {
     }
     // ---------------------- elliptical -----------------------
     else if (ecc < 1.0 - small) {
-      let sine = (Math.sqrt(1.0 - ecc * ecc) * Math.sin(nu)) / (1.0 + ecc * Math.cos(nu));
-      let cose = (ecc + Math.cos(nu)) / (1.0 + ecc * Math.cos(nu));
+      const sine = (Math.sqrt(1.0 - ecc * ecc) * Math.sin(nu)) / (1.0 + ecc * Math.cos(nu));
+      const cose = (ecc + Math.cos(nu)) / (1.0 + ecc * Math.cos(nu));
       e0 = Math.atan2(sine, cose);
       m = e0 - ecc * Math.sin(e0);
     }
     // -------------------- hyperbolic  --------------------
     else if (ecc > 1.0 + small) {
       if (ecc > 1.0 && Math.abs(nu) + 0.00001 < PI - Math.acos(1.0 / ecc)) {
-        let sine = (Math.sqrt(ecc * ecc - 1.0) * Math.sin(nu)) / (1.0 + ecc * Math.cos(nu));
+        const sine = (Math.sqrt(ecc * ecc - 1.0) * Math.sin(nu)) / (1.0 + ecc * Math.cos(nu));
         e0 = Sgp4Js.asinh(sine);
         m = ecc * Math.sinh(e0) - e0;
       }
@@ -3067,37 +3447,25 @@ class Sgp4Js {
    *    vallado       2013, 113, alg 9, ex 2-5
    * --------------------------------------------------------------------------- */
 
-  static rv2coe(r, v, mus) {
-    let small,
-      hbar,
-      nbar,
-      magr,
-      magv,
-      magn,
-      ebar,
-      sme,
-      rdotv,
-      infinite,
-      temp,
-      c1,
-      hk,
-      magh,
-      halfpi,
-      ecc,
-      a,
-      p,
-      incl,
-      omega,
-      argp,
-      nu,
-      arglat,
-      m,
-      lonper,
-      truelon,
-      e;
-
-    nbar = [];
-    ebar = [];
+  static rv2coe(
+    r: vec3,
+    v: vec3,
+    mus: number,
+  ): {
+    p: number;
+    a: number;
+    ecc: number;
+    incl: number;
+    omega: number;
+    argp: number;
+    nu: number;
+    m: number;
+    arglat: number;
+    truelon: number;
+    lonper: number;
+  } {
+    const nbar = [];
+    const ebar = [];
 
     let i;
     // switch this to an integer msvs seems to have probelms with this and strncpy_s
@@ -3109,14 +3477,14 @@ class Sgp4Js {
     // typeorbit = 3 = 'ci'
     // typeorbit = 4 = 'ee'
 
-    halfpi = 0.5 * PI;
-    small = 0.00000001;
+    const halfpi = 0.5 * PI;
+    const small = 0.00000001;
     const unknown = 999999.1; /** Sgp4Js -- original undefined is illegal in JS */
-    infinite = 999999.9;
+    const infinite = 999999.9;
 
     // -------------------------  implementation   -----------------
-    magr = Sgp4Js.mag(r);
-    magv = Sgp4Js.mag(v);
+    const magr = Sgp4Js.mag(r);
+    const magv = Sgp4Js.mag(v);
 
     // ------------------  find h n and e vectors   ----------------
     hbar = Sgp4Js.cross(r, v);
@@ -3269,7 +3637,14 @@ class Sgp4Js {
    *    vallado       2013, 183, alg 14, ex 3-4
    *
    * --------------------------------------------------------------------------- */
-  static jday(year, mon, day, hr, minute, sec) {
+  static jday(
+    year: number,
+    mon: number,
+    day: number,
+    hr: number,
+    minute: number,
+    sec: number,
+  ): { jd: number; jdFrac: number } {
     let jd =
       367.0 * year -
       Math.floor(7 * (year + Math.floor((mon + 9) / 12.0)) * 0.25) +
@@ -3280,7 +3655,7 @@ class Sgp4Js {
 
     // check that the day and fractional day are correct
     if (Math.abs(jdFrac) > 1.0) {
-      let dtt = Math.floor(jdFrac);
+      const dtt = Math.floor(jdFrac);
       jd = jd + dtt;
       jdFrac = jdFrac - dtt;
     }
@@ -3325,7 +3700,16 @@ class Sgp4Js {
    *  coupling      :
    *    none.
    * --------------------------------------------------------------------------- */
-  static days2mdhms(year, days) {
+  static days2mdhms(
+    year: number,
+    days: number,
+  ): {
+    mon: number;
+    day: number;
+    hr: number;
+    minute: number;
+    sec: number;
+  } {
     lmonth = [31, year % 4 === 0 ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
     dayofyr = Math.floor(days);
@@ -3401,9 +3785,12 @@ class Sgp4Js {
    *  references    :
    *    vallado       2013, 203, alg 22, ex 3-13
    * --------------------------------------------------------------------------- */
-  static invjday(jd, jdfrac) {
+  static invjday(
+    jd: number,
+    jdfrac: number,
+  ): { year: number; mon: number; day: number; hr: number; minute: number; sec: number } {
     let leapyrs;
-    let dt, days, tu, temp;
+    let days;
 
     // check jdfrac for multiple days
     if (Math.abs(jdfrac) >= 1.0) {
@@ -3412,15 +3799,15 @@ class Sgp4Js {
     }
 
     // check for fraction of a day included in the jd
-    dt = jd - Math.floor(jd) - 0.5;
+    const dt = jd - Math.floor(jd) - 0.5;
     if (Math.abs(dt) > 0.00000001) {
       jd = jd - dt;
       jdfrac = jdfrac + dt;
     }
 
     /* --------------- find year and days of the year --------------- */
-    temp = jd - 2415019.5;
-    tu = temp / 365.25;
+    const temp = jd - 2415019.5;
+    const tu = temp / 365.25;
     year = 1900 + Math.floor(tu);
     leapyrs = Math.floor((year - 1901) * 0.25);
 
