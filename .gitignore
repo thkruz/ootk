@@ -5,6 +5,8 @@ dist
 node_modules
 *.log
 
+built
+
 src/export/satellite.js
 src/satellite.ts
 src/sgp4-legacy.js
