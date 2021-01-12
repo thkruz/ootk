@@ -1,6 +1,6 @@
 /**
  * @author Theodore Kruczek
- * @file Sgp4Js is a 1:1 port of the 2020 version of sgp4unit.cpp from "Fundamentals
+ * @file Satjs is a 1:1 port of the 2020 version of sgp4unit.cpp from "Fundamentals
  * of Astrodynamics and Applications" by David Vallado.
  * @description All of the original comments and notes are inserted in the code below
  * in order provide context to the functions and clarify any adjustments made for
@@ -128,13 +128,14 @@ const stepn = -720.0;
 const step2 = 259200.0;
 
 /**
- * Sgp4Js code is run synchronously and often on super tight loops, so lets reuse the variables as much as possible.
+ * Satjs code is run synchronously and often on super tight loops, so lets reuse the variables as much as possible.
  */
 // prettier-ignore
 let axnl,aynl,xl,u,ktr,ecose,esine,el2,pl,rl,rdotl,rvdotl,betal,sinu,cosu,sin2u,coseo1,sineo1,cosip,sinip,cosisq,delm,delomg,eo1,argpm,argpp,su,t3,t4,tc,tem5,temp,tempa,tempe,templ,inclm,mm,nm,nodem,xincp,xlm,mp,nodep,xmdf,argpdf,nodedf,t2,delmtemp,em,dspaceOptions,dspaceResult,am,ep,cosim,sinim,dpperResult,dpperParameters,method,ts70,ds70,c1,tfrac,thgr70,fk5r,c1p2p,dndt,ft,delt,xndt,xldot,xnddt,x2omi,xomi,x2li,theta,tut1,snodm,cnodm,sinomm,cosomm,betasq,rtemsq,peo,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,cc,x1,x2,x3,x4,x5,x6,x7,x8,zcosg,zsing,zcosh,zsinh,zcosi,zsini,ss1,ss2,ss3,ss4,ss5,ss6,ss7,sz1,sz2,sz3,sz11,sz12,sz13,sz21,sz22,sz23,sz31,sz32,sz33,s1,s2,s3,s4,s5,s6,s7,z1,z2,z3,z11,z12,z13,z21,z22,z23,z31,z32,z33,f220,f221,f311,f321,f322,f330,f441,f442,f522,f523,f542,f543,g200,g201,g211,g300,g310,g322,g410,g422,g520,g521,g532,g533,sini2,temp1,xno2,ainv2,aonv,cos2u,mrt,temp2,xnode,xinc,mvt,rvdot,sinsu,cossu,snod,cnod,cosi,sini,xmx,xmy,ux,uy,uz,vx,vy,vz,r,v,year,satrec,dsinitResult,dsinitOptions,ao,mon,day,hr,minute,sec,ss,qzms24temp,qzms2ttemp,initlOptions,initlResult,cosio,delmotemp,dscomOptions,dscomResult,dpperOptions,sinio,qzms2t,con42,cosio2,lmonth,dayofyr,inttemp,i,eccsq,omeosq,rteosq,ak,d1,adel,po,ses,sis,sls,sghs,shs,sel,sil,sll,con41,ainv,posq,rp,sghl,shll,PInco,plo,pho,ctem,zcosil,zsinhl,stem,zsingl,zsinil,gam,zy,pgho,zcoshl,xnoi,zcosgl,zmol,zmos,se2,se3,si2,si3,sl2,sl3,sl4,sgh2,xnodce,sh3,sgh4,sh2,ee2,e3,xi2,xi3,xl2,xl3,xl4,sgh3,xgh2,xgh3,xgh4,xh2,xh3,sgs,emo,emsqo,eoc,alfdp,betdp,cosop,sinop,dalf,dbet,dls,f2,f3,pe,pgh,ph,PInc,sinzf,xls,xnoh,zf,zm,cc1sq,cc2,cc3,coef,coef1,cosio4,emsq,eeta,etasq,perige,PInvsq,psisq,qzms24,sfour,temp3,tsi,xPIdot,xhdot1,leadingChar,gsto,lsflg,j2,j3,j3oj2,j4,xke,mus,radiusearthkm,tumin;
 
 interface SatelliteRecord {
   a: number;
+  am: number;
   alta: number;
   altp: number;
   argpdot: number;
@@ -148,13 +149,20 @@ interface SatelliteRecord {
   d2: number;
   d3: number;
   d4: number;
+  d5232: number;
+  d5421: number;
+  d5433: number;
+  dedt: number;
   delmo: number;
+  del1: number;
   ecco: number;
+  em: number;
   epochdays: number;
   epochyr: number;
   error: number;
   eta: number;
   gsto: number;
+  im: number;
   inclo: number;
   init: string;
   isimp: number;
@@ -162,12 +170,15 @@ interface SatelliteRecord {
   mdot: number;
   method: string;
   mo: number;
+  mm: number;
   nddot: number;
   ndot: number;
   no: number;
   nodecf: number;
   nodedot: number;
   nodeo: number;
+  om: number;
+  Om: number;
   omgcof: number;
   operationmode: string;
   satnum: string;
@@ -181,24 +192,87 @@ interface SatelliteRecord {
   x7thm1: number;
   xlcof: number;
   xmcof: number;
+  xfact: number;
+  xlamo: number;
+  xli: number;
+  xgh4: number;
+  xgh3: number;
+  xh2: number;
+  xi2: number;
+  xi3: number;
+  xl2: number;
+  xl3: number;
+  xl4: number;
+  zmol: number;
+  zmos: number;
+  dmdt: number;
+  dnodt: number;
+  domdt: number;
+  e3: number;
+  ee2: number;
+  peo: number;
+  pgho: number;
+  pho: number;
+  PInco: number;
+  plo: number;
+  se2: number;
+  se3: number;
+  sgh2: number;
+  sgh3: number;
+  sgh4: number;
+  sh2: number;
+  sh3: number;
+  si2: number;
+  si3: number;
+  sl2: number;
+  sl3: number;
+  sl4: number;
+  xgh2: number;
+  xh3: number;
+  tumin: number;
+  radiusearthkm: number;
+  irez: number;
+  d3210: number;
+  d3222: number;
+  d4410: number;
+  d4422: number;
+  d5220: number;
+  del2: number;
+  del3: number;
+  didt: number;
+  atime: number;
+  j2: number;
+  j3: number;
+  j4: number;
+  mus: number;
+  xke: number;
+  j3oj2: number;
+  xni: number;
+  d2201: number;
+  d2211: number;
+  nm: number;
 }
 
 interface StateVector {
-  position: {
-    x: number;
-    y: number;
-    z: number;
-  } | boolean;
-  velocity: {
-    x: number;
-    y: number;
-    z: number;
-  } | boolean;
+  position:
+    | {
+        x: number;
+        y: number;
+        z: number;
+      }
+    | boolean;
+  velocity:
+    | {
+        x: number;
+        y: number;
+        z: number;
+      }
+    | boolean;
 }
 
 type vec3 = [number, number, number];
 
-class Sgp4Js {
+class Satjs {
   /* -----------------------------------------------------------------------------
  *
  *                           procedure dpper
@@ -277,8 +351,6 @@ class Sgp4Js {
       init: string;
     },
   ): { ep: number; inclp: number; nodep: number; argpp: number; mp: number } {
-    options = options ?? {};
-
     const {
       e3,
       ee2,
@@ -318,7 +390,7 @@ class Sgp4Js {
     const { opsmode = i, init } = options;
 
     //  ---------------------- constants -----------------------------
-    /** Sgp4Js -- Declared outside the class at the top */
+    /** Satjs -- Declared outside the class at the top */
     // zns = 1.19459e-5;
     // zes = 0.01675;
     // znl = 1.5835218e-4;
@@ -595,7 +667,7 @@ class Sgp4Js {
     const { epoch, ep, argpp, tc, inclp, nodep, np } = options;
 
     // -------------------------- constants -------------------------
-    /** Sgp4Js -- These are declared outside the class at the top of the file */
+    /** Satjs -- These are declared outside the class at the top of the file */
     // zes = 0.01675;
     // zel = 0.0549;
     // c1ss = 2.9864797e-6;
@@ -1116,7 +1188,7 @@ class Sgp4Js {
     } = options;
 
     /* --------------------- local variables ------------------------ */
-    /** Sgp4Js -- these are declared at the top instead */
+    /** Satjs -- these are declared at the top instead */
 
     // q22 = 1.7891679e-6;
     // q31 = 2.1460748e-6;
@@ -1498,7 +1570,7 @@ class Sgp4Js {
     } = options;
     let { atime, em, argpm, inclm, xli, mm, xni, nodem, nm } = options;
 
-    /** Sgp4Js -- Declared at the top of the file instead */
+    /** Satjs -- Declared at the top of the file instead */
     // fasx2 = 0.13130908;
     // fasx4 = 2.8843198;
     // fasx6 = 0.37448087;
@@ -1538,7 +1610,7 @@ class Sgp4Js {
     //   the specific changes are unknown because the original code was so convoluted
 
     // sgp4fix take out atime = 0.0 and fix for faster operation
-    // ft = 0.0; /** Sgp4Js -- This has no value */
+    // ft = 0.0; /** Satjs -- This has no value */
     if (irez !== 0) {
       //  sgp4fix streamline check
       if (atime === 0.0 || t * atime <= 0.0 || Math.abs(t) < Math.abs(atime)) {
@@ -1603,7 +1675,7 @@ class Sgp4Js {
         //  ----------------------- integrator -------------------
         //  sgp4fix move end checks to end of routine
         if (Math.abs(t - atime) >= stepp) {
-          // iret = 0; /** Sgp4Js -- This has no value */
+          // iret = 0; /** Satjs -- This has no value */
           iretn = 381;
         } else {
           ft = t - atime;
@@ -1728,10 +1800,10 @@ class Sgp4Js {
     let no = options.no;
 
     /* --------------------- local variables ------------------------ */
-    /** Sgp4Js -- Declared at the top of the file */
+    /** Satjs -- Declared at the top of the file */
 
     // sgp4fix use old way of finding gst
-    /** Sgp4Js -- Declared at the top of the file */
+    /** Satjs -- Declared at the top of the file */
 
     // ----------------------- earth constants ---------------------
     // sgp4fix identify constants and allow alternate values
@@ -1766,7 +1838,7 @@ class Sgp4Js {
     method = 'n';
 
     //  sgp4fix modern approach to finding sidereal time
-    /** Sgp4Js -- Continue allowing AFSPC mode for SGP4 Validation */
+    /** Satjs -- Continue allowing AFSPC mode for SGP4 Validation */
     if (opsmode == 'a') {
       //  sgp4fix use old way of finding gst
       //  count integer number of days from 0 jan 1970
@@ -1785,7 +1857,7 @@ class Sgp4Js {
         gsto += TAU;
       }
     } else {
-      gsto = Sgp4Js.gstime(epoch + 2433281.5);
+      gsto = Satjs.gstime(epoch + 2433281.5);
     }
 
     return {
@@ -1905,11 +1977,8 @@ class Sgp4Js {
       xno: number;
       xnodeo: number;
     },
-  ): SatelliteRecord {
+  ): void {
     /* eslint-disable no-param-reassign */
-
-    options = options ?? {};
-
     const {
       whichconst = 'wgs72',
       opsmode = i,
@@ -1927,7 +1996,7 @@ class Sgp4Js {
     } = options;
 
     /* --------------------- local variables ------------------------ */
-    /** Sgp4Js -- Declared at the top of the file */
+    /** Satjs -- Declared at the top of the file */
 
     /* ------------------------ initialization --------------------- */
     // sgp4fix divisor for divide by zero check on inclination
@@ -2025,7 +2094,7 @@ class Sgp4Js {
     /* ------------------------ earth constants ----------------------- */
     // sgp4fix identify constants and allow alternate values
     // this is now the only call for the constants
-    const gravResults = Sgp4Js.getgravconst(whichconst);
+    const gravResults = Satjs.getgravconst(whichconst);
     satrec.tumin = gravResults.tumin;
     satrec.mus = gravResults.mus;
     satrec.radiusearthkm = gravResults.radiusearthkm;
@@ -2041,13 +2110,15 @@ class Sgp4Js {
     satrec.operationmode = opsmode;
 
     // new alpha5 or 9-digit number
-    /** Sgp4Js -- Using JS code for string manipulation but same effect
+    /** Satjs -- Using JS code for string manipulation but same effect
      * Ex. A2525 = 102525
      * Ex. Z1234 = 351234
      */
     leadingChar = satn.split('')[0].toLowerCase(); // Using uppercase will break the -96 math.
     if (isNaN(leadingChar)) {
-      satrec.satnum = parseInt(leadingChar.charCodeAt(0) - 96 + 9 + satrec.satnum.slice(1, 5));
+      satrec.satnum = parseInt(
+        leadingChar.charCodeAt(0) - 96 + 9 + satrec.satnum.slice(1, 5),
+      ).toString();
     } else {
       satrec.satnum = satn;
     }
@@ -2094,7 +2165,7 @@ class Sgp4Js {
       j2: satrec.j2,
     };
 
-    initlResult = Sgp4Js.initl(initlOptions);
+    initlResult = Satjs.initl(initlOptions);
 
     const { ao, con42, cosio, cosio2, eccsq, omeosq, posq, rp, rteosq, sinio } = initlResult;
 
@@ -2256,7 +2327,7 @@ class Sgp4Js {
           zmos: satrec.zmos,
         };
 
-        dscomResult = Sgp4Js.dscom(dscomOptions);
+        dscomResult = Satjs.dscom(dscomOptions);
 
         satrec.e3 = dscomResult.e3;
         satrec.ee2 = dscomResult.ee2;
@@ -2333,7 +2404,7 @@ class Sgp4Js {
           opsmode: satrec.operationmode,
         };
 
-        dpperResult = Sgp4Js.dpper(satrec, dpperOptions);
+        dpperResult = Satjs.dpper(satrec, dpperOptions);
 
         satrec.ecco = dpperResult.ep;
         satrec.inclo = dpperResult.inclp;
@@ -2420,7 +2491,7 @@ class Sgp4Js {
           xni: satrec.xni,
         };
 
-        dsinitResult = Sgp4Js.dsinit(dsinitOptions);
+        dsinitResult = Satjs.dsinit(dsinitOptions);
         satrec.irez = dsinitResult.irez;
         satrec.atime = dsinitResult.atime;
         satrec.d2201 = dsinitResult.d2201;
@@ -2473,7 +2544,7 @@ class Sgp4Js {
       // sgp4fix take out check to let satellites process until they are actually below earth surface
       // if(satrec.error == 0)
     }
-    Sgp4Js.sgp4(satrec, 0, 0);
+    Satjs.sgp4(satrec, 0);
 
     satrec.init = 'n';
 
@@ -2573,7 +2644,7 @@ class Sgp4Js {
     // the old check used 1.0 + cos(PI-1.0e-9), but then compared it to
     // 1.5 e-12, so the threshold was changed to 1.5e-12 for consistency
 
-    /** Sgp4Js -- Declared at the top of the page */
+    /** Satjs -- Declared at the top of the page */
     // temp4 = 1.5e-12;
 
     // sgp4fix identify constants and allow alternate values
@@ -2655,7 +2726,7 @@ class Sgp4Js {
         nm,
       };
 
-      dspaceResult = Sgp4Js.dspace(dspaceOptions);
+      dspaceResult = Satjs.dspace(dspaceOptions);
 
       ({ em, argpm, inclm, mm, nodem, nm } = dspaceResult);
     } // if methjod = d
@@ -2664,7 +2735,7 @@ class Sgp4Js {
       // printf("// error nm %f\n", nm);
       satrec.error = 2;
       // sgp4fix add return
-      return [false, false];
+      return { position: false, velocity: false };
     }
 
     am = (xke / nm) ** x2o3 * tempa * tempa;
@@ -2679,7 +2750,7 @@ class Sgp4Js {
       // printf("// error em %f\n", em);
       satrec.error = 1;
       // sgp4fix to return if there is an error in eccentricity
-      return [false, false];
+      return { position: false, velocity: false };
     }
 
     //  sgp4fix fix tolerance to avoid a divide by zero
@@ -2727,7 +2798,7 @@ class Sgp4Js {
         opsmode: satrec.operationmode,
       };
 
-      dpperResult = Sgp4Js.dpper(satrec, dpperParameters);
+      dpperResult = Satjs.dpper(satrec, dpperParameters);
 
       ({ ep, nodep, argpp, mp } = dpperResult);
 
@@ -2742,7 +2813,7 @@ class Sgp4Js {
         //  printf("// error ep %f\n", ep);
         satrec.error = 3;
         //  sgp4fix add return
-        return [false, false];
+        return { position: false, velocity: false };
       }
     }
 
@@ -2798,7 +2869,7 @@ class Sgp4Js {
       //  printf("// error pl %f\n", pl);
       satrec.error = 4;
       //  sgp4fix add return
-      return [false, false];
+      return { position: false, velocity: false };
     }
 
     rl = am * (1.0 - ecose);
@@ -3044,13 +3115,13 @@ class Sgp4Js {
 
     // ---- find no, ndot, nddot ----
     satrec.no /= xpdotp; //   rad/min
-    /** Sgp4JS -- nexp and ibexp are calculated above using template literals */
+    /** Satjs -- nexp and ibexp are calculated above using template literals */
     // satrec.nddot = satrec.nddot * Math.pow(10.0, nexp);
     // satrec.bstar = satrec.bstar * Math.pow(10.0, ibexp);
 
     // ---- convert to sgp4 units ----
     // satrec.a = (satrec.no * tumin) ** (-2.0 / 3.0);
-    /** Sgp4Js -- Not sure why the following two lines are added. 1st and 2nd derivatives aren't even used anymore */
+    /** Satjs -- Not sure why the following two lines are added. 1st and 2nd derivatives aren't even used anymore */
     // satrec.ndot /= xpdotp * 1440.0; // ? * minperday
     // satrec.nddot /= xpdotp * 1440.0 * 1440;
 
@@ -3079,14 +3150,14 @@ class Sgp4Js {
       year = satrec.epochyr + 1900;
     }
 
-    const { mon, day, hr, minute, sec } = Sgp4Js.days2mdhms(year, satrec.epochdays);
+    const { mon, day, hr, minute, sec } = Satjs.days2mdhms(year, satrec.epochdays);
 
-    const jdayRes = Sgp4Js.jday(year, mon, day, hr, minute, sec);
+    const jdayRes = Satjs.jday(year, mon, day, hr, minute, sec);
 
     satrec.jdsatepoch = jdayRes.jd + jdayRes.jdFrac;
 
     //  ---------------- initialize the orbit at sgp4epoch -------------------
-    Sgp4Js.sgp4init(satrec, {
+    Satjs.sgp4init(satrec, {
       whichconst,
       opsmode,
       satn: satrec.satnum,
@@ -3130,7 +3201,7 @@ class Sgp4Js {
    *  references    :
    *    vallado       2004, 191, eq 3-45
    * --------------------------------------------------------------------------- */
-  static _gstime(jdut1: number): number {
+  static gstime(jdut1: number): number {
     tut1 = (jdut1 - 2451545.0) / 36525.0;
 
     let temp =
@@ -3148,18 +3219,13 @@ class Sgp4Js {
     return temp;
   }
 
-  static gstime(
-    ...args:
-      | { year: number; mon: number; day: number; hr: number; minute: number; sec: number }
-      | number
-  ): number {
-    if (args[0] instanceof Date || args.length > 1) {
-      const { jd, jdFrac } = Sgp4Js.jday(args);
-      const jdut1 = jd + jdFrac;
-      return Sgp4Js._gstime(jdut1);
+  static sgn(x: number): number {
+    if (x < 0.0) {
+      return -1.0;
+    } else {
+      return 1.0;
     }
-    return Sgp4Js._gstime(args);
-  }
+  } // sgn
 
   /* -----------------------------------------------------------------------------
    *
@@ -3209,7 +3275,7 @@ class Sgp4Js {
   ---------------------------------------------------------------------------- */
 
   static cross(vec1: vec3, vec2: vec3): vec3 {
-    const outvec = [0, 0, 0];
+    const outvec: vec3 = [0, 0, 0];
     outvec[0] = vec1[1] * vec2[2] - vec1[2] * vec2[1];
     outvec[1] = vec1[2] * vec2[0] - vec1[0] * vec2[2];
     outvec[2] = vec1[0] * vec2[1] - vec1[1] * vec2[0];
@@ -3268,14 +3334,14 @@ class Sgp4Js {
 
   static angle(vec1: vec3, vec2: vec3): number {
     const small = 0.00000001;
-    const unknown = 999999.1; /** Sgp4Js -- original 'undefined' is protected in JS */
+    const unknown = 999999.1; /** Satjs -- original 'undefined' is protected in JS */
 
-    const magv1 = Sgp4Js.mag(vec1);
-    const magv2 = Sgp4Js.mag(vec2);
+    const magv1 = Satjs.mag(vec1);
+    const magv2 = Satjs.mag(vec2);
 
     if (magv1 * magv2 > small * small) {
-      temp = Sgp4Js.dot(vec1, vec2) / (magv1 * magv2);
-      if (Math.abs(temp) > 1.0) temp = Sgp4Js.sgn(temp) * 1.0;
+      temp = Satjs.dot(vec1, vec2) / (magv1 * magv2);
+      if (Math.abs(temp) > 1.0) temp = Satjs.sgn(temp) * 1.0;
       return Math.acos(temp);
     } else return unknown;
   } // angle
@@ -3368,8 +3434,8 @@ class Sgp4Js {
     else if (ecc > 1.0 + small) {
       if (ecc > 1.0 && Math.abs(nu) + 0.00001 < PI - Math.acos(1.0 / ecc)) {
         const sine = (Math.sqrt(ecc * ecc - 1.0) * Math.sin(nu)) / (1.0 + ecc * Math.cos(nu));
-        e0 = Sgp4Js.asinh(sine);
-        m = ecc * Math.sinh(e0) - e0;
+        e0 = Satjs.asinh(sine);
+        m = ecc * Satjs.sinh(e0) - e0;
       }
     }
     // ----------------- parabolic ---------------------
@@ -3389,6 +3455,10 @@ class Sgp4Js {
       m,
     };
   } // newtonnu
+
+  static sinh(x: number): number {
+    return (Math.exp(x) - Math.exp(-x)) / 2;
+  }
 
   /* -----------------------------------------------------------------------------
    *
@@ -3464,8 +3534,23 @@ class Sgp4Js {
     truelon: number;
     lonper: number;
   } {
-    const nbar = [];
-    const ebar = [];
+    const nbar: vec3 = [0, 0, 0];
+    const ebar: vec3 = [0, 0, 0];
+    let p: number;
+    let a: number;
+    let ecc: number;
+    let incl: number;
+    let omega: number;
+    let argp: number;
+    let nu: number;
+    let m: number;
+    let arglat: number;
+    let truelon: number;
+    let lonper: number;
+    let rdotv: number;
+    let magn: number;
+    let hk: number;
+    let sme: number;
 
     let i;
     // switch this to an integer msvs seems to have probelms with this and strncpy_s
@@ -3479,25 +3564,25 @@ class Sgp4Js {
 
     const halfpi = 0.5 * PI;
     const small = 0.00000001;
-    const unknown = 999999.1; /** Sgp4Js -- original undefined is illegal in JS */
+    const unknown = 999999.1; /** Satjs -- original undefined is illegal in JS */
     const infinite = 999999.9;
 
     // -------------------------  implementation   -----------------
-    const magr = Sgp4Js.mag(r);
-    const magv = Sgp4Js.mag(v);
+    const magr = Satjs.mag(r);
+    const magv = Satjs.mag(v);
 
     // ------------------  find h n and e vectors   ----------------
-    hbar = Sgp4Js.cross(r, v);
-    magh = Sgp4Js.mag(hbar);
+    const hbar = Satjs.cross(r, v);
+    const magh = Satjs.mag(hbar);
     if (magh > small) {
       nbar[0] = -hbar[1];
       nbar[1] = hbar[0];
       nbar[2] = 0.0;
-      magn = Sgp4Js.mag(nbar);
+      magn = Satjs.mag(nbar);
       c1 = magv * magv - mus / magr;
-      rdotv = Sgp4Js.dot(r, v);
+      rdotv = Satjs.dot(r, v);
       for (i = 0; i <= 2; i++) ebar[i] = (c1 * r[i] - rdotv * v[i]) / mus;
-      ecc = Sgp4Js.mag(ebar);
+      ecc = Satjs.mag(ebar);
 
       // ------------  find a e and semi-latus rectum   ----------
       sme = magv * magv * 0.5 - mus / magr;
@@ -3515,7 +3600,7 @@ class Sgp4Js {
 
       if (ecc < small) {
         // ----------------  circular equatorial ---------------
-        if ((incl < small) | (Math.abs(incl - PI) < small)) {
+        if (incl < small || Math.abs(incl - PI) < small) {
           typeorbit = 2;
         } else {
           // --------------  circular inclined ---------------
@@ -3523,7 +3608,7 @@ class Sgp4Js {
         }
       } else {
         // - elliptical, parabolic, hyperbolic equatorial --
-        if ((incl < small) | (Math.abs(incl - PI) < small)) {
+        if (incl < small || Math.abs(incl - PI) < small) {
           typeorbit = 4;
         }
       }
@@ -3531,33 +3616,33 @@ class Sgp4Js {
       // ----------  find right ascension of the ascending node ------------
       if (magn > small) {
         temp = nbar[0] / magn;
-        if (Math.abs(temp) > 1.0) temp = Sgp4Js.sgn(temp);
+        if (Math.abs(temp) > 1.0) temp = Satjs.sgn(temp);
         omega = Math.acos(temp);
         if (nbar[1] < 0.0) omega = TAU - omega;
       } else omega = unknown;
 
       // ---------------- find argument of perigee ---------------
       if (typeorbit == 1) {
-        argp = Sgp4Js.angle(nbar, ebar);
+        argp = Satjs.angle(nbar, ebar);
         if (ebar[2] < 0.0) argp = TAU - argp;
       } else argp = unknown;
 
       // ------------  find true anomaly at epoch    -------------
       if (typeorbit == 1 || typeorbit == 4) {
-        nu = Sgp4Js.angle(ebar, r);
+        nu = Satjs.angle(ebar, r);
         if (rdotv < 0.0) nu = TAU - nu;
       } else nu = unknown;
 
       // ----  find argument of latitude - circular inclined -----
       if (typeorbit == 3) {
-        arglat = Sgp4Js.angle(nbar, r);
+        arglat = Satjs.angle(nbar, r);
         if (r[2] < 0.0) arglat = TAU - arglat;
         m = arglat;
       } else arglat = unknown;
 
       if (ecc > small && typeorbit == 4) {
         temp = ebar[0] / ecc;
-        if (Math.abs(temp) > 1.0) temp = Sgp4Js.sgn(temp);
+        if (Math.abs(temp) > 1.0) temp = Satjs.sgn(temp);
         lonper = Math.acos(temp);
         if (ebar[1] < 0.0) lonper = TAU - lonper;
         if (incl > halfpi) lonper = TAU - lonper;
@@ -3566,7 +3651,7 @@ class Sgp4Js {
       // -------- find true longitude - circular equatorial ------
       if (magr > small && typeorbit == 2) {
         temp = r[0] / magr;
-        if (Math.abs(temp) > 1.0) temp = Sgp4Js.sgn(temp);
+        if (Math.abs(temp) > 1.0) temp = Satjs.sgn(temp);
         truelon = Math.acos(temp);
         if (r[1] < 0.0) truelon = TAU - truelon;
         if (incl > halfpi) truelon = TAU - truelon;
@@ -3574,7 +3659,7 @@ class Sgp4Js {
       } else truelon = unknown;
 
       // ------------ find mean anomaly for all orbits -----------
-      if (typeorbit == 1 || typeorbit == 4) m = Sgp4Js.newtonnu(ecc, nu, e).m;
+      if (typeorbit == 1 || typeorbit == 4) m = Satjs.newtonnu(ecc, nu).m;
     } else {
       p = unknown;
       a = unknown;
@@ -3715,7 +3800,7 @@ class Sgp4Js {
     dayofyr = Math.floor(days);
 
     //  ----------------- find month and day of month ----------------
-    /** Sgp4Js -- Incorporated in the above declaration */
+    /** Satjs -- Incorporated in the above declaration */
     // if ((year % 4) == 0)
     // lmonth[2] = 29;
 
@@ -3821,7 +3906,7 @@ class Sgp4Js {
     }
 
     /* ----------------- find remaining data  ------------------------- */
-    Sgp4Js.days2mdhms(year, days + jdfrac, mon, day, hr, minute, sec);
+    const { mon, day, hr, minute, sec } = Satjs.days2mdhms(year, days + jdfrac);
 
     return {
       year,
@@ -3834,4 +3919,4 @@ class Sgp4Js {
   } // invjday
 }
 
-export { Sgp4Js };
+export { Satjs };
