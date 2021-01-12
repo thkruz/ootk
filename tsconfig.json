@@ -1,0 +1,27 @@
+{
+  "include": ["./src/**/*"],
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "outDir": "./built",
+    "allowJs": true,
+    "declaration": true,
+    "noImplicitAny": true,
+    "removeComments": true,
+    "experimentalDecorators": true,
+    "rootDir": ".",
+    "sourceMap": true,
+    "listFiles": true,
+    "newLine": "LF",
+    "noEmitOnError": true
+},
+"filesGlob": [
+    "./**/*.ts",
+    "./**/*.tsx",
+    "!./**/*.d.ts",
+    "!./gulpfile.ts",
+    "./typings/**/*.d.ts",
+    "!./node_modules/**/*.ts",
+    "./node_modules/typescript/lib/lib.es6.d.ts"
+],
+}

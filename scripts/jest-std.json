@@ -1,0 +1,6 @@
+{
+  "verbose": true,
+  "silent": true,
+  "rootDir": "../",  
+  "testPathIgnorePatterns": ["/node_modules/", "/test/performance/"]
+}

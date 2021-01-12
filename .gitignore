@@ -1,0 +1,16 @@
+.idea
+.vscode
+coverage
+dist
+node_modules
+*.log
+
+src/export/satellite.js
+src/satellite.ts
+src/sgp4-legacy.js
+src/sgp4-utils.js
+
+test/performance
+test/satellite/transform*
+
+package-lock.json
