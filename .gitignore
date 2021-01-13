@@ -2,6 +2,7 @@
 .vscode
 coverage
 dist
+lib
 node_modules
 *.log
 
@@ -14,5 +15,3 @@ src/sgp4-utils.js
 
 test/performance
 test/satellite/transform*
-
-package-lock.json

@@ -1,11 +1,13 @@
 /**
  * @author Theodore Kruczek.
  * @description Orbital Object ToolKit (OOTK) is a collection of tools for working
- * with satellites and other orbital objects. The Sgp4 module contains a TypeScript
- * port of the 2020 version of sgp4unit.cpp from "Fundamentals of Astrodynamics and
- * Applications" by David Vallado. All of the original comments and notes are
- * inserted in the code below in order provide context to the functions and clarify
- * any adjustments made for TypeScript/JavaScript compatibility.
+ * with satellites and other orbital objects.
+ *
+ * @file The Sgp4 module contains a TypeScript port of the 2020 version of
+ * sgp4unit.cpp from "Fundamentals of Astrodynamics and Applications" by David
+ * Vallado. All of the original comments and notes are inserted in the code below
+ * in order provide context to the functions and clarify any adjustments made for
+ * TypeScript/JavaScript compatibility.
  *
  * @copyright MIT License.
  * Copyright (c) 2020-2021 Theodore Kruczek
