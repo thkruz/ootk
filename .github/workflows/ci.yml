@@ -8,12 +8,23 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+    
+    - name: Get cached modules
+      uses: actions/cache@v2
+      with:
+        path: '**/node_modules'
+        key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+
     - name: Use Node.js latest
       uses: actions/setup-node@v2-beta
       with:
         node-version: "*"
-    - run: npm install
-    - run: npm run build:umd          
+
+    - name: Install all dependencies
+      run: npm install
+      
+    - name: Compile TypeScript and build umd files
+      run: npm run build:umd          
 
   lint:
     name: lint
@@ -22,10 +33,18 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+
     - name: Use Node.js latest
       uses: actions/setup-node@v2-beta
       with:
         node-version: "15"
+
+    - name: Get cached modules
+      uses: actions/cache@v2
+      with:
+        path: '**/node_modules'
+        key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+
     - name: Run ESLint
       run: npm run lint
 
@@ -36,11 +55,20 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+    
     - name: Use Node.js latest
       uses: actions/setup-node@v2-beta
       with:
         node-version: "15"
+    
+    - name: Get cached modules
+      uses: actions/cache@v2
+      with:
+        path: '**/node_modules'
+        key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+    
     - name: Build coverage
       run: npm run test:coverage
+    
     - name: Run codecov
       run: node ./node_modules/.bin/codecov

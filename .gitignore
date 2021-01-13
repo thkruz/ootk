@@ -14,5 +14,3 @@ src/sgp4-utils.js
 
 test/performance
 test/satellite/transform*
-
-package-lock.json
