@@ -18,7 +18,7 @@
 Install the library with [NPM](https://www.npmjs.com/):
 
 ```bash
-npm install ootk
+npm i ootk
 ```
 
 ## Usage
@@ -26,9 +26,9 @@ npm install ootk
 ### Common.js ([Node.js](https://nodejs.org))
 
 ```js
-var ootk = require('ootk.js');
+let Ootk = require('ootk.js');
 ...
-var positionAndVelocity = ootk.Sgp4.propagate(satrec, time);
+const satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 ```
 
 ### ES ([Babel.js](https://babeljs.io/))
@@ -36,7 +36,7 @@ var positionAndVelocity = ootk.Sgp4.propagate(satrec, time);
 ```js
 import { ootk } from 'ootk.es.js';
 ...
-const positionAndVelocity = ootk.Sgp4.propagate(satrec, time);
+const satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 ```
 
 ### Script tag
@@ -47,10 +47,10 @@ Include `dist/ootk.min.js` as a script in your html:
 <script src="path/to/dist/ootk.min.js"></script>
 ```
 
-`ootk` object will be available in global scope:
+`Ootk` object will be available in global scope:
 
 ```js
-var positionAndVelocity = ootk.Sgp4.propagate(satrec, time);
+var satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 ```
 
 ## Building
@@ -109,6 +109,7 @@ npm run lint
 Use [commitzen](https://github.com/commitizen/cz-cli) to format your commit messages:
 
 ```bash
+git add .
 git cz
 ```
 
@@ -119,17 +120,8 @@ This whole project is an example of standing on the shoulder's of giants. None o
 - [ezze (Dmitriy Pushkov)](https://github.com/ezze)
 - [davidcalhoun (David Calhoun)](https://github.com/davidcalhoun)
 - [shashwatak (Shashwat Kandadai)](https://github.com/shashwatak)
-- [tikhonovits (Nikos Sagias)](https://github.com/tikhonovits)
-- [dangodev (Drew Powers)](https://github.com/dangodev)
-- [bakercp (Christopher Baker)](https://github.com/bakercp)
-- [kylegmaxwell (Kyle G. Maxwell)](https://github.com/kylegmaxwell)
-- [iamthechad (Chad Johnston)](https://github.com/iamthechad)
-- [drom (Aliaksei Chapyzhenka)](https://github.com/drom)
-- [PeterDaveHello (Peter Dave Hello)](https://github.com/PeterDaveHello)
-- [Alesha72003](https://github.com/Alesha72003)
-- [nhamer](https://github.com/nhamer)
-- [owntheweb](https://github.com/owntheweb)
-- [Zigone](https://github.com/Zigone)
+- [brandon-rhodes (Brandon Rhodes)](https://github.com/brandon-rhodes)
+
 
 ## License
 
