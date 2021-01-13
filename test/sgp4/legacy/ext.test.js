@@ -3,8 +3,8 @@
  * @since  0.2.0
  */
 
-import { compareVectors } from '../lib/compareVectors';
-import { Sgp4 } from '../../lib/ootk-sgp4.es.js'; // eslint-disable-line
+import { compareVectors } from '@test/lib/compareVectors';
+import { Sgp4 } from '@lib/ootk-sgp4.es.js'; // eslint-disable-line
 
 describe.skip('Julian date / time', () => {
   let now;
