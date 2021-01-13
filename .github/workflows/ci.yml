@@ -9,13 +9,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     
-    - name: Get cached modules
+    - name: Load cached modules
       uses: actions/cache@v2
       with:
         path: '**/node_modules'
         key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
-    - name: Use Node.js latest
+    - name: Load Node.js latest
       uses: actions/setup-node@v2-beta
       with:
         node-version: "*"
@@ -23,7 +23,7 @@ jobs:
     - name: Install all dependencies
       run: npm install
       
-    - name: Compile TypeScript and build umd files
+    - name: Compile TypeScript and build UMD files
       run: npm run build:umd          
 
   lint:
@@ -49,7 +49,7 @@ jobs:
       run: npm run lint
 
   test-coverage:
-    name: Test on Node.js Latest
+    name: test-coverage
     needs: build
     runs-on: ubuntu-latest
     steps:
