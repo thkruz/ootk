@@ -26,5 +26,6 @@
  */
 
 import { Sgp4 } from './ootk-sgp4.es';
+import { Transforms } from './ootk-transforms.es';
 
-export { Sgp4 };
+export { Sgp4, Transforms };
