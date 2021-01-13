@@ -85,7 +85,7 @@ The source code is organized as Common.js modules and uses [ES6 syntax](http://e
 
 This repo follows [Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 
-Before starting a work on new [pull request](https://github.com/thkruz/sgp4-js/compare), please, checkout your feature or bugfix branch from `develop` branch:
+Before starting a work on new [pull request](https://github.com/thkruz/ootk/compare), please, checkout your feature or bugfix branch from `develop` branch:
 
 ```bash
 git checkout develop
