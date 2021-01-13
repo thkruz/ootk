@@ -25,7 +25,8 @@
  * SOFTWARE.
  */
 
-import { Sgp4 } from './ootk-sgp4.es';
-import { Transforms } from './ootk-transforms.es';
+import { Sgp4 } from './ootk-sgp4.es.js';
+import { Transforms } from './ootk-transforms.es.js';
+import { Utils } from './ootk-utils.es.js';
 
-export { Sgp4, Transforms };
+export { Sgp4, Transforms, Utils };
