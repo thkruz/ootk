@@ -2,5 +2,11 @@
   "verbose": true,
   "silent": true,
   "rootDir": "../",  
-  "testPathIgnorePatterns": ["/node_modules/", "/test/performance/"]
+  "testPathIgnorePatterns": ["/node_modules/", "/test/performance/"],
+  "moduleNameMapper": {
+    "@lib(.*)$": "<rootDir>/lib/$1",
+    "@dist(.*)$": "<rootDir>/dist/$1",
+    "@src(.*)$": "<rootDir>/src/$1",
+    "@test(.*)$": "<rootDir>/test/$1"
+  }
 }

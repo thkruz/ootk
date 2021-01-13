@@ -4,8 +4,8 @@
  * with satellites and other orbital objects.
  *
  * @file The Transforms module contains a collection of conversions not contained
- * in the original SGP4 library such as ECI to ECF and ECF to RAE. This almost
- * entirely based on the functions in satellite.js
+ * in the original SGP4 library such as ECI to ECF and ECF to RAE. This was based
+ * on some of the functions in satellite.js.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,45 +29,14 @@
 const PI = Math.PI;
 const TAU = PI * 2; //https://tauday.com/tau-manifesto
 
-type vec3K = {
-  x: number;
-  y: number;
-  z: number;
-};
-
 class Transforms {
-  static dopplerFactor(location: vec3K, position: vec3K, velocity: vec3K): number {
-    const mfactor = 7.292115e-5;
-    const c = 299792.458; // Speed of light in km/s
-
-    const range = {
-      x: position.x - location.x,
-      y: position.y - location.y,
-      z: position.z - location.z,
-      w: 0,
-    };
-    range.w = Math.sqrt(range.x ** 2 + range.y ** 2 + range.z ** 2);
-
-    const rangeVel = {
-      x: velocity.x + mfactor * location.y,
-      y: velocity.y - mfactor * location.x,
-      z: velocity.z,
-    };
-
-    const sign = (value) => (value >= 0 ? 1 : -1);
-
-    const rangeRate =
-      (range.x * rangeVel.x + range.y * rangeVel.y + range.z * rangeVel.z) / range.w;
-
-    return 1 + (rangeRate / c) * sign(rangeRate);
-  }
 
   static rad2deg(radians: number): number {
-    return radians * 180 / PI;
+    return (radians * 180) / PI;
   }
 
   static deg2rad(degrees: number): number {
-    return degrees * PI / 180.0;
+    return (degrees * PI) / 180.0;
   }
 
   static getDegLat(radians: number): number {
@@ -213,7 +182,7 @@ class Transforms {
       alt: number;
     },
     ecf: { x: number; y: number; z: number },
-  ): { topS: number; topE: number; topZ: number } {
+  ): { s: number; e: number; z: number } {
     // http://www.celestrak.com/columns/v02n02/
     // TS Kelso's method, except I'm using ECF frame
     // and he uses ECI.
@@ -227,37 +196,32 @@ class Transforms {
     const rz = ecf.z - observerEcf.z;
 
     // top is short for topocentric
-    const topS =
-      Math.sin(lat) * Math.cos(lon) * rx +
-      Math.sin(lat) * Math.sin(lon) * ry -
-      Math.cos(lat) * rz;
+    const south =
+      Math.sin(lat) * Math.cos(lon) * rx + Math.sin(lat) * Math.sin(lon) * ry - Math.cos(lat) * rz;
 
-    const topE = -Math.sin(lon) * rx + Math.cos(lon) * ry;
+    const east = -Math.sin(lon) * rx + Math.cos(lon) * ry;
 
-    const topZ =
-      Math.cos(lat) * Math.cos(lon) * rx +
-      Math.cos(lat) * Math.sin(lon) * ry +
-      Math.sin(lat) * rz;
+    const zenith =
+      Math.cos(lat) * Math.cos(lon) * rx + Math.cos(lat) * Math.sin(lon) * ry + Math.sin(lat) * rz;
 
-    return { topS, topE, topZ };
+    return { s: south, e: east, z: zenith };
   }
 
   /**
-   * @param {Object} tc Containing SEZ coordinates
-   * @param {Number} tc.topS Positive horizontal vector S due south.
-   * @param {Number} tc.topE Positive horizontal vector E due east.
-   * @param {Number} tc.topZ Vector Z normal to the surface of the earth (up).
+   * @param {Object} sez Containing SEZ coordinates
+   * @param {Number} sez.s Positive horizontal vector S due south.
+   * @param {Number} sez.e Positive horizontal vector E due east.
+   * @param {Number} sez.z Vector Z normal to the surface of the earth (up).
    * @returns {Object} Rng, Az, El array
    */
-  static sez2lla(tc: {
-    topS: number;
-    topE: number;
-    topZ: number;
+  static sez2rae(sez: {
+    s: number;
+    e: number;
+    z: number;
   }): { rng: number; az: number; el: number } {
-    const { topS, topE, topZ } = tc;
-    const rng = Math.sqrt(topS * topS + topE * topE + topZ * topZ);
-    const el = Math.asin(topZ / rng);
-    const az = Math.atan2(-topE, topS) + PI;
+    const rng = Math.sqrt(sez.s * sez.s + sez.e * sez.e + sez.z * sez.z);
+    const el = Math.asin(sez.z / rng);
+    const az = Math.atan2(-sez.e, sez.s) + PI;
 
     return {
       rng, // km
@@ -275,7 +239,52 @@ class Transforms {
     ecf: { x: number; y: number; z: number },
   ): { rng: number; az: number; el: number } {
     const sezCoords = Transforms.lla2sez(lla, ecf);
-    return Transforms.sez2lla(sezCoords);
+    return Transforms.sez2rae(sezCoords);
+  }
+
+  static rae2sez(rae: {
+    rng: number;
+    az: number;
+    el: number;
+  }): {
+    s: number;
+    e: number;
+    z: number;
+  } {
+    // az,el,range to sez convertion
+    const south = -rae.rng * Math.cos(rae.el) * Math.cos(rae.az);
+    const east = rae.rng * Math.cos(rae.el) * Math.sin(rae.az);
+    const zenith = rae.rng * Math.sin(rae.el);
+
+    return {
+      s: south,
+      e: east,
+      z: zenith,
+    };
+  }
+
+  static rae2ecf(
+    rae: { rng: number; az: number; el: number },
+    lla: {
+      lat: number;
+      lon: number;
+      alt: number;
+    },
+  ): { x: number; y: number; z: number } {
+    const obsEcf = Transforms.lla2ecf(lla);
+    const sez = Transforms.rae2sez(rae);
+
+    // some needed calculations
+    const slat = Math.sin(lla.lat);
+    const slon = Math.sin(lla.lon);
+    const clat = Math.cos(lla.lat);
+    const clon = Math.cos(lla.lon);
+
+    const x = slat * clon * sez.s + -slon * sez.e + clat * clon * sez.z + obsEcf.x;
+    const y = slat * slon * sez.s + clon * sez.e + clat * slon * sez.z + obsEcf.y;
+    const z = -clat * sez.s + slat * sez.z + obsEcf.z;
+
+    return { x: x, y: y, z: z };
   }
 }
 
