@@ -35,7 +35,7 @@ In December 2020 I set out to rewrite satellite.js to realign it with the most r
 Install the library with [NPM](https://www.npmjs.com/):
 
 ```bash
-npm install satellite.js
+npm install ootk
 ```
 
 ## Usage
@@ -43,31 +43,31 @@ npm install satellite.js
 ### Common.js ([Node.js](https://nodejs.org))
 
 ```js
-var satellite = require('satellite.js');
+var ootk = require('ootk.js');
 ...
-var positionAndVelocity = satellite.sgp4(satrec, time);
+var positionAndVelocity = ootk.Sgp4.propagate(satrec, time);
 ```
 
 ### ES ([Babel.js](https://babeljs.io/))
 
 ```js
-import { sgp4 } from 'satellite.js';
+import { ootk } from 'ootk.es.js';
 ...
-const positionAndVelocity = sgp4(satrec, time);
+const positionAndVelocity = ootk.Sgp4.propagate(satrec, time);
 ```
 
 ### Script tag
 
-Include `dist/satellite.min.js` as a script in your html:
+Include `dist/ootk.min.js` as a script in your html:
 
 ```html
-<script src="path/to/dist/satellite.min.js"></script>
+<script src="path/to/dist/ootk.min.js"></script>
 ```
 
-`satellite` object will be available in global scope:
+`ootk` object will be available in global scope:
 
 ```js
-var positionAndVelocity = satellite.sgp4(satrec, time);
+var positionAndVelocity = ootk.Sgp4.propagate(satrec, time);
 ```
 
 ## Sample Usage
