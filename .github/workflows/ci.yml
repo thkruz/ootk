@@ -13,8 +13,6 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-            lib
-            dist
             **/node_modules
         key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
@@ -46,10 +44,11 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-            lib
-            dist
             **/node_modules
         key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+
+    - name: Compile TypeScript and build UMD files
+      run: npm run build:umd      
 
     - name: Run ESLint
       run: npm run lint
@@ -71,10 +70,11 @@ jobs:
       uses: actions/cache@v2
       with:
         path: |
-            lib
-            dist
             **/node_modules
         key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+
+    - name: Compile TypeScript and build UMD files
+      run: npm run build:umd      
     
     - name: Build coverage
       run: npm run test:coverage
