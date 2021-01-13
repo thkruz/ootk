@@ -11,7 +11,8 @@
     "lint:test": "eslint test",
     "test": "jest -c scripts/jest-std.json",
     "test:coverage": "jest --coverage -c scripts/jest-std.json",
-    "test:performance": "node test/performance/timing.test.mjs"
+    "test:performance": "node test/performance/timing.test.mjs",
+    "version": "auto-changelog -p && git add CHANGELOG.md"
   },
   "repository": {
     "type": "git",
@@ -52,6 +53,7 @@
     "@babel/preset-env": "^7.11.5",
     "@typescript-eslint/eslint-plugin": "^4.13.0",
     "@typescript-eslint/parser": "^4.13.0",
+    "auto-changelog": "^2.2.1",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.2",
     "codecov": "^3.8.1",
