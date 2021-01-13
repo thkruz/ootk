@@ -1,0 +1,16 @@
+.github
+.vscode
+coverage
+node_modules
+scripts
+src/*
+test
+.babelrc
+.eslintignore
+.eslintrc
+.gitattributes
+.gitignore
+.npmignore
+package-lock.json
+tsconfig.json
+
