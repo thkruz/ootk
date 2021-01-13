@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "es5",
     "module": "es6",
-    "outDir": "./dist",
+    "outDir": "./lib",
     // "allowJs": true,
     "declaration": true,
     // "noImplicitAny": true,
@@ -16,7 +16,5 @@
     "noEmitOnError": true,
     "types": []
   },
-  "filesGlob": ["./src/**/*.ts", "./src/**/*.tsx", "!./src/**/*.d.ts", "./**/*.d.ts"],
-  "include": ["./src/**/*"],
-  "exclude": ["node_modules", "dist", "__tests__"]
+  "filesGlob": ["./src/**/*.ts"],
 }

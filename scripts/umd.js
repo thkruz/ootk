@@ -1,14 +1,5 @@
 const TerserPlugin = require('terser-webpack-plugin');
 
-// var rimraf = require('rimraf');
-
-// console.log(`Removing ./dist...`);
-// try {
-//   rimraf.sync('./dist');
-// } catch (error) {
-//   // Intentionally left blank
-// }
-
 let config = {
   module: {
     rules: [
@@ -36,10 +27,11 @@ let config = {
 
 let umd = {
   ...config,
-  name: 'ootk',
+  name: 'ootk-sgp4',
   mode: 'production',
   entry: {
-    ootk: ['./dist/ootk.es.js'],
+    'ootk': ['./lib/ootk.es.js'],
+    'ootk-sgp4': ['./lib/ootk-sgp4.es.js'],
   },
   output: {
     filename: '[name].js',
@@ -56,10 +48,11 @@ let umd = {
 
 let minUmd = {
   ...config,
-  name: 'ootk',
+  name: 'ootk-sgp4',
   mode: 'production',
   entry: {
-    ootk: ['./dist/ootk.es.js'],
+    'ootk': ['./lib/ootk.es.js'],
+    'ootk-sgp4': ['./lib/ootk-sgp4.es.js'],
   },
   output: {
     filename: '[name].min.js',

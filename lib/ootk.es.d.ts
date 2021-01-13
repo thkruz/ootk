@@ -24,7 +24,5 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
 import { Sgp4 } from './ootk-sgp4.es';
-
 export { Sgp4 };

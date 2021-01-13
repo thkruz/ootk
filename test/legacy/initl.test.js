@@ -3,7 +3,7 @@
  * @since  0.2.0
  */
 
-import { Sgp4Js } from '../../src/sgp4.js'; // eslint-disable-line
+import { Sgp4 } from '../../lib/ootk-sgp4.es.js'; // eslint-disable-line
 
 // wgs84 constants
 const mu = 398600.8; // in km3 / s2
@@ -24,7 +24,7 @@ describe('Propagator Initialization', () => {
       xke: xke,
       j2: j2,
     };
-    const results = Sgp4Js.initl(options);
+    const results = Sgp4.initl(options);
     expect(results.ainv).toBeCloseTo(0.1353414893496189);
     expect(results.ao).toBeCloseTo(7.3887172721793);
     expect(results.con41).toBeCloseTo(2);

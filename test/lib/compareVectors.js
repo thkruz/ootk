@@ -3,7 +3,8 @@
  * @since  0.2.0
  */
 
-export default function compareVectors(vector1, vector2, numDigits) {
+const compareVectors = (vector1, vector2, numDigits) => {
+  /* istanbul ignore next */
   if (!numDigits) {
     expect(vector1.x).toEqual(vector2.x);
     expect(vector1.y).toEqual(vector2.y);
@@ -13,4 +14,6 @@ export default function compareVectors(vector1, vector2, numDigits) {
     expect(vector1.y).toBeCloseTo(vector2.y, numDigits);
     expect(vector1.z).toBeCloseTo(vector2.z, numDigits);
   }
-}
+};
+
+export { compareVectors };
