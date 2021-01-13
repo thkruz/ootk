@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "es5",
-    // "module": "commonjs",
-    "outDir": "./built",
+    "module": "es6",
+    "outDir": "./dist",
     // "allowJs": true,
     "declaration": true,
     // "noImplicitAny": true,

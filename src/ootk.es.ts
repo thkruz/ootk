@@ -1,6 +1,6 @@
 /**
  * @author Theodore Kruczek
- * @file Satjs is a 1:1 port of the 2020 version of sgp4unit.cpp from "Fundamentals
+ * @file Ootk is a 1:1 port of the 2020 version of sgp4unit.cpp from "Fundamentals
  * of Astrodynamics and Applications" by David Vallado.
  * @description All of the original comments and notes are inserted in the code below
  * in order provide context to the functions and clarify any adjustments made for
@@ -128,7 +128,7 @@ const stepn = -720.0;
 const step2 = 259200.0;
 
 /**
- * Satjs code is run synchronously and often on super tight loops, so lets reuse the variables as much as possible.
+ * Ootk code is run synchronously and often on super tight loops, so lets reuse the variables as much as possible.
  */
 // prettier-ignore
 let axnl,aynl,xl,u,ktr,ecose,esine,el2,pl,rl,rdotl,rvdotl,betal,sinu,cosu,sin2u,coseo1,sineo1,cosip,sinip,cosisq,delm,delomg,eo1,argpm,argpp,su,t3,t4,tc,tem5,temp,tempa,tempe,templ,inclm,mm,nm,nodem,xincp,xlm,mp,nodep,xmdf,argpdf,nodedf,t2,delmtemp,em,dspaceOptions,dspaceResult,am,ep,cosim,sinim,dpperResult,dpperParameters,method,ts70,ds70,c1,tfrac,thgr70,fk5r,c1p2p,dndt,ft,delt,xndt,xldot,xnddt,x2omi,xomi,x2li,theta,tut1,snodm,cnodm,sinomm,cosomm,betasq,rtemsq,peo,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,cc,x1,x2,x3,x4,x5,x6,x7,x8,zcosg,zsing,zcosh,zsinh,zcosi,zsini,ss1,ss2,ss3,ss4,ss5,ss6,ss7,sz1,sz2,sz3,sz11,sz12,sz13,sz21,sz22,sz23,sz31,sz32,sz33,s1,s2,s3,s4,s5,s6,s7,z1,z2,z3,z11,z12,z13,z21,z22,z23,z31,z32,z33,f220,f221,f311,f321,f322,f330,f441,f442,f522,f523,f542,f543,g200,g201,g211,g300,g310,g322,g410,g422,g520,g521,g532,g533,sini2,temp1,xno2,ainv2,aonv,cos2u,mrt,temp2,xnode,xinc,mvt,rvdot,sinsu,cossu,snod,cnod,cosi,sini,xmx,xmy,ux,uy,uz,vx,vy,vz,r,v,year,satrec,dsinitResult,dsinitOptions,ao,mon,day,hr,minute,sec,ss,qzms24temp,qzms2ttemp,initlOptions,initlResult,cosio,delmotemp,dscomOptions,dscomResult,dpperOptions,sinio,qzms2t,con42,cosio2,lmonth,dayofyr,inttemp,i,eccsq,omeosq,rteosq,ak,d1,adel,po,ses,sis,sls,sghs,shs,sel,sil,sll,con41,ainv,posq,rp,sghl,shll,PInco,plo,pho,ctem,zcosil,zsinhl,stem,zsingl,zsinil,gam,zy,pgho,zcoshl,xnoi,zcosgl,zmol,zmos,se2,se3,si2,si3,sl2,sl3,sl4,sgh2,xnodce,sh3,sgh4,sh2,ee2,e3,xi2,xi3,xl2,xl3,xl4,sgh3,xgh2,xgh3,xgh4,xh2,xh3,sgs,emo,emsqo,eoc,alfdp,betdp,cosop,sinop,dalf,dbet,dls,f2,f3,pe,pgh,ph,PInc,sinzf,xls,xnoh,zf,zm,cc1sq,cc2,cc3,coef,coef1,cosio4,emsq,eeta,etasq,perige,PInvsq,psisq,qzms24,sfour,temp3,tsi,xPIdot,xhdot1,leadingChar,gsto,lsflg,j2,j3,j3oj2,j4,xke,mus,radiusearthkm,tumin;
@@ -272,7 +272,7 @@ interface StateVector {
 
 type vec3 = [number, number, number];
 
-class Satjs {
+class Ootk {
   /* -----------------------------------------------------------------------------
  *
  *                           procedure dpper
@@ -390,7 +390,7 @@ class Satjs {
     const { opsmode = i, init } = options;
 
     //  ---------------------- constants -----------------------------
-    /** Satjs -- Declared outside the class at the top */
+    /** Ootk -- Declared outside the class at the top */
     // zns = 1.19459e-5;
     // zes = 0.01675;
     // znl = 1.5835218e-4;
@@ -667,7 +667,7 @@ class Satjs {
     const { epoch, ep, argpp, tc, inclp, nodep, np } = options;
 
     // -------------------------- constants -------------------------
-    /** Satjs -- These are declared outside the class at the top of the file */
+    /** Ootk -- These are declared outside the class at the top of the file */
     // zes = 0.01675;
     // zel = 0.0549;
     // c1ss = 2.9864797e-6;
@@ -1188,7 +1188,7 @@ class Satjs {
     } = options;
 
     /* --------------------- local variables ------------------------ */
-    /** Satjs -- these are declared at the top instead */
+    /** Ootk -- these are declared at the top instead */
 
     // q22 = 1.7891679e-6;
     // q31 = 2.1460748e-6;
@@ -1570,7 +1570,7 @@ class Satjs {
     } = options;
     let { atime, em, argpm, inclm, xli, mm, xni, nodem, nm } = options;
 
-    /** Satjs -- Declared at the top of the file instead */
+    /** Ootk -- Declared at the top of the file instead */
     // fasx2 = 0.13130908;
     // fasx4 = 2.8843198;
     // fasx6 = 0.37448087;
@@ -1610,7 +1610,7 @@ class Satjs {
     //   the specific changes are unknown because the original code was so convoluted
 
     // sgp4fix take out atime = 0.0 and fix for faster operation
-    // ft = 0.0; /** Satjs -- This has no value */
+    // ft = 0.0; /** Ootk -- This has no value */
     if (irez !== 0) {
       //  sgp4fix streamline check
       if (atime === 0.0 || t * atime <= 0.0 || Math.abs(t) < Math.abs(atime)) {
@@ -1675,7 +1675,7 @@ class Satjs {
         //  ----------------------- integrator -------------------
         //  sgp4fix move end checks to end of routine
         if (Math.abs(t - atime) >= stepp) {
-          // iret = 0; /** Satjs -- This has no value */
+          // iret = 0; /** Ootk -- This has no value */
           iretn = 381;
         } else {
           ft = t - atime;
@@ -1800,10 +1800,10 @@ class Satjs {
     let no = options.no;
 
     /* --------------------- local variables ------------------------ */
-    /** Satjs -- Declared at the top of the file */
+    /** Ootk -- Declared at the top of the file */
 
     // sgp4fix use old way of finding gst
-    /** Satjs -- Declared at the top of the file */
+    /** Ootk -- Declared at the top of the file */
 
     // ----------------------- earth constants ---------------------
     // sgp4fix identify constants and allow alternate values
@@ -1838,7 +1838,7 @@ class Satjs {
     method = 'n';
 
     //  sgp4fix modern approach to finding sidereal time
-    /** Satjs -- Continue allowing AFSPC mode for SGP4 Validation */
+    /** Ootk -- Continue allowing AFSPC mode for SGP4 Validation */
     if (opsmode == 'a') {
       //  sgp4fix use old way of finding gst
       //  count integer number of days from 0 jan 1970
@@ -1857,7 +1857,7 @@ class Satjs {
         gsto += TAU;
       }
     } else {
-      gsto = Satjs.gstime(epoch + 2433281.5);
+      gsto = Ootk.gstime(epoch + 2433281.5);
     }
 
     return {
@@ -1996,7 +1996,7 @@ class Satjs {
     } = options;
 
     /* --------------------- local variables ------------------------ */
-    /** Satjs -- Declared at the top of the file */
+    /** Ootk -- Declared at the top of the file */
 
     /* ------------------------ initialization --------------------- */
     // sgp4fix divisor for divide by zero check on inclination
@@ -2094,7 +2094,7 @@ class Satjs {
     /* ------------------------ earth constants ----------------------- */
     // sgp4fix identify constants and allow alternate values
     // this is now the only call for the constants
-    const gravResults = Satjs.getgravconst(whichconst);
+    const gravResults = Ootk.getgravconst(whichconst);
     satrec.tumin = gravResults.tumin;
     satrec.mus = gravResults.mus;
     satrec.radiusearthkm = gravResults.radiusearthkm;
@@ -2110,7 +2110,7 @@ class Satjs {
     satrec.operationmode = opsmode;
 
     // new alpha5 or 9-digit number
-    /** Satjs -- Using JS code for string manipulation but same effect
+    /** Ootk -- Using JS code for string manipulation but same effect
      * Ex. A2525 = 102525
      * Ex. Z1234 = 351234
      */
@@ -2165,7 +2165,7 @@ class Satjs {
       j2: satrec.j2,
     };
 
-    initlResult = Satjs.initl(initlOptions);
+    initlResult = Ootk.initl(initlOptions);
 
     const { ao, con42, cosio, cosio2, eccsq, omeosq, posq, rp, rteosq, sinio } = initlResult;
 
@@ -2327,7 +2327,7 @@ class Satjs {
           zmos: satrec.zmos,
         };
 
-        dscomResult = Satjs.dscom(dscomOptions);
+        dscomResult = Ootk.dscom(dscomOptions);
 
         satrec.e3 = dscomResult.e3;
         satrec.ee2 = dscomResult.ee2;
@@ -2404,7 +2404,7 @@ class Satjs {
           opsmode: satrec.operationmode,
         };
 
-        dpperResult = Satjs.dpper(satrec, dpperOptions);
+        dpperResult = Ootk.dpper(satrec, dpperOptions);
 
         satrec.ecco = dpperResult.ep;
         satrec.inclo = dpperResult.inclp;
@@ -2491,7 +2491,7 @@ class Satjs {
           xni: satrec.xni,
         };
 
-        dsinitResult = Satjs.dsinit(dsinitOptions);
+        dsinitResult = Ootk.dsinit(dsinitOptions);
         satrec.irez = dsinitResult.irez;
         satrec.atime = dsinitResult.atime;
         satrec.d2201 = dsinitResult.d2201;
@@ -2544,7 +2544,7 @@ class Satjs {
       // sgp4fix take out check to let satellites process until they are actually below earth surface
       // if(satrec.error == 0)
     }
-    Satjs.sgp4(satrec, 0);
+    Ootk.sgp4(satrec, 0);
 
     satrec.init = 'n';
 
@@ -2644,7 +2644,7 @@ class Satjs {
     // the old check used 1.0 + cos(PI-1.0e-9), but then compared it to
     // 1.5 e-12, so the threshold was changed to 1.5e-12 for consistency
 
-    /** Satjs -- Declared at the top of the page */
+    /** Ootk -- Declared at the top of the page */
     // temp4 = 1.5e-12;
 
     // sgp4fix identify constants and allow alternate values
@@ -2726,7 +2726,7 @@ class Satjs {
         nm,
       };
 
-      dspaceResult = Satjs.dspace(dspaceOptions);
+      dspaceResult = Ootk.dspace(dspaceOptions);
 
       ({ em, argpm, inclm, mm, nodem, nm } = dspaceResult);
     } // if methjod = d
@@ -2798,7 +2798,7 @@ class Satjs {
         opsmode: satrec.operationmode,
       };
 
-      dpperResult = Satjs.dpper(satrec, dpperParameters);
+      dpperResult = Ootk.dpper(satrec, dpperParameters);
 
       ({ ep, nodep, argpp, mp } = dpperResult);
 
@@ -3115,13 +3115,13 @@ class Satjs {
 
     // ---- find no, ndot, nddot ----
     satrec.no /= xpdotp; //   rad/min
-    /** Satjs -- nexp and ibexp are calculated above using template literals */
+    /** Ootk -- nexp and ibexp are calculated above using template literals */
     // satrec.nddot = satrec.nddot * Math.pow(10.0, nexp);
     // satrec.bstar = satrec.bstar * Math.pow(10.0, ibexp);
 
     // ---- convert to sgp4 units ----
     // satrec.a = (satrec.no * tumin) ** (-2.0 / 3.0);
-    /** Satjs -- Not sure why the following two lines are added. 1st and 2nd derivatives aren't even used anymore */
+    /** Ootk -- Not sure why the following two lines are added. 1st and 2nd derivatives aren't even used anymore */
     // satrec.ndot /= xpdotp * 1440.0; // ? * minperday
     // satrec.nddot /= xpdotp * 1440.0 * 1440;
 
@@ -3150,14 +3150,14 @@ class Satjs {
       year = satrec.epochyr + 1900;
     }
 
-    const { mon, day, hr, minute, sec } = Satjs.days2mdhms(year, satrec.epochdays);
+    const { mon, day, hr, minute, sec } = Ootk.days2mdhms(year, satrec.epochdays);
 
-    const jdayRes = Satjs.jday(year, mon, day, hr, minute, sec);
+    const jdayRes = Ootk.jday(year, mon, day, hr, minute, sec);
 
     satrec.jdsatepoch = jdayRes.jd + jdayRes.jdFrac;
 
     //  ---------------- initialize the orbit at sgp4epoch -------------------
-    Satjs.sgp4init(satrec, {
+    Ootk.sgp4init(satrec, {
       whichconst,
       opsmode,
       satn: satrec.satnum,
@@ -3334,14 +3334,14 @@ class Satjs {
 
   static angle(vec1: vec3, vec2: vec3): number {
     const small = 0.00000001;
-    const unknown = 999999.1; /** Satjs -- original 'undefined' is protected in JS */
+    const unknown = 999999.1; /** Ootk -- original 'undefined' is protected in JS */
 
-    const magv1 = Satjs.mag(vec1);
-    const magv2 = Satjs.mag(vec2);
+    const magv1 = Ootk.mag(vec1);
+    const magv2 = Ootk.mag(vec2);
 
     if (magv1 * magv2 > small * small) {
-      temp = Satjs.dot(vec1, vec2) / (magv1 * magv2);
-      if (Math.abs(temp) > 1.0) temp = Satjs.sgn(temp) * 1.0;
+      temp = Ootk.dot(vec1, vec2) / (magv1 * magv2);
+      if (Math.abs(temp) > 1.0) temp = Ootk.sgn(temp) * 1.0;
       return Math.acos(temp);
     } else return unknown;
   } // angle
@@ -3434,8 +3434,8 @@ class Satjs {
     else if (ecc > 1.0 + small) {
       if (ecc > 1.0 && Math.abs(nu) + 0.00001 < PI - Math.acos(1.0 / ecc)) {
         const sine = (Math.sqrt(ecc * ecc - 1.0) * Math.sin(nu)) / (1.0 + ecc * Math.cos(nu));
-        e0 = Satjs.asinh(sine);
-        m = ecc * Satjs.sinh(e0) - e0;
+        e0 = Ootk.asinh(sine);
+        m = ecc * Ootk.sinh(e0) - e0;
       }
     }
     // ----------------- parabolic ---------------------
@@ -3564,25 +3564,25 @@ class Satjs {
 
     const halfpi = 0.5 * PI;
     const small = 0.00000001;
-    const unknown = 999999.1; /** Satjs -- original undefined is illegal in JS */
+    const unknown = 999999.1; /** Ootk -- original undefined is illegal in JS */
     const infinite = 999999.9;
 
     // -------------------------  implementation   -----------------
-    const magr = Satjs.mag(r);
-    const magv = Satjs.mag(v);
+    const magr = Ootk.mag(r);
+    const magv = Ootk.mag(v);
 
     // ------------------  find h n and e vectors   ----------------
-    const hbar = Satjs.cross(r, v);
-    const magh = Satjs.mag(hbar);
+    const hbar = Ootk.cross(r, v);
+    const magh = Ootk.mag(hbar);
     if (magh > small) {
       nbar[0] = -hbar[1];
       nbar[1] = hbar[0];
       nbar[2] = 0.0;
-      magn = Satjs.mag(nbar);
+      magn = Ootk.mag(nbar);
       c1 = magv * magv - mus / magr;
-      rdotv = Satjs.dot(r, v);
+      rdotv = Ootk.dot(r, v);
       for (i = 0; i <= 2; i++) ebar[i] = (c1 * r[i] - rdotv * v[i]) / mus;
-      ecc = Satjs.mag(ebar);
+      ecc = Ootk.mag(ebar);
 
       // ------------  find a e and semi-latus rectum   ----------
       sme = magv * magv * 0.5 - mus / magr;
@@ -3616,33 +3616,33 @@ class Satjs {
       // ----------  find right ascension of the ascending node ------------
       if (magn > small) {
         temp = nbar[0] / magn;
-        if (Math.abs(temp) > 1.0) temp = Satjs.sgn(temp);
+        if (Math.abs(temp) > 1.0) temp = Ootk.sgn(temp);
         omega = Math.acos(temp);
         if (nbar[1] < 0.0) omega = TAU - omega;
       } else omega = unknown;
 
       // ---------------- find argument of perigee ---------------
       if (typeorbit == 1) {
-        argp = Satjs.angle(nbar, ebar);
+        argp = Ootk.angle(nbar, ebar);
         if (ebar[2] < 0.0) argp = TAU - argp;
       } else argp = unknown;
 
       // ------------  find true anomaly at epoch    -------------
       if (typeorbit == 1 || typeorbit == 4) {
-        nu = Satjs.angle(ebar, r);
+        nu = Ootk.angle(ebar, r);
         if (rdotv < 0.0) nu = TAU - nu;
       } else nu = unknown;
 
       // ----  find argument of latitude - circular inclined -----
       if (typeorbit == 3) {
-        arglat = Satjs.angle(nbar, r);
+        arglat = Ootk.angle(nbar, r);
         if (r[2] < 0.0) arglat = TAU - arglat;
         m = arglat;
       } else arglat = unknown;
 
       if (ecc > small && typeorbit == 4) {
         temp = ebar[0] / ecc;
-        if (Math.abs(temp) > 1.0) temp = Satjs.sgn(temp);
+        if (Math.abs(temp) > 1.0) temp = Ootk.sgn(temp);
         lonper = Math.acos(temp);
         if (ebar[1] < 0.0) lonper = TAU - lonper;
         if (incl > halfpi) lonper = TAU - lonper;
@@ -3651,7 +3651,7 @@ class Satjs {
       // -------- find true longitude - circular equatorial ------
       if (magr > small && typeorbit == 2) {
         temp = r[0] / magr;
-        if (Math.abs(temp) > 1.0) temp = Satjs.sgn(temp);
+        if (Math.abs(temp) > 1.0) temp = Ootk.sgn(temp);
         truelon = Math.acos(temp);
         if (r[1] < 0.0) truelon = TAU - truelon;
         if (incl > halfpi) truelon = TAU - truelon;
@@ -3659,7 +3659,7 @@ class Satjs {
       } else truelon = unknown;
 
       // ------------ find mean anomaly for all orbits -----------
-      if (typeorbit == 1 || typeorbit == 4) m = Satjs.newtonnu(ecc, nu).m;
+      if (typeorbit == 1 || typeorbit == 4) m = Ootk.newtonnu(ecc, nu).m;
     } else {
       p = unknown;
       a = unknown;
@@ -3800,7 +3800,7 @@ class Satjs {
     dayofyr = Math.floor(days);
 
     //  ----------------- find month and day of month ----------------
-    /** Satjs -- Incorporated in the above declaration */
+    /** Ootk -- Incorporated in the above declaration */
     // if ((year % 4) == 0)
     // lmonth[2] = 29;
 
@@ -3906,7 +3906,7 @@ class Satjs {
     }
 
     /* ----------------- find remaining data  ------------------------- */
-    const { mon, day, hr, minute, sec } = Satjs.days2mdhms(year, days + jdfrac);
+    const { mon, day, hr, minute, sec } = Ootk.days2mdhms(year, days + jdfrac);
 
     return {
       year,
@@ -3919,4 +3919,4 @@ class Satjs {
   } // invjday
 }
 
-export { Satjs };
+export { Ootk };
