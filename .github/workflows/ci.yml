@@ -45,7 +45,10 @@ jobs:
     - name: Get cached modules
       uses: actions/cache@v2
       with:
-        path: '**/node_modules'
+        path: |
+            lib
+            dist
+            **/node_modules
         key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
     - name: Run ESLint
@@ -67,7 +70,10 @@ jobs:
     - name: Get cached modules
       uses: actions/cache@v2
       with:
-        path: '**/node_modules'
+        path: |
+            lib
+            dist
+            **/node_modules
         key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
     
     - name: Build coverage
