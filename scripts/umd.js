@@ -20,7 +20,7 @@ let config = {
   resolve: {
     alias: {
       // eslint-disable-next-line no-path-concat, no-undef
-      '@app': __dirname + '/../src',
+      '@src': __dirname + '/../src',
     },
   },
 };
@@ -37,7 +37,7 @@ let umd = {
   },
   output: {
     filename: '[name].js',
-    library: 'ootk',
+    library: 'Ootk',
     libraryTarget: 'umd',
     // eslint-disable-next-line no-path-concat, no-undef
     path: __dirname + '/../dist',
@@ -60,7 +60,7 @@ let minUmd = {
   },
   output: {
     filename: '[name].min.js',
-    library: 'ootk',
+    library: 'Ootk',
     libraryTarget: 'umd',
     // eslint-disable-next-line no-path-concat, no-undef
     path: __dirname + '/../dist',
