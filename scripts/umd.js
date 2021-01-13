@@ -33,6 +33,7 @@ let umd = {
     'ootk': ['./lib/ootk.es.js'],
     'ootk-sgp4': ['./lib/ootk-sgp4.es.js'],
     'ootk-transforms': ['./lib/ootk-transforms.es.js'],
+    'ootk-utils': ['./lib/ootk-utils.es.js'],
   },
   output: {
     filename: '[name].js',
@@ -55,6 +56,7 @@ let minUmd = {
     'ootk': ['./lib/ootk.es.js'],
     'ootk-sgp4': ['./lib/ootk-sgp4.es.js'],
     'ootk-transforms': ['./lib/ootk-transforms.es.js'],
+    'ootk-utils': ['./lib/ootk-utils.es.js'],
   },
   output: {
     filename: '[name].min.js',
