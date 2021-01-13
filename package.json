@@ -1,6 +1,6 @@
 {
   "name": "ootk",
-  "version": "1.0.0-alpha3",
+  "version": "1.0.0",
   "description": "Orbital Object Toolkit including SGP4 Propagator and Coordinate Transforms",
   "main": "src/ootk.js",
   "scripts": {
