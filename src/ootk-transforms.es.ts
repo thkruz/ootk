@@ -31,72 +31,76 @@ const TAU = PI * 2; //https://tauday.com/tau-manifesto
 
 class Transforms {
 
-  static rad2deg(radians: number): number {
-    return (radians * 180) / PI;
-  }
-
-  static deg2rad(degrees: number): number {
-    return (degrees * PI) / 180.0;
-  }
-
-  static getDegLat(radians: number): number {
+  public static getDegLat(radians: number): number {
     if (radians < -PI / 2 || radians > PI / 2) {
       throw new RangeError('Latitude radians must be in range [-PI/2; PI/2].');
     }
     return Transforms.rad2deg(radians);
   }
 
-  static getDegLon(radians: number): number {
+  public static getDegLon(radians: number): number {
     if (radians < -PI || radians > PI) {
       throw new RangeError('Longitude radians must be in range [-PI; PI].');
     }
     return Transforms.rad2deg(radians);
   }
 
-  static getRadLat(degrees: number): number {
+  public static getRadLat(degrees: number): number {
     if (degrees < -90 || degrees > 90) {
       throw new RangeError('Latitude degrees must be in range [-90; 90].');
     }
     return Transforms.deg2rad(degrees);
   }
 
-  static getRadLon(degrees: number): number {
+  public static getRadLon(degrees: number): number {
     if (degrees < -180 || degrees > 180) {
       throw new RangeError('Longitude degrees must be in range [-180; 180].');
     }
     return Transforms.deg2rad(degrees);
   }
 
-  static lla2ecf(lla: {
-    lat: number;
-    lon: number;
-    alt: number;
-  }): { x: number; y: number; z: number } {
-    const { lon, lat, alt } = lla;
-
-    const a = 6378.137;
-    const b = 6356.7523142;
-    const f = (a - b) / a;
-    const e2 = 2 * f - f * f;
-    const normal = a / Math.sqrt(1 - e2 * (Math.sin(lat) * Math.sin(lat)));
-
-    const x = (normal + alt) * Math.cos(lat) * Math.cos(lon);
-    const y = (normal + alt) * Math.cos(lat) * Math.sin(lon);
-    const z = (normal * (1 - e2) + alt) * Math.sin(lat);
-
-    return {
-      x,
-      y,
-      z,
-    };
+  public static rad2deg(radians: number): number {
+    return (radians * 180) / PI;
   }
+
+  public static deg2rad(degrees: number): number {
+    return (degrees * PI) / 180.0;
+  }    
+
+  public static ecf2eci(
+    ecf: { x: number; y: number; z: number },
+    gmst: number,
+  ): { x: number; y: number; z: number } {
+    // ccar.colorado.edu/ASEN5070/handouts/coordsys.doc
+    //
+    // [X]     [C -S  0][X]
+    // [Y]  =  [S  C  0][Y]
+    // [Z]eci  [0  0  1][Z]ecf
+    //
+    const X = ecf.x * Math.cos(gmst) - ecf.y * Math.sin(gmst);
+    const Y = ecf.x * Math.sin(gmst) + ecf.y * Math.cos(gmst);
+    const Z = ecf.z;
+    return { x: X, y: Y, z: Z };
+  }
+  
+  public static ecf2rae(
+    lla: {
+      lon: number;
+      lat: number;
+      alt: number;
+    },
+    ecf: { x: number; y: number; z: number },
+  ): { rng: number; az: number; el: number } {
+    const sezCoords = Transforms.lla2sez(lla, ecf);
+    return Transforms.sez2rae(sezCoords);
+  }  
 
   /** eciToGeodetic converts eci coordinates to lla coordinates
    * @param {{array}} eci takes xyz coordinates
    * @param {number} gmst takes a number in gmst time
    * @returns {array} array containing lla coordinates
    */
-  static eci2lla(
+  public static eci2lla(
     eci: { x: number; y: number; z: number },
     gmst: number,
   ): {
@@ -132,23 +136,7 @@ class Transforms {
     return { lon, lat, alt };
   }
 
-  static ecf2eci(
-    ecf: { x: number; y: number; z: number },
-    gmst: number,
-  ): { x: number; y: number; z: number } {
-    // ccar.colorado.edu/ASEN5070/handouts/coordsys.doc
-    //
-    // [X]     [C -S  0][X]
-    // [Y]  =  [S  C  0][Y]
-    // [Z]eci  [0  0  1][Z]ecf
-    //
-    const X = ecf.x * Math.cos(gmst) - ecf.y * Math.sin(gmst);
-    const Y = ecf.x * Math.sin(gmst) + ecf.y * Math.cos(gmst);
-    const Z = ecf.z;
-    return { x: X, y: Y, z: Z };
-  }
-
-  static eci2ecf(
+  public static eci2ecf(
     eci: { x: number; y: number; z: number },
     gmst: number,
   ): { x: number; y: number; z: number } {
@@ -173,9 +161,33 @@ class Transforms {
       y,
       z,
     };
+  }    
+
+  public static lla2ecf(lla: {
+    lat: number;
+    lon: number;
+    alt: number;
+  }): { x: number; y: number; z: number } {
+    const { lon, lat, alt } = lla;
+
+    const a = 6378.137;
+    const b = 6356.7523142;
+    const f = (a - b) / a;
+    const e2 = 2 * f - f * f;
+    const normal = a / Math.sqrt(1 - e2 * (Math.sin(lat) * Math.sin(lat)));
+
+    const x = (normal + alt) * Math.cos(lat) * Math.cos(lon);
+    const y = (normal + alt) * Math.cos(lat) * Math.sin(lon);
+    const z = (normal * (1 - e2) + alt) * Math.sin(lat);
+
+    return {
+      x,
+      y,
+      z,
+    };
   }
 
-  static lla2sez(
+  public static lla2sez(
     lla: {
       lat: number;
       lon: number;
@@ -207,42 +219,7 @@ class Transforms {
     return { s: south, e: east, z: zenith };
   }
 
-  /**
-   * @param {Object} sez Containing SEZ coordinates
-   * @param {Number} sez.s Positive horizontal vector S due south.
-   * @param {Number} sez.e Positive horizontal vector E due east.
-   * @param {Number} sez.z Vector Z normal to the surface of the earth (up).
-   * @returns {Object} Rng, Az, El array
-   */
-  static sez2rae(sez: {
-    s: number;
-    e: number;
-    z: number;
-  }): { rng: number; az: number; el: number } {
-    const rng = Math.sqrt(sez.s * sez.s + sez.e * sez.e + sez.z * sez.z);
-    const el = Math.asin(sez.z / rng);
-    const az = Math.atan2(-sez.e, sez.s) + PI;
-
-    return {
-      rng, // km
-      az: az,
-      el: el,
-    };
-  }
-
-  static ecf2rae(
-    lla: {
-      lon: number;
-      lat: number;
-      alt: number;
-    },
-    ecf: { x: number; y: number; z: number },
-  ): { rng: number; az: number; el: number } {
-    const sezCoords = Transforms.lla2sez(lla, ecf);
-    return Transforms.sez2rae(sezCoords);
-  }
-
-  static rae2sez(rae: {
+  public static rae2sez(rae: {
     rng: number;
     az: number;
     el: number;
@@ -263,7 +240,7 @@ class Transforms {
     };
   }
 
-  static rae2ecf(
+  public static rae2ecf(
     rae: { rng: number; az: number; el: number },
     lla: {
       lat: number;
@@ -286,6 +263,29 @@ class Transforms {
 
     return { x: x, y: y, z: z };
   }
+
+  /**
+   * @param {Object} sez Containing SEZ coordinates
+   * @param {Number} sez.s Positive horizontal vector S due south.
+   * @param {Number} sez.e Positive horizontal vector E due east.
+   * @param {Number} sez.z Vector Z normal to the surface of the earth (up).
+   * @returns {Object} Rng, Az, El array
+   */
+  public static sez2rae(sez: {
+    s: number;
+    e: number;
+    z: number;
+  }): { rng: number; az: number; el: number } {
+    const rng = Math.sqrt(sez.s * sez.s + sez.e * sez.e + sez.z * sez.z);
+    const el = Math.asin(sez.z / rng);
+    const az = Math.atan2(-sez.e, sez.s) + PI;
+
+    return {
+      rng, // km
+      az: az,
+      el: el,
+    };
+  }  
 }
 
 export { Transforms };

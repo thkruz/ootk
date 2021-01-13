@@ -31,11 +31,11 @@ type vec3K = {
 };
 
 class Utils {
-  static distance(pos1: vec3K, pos2: vec3K): number {
+  public static distance(pos1: vec3K, pos2: vec3K): number {
     return Math.sqrt((pos1.x - pos2.x) ** 2 + (pos1.y - pos2.y) ** 2 + (pos1.z - pos2.z) ** 2);
   }
 
-  static dopplerFactor(location: vec3K, position: vec3K, velocity: vec3K): number {
+  public static dopplerFactor(location: vec3K, position: vec3K, velocity: vec3K): number {
     const mfactor = 7.292115e-5;
     const c = 299792.458; // Speed of light in km/s
 
