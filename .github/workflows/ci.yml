@@ -1,0 +1,46 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Use Node.js latest
+      uses: actions/setup-node@v2-beta
+      with:
+        node-version: "*"
+    - run: npm install
+    - run: npm run build:umd          
+
+  lint:
+    name: lint
+    needs: build
+    runs-on: ubuntu-latest
+     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Use Node.js latest
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: "15"
+      - name: Run ESLint
+        run: npm run lint
+
+  test-coverage:
+    name: Test on Node.js Latest
+    needs: build
+    runs-on: ubuntu-latest
+     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Use Node.js latest
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: "15"
+      - name: Build coverage
+        run: npm run test:coverage
+      - name: Run codecov
+        run: node ./node_modules/.bin/codecov
