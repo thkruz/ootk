@@ -12,7 +12,10 @@ jobs:
     - name: Load cached modules
       uses: actions/cache@v2
       with:
-        path: ['**/node_modules','**/lib','**/dist']
+        path: |
+            /lib
+            /dist
+            **/node_modules
         key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
     - name: Load Node.js latest
