@@ -1,7 +1,7 @@
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/thkruz/sgp4-js?style=flat-square)  ![GitHub issues](https://img.shields.io/github/issues/thkruz/sgp4-js?style=flat-square) [![License](https://img.shields.io/github/license/thkruz/sgp4-js?style=flat-square)](LICENSE.md)
 
-# sgp4.js
-> Orbit Propagation in Your Web Browser
+# ootk
+> Orbital Object Tool Kit in Your Web Browser
 
 ## Table of Contents
 - [Introduction](#Introduction)
