@@ -3,6 +3,10 @@
   "silent": true,
   "rootDir": "../",  
   "testPathIgnorePatterns": ["/node_modules/", "/test/performance/"],
+  "moduleDirectories": [
+    "../",
+    "../node_modules"
+  ],
   "moduleNameMapper": {
     "@lib(.*)$": "<rootDir>/lib/$1",
     "@dist(.*)$": "<rootDir>/dist/$1",
