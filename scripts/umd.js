@@ -41,6 +41,7 @@ let umd = {
     libraryTarget: 'umd',
     // eslint-disable-next-line no-path-concat, no-undef
     path: __dirname + '/../dist',
+    globalObject: 'this',
   },
   optimization: {
     minimize: false,
@@ -64,6 +65,7 @@ let minUmd = {
     libraryTarget: 'umd',
     // eslint-disable-next-line no-path-concat, no-undef
     path: __dirname + '/../dist',
+    globalObject: 'this',
   },
   optimization: {
     minimize: true,
