@@ -1,15 +1,15 @@
-var rimraf = require('rimraf');
+import { sync } from 'rimraf';
 
 console.log(`Removing ./dist...`);
 try {
-  rimraf.sync('./dist');
+  sync('./dist');
 } catch (error) {
   // Intentionally left blank
 }
 
 console.log(`Removing ./lib...`);
 try {
-  rimraf.sync('./lib');
+  sync('./lib');
 } catch (error) {
   // Intentionally left blank
 }
