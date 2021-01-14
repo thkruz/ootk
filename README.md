@@ -34,7 +34,7 @@ const satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 ### ES ([Babel.js](https://babeljs.io/))
 
 ```js
-import { ootk } from 'ootk.es.js';
+import * as Ootk from 'ootk.es.js';
 ...
 const satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 ```
