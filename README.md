@@ -1,5 +1,5 @@
 # ootk
-![build](https://img.shields.io/github/workflow/status/thkruz/ootk/CI?style=flat-square) ![Size](https://img.shields.io/github/languages/code-size/thkruz/ootk?style=flat-square) ![Release](https://img.shields.io/github/v/release/thkruz/ootk?style=flat-square)  ![Issues](https://img.shields.io/github/issues/thkruz/ootk?style=flat-square) ![Coverage](https://img.shields.io/codecov/c/github/thkruz/ootk?style=flat-square) [![License](https://img.shields.io/github/license/thkruz/ootk?style=flat-square)](LICENSE.md)
+[![build](https://img.shields.io/github/workflow/status/thkruz/ootk/CI?style=flat-square)](https://github.com/thkruz/ootk/actions?query=workflow%3ACI) ![Size](https://img.shields.io/github/languages/code-size/thkruz/ootk?style=flat-square) [![Release](https://img.shields.io/github/v/release/thkruz/ootk?style=flat-square)](https://www.npmjs.com/package/ootk)  [![Issues](https://img.shields.io/github/issues/thkruz/ootk?style=flat-square)](https://github.com/thkruz/ootk/issues) [![Coverage](https://img.shields.io/codecov/c/github/thkruz/ootk?style=flat-square)](https://codecov.io/gh/thkruz/ootk) [![License](https://img.shields.io/github/license/thkruz/ootk?style=flat-square)](LICENSE.MD)
 
 > An Orbital Object Tookit in Your Web Browser
 
