@@ -82,7 +82,7 @@ jobs:
     - name: Run codecov
       run: node ./node_modules/.bin/codecov
 
- test-on-node:
+  test-on-node:
     name: test-on-node
     needs: build
     runs-on: ubuntu-latest
