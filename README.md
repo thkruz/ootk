@@ -1,7 +1,7 @@
 # ootk
 ![build](https://img.shields.io/github/workflow/status/thkruz/ootk/CI?style=flat-square) ![Size](https://img.shields.io/github/languages/code-size/thkruz/ootk?style=flat-square) ![Release](https://img.shields.io/github/v/release/thkruz/ootk?style=flat-square)  ![Issues](https://img.shields.io/github/issues/thkruz/ootk?style=flat-square) ![Coverage](https://img.shields.io/codecov/c/github/thkruz/ootk?style=flat-square) [![License](https://img.shields.io/github/license/thkruz/ootk?style=flat-square)](LICENSE.md)
 
-> Orbital Object Tool Kit in Your Web Browser
+> An Orbital Object Tookit in Your Web Browser
 
 **ootk** is a modular collection of small libraries for doing math related to orbital objects written in TypeScript. ootk was developed to simplify the math and let you focus on using the results.
 
