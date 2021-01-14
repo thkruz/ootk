@@ -2,6 +2,7 @@
   "name": "ootk",
   "version": "1.0.3",
   "description": "Orbital Object Toolkit including SGP4 Propagator and Coordinate Transforms",
+  "type": "module",
   "main": "dist/ootk.js",
   "scripts": {
     "build": "node ./scripts/cleanup.js && tsc",
