@@ -30,10 +30,10 @@ let umd = {
   name: 'ootk-sgp4',
   mode: 'production',
   entry: {
-    'ootk': ['./lib/ootk.es.js'],
-    'ootk-sgp4': ['./lib/ootk-sgp4.es.js'],
-    'ootk-transforms': ['./lib/ootk-transforms.es.js'],
-    'ootk-utils': ['./lib/ootk-utils.es.js'],
+    'ootk': ['./lib/ootk.js'],
+    'ootk-sgp4': ['./lib/ootk-sgp4.js'],
+    'ootk-transforms': ['./lib/ootk-transforms.js'],
+    'ootk-utils': ['./lib/ootk-utils.js'],
   },
   output: {
     filename: '[name].js',
@@ -41,6 +41,7 @@ let umd = {
     libraryTarget: 'umd',
     // eslint-disable-next-line no-path-concat, no-undef
     path: __dirname + '/../dist',
+    globalObject: 'this',
   },
   optimization: {
     minimize: false,
@@ -53,10 +54,10 @@ let minUmd = {
   name: 'ootk-sgp4',
   mode: 'production',
   entry: {
-    'ootk': ['./lib/ootk.es.js'],
-    'ootk-sgp4': ['./lib/ootk-sgp4.es.js'],
-    'ootk-transforms': ['./lib/ootk-transforms.es.js'],
-    'ootk-utils': ['./lib/ootk-utils.es.js'],
+    'ootk': ['./lib/ootk.js'],
+    'ootk-sgp4': ['./lib/ootk-sgp4.js'],
+    'ootk-transforms': ['./lib/ootk-transforms.js'],
+    'ootk-utils': ['./lib/ootk-utils.js'],
   },
   output: {
     filename: '[name].min.js',
@@ -64,6 +65,7 @@ let minUmd = {
     libraryTarget: 'umd',
     // eslint-disable-next-line no-path-concat, no-undef
     path: __dirname + '/../dist',
+    globalObject: 'this',
   },
   optimization: {
     minimize: true,

@@ -81,3 +81,35 @@ jobs:
     
     - name: Run codecov
       run: node ./node_modules/.bin/codecov
+
+  test-on-node:
+    name: test-on-node
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    
+    - name: Use Node.js latest
+      uses: actions/setup-node@v2-beta
+      with:
+        node-version: "15"
+    
+    - name: Get cached modules
+      uses: actions/cache@v2
+      with:
+        path: |
+            **/node_modules
+        key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+
+    - name: Compile TypeScript and build UMD files
+      run: npm run build:umd      
+    
+    - name: Test Ootk
+      run: node ./dist/ootk.js
+    - name: Test Ootk
+      run: node ./dist/ootk-sgp4.js
+    - name: Test Ootk
+      run: node ./dist/ootk-transforms.js
+    - name: Test Ootk
+      run: node ./dist/ootk-utils.js
