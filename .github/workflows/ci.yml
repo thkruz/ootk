@@ -106,10 +106,10 @@ jobs:
       run: npm run build:umd      
     
     - name: Test Ootk
-      run: node ./lib/ootk.js
+      run: node ./dist/ootk.js
     - name: Test Ootk
-      run: node ./lib/ootk-sgp4.js
+      run: node ./dist/ootk-sgp4.js
     - name: Test Ootk
-      run: node ./lib/ootk-transforms.js
+      run: node ./dist/ootk-transforms.js
     - name: Test Ootk
-      run: node ./lib/ootk-utils.js
+      run: node ./dist/ootk-utils.js

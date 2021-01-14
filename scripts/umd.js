@@ -1,4 +1,4 @@
-import TerserPlugin from 'terser-webpack-plugin';
+const TerserPlugin = require('terser-webpack-plugin');
 
 let config = {
   module: {
@@ -85,4 +85,4 @@ let minUmd = {
 
 // Return Array of Configurations
 // eslint-disable-next-line no-undef
-export default [umd, minUmd];
+module.exports = [umd, minUmd];

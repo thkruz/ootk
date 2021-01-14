@@ -1,4 +1,4 @@
-import { rimraf } from 'rimraf';
+var rimraf = require('rimraf');
 
 console.log(`Removing ./dist...`);
 try {
