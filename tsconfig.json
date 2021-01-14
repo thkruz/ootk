@@ -9,7 +9,7 @@
     // "removeComments": true,
     "experimentalDecorators": true,
     "rootDir": "./src",
-    // "sourceMap": true,
+    "sourceMap": true,
     "listFiles": true,
     "newLine": "LF",
     "skipLibCheck": true,
