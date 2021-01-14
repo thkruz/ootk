@@ -3,7 +3,7 @@
  * @since  0.2.0
  */
 
-import { Transforms } from '@lib/ootk-transforms.es.js'; // eslint-disable-line
+import { Transforms } from '@lib/ootk-transforms.js'; // eslint-disable-line
 import transformData from './transforms.json';
 
 const numDigits = 6;

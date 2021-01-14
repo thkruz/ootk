@@ -4,7 +4,7 @@
  */
 
 import badTleData from './io.json';
-import { Sgp4 } from '@lib/ootk-sgp4.es.js'; // eslint-disable-line
+import { Sgp4 } from '@lib/ootk-sgp4.js'; // eslint-disable-line
 
 describe('Twoline', () => {
   it('twoline to satellite record', () => {

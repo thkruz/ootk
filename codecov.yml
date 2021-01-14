@@ -19,6 +19,3 @@ comment:
   layout: "reach,diff,flags,files,footer"
   behavior: default
   require_changes: no
-
-fixes:
-  - ".es.js::.js" #Include es.js files
