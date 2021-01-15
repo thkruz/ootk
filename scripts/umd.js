@@ -12,6 +12,10 @@ let config = {
         },
       },
       {
+        test: /\.worker\.js$/u,
+        use: { loader: 'worker-loader' },
+      },
+      {
         test: /\.html$/iu,
         loader: 'html-loader',
       },
@@ -27,13 +31,14 @@ let config = {
 
 let umd = {
   ...config,
-  name: 'ootk-sgp4',
+  name: 'ootk',
   mode: 'production',
   entry: {
     'ootk': ['./lib/ootk.js'],
     'ootk-sgp4': ['./lib/ootk-sgp4.js'],
     'ootk-transforms': ['./lib/ootk-transforms.js'],
     'ootk-utils': ['./lib/ootk-utils.js'],
+    'ootk-multi': ['./lib/ootk-multi.js'],
   },
   output: {
     filename: '[name].js',
@@ -51,13 +56,14 @@ let umd = {
 
 let minUmd = {
   ...config,
-  name: 'ootk-sgp4',
+  name: 'ootk',
   mode: 'production',
   entry: {
     'ootk': ['./lib/ootk.js'],
     'ootk-sgp4': ['./lib/ootk-sgp4.js'],
     'ootk-transforms': ['./lib/ootk-transforms.js'],
     'ootk-utils': ['./lib/ootk-utils.js'],
+    'ootk-multi': ['./lib/ootk-multi.js'],
   },
   output: {
     filename: '[name].min.js',
@@ -83,6 +89,35 @@ let minUmd = {
   stats: 'errors-warnings',
 };
 
+let workers = {
+  ...config,
+  name: 'ootk',
+  mode: 'production',
+  entry: {
+    'ootk-multi': ['./src/ootk-multi.worker.js'],
+  },
+  output: {
+    filename: 'ootk-multi.js',
+    // eslint-disable-next-line no-path-concat, no-undef
+    path: __dirname + '/../dist',
+    globalObject: 'this',
+  },
+  optimization: {
+    minimize: false,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          format: {
+            comments: /@copyright/iu,
+          },
+        },
+        extractComments: false,
+      }),
+    ],
+  },
+  stats: 'errors-warnings',
+};
+
 // Return Array of Configurations
 // eslint-disable-next-line no-undef
-module.exports = [umd, minUmd];
+module.exports = [umd, minUmd, workers];

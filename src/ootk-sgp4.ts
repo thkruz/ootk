@@ -2649,6 +2649,7 @@ class Sgp4 {
 
     // sgp4fix identify constants and allow alternate values
     // getgravconst( whichconst, tumin, mu, radiusearthkm, xke, j2, j3, j4, j3oj2 );
+    const { xke, j2, j3oj2 } = satrec;
     vkmpersec = (satrec.radiusearthkm * satrec.xke) / 60.0;
 
     // --------------------- clear sgp4 error flag -----------------

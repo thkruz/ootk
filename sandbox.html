@@ -1,0 +1,12 @@
+<html>
+  <head>
+    <script src="./dist/ootk.js"></script>
+    <script>
+      var line1 = "1 00005U 58002B   00179.78495062  .00000023  00000-0  00098-0 0  4753";
+      var line2 ="2 00005  34.2682 348.7242 1859667 331.7664  19.3264 10.82419157413667";
+      var satrec = Ootk.Sgp4.createSatrec(line1, line2, "wgs72", "i");
+      var multi = new Ootk.Multi(8);
+      multi.propagate([satrec], [0,1,2,3,4,5,6,7,8,9,10]).then((m) => console.log(m))
+    </script>
+  </head>
+</html>
