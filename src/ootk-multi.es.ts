@@ -169,9 +169,9 @@ class Multi {
     return this._propagate(satrecs, times).then((results) => {
       const returnArray = new Float32Array(satrecs.length * times.length * 7);
       let offset = 0;
-      for (let index = 0; index < this.threads; index++) {
+      for (let index = 0; index < this.threads && index < satrecs.length; index++) {
         const dataArray = new Float32Array(results[index].data);
-        returnArray.set(dataArray,offset);
+        returnArray.set(dataArray, offset);
         offset += dataArray.length;
       }
       return returnArray;
@@ -182,9 +182,11 @@ class Multi {
     const tasks = Multi.chunkArray2(satrecs, this.threads);
     const results = [];
 
-    for (let index = 0; index < this.threads; index++) {
+    for (let index = 0; index < this.threads && index < satrecs.length; index++) {
       const whichWorker = this.thread[index];
-      const taskBuffer = this.encoderInst.encode(JSON.stringify({ type: 'propagate', tasks: tasks[index], times: times })).buffer;
+      const taskBuffer = this.encoderInst.encode(
+        JSON.stringify({ type: 'propagate', tasks: tasks[index], times: times }),
+      ).buffer;
       results.push(this.createTasks(whichWorker, taskBuffer));
     }
 
@@ -194,8 +196,8 @@ class Multi {
   // eslint-disable-next-line class-methods-use-this
   private createTasks(whichWorker: Worker, taskBuffer): Promise<any> {
     return new Promise((resolve, reject) => {
-      whichWorker.postMessage(taskBuffer,[taskBuffer]);
-      whichWorker.onmessage = (m) => {        
+      whichWorker.postMessage(taskBuffer, [taskBuffer]);
+      whichWorker.onmessage = (m) => {
         resolve(m);
         // whichWorker.terminate();
       };
@@ -212,8 +214,12 @@ class Multi {
     const result = [];
 
     let i = 0;
-    while (i < lengthOfArray) {
-      result.push(sourceArr.slice(i, (i += chunkSize)));
+    if (lengthOfArray == 1) {
+      result.push(sourceArr);
+    } else {
+      while (i < lengthOfArray) {
+        result.push(sourceArr.slice(i, (i += chunkSize)));
+      }
     }
 
     return result;
@@ -227,6 +233,40 @@ class Multi {
       result[index % chunks].push(sourceArr[index]);
     }
     return result;
+  }
+
+  public static parseFloat32(
+    array: Float32Array,
+  ): {
+    time: number;
+    position: { x: number; y: number; z: number };
+    velocity: { x: number; y: number; z: number };
+  }[] {
+    const stateVectors = [];
+    let time, x, y, z, xdot, ydot, zdot;
+    for (let index = 0; index < array.length / 7; index++) {
+      time = array[index * 7 + 0];
+      x = array[index * 7 + 1];
+      y = array[index * 7 + 2];
+      z = array[index * 7 + 3];
+      xdot = array[index * 7 + 4];
+      ydot = array[index * 7 + 5];
+      zdot = array[index * 7 + 6];
+      stateVectors.push({ 
+        time: time,
+        position: {
+          x: x,
+          y: y,
+          z: z,
+        },
+        velocity: {
+          x: xdot,
+          y: ydot,
+          z: zdot,
+        },
+      });
+    }
+    return stateVectors;
   }
 }
 

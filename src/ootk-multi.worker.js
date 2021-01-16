@@ -17,14 +17,13 @@ onmessage = function (m) {
 var propagate = (data) => {
   const satrecs = data.tasks;
   const times = data.times;
-  const allResults = [];
+  let allResults = [];
 
   for (let i = 0; i < satrecs.length; i++) {
-    let satResults = [];
     for (let j = 0; j < times.length; j++) {
       // eslint-disable-next-line no-undef
       const stateVector = Ootk.Sgp4.propagate(satrecs[i], times[j]);
-      satResults.push(
+      allResults.push(
         times[j],
         stateVector.position.x,
         stateVector.position.y,
@@ -34,7 +33,6 @@ var propagate = (data) => {
         stateVector.velocity.z,
       );
     }
-    allResults.push(...satResults);
   }
 
   const resultBuffer = new Float32Array(allResults).buffer;
