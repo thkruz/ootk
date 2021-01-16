@@ -25,9 +25,9 @@
  * SOFTWARE.
  */
 
-import { Multi } from './ootk-multi.js';
-import { Sgp4 } from './ootk-sgp4.js';
-import { Transforms } from './ootk-transforms.js';
-import { Utils } from './ootk-utils.js';
+import { Multi } from './ootk-multi.es.js';
+import { Sgp4 } from './ootk-sgp4.es.js';
+import { Transforms } from './ootk-transforms.es.js';
+import { Utils } from './ootk-utils.es.js';
 
 export { Multi, Sgp4, Transforms, Utils };
