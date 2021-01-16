@@ -4,7 +4,7 @@
  */
 
 import { compareVectors } from '@test/lib/compareVectors';
-import { Sgp4 } from '@lib/ootk-sgp4.js'; // eslint-disable-line
+import { Sgp4 } from '@lib/ootk-sgp4.es.js'; // eslint-disable-line
 
 describe.skip('Julian date / time', () => {
   let now;
