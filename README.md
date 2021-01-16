@@ -1,11 +1,11 @@
 # ootk
-![build](https://img.shields.io/github/workflow/status/thkruz/ootk/CI?style=flat-square) ![Size](https://img.shields.io/github/languages/code-size/thkruz/ootk?style=flat-square) ![Release](https://img.shields.io/github/v/release/thkruz/ootk?style=flat-square)  ![Issues](https://img.shields.io/github/issues/thkruz/ootk?style=flat-square) ![Coverage](https://img.shields.io/codecov/c/github/thkruz/ootk?style=flat-square) [![License](https://img.shields.io/github/license/thkruz/ootk?style=flat-square)](LICENSE.md)
+[![build](https://img.shields.io/github/workflow/status/thkruz/ootk/CI?style=flat-square)](https://github.com/thkruz/ootk/actions?query=workflow%3ACI) ![Size](https://img.shields.io/github/languages/code-size/thkruz/ootk?style=flat-square) [![Release](https://img.shields.io/github/v/release/thkruz/ootk?style=flat-square)](https://www.npmjs.com/package/ootk)  [![Issues](https://img.shields.io/github/issues/thkruz/ootk?style=flat-square)](https://github.com/thkruz/ootk/issues) [![Coverage](https://img.shields.io/codecov/c/github/thkruz/ootk?style=flat-square)](https://codecov.io/gh/thkruz/ootk) [![License](https://img.shields.io/github/license/thkruz/ootk?style=flat-square)](LICENSE.MD)
 
 > An Orbital Object Tookit in Your Web Browser
 
 **ootk** is a modular collection of small libraries for doing math related to orbital objects written in TypeScript. ootk was developed to simplify the math and let you focus on using the results.
 
-## Table of Contents
+## :blue_book: Table of Contents
 - [Installation](#Installation)
 - [Usage](#Usage)
 - [Contributing](#Contributing)
@@ -13,7 +13,7 @@
 - [Contributors](#Contributors)
 - [License](#License)
 
-## Installation
+## :wrench: Installation
 
 Install the library with [NPM](https://www.npmjs.com/):
 
@@ -21,7 +21,7 @@ Install the library with [NPM](https://www.npmjs.com/):
 npm i ootk
 ```
 
-## Usage
+## :satellite: Usage
 
 ### Common.js ([Node.js](https://nodejs.org))
 
@@ -53,7 +53,7 @@ Include `dist/ootk.min.js` as a script in your html:
 var satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 ```
 
-## Building
+## :desktop_computer: Building
 
 The source code is organized as Common.js modules and uses [ES6 syntax](http://es6-features.org/). To build the library:
 
@@ -71,7 +71,7 @@ The source code is organized as Common.js modules and uses [ES6 syntax](http://e
     npm run build:umd
     ```
 
-## NPM Scripts
+## :gem: NPM Scripts
 
 - `build` compiles TypeScript into ES6 Modules
 - `build:umd` compiles TypeScript into ES6 Modules and generates UMD files
@@ -81,7 +81,7 @@ The source code is organized as Common.js modules and uses [ES6 syntax](http://e
 - `test` runs jest to verify code remains functional
 - `test:coverage` generates lcov report to view code coverage
 
-## Contributing
+## :man_teacher: Contributing
 
 This repo follows [Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 
@@ -113,7 +113,7 @@ git add .
 git cz
 ```
 
-## Contributors
+## :man_scientist: Contributors
 
 This whole project is an example of standing on the shoulder's of giants. None of it would have been possible without the previous work of the following:
 
@@ -123,6 +123,6 @@ This whole project is an example of standing on the shoulder's of giants. None o
 - [brandon-rhodes (Brandon Rhodes)](https://github.com/brandon-rhodes)
 
 
-## License
+## :balance_scale: License
 
 In keeping with the tradition of [Shashwat Kandadai's satellite.js](https://github.com/shashwatak/satellite-js/) and [Brandon Rhodes' sgp4](https://pypi.python.org/pypi/sgp4/), I kept this licensed under the [MIT License](LICENSE.md).
