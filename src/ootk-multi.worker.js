@@ -1,8 +1,11 @@
 // eslint-disable-next-line no-undef
 importScripts('./ootk-sgp4.js');
 
+const decoderInst = new TextDecoder();
+const encoderInst = new TextEncoder();
+
 onmessage = function (m) {
-  const data = JSON.parse(m.data);
+  const data = JSON.parse(decoderInst.decode(m.data));
   switch (data.type) {
     case 'propagate':
       propagate(data);
@@ -23,9 +26,19 @@ var propagate = (data) => {
     for (let j = 0; j < times.length; j++) {
       // eslint-disable-next-line no-undef
       const stateVector = Ootk.Sgp4.propagate(satrecs[i], times[j]);
-      satResults.push({ t: times[j], sv: stateVector });
+      satResults.push(
+        times[j],
+        stateVector.position.x,
+        stateVector.position.y,
+        stateVector.position.z,
+        stateVector.velocity.x,
+        stateVector.velocity.y,
+        stateVector.velocity.z,
+      );
     }
-    allResults.push(satResults);
+    allResults.push(...satResults);
   }
-  postMessage(JSON.stringify(allResults));
+
+  const resultBuffer = new Float32Array(allResults).buffer;
+  postMessage(resultBuffer, [resultBuffer]);
 };

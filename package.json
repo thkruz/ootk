@@ -9,6 +9,7 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "lint:test": "eslint test",
+    "sandbox": "http-server ./",
     "test": "jest -c scripts/jest-std.json",
     "test:coverage": "jest --coverage -c scripts/jest-std.json",
     "test:performance": "node test/performance/timing.test.mjs",

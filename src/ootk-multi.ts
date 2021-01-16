@@ -153,8 +153,12 @@ interface SatelliteRecord {
 class Multi {
   threads = 0;
   thread = [];
+  encoderInst = null;
+  decoderInst = null;
 
   constructor(threads: number) {
+    this.encoderInst = new TextEncoder();
+    this.decoderInst = new TextDecoder();
     this.threads = threads;
     for (let index = 0; index < this.threads; index++) {
       this.thread[index] = new Worker('./dist/ootk-multi.worker.js');
@@ -163,32 +167,35 @@ class Multi {
 
   public propagate(satrecs: SatelliteRecord[], times: number[]) {
     return this._propagate(satrecs, times).then((results) => {
-      let returnArray = [];
+      const returnArray = new Float32Array(satrecs.length * times.length * 7);
+      let offset = 0;
       for (let index = 0; index < this.threads; index++) {
-        returnArray = returnArray.concat(JSON.parse(results[index].data));
+        const dataArray = new Float32Array(results[index].data);
+        returnArray.set(dataArray,offset);
+        offset += dataArray.length;
       }
       return returnArray;
     });
   }
 
   private async _propagate(satrecs: SatelliteRecord[], times: number[]): Promise<any> {
-    const tasks = Multi.chunkArray(satrecs, this.threads);
+    const tasks = Multi.chunkArray2(satrecs, this.threads);
     const results = [];
 
     for (let index = 0; index < this.threads; index++) {
       const whichWorker = this.thread[index];
-      const task = JSON.stringify({ type: 'propagate', tasks: tasks[index], times: times });
-      results.push(this.createTasks(whichWorker, task));
+      const taskBuffer = this.encoderInst.encode(JSON.stringify({ type: 'propagate', tasks: tasks[index], times: times })).buffer;
+      results.push(this.createTasks(whichWorker, taskBuffer));
     }
 
     return Promise.all(results).then((data) => data);
   }
 
   // eslint-disable-next-line class-methods-use-this
-  private createTasks(whichWorker: Worker, task: string): Promise<any> {
+  private createTasks(whichWorker: Worker, taskBuffer): Promise<any> {
     return new Promise((resolve, reject) => {
-      whichWorker.postMessage(task);
-      whichWorker.onmessage = (m) => {
+      whichWorker.postMessage(taskBuffer,[taskBuffer]);
+      whichWorker.onmessage = (m) => {        
         resolve(m);
         // whichWorker.terminate();
       };
@@ -197,6 +204,19 @@ class Multi {
         reject;
       };
     });
+  }
+
+  private static chunkArray2(sourceArr: SatelliteRecord[], chunks: number): SatelliteRecord[][] {
+    const lengthOfArray = sourceArr.length;
+    const chunkSize = Math.floor(lengthOfArray / chunks);
+    const result = [];
+
+    let i = 0;
+    while (i < lengthOfArray) {
+      result.push(sourceArr.slice(i, (i += chunkSize)));
+    }
+
+    return result;
   }
 
   private static chunkArray(sourceArr: SatelliteRecord[], chunks: number): SatelliteRecord[][] {
