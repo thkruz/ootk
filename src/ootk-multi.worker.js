@@ -1,8 +1,6 @@
 // eslint-disable-next-line no-undef
 importScripts('./ootk-sgp4.js');
-
 const decoderInst = new TextDecoder();
-const encoderInst = new TextEncoder();
 
 onmessage = function (m) {
   const data = JSON.parse(decoderInst.decode(m.data));
