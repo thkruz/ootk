@@ -26,7 +26,7 @@ npm i ootk
 ### Common.js ([Node.js](https://nodejs.org))
 
 ```js
-let Ootk = require('ootk.js');
+let Ootk = require('dist/ootk.js');
 ...
 const satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 ```
@@ -34,7 +34,7 @@ const satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 ### ES ([Babel.js](https://babeljs.io/))
 
 ```js
-import * as Ootk from 'ootk.js';
+import * as Ootk from 'lib/ootk.es.js';
 ...
 const satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 ```

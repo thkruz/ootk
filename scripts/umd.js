@@ -34,11 +34,11 @@ let umd = {
   name: 'ootk',
   mode: 'production',
   entry: {
-    'ootk': ['./lib/ootk.js'],
-    'ootk-sgp4': ['./lib/ootk-sgp4.js'],
-    'ootk-transforms': ['./lib/ootk-transforms.js'],
-    'ootk-utils': ['./lib/ootk-utils.js'],
-    'ootk-multi': ['./lib/ootk-multi.js'],
+    'ootk': ['./lib/ootk.es.js'],
+    'ootk-sgp4': ['./lib/ootk-sgp4.es.js'],
+    'ootk-transforms': ['./lib/ootk-transforms.es.js'],
+    'ootk-utils': ['./lib/ootk-utils.es.js'],
+    'ootk-multi': ['./lib/ootk-multi.es.js'],
   },
   output: {
     filename: '[name].js',
@@ -59,11 +59,11 @@ let minUmd = {
   name: 'ootk',
   mode: 'production',
   entry: {
-    'ootk': ['./lib/ootk.js'],
-    'ootk-sgp4': ['./lib/ootk-sgp4.js'],
-    'ootk-transforms': ['./lib/ootk-transforms.js'],
-    'ootk-utils': ['./lib/ootk-utils.js'],
-    'ootk-multi': ['./lib/ootk-multi.js'],
+    'ootk': ['./lib/ootk.es.js'],
+    'ootk-sgp4': ['./lib/ootk-sgp4.es.js'],
+    'ootk-transforms': ['./lib/ootk-transforms.es.js'],
+    'ootk-utils': ['./lib/ootk-utils.es.js'],
+    'ootk-multi': ['./lib/ootk-multi.es.js'],
   },
   output: {
     filename: '[name].min.js',
