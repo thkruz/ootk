@@ -1,5 +1,5 @@
-import { Multi } from '@lib/ootk-multi.js';
-import { Sgp4 } from '@lib/ootk-sgp4.js';
+import { Multi } from '@lib/ootk-multi.es.js';
+import { Sgp4 } from '@lib/ootk-sgp4.es.js';
 
 describe('test non webworker functions', () => {
   test('if chunkArray works', () => {
