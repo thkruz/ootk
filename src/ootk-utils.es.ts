@@ -60,6 +60,14 @@ class Utils {
 
     return 1 + (rangeRate / c) * sign(rangeRate);
   }
+
+  public static createVec(start: number, stop:number, step:number): number[] {
+    let array = [];
+    for (let i = start; i <= stop; i += step) {
+      array.push(i);
+    }
+    return array;
+  }
 }
 
 export { Utils };
