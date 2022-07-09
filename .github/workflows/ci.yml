@@ -71,7 +71,7 @@ jobs:
           key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Compile TypeScript and build UMD files
-        run: npm run build:umd
+        run: npm run build
 
       - name: Build coverage
         run: npm run test:coverage
