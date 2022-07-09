@@ -8,7 +8,7 @@
  * sgp4Data is from https://www.celestrak.com/publications/AIAA/2006-6753/AIAA-2006-6753-Rev1.pdf
  * Only using the first and last state vectors for verification
  */
-import { Sgp4 } from '@lib/ootk-sgp4.es.js';
+import { Sgp4 } from '@lib/sgp4.js';
 import { compareVectors } from '@test/lib/compareVectors';
 import sgp4Data from './rsr3.json';
 import sgp4FailData from './rsr3-fail.json';

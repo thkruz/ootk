@@ -4,8 +4,7 @@
   "description": "Orbital Object Toolkit including SGP4 Propagator and Coordinate Transforms",
   "main": "dist/ootk.js",
   "scripts": {
-    "build": "node ./scripts/cleanup.js && tsc",
-    "build:umd": "node ./scripts/cleanup.js && tsc && node node_modules/webpack/bin/webpack.js --config ./scripts/umd.js",
+    "build": "node ./scripts/cleanup.js && tsc && node --openssl-legacy-provider node_modules/webpack/bin/webpack.js --config ./scripts/webpack.js",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "lint:test": "eslint test",

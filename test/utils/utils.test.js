@@ -3,7 +3,7 @@
  * @since  1.0.0-alpha3
  */
 
-import { Utils } from '@lib/ootk-utils.es.js'; // eslint-disable-line
+import { Utils } from '@lib/utils.js'; // eslint-disable-line
 
 const numDigits = 8;
 
