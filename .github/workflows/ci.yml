@@ -6,110 +6,107 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    
-    - name: Load cached modules
-      uses: actions/cache@v2
-      with:
-        path: |
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Load cached modules
+        uses: actions/cache@v2
+        with:
+          path: |
             **/node_modules
-        key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
-    - name: Load Node.js latest
-      uses: actions/setup-node@v2-beta
-      with:
-        node-version: "*"
+      - name: Load Node.js latest
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: "*"
 
-    - name: Install all dependencies
-      run: npm install
-      
-    - name: Compile TypeScript and build UMD files
-      run: npm run build:umd          
+      - name: Install all dependencies
+        run: npm install
+
+      - name: Compile TypeScript and build UMD files
+        run: npm run build
 
   lint:
     name: lint
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Use Node.js latest
-      uses: actions/setup-node@v2-beta
-      with:
-        node-version: "15"
+      - name: Use Node.js latest
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: "15"
 
-    - name: Get cached modules
-      uses: actions/cache@v2
-      with:
-        path: |
+      - name: Get cached modules
+        uses: actions/cache@v2
+        with:
+          path: |
             **/node_modules
-        key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
-    - name: Compile TypeScript and build UMD files
-      run: npm run build:umd      
-
-    - name: Run ESLint
-      run: npm run lint
+      - name: Run ESLint
+        run: npm run lint
 
   test-coverage:
     name: test-coverage
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    
-    - name: Use Node.js latest
-      uses: actions/setup-node@v2-beta
-      with:
-        node-version: "15"
-    
-    - name: Get cached modules
-      uses: actions/cache@v2
-      with:
-        path: |
-            **/node_modules
-        key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Compile TypeScript and build UMD files
-      run: npm run build:umd      
-    
-    - name: Build coverage
-      run: npm run test:coverage
-    
-    - name: Run codecov
-      run: node ./node_modules/.bin/codecov
+      - name: Use Node.js latest
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: "15"
+
+      - name: Get cached modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Compile TypeScript and build UMD files
+        run: npm run build:umd
+
+      - name: Build coverage
+        run: npm run test:coverage
+
+      - name: Run codecov
+        run: node ./node_modules/.bin/codecov
 
   test-on-node:
     name: test-on-node
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-    
-    - name: Use Node.js latest
-      uses: actions/setup-node@v2-beta
-      with:
-        node-version: "15"
-    
-    - name: Get cached modules
-      uses: actions/cache@v2
-      with:
-        path: |
-            **/node_modules
-        key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Compile TypeScript and build UMD files
-      run: npm run build:umd      
-    
-    - name: Test Ootk
-      run: node ./dist/ootk.js
-    - name: Test Ootk
-      run: node ./dist/ootk-sgp4.js
-    - name: Test Ootk
-      run: node ./dist/ootk-transforms.js
-    - name: Test Ootk
-      run: node ./dist/ootk-utils.js
+      - name: Use Node.js latest
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: "15"
+
+      - name: Get cached modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Compile TypeScript and build UMD files
+        run: npm run build
+
+      - name: Test Ootk
+        run: node ./dist/ootk.js
+      - name: Test Ootk
+        run: node ./dist/ootk-sgp4.js
+      - name: Test Ootk
+        run: node ./dist/ootk-transforms.js
+      - name: Test Ootk
+        run: node ./dist/ootk-utils.js
