@@ -15,3 +15,6 @@ src/sgp4-utils.js
 
 test/performance
 test/satellite/transform*
+
+# Future assembly work
+asc

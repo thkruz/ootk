@@ -1,14 +1,18 @@
 {
   "name": "ootk",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Orbital Object Toolkit including SGP4 Propagator and Coordinate Transforms",
   "main": "dist/ootk.js",
   "scripts": {
-    "build": "node ./scripts/cleanup.js && tsc",
-    "build:umd": "node ./scripts/cleanup.js && tsc && node node_modules/webpack/bin/webpack.js --config ./scripts/umd.js",
+    "build": "node ./scripts/cleanup.js && tsc -p tsconfig.json && node --openssl-legacy-provider node_modules/webpack/bin/webpack.js --config ./scripts/webpack.js",
+    "build:legacy": "node ./scripts/cleanup.js && tsc && node node_modules/webpack/bin/webpack.js --config ./scripts/webpack.js",
+    "asbuild:debug": "asc asc/assembly/index.ts --target debug",
+    "asbuild:release": "asc asc/assembly/index.ts --target release",
+    "asbuild": "npm run asbuild:debug && npm run asbuild:release",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "lint:test": "eslint test",
+    "sandbox": "http-server ./",
     "test": "jest -c scripts/jest-std.json",
     "test:coverage": "jest --coverage -c scripts/jest-std.json",
     "test:performance": "node test/performance/timing.test.mjs",
@@ -31,7 +35,7 @@
     "url": "https://github.com/thkruz/ootk/issues"
   },
   "prettier": {
-    "printWidth": 100,
+    "printWidth": 120,
     "tabWidth": 2,
     "useTabs": false,
     "semi": true,
@@ -51,32 +55,27 @@
     "@babel/core": "^7.11.6",
     "@babel/plugin-transform-runtime": "^7.12.10",
     "@babel/preset-env": "^7.11.5",
+    "@types/jest": "^28.1.5",
+    "@types/node-fetch": "^2.6.2",
     "@typescript-eslint/eslint-plugin": "^4.13.0",
     "@typescript-eslint/parser": "^4.13.0",
+    "assemblyscript": "^0.20.13",
     "auto-changelog": "^2.2.1",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.2",
     "codecov": "^3.8.1",
-    "commitizen": "^4.2.2",
-    "cz-conventional-changelog": "^3.3.0",
     "eslint": "^7.9.0",
-    "html-loader": "^1.3.2",
     "jest": "^26.4.2",
-    "terser-webpack-plugin": "^5.1.1",
-    "threads-plugin": "^1.4.0",
+    "node-fetch": "^2.6.7",
     "typescript": "^4.1.3",
-    "typescript-eslint": "^0.0.1-alpha.0",
     "webpack": "^5.11.1",
     "webpack-cli": "^4.3.1"
   },
   "homepage": "https://github.com/thkruz/ootk",
   "directories": {
     "lib": "lib",
-    "test": "test"
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
+    "src": "src",
+    "test": "test",
+    "wasm": "asc/build"
   }
 }

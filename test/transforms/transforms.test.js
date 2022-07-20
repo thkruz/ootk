@@ -3,7 +3,7 @@
  * @since  0.2.0
  */
 
-import { Transforms } from '@lib/ootk-transforms.js'; // eslint-disable-line
+import { Transforms } from '../../lib/transforms';
 import transformData from './transforms.json';
 
 const numDigits = 6;
@@ -100,5 +100,25 @@ describe('Latitude & longitude conversions', () => {
     it(`convert invalid longitude value (${item.degrees} degrees) to radians`, () => {
       expect(() => Transforms.getRadLon(item.degrees)).toThrowError(RangeError);
     });
+  });
+});
+
+describe('Rae2Sez', () => {
+  it('should convert valid RAE coordinates to SEZ', () => {
+    const { rae, sez } = transformData.validRae2Sez[0];
+    const sezCoordinates = Transforms.rae2sez(rae);
+    expect(sezCoordinates.s).toBeCloseTo(sez.s);
+    expect(sezCoordinates.e).toBeCloseTo(sez.e);
+    expect(sezCoordinates.z).toBeCloseTo(sez.z);
+  });
+});
+
+describe('Rae2Ecf', () => {
+  it('should convert valid RAE coordinates to ECF', () => {
+    const { rae, ecf, lla } = transformData.validRae2Ecf[0];
+    const ecfCoordinates = Transforms.rae2ecf(rae, lla);
+    expect(ecfCoordinates.x).toBeCloseTo(ecf.x);
+    expect(ecfCoordinates.y).toBeCloseTo(ecf.y);
+    expect(ecfCoordinates.z).toBeCloseTo(ecf.z);
   });
 });
