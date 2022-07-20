@@ -167,7 +167,7 @@ class Sgp4 {
       mp: number;
       opsmode: string;
       init: string;
-    }
+    },
   ): { ep: number; inclp: number; nodep: number; argpp: number; mp: number } {
     const {
       e3,
@@ -391,7 +391,15 @@ class Sgp4 {
  *    hoots, schumacher and glover 2004
  *    vallado, crawford, hujsak, kelso  2006
  ----------------------------------------------------------------------------*/
-  private static dscom(options: { epoch: number; ep: number; argpp: number; tc: number; inclp: number; nodep: number; np: number }): {
+  private static dscom(options: {
+    epoch: number;
+    ep: number;
+    argpp: number;
+    tc: number;
+    inclp: number;
+    nodep: number;
+    np: number;
+  }): {
     snodm: number;
     cnodm: number;
     sinim: number;
@@ -1163,8 +1171,13 @@ class Sgp4 {
         let f441 = 35.0 * sini2 * f220;
         let f442 = 39.375 * sini2 * sini2;
 
-        let f522 = 9.84375 * sinim * (sini2 * (1.0 - 2.0 * cosim - 5.0 * cosisq) + 0.33333333 * (-2.0 + 4.0 * cosim + 6.0 * cosisq));
-        let f523 = sinim * (4.92187512 * sini2 * (-2.0 - 4.0 * cosim + 10.0 * cosisq) + 6.56250012 * (1.0 + 2.0 * cosim - 3.0 * cosisq));
+        let f522 =
+          9.84375 *
+          sinim *
+          (sini2 * (1.0 - 2.0 * cosim - 5.0 * cosisq) + 0.33333333 * (-2.0 + 4.0 * cosim + 6.0 * cosisq));
+        let f523 =
+          sinim *
+          (4.92187512 * sini2 * (-2.0 - 4.0 * cosim + 10.0 * cosisq) + 6.56250012 * (1.0 + 2.0 * cosim - 3.0 * cosisq));
         let f542 = 29.53125 * sinim * (2.0 - 8.0 * cosim + cosisq * (-12.0 + 8.0 * cosim + 10.0 * cosisq));
         let f543 = 29.53125 * sinim * (-2.0 - 8.0 * cosim + cosisq * (12.0 + 8.0 * cosim - 10.0 * cosisq));
 
@@ -1362,7 +1375,7 @@ class Sgp4 {
     mm: number,
     xni: number,
     nodem: number,
-    nm: number
+    nm: number,
   ): [em: number, argpm: number, inclm: number, mm: number, nodem: number, nm: number] {
     /** Ootk -- Some variables imported from outside the class at the top */
     const fasx2 = 0.13130908;
@@ -1427,9 +1440,13 @@ class Sgp4 {
         //  ------------------- dot terms calculated -------------
         //  ----------- near - synchronous resonance terms -------
         if (irez !== 2) {
-          xndt = del1 * Math.sin(xli - fasx2) + del2 * Math.sin(2.0 * (xli - fasx4)) + del3 * Math.sin(3.0 * (xli - fasx6));
+          xndt =
+            del1 * Math.sin(xli - fasx2) + del2 * Math.sin(2.0 * (xli - fasx4)) + del3 * Math.sin(3.0 * (xli - fasx6));
           xldot = xni + xfact;
-          xnddt = del1 * Math.cos(xli - fasx2) + 2.0 * del2 * Math.cos(2.0 * (xli - fasx4)) + 3.0 * del3 * Math.cos(3.0 * (xli - fasx6));
+          xnddt =
+            del1 * Math.cos(xli - fasx2) +
+            2.0 * del2 * Math.cos(2.0 * (xli - fasx4)) +
+            3.0 * del3 * Math.cos(3.0 * (xli - fasx6));
           xnddt *= xldot;
         } else {
           // --------- near - half-day resonance terms --------
@@ -1546,7 +1563,15 @@ class Sgp4 {
  *    hoots, schumacher and glover 2004
  *    vallado, crawford, hujsak, kelso  2006
  ----------------------------------------------------------------------------*/
-  private static initl(options: { opsmode: string; ecco: number; epoch: number; inclo: number; xke: number; j2: number; no: number }): {
+  private static initl(options: {
+    opsmode: string;
+    ecco: number;
+    epoch: number;
+    inclo: number;
+    xke: number;
+    j2: number;
+    no: number;
+  }): {
     no: number;
     method: string;
     ainv: number;
@@ -1748,10 +1773,24 @@ class Sgp4 {
       xmo: number;
       xno: number;
       xnodeo: number;
-    }
+    },
   ): void {
     /* eslint-disable no-param-reassign */
-    const { whichconst = 'wgs72', opsmode = 'i', satn = satrec.satnum, epoch, xbstar, xecco, xargpo, xinclo, xndot, xnddot, xmo, xno, xnodeo } = options;
+    const {
+      whichconst = 'wgs72',
+      opsmode = 'i',
+      satn = satrec.satnum,
+      epoch,
+      xbstar,
+      xecco,
+      xargpo,
+      xinclo,
+      xndot,
+      xnddot,
+      xmo,
+      xno,
+      xnodeo,
+    } = options;
 
     /* ------------------------ initialization --------------------- */
     // sgp4fix divisor for divide by zero check on inclination
@@ -1971,7 +2010,11 @@ class Sgp4 {
       let psisq = Math.abs(1.0 - etasq);
       let coef = qzms24 * tsi ** 4.0;
       let coef1 = coef / psisq ** 3.5;
-      let cc2 = coef1 * satrec.no * (ao * (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) + ((0.375 * j2 * tsi) / psisq) * satrec.con41 * (8.0 + 3.0 * etasq * (8.0 + etasq)));
+      let cc2 =
+        coef1 *
+        satrec.no *
+        (ao * (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) +
+          ((0.375 * j2 * tsi) / psisq) * satrec.con41 * (8.0 + 3.0 * etasq * (8.0 + etasq)));
       satrec.cc1 = satrec.bstar * cc2;
       let cc3 = 0.0;
       if (satrec.ecco > 1.0e-4) {
@@ -1987,14 +2030,21 @@ class Sgp4 {
         (satrec.eta * (2.0 + 0.5 * etasq) +
           satrec.ecco * (0.5 + 2.0 * etasq) -
           ((j2 * tsi) / (ao * psisq)) *
-            (-3.0 * satrec.con41 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) + 0.75 * satrec.x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * Math.cos(2.0 * satrec.argpo)));
+            (-3.0 * satrec.con41 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) +
+              0.75 * satrec.x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * Math.cos(2.0 * satrec.argpo)));
       satrec.cc5 = 2.0 * coef1 * ao * omeosq * (1.0 + 2.75 * (etasq + eeta) + eeta * etasq);
       let cosio4 = cosio2 * cosio2;
       let temp1 = 1.5 * j2 * PInvsq * satrec.no;
       let temp2 = 0.5 * temp1 * j2 * PInvsq;
       let temp3 = -0.46875 * j4 * PInvsq * PInvsq * satrec.no;
-      satrec.mdot = satrec.no + 0.5 * temp1 * rteosq * satrec.con41 + 0.0625 * temp2 * rteosq * (13.0 - 78.0 * cosio2 + 137.0 * cosio4);
-      satrec.argpdot = -0.5 * temp1 * con42 + 0.0625 * temp2 * (7.0 - 114.0 * cosio2 + 395.0 * cosio4) + temp3 * (3.0 - 36.0 * cosio2 + 49.0 * cosio4);
+      satrec.mdot =
+        satrec.no +
+        0.5 * temp1 * rteosq * satrec.con41 +
+        0.0625 * temp2 * rteosq * (13.0 - 78.0 * cosio2 + 137.0 * cosio4);
+      satrec.argpdot =
+        -0.5 * temp1 * con42 +
+        0.0625 * temp2 * (7.0 - 114.0 * cosio2 + 395.0 * cosio4) +
+        temp3 * (3.0 - 36.0 * cosio2 + 49.0 * cosio4);
       let xhdot1 = -temp1 * cosio;
       satrec.nodedot = xhdot1 + (0.5 * temp2 * (4.0 - 19.0 * cosio2) + 2.0 * temp3 * (3.0 - 7.0 * cosio2)) * cosio;
       let xPIdot = satrec.argpdot + satrec.nodedot;
@@ -2094,7 +2144,30 @@ class Sgp4 {
         satrec.sl3 = dscomResult.sl3;
         satrec.sl4 = dscomResult.sl4;
 
-        const { sinim, cosim, em, emsq, s1, s2, s3, s4, s5, ss1, ss2, ss3, ss4, ss5, sz1, sz3, sz11, sz13, sz21, sz23, sz31, sz33 } = dscomResult;
+        const {
+          sinim,
+          cosim,
+          em,
+          emsq,
+          s1,
+          s2,
+          s3,
+          s4,
+          s5,
+          ss1,
+          ss2,
+          ss3,
+          ss4,
+          ss5,
+          sz1,
+          sz3,
+          sz11,
+          sz13,
+          sz21,
+          sz23,
+          sz31,
+          sz33,
+        } = dscomResult;
 
         satrec.xgh2 = dscomResult.xgh2;
         satrec.xgh3 = dscomResult.xgh3;
@@ -2250,7 +2323,12 @@ class Sgp4 {
         satrec.d4 = 0.5 * temp * ao * tsi * (221.0 * ao + 31.0 * sfour) * satrec.cc1;
         satrec.t3cof = satrec.d2 + 2.0 * cc1sq;
         satrec.t4cof = 0.25 * (3.0 * satrec.d3 + satrec.cc1 * (12.0 * satrec.d2 + 10.0 * cc1sq));
-        satrec.t5cof = 0.2 * (3.0 * satrec.d4 + 12.0 * satrec.cc1 * satrec.d3 + 6.0 * satrec.d2 * satrec.d2 + 15.0 * cc1sq * (2.0 * satrec.d2 + cc1sq));
+        satrec.t5cof =
+          0.2 *
+          (3.0 * satrec.d4 +
+            12.0 * satrec.cc1 * satrec.d3 +
+            6.0 * satrec.d2 * satrec.d2 +
+            15.0 * cc1sq * (2.0 * satrec.d2 + cc1sq));
       } // if omeosq = 0 ...
 
       /* finally propogate to zero epoch to initialize all others. */
@@ -2436,7 +2514,7 @@ class Sgp4 {
         mm,
         satrec.xni,
         nodem,
-        nm
+        nm,
       );
 
       [em, argpm, inclm, mm, nodem, nm] = dspaceResult;
@@ -2923,8 +3001,12 @@ class Sgp4 {
     satrec.epochyr = parseInt(tleLine1.substring(18, 20));
     satrec.epochdays = parseFloat(tleLine1.substring(20, 32));
     satrec.ndot = parseFloat(tleLine1.substring(33, 43));
-    satrec.nddot = parseFloat(`${tleLine1.substring(44, 45)}.${tleLine1.substring(45, 50)}E${tleLine1.substring(50, 52)}`);
-    satrec.bstar = parseFloat(`${tleLine1.substring(53, 54)}.${tleLine1.substring(54, 59)}E${tleLine1.substring(59, 61)}`);
+    satrec.nddot = parseFloat(
+      `${tleLine1.substring(44, 45)}.${tleLine1.substring(45, 50)}E${tleLine1.substring(50, 52)}`,
+    );
+    satrec.bstar = parseFloat(
+      `${tleLine1.substring(53, 54)}.${tleLine1.substring(54, 59)}E${tleLine1.substring(59, 61)}`,
+    );
 
     // satrec.satnum = tleLine2.substring(2, 7);
     satrec.inclo = parseFloat(tleLine2.substring(8, 16));
@@ -3025,7 +3107,8 @@ class Sgp4 {
   public static gstime(jdut1: number): number {
     let tut1 = (jdut1 - 2451545.0) / 36525.0;
 
-    let temp = -6.2e-6 * tut1 * tut1 * tut1 + 0.093104 * tut1 * tut1 + (876600.0 * 3600 + 8640184.812866) * tut1 + 67310.54841; // sec
+    let temp =
+      -6.2e-6 * tut1 * tut1 * tut1 + 0.093104 * tut1 * tut1 + (876600.0 * 3600 + 8640184.812866) * tut1 + 67310.54841; // sec
     temp = ((temp * DEG2RAD) / 240.0) % TAU; // 360/86400 = 1/240, to deg, to rad
 
     //  ------------------------ check quadrants ---------------------
@@ -3225,7 +3308,7 @@ class Sgp4 {
 
   public static newtonnu(
     ecc: number,
-    nu: number
+    nu: number,
   ): {
     e0: number;
     m: number;
@@ -3337,7 +3420,7 @@ class Sgp4 {
   public static rv2coe(
     r: Vec3Flat,
     v: Vec3Flat,
-    mus: number
+    mus: number,
   ): {
     p: number;
     a: number;
@@ -3539,8 +3622,20 @@ class Sgp4 {
    *    vallado       2013, 183, alg 14, ex 3-4
    *
    * --------------------------------------------------------------------------- */
-  public static jday(year: number, mon: number, day: number, hr: number, minute: number, sec: number): { jd: number; jdFrac: number } {
-    let jd = 367.0 * year - Math.floor(7 * (year + Math.floor((mon + 9) / 12.0)) * 0.25) + Math.floor((275 * mon) / 9.0) + day + 1721013.5; // use - 678987.0 to go to mjd directly
+  public static jday(
+    year: number,
+    mon: number,
+    day: number,
+    hr: number,
+    minute: number,
+    sec: number,
+  ): { jd: number; jdFrac: number } {
+    let jd =
+      367.0 * year -
+      Math.floor(7 * (year + Math.floor((mon + 9) / 12.0)) * 0.25) +
+      Math.floor((275 * mon) / 9.0) +
+      day +
+      1721013.5; // use - 678987.0 to go to mjd directly
     let jdFrac = (sec + minute * 60.0 + hr * 3600.0) / 86400.0;
 
     // check that the day and fractional day are correct
@@ -3592,7 +3687,7 @@ class Sgp4 {
    * --------------------------------------------------------------------------- */
   public static days2mdhms(
     year: number,
-    days: number
+    days: number,
   ): {
     mon: number;
     day: number;
@@ -3675,7 +3770,10 @@ class Sgp4 {
    *  references    :
    *    vallado       2013, 203, alg 22, ex 3-13
    * --------------------------------------------------------------------------- */
-  public static invjday(jd: number, jdfrac: number): { year: number; mon: number; day: number; hr: number; minute: number; sec: number } {
+  public static invjday(
+    jd: number,
+    jdfrac: number,
+  ): { year: number; mon: number; day: number; hr: number; minute: number; sec: number } {
     let leapyrs;
     let days;
 
