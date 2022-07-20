@@ -74,6 +74,7 @@
   "homepage": "https://github.com/thkruz/ootk",
   "directories": {
     "lib": "lib",
+    "src": "src",
     "test": "test",
     "wasm": "asc/build"
   }

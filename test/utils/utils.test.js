@@ -97,8 +97,12 @@ describe('Doppler factor', () => {
 describe('Distance function', () => {
   test('if distance calculation is correct', () => {
     expect(Utils.distance({ x: 1000, y: 1000, z: 1000 }, { x: 1000, y: 1000, z: 1000 })).toEqual(0);
-    expect(Utils.distance({ x: 1000, y: 1000, z: 1000 }, { x: 1000, y: 1000, z: 1100 })).toEqual(
-      100,
-    );
+    expect(Utils.distance({ x: 1000, y: 1000, z: 1000 }, { x: 1000, y: 1000, z: 1100 })).toEqual(100);
+  });
+});
+
+describe('Create Vector Function', () => {
+  test('if vector creation is correct', () => {
+    expect(Utils.createVec(1, 10, 2)).toEqual([1, 3, 5, 7, 9]);
   });
 });

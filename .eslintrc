@@ -6,11 +6,8 @@
     "es2021": true,
     "jest": true
   },
-  "globals": {
-  },
-  "extends": [
-    "eslint:recommended"
-  ],
+  "globals": {},
+  "extends": ["eslint:recommended"],
   "overrides": [
     {
       "files": ["**/*.ts", "**/*.tsx"],
@@ -113,7 +110,7 @@
     "lines-between-class-members": [
       "error",
       "always",
-      {        
+      {
         "exceptAfterSingleLine": true
       }
     ],
