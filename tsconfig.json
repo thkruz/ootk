@@ -3,7 +3,7 @@
     "target": "es5",
     "module": "es6",
     "outDir": "./lib",
-    "lib": ["esnext", "WebWorker"], 
+    "lib": ["esnext", "WebWorker"],
     // "allowJs": true,
     "declaration": true,
     // "noImplicitAny": true,
@@ -17,5 +17,7 @@
     "noEmitOnError": true,
     "types": []
   },
+  "include": ["./src/**/*.ts"],
   "filesGlob": ["./src/**/*.ts"],
+  "ignorePatterns": ["./asc/**/*.ts"]
 }

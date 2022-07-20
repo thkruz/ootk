@@ -637,7 +637,7 @@ class Sgp4 {
     const zcosis = 0.91744867;
     const zcosgs = 0.1945905;
     const zsings = -0.98088458;
-    const TAU = 2.0 * Math.PI;            
+    const TAU = 2.0 * Math.PI;
 
     //  --------------------- local variables ------------------------
     let s1,
@@ -752,15 +752,12 @@ class Sgp4 {
       z3 = 3.0 * (a3 * a3 + a4 * a4) + z33 * emsq;
 
       z11 = -6.0 * a1 * a5 + emsq * (-24.0 * x1 * x7 - 6.0 * x3 * x5);
-      z12 =
-        -6.0 * (a1 * a6 + a3 * a5) +
-        emsq * (-24.0 * (x2 * x7 + x1 * x8) + -6.0 * (x3 * x6 + x4 * x5));
+      z12 = -6.0 * (a1 * a6 + a3 * a5) + emsq * (-24.0 * (x2 * x7 + x1 * x8) + -6.0 * (x3 * x6 + x4 * x5));
 
       z13 = -6.0 * a3 * a6 + emsq * (-24.0 * x2 * x8 - 6.0 * x4 * x6);
 
       z21 = 6.0 * a2 * a5 + emsq * (24.0 * x1 * x5 - 6.0 * x3 * x7);
-      z22 =
-        6.0 * (a4 * a5 + a2 * a6) + emsq * (24.0 * (x2 * x5 + x1 * x6) - 6.0 * (x4 * x7 + x3 * x8));
+      z22 = 6.0 * (a4 * a5 + a2 * a6) + emsq * (24.0 * (x2 * x5 + x1 * x6) - 6.0 * (x4 * x7 + x3 * x8));
       z23 = 6.0 * a4 * a6 + emsq * (24.0 * x2 * x6 - 6.0 * x4 * x8);
 
       z1 = z1 + z1 + betasq * z31;
@@ -1321,16 +1318,12 @@ class Sgp4 {
         let f522 =
           9.84375 *
           sinim *
-          (sini2 * (1.0 - 2.0 * cosim - 5.0 * cosisq) +
-            0.33333333 * (-2.0 + 4.0 * cosim + 6.0 * cosisq));
+          (sini2 * (1.0 - 2.0 * cosim - 5.0 * cosisq) + 0.33333333 * (-2.0 + 4.0 * cosim + 6.0 * cosisq));
         let f523 =
           sinim *
-          (4.92187512 * sini2 * (-2.0 - 4.0 * cosim + 10.0 * cosisq) +
-            6.56250012 * (1.0 + 2.0 * cosim - 3.0 * cosisq));
-        let f542 =
-          29.53125 * sinim * (2.0 - 8.0 * cosim + cosisq * (-12.0 + 8.0 * cosim + 10.0 * cosisq));
-        let f543 =
-          29.53125 * sinim * (-2.0 - 8.0 * cosim + cosisq * (12.0 + 8.0 * cosim - 10.0 * cosisq));
+          (4.92187512 * sini2 * (-2.0 - 4.0 * cosim + 10.0 * cosisq) + 6.56250012 * (1.0 + 2.0 * cosim - 3.0 * cosisq));
+        let f542 = 29.53125 * sinim * (2.0 - 8.0 * cosim + cosisq * (-12.0 + 8.0 * cosim + 10.0 * cosisq));
+        let f543 = 29.53125 * sinim * (-2.0 - 8.0 * cosim + cosisq * (12.0 + 8.0 * cosim - 10.0 * cosisq));
 
         let xno2 = nm * nm;
         let ainv2 = aonv * aonv;
@@ -1634,9 +1627,7 @@ class Sgp4 {
         //  ----------- near - synchronous resonance terms -------
         if (irez !== 2) {
           xndt =
-            del1 * Math.sin(xli - fasx2) +
-            del2 * Math.sin(2.0 * (xli - fasx4)) +
-            del3 * Math.sin(3.0 * (xli - fasx6));
+            del1 * Math.sin(xli - fasx2) + del2 * Math.sin(2.0 * (xli - fasx4)) + del3 * Math.sin(3.0 * (xli - fasx6));
           xldot = xni + xfact;
           xnddt =
             del1 * Math.cos(xli - fasx2) +
@@ -1803,7 +1794,7 @@ class Sgp4 {
 
     /* --------------------- local variables ------------------------ */
     const PI = Math.PI;
-    const TAU = PI * 2;    
+    const TAU = PI * 2;
     const x2o3 = 2.0 / 3.0;
 
     // sgp4fix use old way of finding gst
@@ -1825,9 +1816,7 @@ class Sgp4 {
     let ak = (xke / no) ** x2o3;
     let d1 = (0.75 * j2 * (3.0 * cosio2 - 1.0)) / (rteosq * omeosq);
     let delPrime = d1 / (ak * ak);
-    let adel =
-      ak *
-      (1.0 - delPrime * delPrime - delPrime * (1.0 / 3.0 + (134.0 * delPrime * delPrime) / 81.0));
+    let adel = ak * (1.0 - delPrime * delPrime - delPrime * (1.0 / 3.0 + (134.0 * delPrime * delPrime) / 81.0));
     delPrime = d1 / (adel * adel);
     no = no / (1.0 + delPrime);
 
@@ -2002,7 +1991,7 @@ class Sgp4 {
 
     /* --------------------- local variables ------------------------ */
     const PI = Math.PI;
-    const TAU = PI * 2;    
+    const TAU = PI * 2;
     const x2o3 = 2.0 / 3.0;
 
     /* ------------------------ initialization --------------------- */
@@ -2127,9 +2116,7 @@ class Sgp4 {
      */
     let leadingChar = satn.split('')[0].toLowerCase(); // Using uppercase will break the -96 math.
     if (isNaN(parseInt(leadingChar))) {
-      satrec.satnum = parseInt(
-        leadingChar.charCodeAt(0) - 96 + 9 + satrec.satnum.slice(1, 5),
-      ).toString();
+      satrec.satnum = parseInt(leadingChar.charCodeAt(0) - 96 + 9 + satrec.satnum.slice(1, 5)).toString();
     } else {
       satrec.satnum = satn;
     }
@@ -2247,10 +2234,7 @@ class Sgp4 {
           satrec.ecco * (0.5 + 2.0 * etasq) -
           ((j2 * tsi) / (ao * psisq)) *
             (-3.0 * satrec.con41 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) +
-              0.75 *
-                satrec.x1mth2 *
-                (2.0 * etasq - eeta * (1.0 + etasq)) *
-                Math.cos(2.0 * satrec.argpo)));
+              0.75 * satrec.x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * Math.cos(2.0 * satrec.argpo)));
       satrec.cc5 = 2.0 * coef1 * ao * omeosq * (1.0 + 2.75 * (etasq + eeta) + eeta * etasq);
       let cosio4 = cosio2 * cosio2;
       let temp1 = 1.5 * j2 * PInvsq * satrec.no;
@@ -2265,8 +2249,7 @@ class Sgp4 {
         0.0625 * temp2 * (7.0 - 114.0 * cosio2 + 395.0 * cosio4) +
         temp3 * (3.0 - 36.0 * cosio2 + 49.0 * cosio4);
       let xhdot1 = -temp1 * cosio;
-      satrec.nodedot =
-        xhdot1 + (0.5 * temp2 * (4.0 - 19.0 * cosio2) + 2.0 * temp3 * (3.0 - 7.0 * cosio2)) * cosio;
+      satrec.nodedot = xhdot1 + (0.5 * temp2 * (4.0 - 19.0 * cosio2) + 2.0 * temp3 * (3.0 - 7.0 * cosio2)) * cosio;
       let xPIdot = satrec.argpdot + satrec.nodedot;
       satrec.omgcof = satrec.bstar * cc3 * Math.cos(satrec.argpo);
       satrec.xmcof = 0.0;
@@ -2668,27 +2651,27 @@ class Sgp4 {
     satrec.error = 0;
 
     //  ------- update for secular gravity and atmospheric drag -----
-    let xmdf = satrec.mo + satrec.mdot * satrec.t;
-    let argpdf = satrec.argpo + satrec.argpdot * satrec.t;
-    let nodedf = satrec.nodeo + satrec.nodedot * satrec.t;
+    const xmdf = satrec.mo + satrec.mdot * satrec.t;
+    const argpdf = satrec.argpo + satrec.argpdot * satrec.t;
+    const nodedf = satrec.nodeo + satrec.nodedot * satrec.t;
     let argpm = argpdf;
     let mm = xmdf;
-    let t2 = satrec.t * satrec.t;
+    const t2 = satrec.t * satrec.t;
     let nodem = nodedf + satrec.nodecf * t2;
     let tempa = 1.0 - satrec.cc1 * satrec.t;
     let tempe = satrec.bstar * satrec.cc4 * satrec.t;
     let templ = satrec.t2cof * t2;
 
     if (satrec.isimp !== 1) {
-      let delomg = satrec.omgcof * satrec.t;
+      const delomg = satrec.omgcof * satrec.t;
       //  sgp4fix use mutliply for speed instead of pow
-      let delmtemp = 1.0 + satrec.eta * Math.cos(xmdf);
-      let delm = satrec.xmcof * (delmtemp * delmtemp * delmtemp - satrec.delmo);
-      let temp = delomg + delm;
+      const delmtemp = 1.0 + satrec.eta * Math.cos(xmdf);
+      const delm = satrec.xmcof * (delmtemp * delmtemp * delmtemp - satrec.delmo);
+      const temp = delomg + delm;
       mm = xmdf + temp;
       argpm = argpdf - temp;
-      let t3 = t2 * satrec.t;
-      let t4 = t3 * satrec.t;
+      const t3 = t2 * satrec.t;
+      const t4 = t3 * satrec.t;
       tempa = tempa - satrec.d2 * t2 - satrec.d3 * t3 - satrec.d4 * t4;
       tempe += satrec.bstar * satrec.cc5 * (Math.sin(mm) - satrec.sinmao);
       templ = templ + satrec.t3cof * t3 + t4 * (satrec.t4cof + satrec.t * satrec.t5cof);
@@ -2697,9 +2680,9 @@ class Sgp4 {
     let em = satrec.ecco;
     let inclm = satrec.inclo;
     if (satrec.method === 'd') {
-      let tc = satrec.t;
+      const tc = satrec.t;
 
-      let dspaceOptions = {
+      const dspaceOptions = {
         irez: satrec.irez,
         d2201: satrec.d2201,
         d2211: satrec.d2211,
@@ -2750,7 +2733,7 @@ class Sgp4 {
       return { position: false, velocity: false };
     }
 
-    let am = (xke / nm) ** x2o3 * tempa * tempa;
+    const am = (xke / nm) ** x2o3 * tempa * tempa;
     nm = xke / am ** 1.5;
     em -= tempe;
 
@@ -2787,8 +2770,8 @@ class Sgp4 {
     satrec.nm = nm;
 
     // ----------------- compute extra mean quantities -------------
-    let sinim = Math.sin(inclm);
-    let cosim = Math.cos(inclm);
+    const sinim = Math.sin(inclm);
+    const cosim = Math.cos(inclm);
 
     // -------------------- add lunar-solar periodics --------------
     let ep = em;
@@ -2844,13 +2827,13 @@ class Sgp4 {
       }
     }
 
-    let axnl = ep * Math.cos(argpp);
+    const axnl = ep * Math.cos(argpp);
     let temp = 1.0 / (am * (1.0 - ep * ep));
-    let aynl = ep * Math.sin(argpp) + temp * satrec.aycof;
-    let xl = mp + argpp + nodep + temp * satrec.xlcof * axnl;
+    const aynl = ep * Math.sin(argpp) + temp * satrec.aycof;
+    const xl = mp + argpp + nodep + temp * satrec.xlcof * axnl;
 
     // --------------------- solve kepler's equation ---------------
-    let u = (xl - nodep) % TAU;
+    const u = (xl - nodep) % TAU;
     let eo1 = u;
     let tem5 = 9999.9;
     let ktr = 1;
@@ -2874,10 +2857,10 @@ class Sgp4 {
     }
 
     //  ------------- short period preliminary quantities -----------
-    let ecose = axnl * coseo1 + aynl * sineo1;
-    let esine = axnl * sineo1 - aynl * coseo1;
-    let el2 = axnl * axnl + aynl * aynl;
-    let pl = am * (1.0 - el2);
+    const ecose = axnl * coseo1 + aynl * sineo1;
+    const esine = axnl * sineo1 - aynl * coseo1;
+    const el2 = axnl * axnl + aynl * aynl;
+    const pl = am * (1.0 - el2);
     if (pl < 0.0) {
       //  printf("// error pl %f\n", pl);
       satrec.error = 4;
@@ -2885,29 +2868,29 @@ class Sgp4 {
       return { position: false, velocity: false };
     }
 
-    let rl = am * (1.0 - ecose);
-    let rdotl = (Math.sqrt(am) * esine) / rl;
-    let rvdotl = Math.sqrt(pl) / rl;
-    let betal = Math.sqrt(1.0 - el2);
+    const rl = am * (1.0 - ecose);
+    const rdotl = (Math.sqrt(am) * esine) / rl;
+    const rvdotl = Math.sqrt(pl) / rl;
+    const betal = Math.sqrt(1.0 - el2);
     temp = esine / (1.0 + betal);
-    let sinu = (am / rl) * (sineo1 - aynl - axnl * temp);
-    let cosu = (am / rl) * (coseo1 - axnl + aynl * temp);
+    const sinu = (am / rl) * (sineo1 - aynl - axnl * temp);
+    const cosu = (am / rl) * (coseo1 - axnl + aynl * temp);
     let su = Math.atan2(sinu, cosu);
-    let sin2u = (cosu + cosu) * sinu;
-    let cos2u = 1.0 - 2.0 * sinu * sinu;
+    const sin2u = (cosu + cosu) * sinu;
+    const cos2u = 1.0 - 2.0 * sinu * sinu;
     temp = 1.0 / pl;
-    let temp1 = 0.5 * j2 * temp;
-    let temp2 = temp1 * temp;
+    const temp1 = 0.5 * j2 * temp;
+    const temp2 = temp1 * temp;
 
     // -------------- update for short period periodics ------------
     if (satrec.method === 'd') {
-      let cosisq = cosip * cosip;
+      const cosisq = cosip * cosip;
       satrec.con41 = 3.0 * cosisq - 1.0;
       satrec.x1mth2 = 1.0 - cosisq;
       satrec.x7thm1 = 7.0 * cosisq - 1.0;
     }
 
-    let mrt = rl * (1.0 - 1.5 * temp2 * betal * satrec.con41) + 0.5 * temp1 * satrec.x1mth2 * cos2u;
+    const mrt = rl * (1.0 - 1.5 * temp2 * betal * satrec.con41) + 0.5 * temp1 * satrec.x1mth2 * cos2u;
 
     /** Moved this up to reduce unnecessary computation if you are going to return false anyway */
     // sgp4fix for decaying satellites
@@ -2921,34 +2904,34 @@ class Sgp4 {
     }
 
     su -= 0.25 * temp2 * satrec.x7thm1 * sin2u;
-    let xnode = nodep + 1.5 * temp2 * cosip * sin2u;
-    let xinc = xincp + 1.5 * temp2 * cosip * sinip * cos2u;
-    let mvt = rdotl - (nm * temp1 * satrec.x1mth2 * sin2u) / xke;
-    let rvdot = rvdotl + (nm * temp1 * (satrec.x1mth2 * cos2u + 1.5 * satrec.con41)) / xke;
+    const xnode = nodep + 1.5 * temp2 * cosip * sin2u;
+    const xinc = xincp + 1.5 * temp2 * cosip * sinip * cos2u;
+    const mvt = rdotl - (nm * temp1 * satrec.x1mth2 * sin2u) / xke;
+    const rvdot = rvdotl + (nm * temp1 * (satrec.x1mth2 * cos2u + 1.5 * satrec.con41)) / xke;
 
     // --------------------- orientation vectors -------------------
-    let sinsu = Math.sin(su);
-    let cossu = Math.cos(su);
-    let snod = Math.sin(xnode);
-    let cnod = Math.cos(xnode);
-    let sini = Math.sin(xinc);
-    let cosi = Math.cos(xinc);
-    let xmx = -snod * cosi;
-    let xmy = cnod * cosi;
-    let ux = xmx * sinsu + cnod * cossu;
-    let uy = xmy * sinsu + snod * cossu;
-    let uz = sini * sinsu;
-    let vx = xmx * cossu - cnod * sinsu;
-    let vy = xmy * cossu - snod * sinsu;
-    let vz = sini * cossu;
+    const sinsu = Math.sin(su);
+    const cossu = Math.cos(su);
+    const snod = Math.sin(xnode);
+    const cnod = Math.cos(xnode);
+    const sini = Math.sin(xinc);
+    const cosi = Math.cos(xinc);
+    const xmx = -snod * cosi;
+    const xmy = cnod * cosi;
+    const ux = xmx * sinsu + cnod * cossu;
+    const uy = xmy * sinsu + snod * cossu;
+    const uz = sini * sinsu;
+    const vx = xmx * cossu - cnod * sinsu;
+    const vy = xmy * cossu - snod * sinsu;
+    const vz = sini * cossu;
 
     // --------- position and velocity (in km and km/sec) ----------
-    let r = {
+    const r = {
       x: mrt * ux * satrec.radiusearthkm,
       y: mrt * uy * satrec.radiusearthkm,
       z: mrt * uz * satrec.radiusearthkm,
     };
-    let v = {
+    const v = {
       x: (mvt * ux + rvdot * vx) * vkmpersec,
       y: (mvt * uy + rvdot * vy) * vkmpersec,
       z: (mvt * uz + rvdot * vz) * vkmpersec,
@@ -2990,9 +2973,7 @@ class Sgp4 {
   *    vallado, crawford, hujsak, kelso  2006
   --------------------------------------------------------------------------- */
 
-  private static getgravconst(
-    whichconst: string,
-  ): {
+  private static getgravconst(whichconst: string): {
     tumin: number;
     mus: number;
     radiusearthkm: number;
@@ -3091,12 +3072,7 @@ class Sgp4 {
  *    norad spacetrack report #3
  *    vallado, crawford, hujsak, kelso  2006
  --------------------------------------------------------------------------- */
-  public static createSatrec(
-    tleLine1: string,
-    tleLine2: string,
-    whichconst = 'wgs72',
-    opsmode = 'i',
-  ): SatelliteRecord {    
+  public static createSatrec(tleLine1: string, tleLine2: string, whichconst = 'wgs72', opsmode = 'i'): SatelliteRecord {
     let year = 0;
 
     let satrec = {
@@ -3337,10 +3313,7 @@ class Sgp4 {
     let tut1 = (jdut1 - 2451545.0) / 36525.0;
 
     let temp =
-      -6.2e-6 * tut1 * tut1 * tut1 +
-      0.093104 * tut1 * tut1 +
-      (876600.0 * 3600 + 8640184.812866) * tut1 +
-      67310.54841; // sec
+      -6.2e-6 * tut1 * tut1 * tut1 + 0.093104 * tut1 * tut1 + (876600.0 * 3600 + 8640184.812866) * tut1 + 67310.54841; // sec
     temp = ((temp * DEG2RAD) / 240.0) % TAU; // 360/86400 = 1/240, to deg, to rad
 
     //  ------------------------ check quadrants ---------------------
