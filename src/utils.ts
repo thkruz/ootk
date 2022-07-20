@@ -24,44 +24,38 @@
  * SOFTWARE.
  */
 
-type vec3K = {
-  x: number;
-  y: number;
-  z: number;
-};
+import { EciVec3, Kilometer } from './utils/types';
 
 class Utils {
-  public static distance(pos1: vec3K, pos2: vec3K): number {
+  public static distance(pos1: EciVec3, pos2: EciVec3): Kilometer {
     return Math.sqrt((pos1.x - pos2.x) ** 2 + (pos1.y - pos2.y) ** 2 + (pos1.z - pos2.z) ** 2);
   }
 
-  public static dopplerFactor(location: vec3K, position: vec3K, velocity: vec3K): number {
+  private static sign = (value: number) => (value >= 0 ? 1 : -1);
+
+  public static dopplerFactor(location: EciVec3, position: EciVec3, velocity: EciVec3): Kilometer {
     const mfactor = 7.292115e-5;
     const c = 299792.458; // Speed of light in km/s
 
-    const range = {
+    const range = <EciVec3>{
       x: position.x - location.x,
       y: position.y - location.y,
       z: position.z - location.z,
-      w: 0,
     };
-    range.w = Math.sqrt(range.x ** 2 + range.y ** 2 + range.z ** 2);
+    const distance = Math.sqrt(range.x ** 2 + range.y ** 2 + range.z ** 2);
 
-    const rangeVel = {
+    const rangeVel = <EciVec3>{
       x: velocity.x + mfactor * location.y,
       y: velocity.y - mfactor * location.x,
       z: velocity.z,
     };
 
-    const sign = (value) => (value >= 0 ? 1 : -1);
+    const rangeRate = (range.x * rangeVel.x + range.y * rangeVel.y + range.z * rangeVel.z) / distance;
 
-    const rangeRate =
-      (range.x * rangeVel.x + range.y * rangeVel.y + range.z * rangeVel.z) / range.w;
-
-    return 1 + (rangeRate / c) * sign(rangeRate);
+    return 1 + (rangeRate / c) * Utils.sign(rangeRate);
   }
 
-  public static createVec(start: number, stop:number, step:number): number[] {
+  public static createVec(start: number, stop: number, step: number): number[] {
     let array = [];
     for (let i = start; i <= stop; i += step) {
       array.push(i);

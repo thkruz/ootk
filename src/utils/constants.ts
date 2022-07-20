@@ -3,8 +3,7 @@
  * @description Orbital Object ToolKit (OOTK) is a collection of tools for working
  * with satellites and other orbital objects.
  *
- * @copyright MIT License.
- * Copyright (c) 2020-2021 Theodore Kruczek
+ * @file Commonly used constants.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +24,8 @@
  * SOFTWARE.
  */
 
-export { Sgp4 } from './sgp4';
-export { Transforms } from './transforms';
-export { Utils } from './utils';
+export const PI = Math.PI;
+export const TAU = PI * 2; //https://tauday.com/tau-manifesto
+export const DEG2RAD = PI / 180.0;
+export const x2o3 = 2.0 / 3.0;
+export const temp4 = 1.5e-12;
