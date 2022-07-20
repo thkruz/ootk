@@ -28,3 +28,4 @@
 export { Sgp4 } from './sgp4';
 export { Transforms } from './transforms';
 export { Utils } from './utils';
+export * from './types';
