@@ -32,7 +32,7 @@
  */
 
 import { DEG2RAD, PI, TAU, temp4, x2o3 } from './utils/constants';
-import { SatelliteRecord, StateVector, Vec3Flat } from './utils/types';
+import { SatelliteRecord, StateVector, Vec3Flat } from './types';
 
 /*     ----------------------------------------------------------------
  *

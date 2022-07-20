@@ -24,27 +24,33 @@
  * SOFTWARE.
  */
 
-import { EciVec3, Kilometer } from './utils/types';
+import * as Types from './types';
 
 class Utils {
-  public static distance(pos1: EciVec3, pos2: EciVec3): Kilometer {
+  public static Types = Types;
+
+  public static distance(pos1: Types.EciVec3, pos2: Types.EciVec3): Types.Kilometer {
     return Math.sqrt((pos1.x - pos2.x) ** 2 + (pos1.y - pos2.y) ** 2 + (pos1.z - pos2.z) ** 2);
   }
 
   private static sign = (value: number) => (value >= 0 ? 1 : -1);
 
-  public static dopplerFactor(location: EciVec3, position: EciVec3, velocity: EciVec3): Kilometer {
+  public static dopplerFactor(
+    location: Types.EciVec3,
+    position: Types.EciVec3,
+    velocity: Types.EciVec3,
+  ): Types.Kilometer {
     const mfactor = 7.292115e-5;
     const c = 299792.458; // Speed of light in km/s
 
-    const range = <EciVec3>{
+    const range = <Types.EciVec3>{
       x: position.x - location.x,
       y: position.y - location.y,
       z: position.z - location.z,
     };
     const distance = Math.sqrt(range.x ** 2 + range.y ** 2 + range.z ** 2);
 
-    const rangeVel = <EciVec3>{
+    const rangeVel = <Types.EciVec3>{
       x: velocity.x + mfactor * location.y,
       y: velocity.y - mfactor * location.x,
       z: velocity.z,

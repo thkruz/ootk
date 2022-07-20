@@ -1,4 +1,11 @@
+const CopyPlugin = require('copy-webpack-plugin');
+
 let config = {
+  plugins: [
+    new CopyPlugin({
+      patterns: [{ from: 'lib/*.d.ts', to: '[name][ext]' }],
+    }),
+  ],
   module: {
     rules: [
       {
