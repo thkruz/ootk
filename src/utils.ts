@@ -62,11 +62,17 @@ class Utils {
   }
 
   public static createVec(start: number, stop: number, step: number): number[] {
-    let array = [];
+    const array = [];
+
     for (let i = start; i <= stop; i += step) {
       array.push(i);
     }
+
     return array;
+  }
+
+  public static roundToNDecimalPlaces(value: number, places: number): number {
+    return Math.round(value * 10 ** places) / 10 ** places;
   }
 }
 

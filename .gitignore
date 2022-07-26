@@ -8,11 +8,6 @@ node_modules
 
 built
 
-src/export/satellite.js
-src/satellite.ts
-src/sgp4-legacy.js
-src/sgp4-utils.js
-
 test/performance
 test/satellite/transform*
 
