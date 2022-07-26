@@ -24,8 +24,16 @@
  * SOFTWARE.
  */
 
-export const PI = Math.PI;
-export const TAU = PI * 2; //https://tauday.com/tau-manifesto
+export const { PI } = Math;
+export const TAU = PI * 2; // https://tauday.com/tau-manifesto
 export const DEG2RAD = PI / 180.0;
 export const x2o3 = 2.0 / 3.0;
 export const temp4 = 1.5e-12;
+
+export const RAD2DEG = 360 / TAU;
+export const MINUTES_PER_DAY = 1440;
+export const MILLISECONDS_PER_DAY = 1.15741e-8;
+export const cMPerSec = 299792458;
+export const cKmPerSec = 299792458 / 1000;
+export const cKmPerMs = 299792458 / 1000 / 1000;
+export const RADIUS_OF_EARTH = 6371; // Radius of Earth in kilometers

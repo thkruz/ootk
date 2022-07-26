@@ -25,6 +25,7 @@
  */
 
 import * as Types from './types';
+import { MILLISECONDS_PER_DAY } from './utils/constants';
 
 class Utils {
   public static Types = Types;
@@ -70,6 +71,26 @@ class Utils {
 
     return array;
   }
+
+  // eslint-disable-next-line max-params
+  public static jday = (year?: number, mon?: number, day?: number, hr?: number, minute?: number, sec?: number) => {
+    if (!year) {
+      const now = new Date();
+      const jDayStart = new Date(now.getUTCFullYear(), 0, 0);
+      const jDayDiff = now.getDate() - jDayStart.getDate();
+
+      return Math.floor(jDayDiff / MILLISECONDS_PER_DAY);
+    }
+
+    return (
+      367.0 * year -
+      Math.floor(7 * (year + Math.floor((mon + 9) / 12.0)) * 0.25) +
+      Math.floor((275 * mon) / 9.0) +
+      day +
+      1721013.5 +
+      ((sec / 60.0 + minute) / 60.0 + hr) / 24.0
+    );
+  };
 
   public static roundToNDecimalPlaces(value: number, places: number): number {
     return Math.round(value * 10 ** places) / 10 ** places;
