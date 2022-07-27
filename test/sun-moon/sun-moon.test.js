@@ -20,6 +20,12 @@ describe('Sun and Moon', () => {
     SunMath.getSunAzEl(dateObj, 0, 0);
   });
 
+  test('Local Solar Time', () => {
+    const lst = SunMath.getSolarTime(new Date(2022, 6, 25, 23, 58), -5, -71);
+
+    expect(lst.toUTCString()).toEqual('Tue, 26 Jul 2022 04:07:49 GMT');
+  });
+
   test('MoonMath Unit Tests', () => {
     expect(MoonMath.getMoonIllumination(dateObj)).toMatchSnapshot();
 

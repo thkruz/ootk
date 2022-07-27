@@ -277,3 +277,15 @@ export type OperationsDetails = {
   owner?: string;
   country?: string;
 };
+
+export type AzEl = {
+  az: Radians;
+  el: Radians;
+};
+
+export type Meters = number;
+
+export type SunTime = {
+  solarNoon: Date;
+  nadir: Date;
+};
