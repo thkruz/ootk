@@ -5,7 +5,7 @@
  * @since  1.1.0
  */
 
-import { Tle } from '../../lib/tle';
+import { Tle } from '@lib/ootk';
 import tleData from './tle.json';
 
 describe('Valid TLEs', () => {

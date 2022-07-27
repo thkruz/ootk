@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Sun and Moon MoonMath Unit Tests 1`] = `
+Object {
+  "angle": 2.0187380462851525,
+  "fraction": 0.04918501150967336,
+  "phase": 0.9288143180691704,
+}
+`;

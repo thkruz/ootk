@@ -3,11 +3,12 @@
  * @since  0.2.0
  */
 
+import { Sgp4 } from '@lib/ootk';
 import { compareVectors } from '@test/lib/compareVectors';
-import { Sgp4 } from '@lib/sgp4.js'; // eslint-disable-line
 
 describe.skip('Julian date / time', () => {
-  let now;
+  let now = new Date();
+
   beforeAll(() => {
     now = new Date();
   });
@@ -80,6 +81,7 @@ describe.skip('Julian date / time', () => {
       const jd = Sgp4.jday(now);
       const date = Sgp4.invjday(jd);
       const dateArray = Sgp4.invjday(jd, true);
+
       expect(date.getUTCFullYear()).toEqual(dateArray[0]);
       expect(date.getUTCMonth() + 1).toEqual(dateArray[1]);
       expect(date.getUTCDate()).toEqual(dateArray[2]);
@@ -92,6 +94,7 @@ describe.skip('Julian date / time', () => {
       const jd = Sgp4.jday(now);
       const expected = (now.getTime() - now.getMilliseconds()) / 1000;
       // Allow a single millisecond margin of error
+
       expect(Sgp4.invjday(jd).getTime() / 1000).toBeCloseTo(expected, -1);
     });
   });

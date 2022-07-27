@@ -24,9 +24,9 @@
  * SOFTWARE.
  */
 
-import { Line1Data, Line2Data, TleLine1, TleLine2 } from './types';
-import { TleFormatData } from './utils/TleFormatData';
-import { Utils } from './utils';
+import { Line1Data, Line2Data, TleLine1, TleLine2 } from '../types/types';
+import { TleFormatData } from './tle-format-data';
+import { Utils } from '../utils/utils';
 
 type TleData = {
   satNum: number;

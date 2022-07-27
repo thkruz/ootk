@@ -24,8 +24,10 @@
  * SOFTWARE.
  */
 
-import * as Types from './types';
-import { MILLISECONDS_PER_DAY } from './utils/constants';
+import * as Types from '../types/types';
+import { DAY_TO_MS } from './constants';
+import { MoonMath } from './moon-math';
+import { SunMath } from './sun-math';
 
 class Utils {
   public static Types = Types;
@@ -79,7 +81,7 @@ class Utils {
       const jDayStart = new Date(now.getUTCFullYear(), 0, 0);
       const jDayDiff = now.getDate() - jDayStart.getDate();
 
-      return Math.floor(jDayDiff / MILLISECONDS_PER_DAY);
+      return Math.floor(jDayDiff / DAY_TO_MS);
     }
 
     return (
@@ -95,6 +97,9 @@ class Utils {
   public static roundToNDecimalPlaces(value: number, places: number): number {
     return Math.round(value * 10 ** places) / 10 ** places;
   }
+
+  public static SunMath = SunMath;
+  public static MoonMath = MoonMath;
 }
 
 export { Utils };

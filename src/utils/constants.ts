@@ -32,7 +32,8 @@ export const temp4 = 1.5e-12;
 
 export const RAD2DEG = 360 / TAU;
 export const MINUTES_PER_DAY = 1440;
-export const MILLISECONDS_PER_DAY = 1.15741e-8;
+export const MS_PER_DAY = 86400000;
+export const DAY_TO_MS = 1.15741e-8;
 export const cMPerSec = 299792458;
 export const cKmPerSec = 299792458 / 1000;
 export const cKmPerMs = 299792458 / 1000 / 1000;

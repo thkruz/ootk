@@ -25,9 +25,9 @@
  * SOFTWARE.
  */
 
-export { Sgp4 } from './sgp4';
-export { Transforms } from './transforms';
-export { Utils } from './utils';
-export { Tle } from './tle';
-export { Sat } from './sat';
-export * from './types';
+export { Sgp4 } from './sgp4/sgp4';
+export { Transforms } from './transforms/transforms';
+export { Utils } from './utils/utils';
+export { Tle } from './tle/tle';
+export * from './objects/index';
+export * from './types/types';

@@ -215,3 +215,65 @@ export type Line2Data = {
   revNum: number;
   checksum2: number;
 };
+
+// eslint-disable-next-line no-shadow
+export enum SpaceObjectType {
+  UNKNOWN = 0,
+  PAYLOAD = 1,
+  ROCKET_BODY = 2,
+  DEBRIS = 3,
+  SPECIAL = 4,
+  RADAR_MEASUREMENT = 5,
+  RADAR_TRACK = 6,
+  RADAR_OBJECT = 7,
+  BALLISTIC_MISSILE = 8,
+  STAR = 9,
+  INTERGOVERNMENTAL_ORGANIZATION = 10,
+  SUBORBITAL_PAYLOAD_OPERATOR = 11,
+  PAYLOAD_OWNER = 12,
+  METEOROLOGICAL_ROCKET_LAUNCH_AGENCY_OR_MANUFACTURER = 13,
+  PAYLOAD_MANUFACTURER = 14,
+  LAUNCH_AGENCY = 15,
+  LAUNCH_SITE = 16,
+  LAUNCH_POSITION = 17,
+  LAUNCH_FACILITY = 18,
+  CONTROL_FACILITY = 19,
+  GROUND_SENSOR_STATION = 20,
+  OPTICAL = 21,
+  MECHANICAL = 22,
+  PHASED_ARRAY_RADAR = 23,
+  OBSERVER = 24,
+  BISTATIC_RADIO_TELESCOPE = 25,
+  COUNTRY = 26,
+  LAUNCH_VEHICLE_MANUFACTURER = 27,
+  ENGINE_MANUFACTURER = 28,
+}
+
+export type GreenwichMeanSiderealTime = number;
+export type LaunchDetails = {
+  launchDate?: string;
+  launchMass?: string;
+  launchSite?: string;
+  launchVehicle?: string;
+};
+export type SpaceCraftDetails = {
+  lifetime?: string | number;
+  maneuver?: string;
+  manufacturer?: string;
+  motor?: string;
+  power?: string;
+  payload?: string;
+  purpose?: string;
+  shape?: string;
+  span?: string;
+  bus?: string;
+  configuration?: string;
+  equipment?: string;
+  dryMass?: string;
+};
+export type OperationsDetails = {
+  user?: string;
+  mission?: string;
+  owner?: string;
+  country?: string;
+};

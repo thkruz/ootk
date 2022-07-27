@@ -27,8 +27,8 @@
  * SOFTWARE.
  */
 
-import { Degrees, EcfVec3, EciVec3, Kilometer, LlaVec3, Radians, RaeVec3, SezVec3 } from './types';
-import { PI, TAU } from './utils/constants';
+import { Degrees, EcfVec3, EciVec3, Kilometer, LlaVec3, Radians, RaeVec3, SezVec3 } from '../types/types';
+import { PI, TAU } from '../utils/constants';
 
 class Transforms {
   public static getDegLat(radians: Radians): Degrees {
