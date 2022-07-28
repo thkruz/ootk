@@ -1,8 +1,71 @@
-import { MS_PER_DAY, PI } from '../utils/constants';
+/**
+ * @author Theodore Kruczek.
+ * @description Orbital Object ToolKit (OOTK) is a collection of tools for working
+ * with satellites and other orbital objects.
+ *
+ * @file MoonMath is a an extension to SunMath for calculating the position of the moon
+ * and its phases. This was originally created by Vladimir Agafonkin. Robert Gester's
+ * update was referenced for documentation. There were a couple of bugs in both versions
+ * so there will be some differences if you are migrating from either to this library.
+ *
+ *
+ * @license AGPL-3.0-or-later
+ * @Copyright (c) 2020-2022 Theodore Kruczek
+ *
+ * @Copyright (c) 2011-2015, Vladimir Agafonkin
+ * SunCalc is a JavaScript library for calculating sun/moon position and light phases.
+ * https://github.com/mourner/suncalc
+ *
+ * Reworked and enhanced by Robert Gester
+ * @Copyright (c) 2022 Robert Gester
+ * https://github.com/hypnos3/suncalc3
+ *
+ * moon calculations, based on http://aa.quae.nl/en/reken/hemelpositie.html formulas
+ *
+ * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * Orbital Object ToolKit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with
+ * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
+ */
 
 import { DEG2RAD } from './constants';
+import { MS_PER_DAY } from '../utils/constants';
 import { Radians } from '../ootk';
 import { SunMath } from './sun-math';
+
+type MoonIlluminationData = {
+  fraction: number;
+  phase: any;
+  phaseValue: number;
+  angle: any;
+  next: {
+    value: number;
+    date: string;
+    type: string;
+    newMoon: {
+      value: any;
+      date: string;
+    };
+    fullMoon: {
+      value: any;
+      date: string;
+    };
+    firstQuarter: {
+      value: any;
+      date: string;
+    };
+    thirdQuarter: {
+      value: any;
+      date: string;
+    };
+  };
+};
 
 export class MoonMath {
   static moonCoords(d) {
@@ -29,7 +92,7 @@ export class MoonMath {
   static getMoonPosition(date, lat, lon) {
     const lw = DEG2RAD * -lon;
     const phi = DEG2RAD * lat;
-    const d = SunMath.toDays(date);
+    const d = SunMath.date2jSince2000(date);
     const c = MoonMath.moonCoords(d);
     const H = SunMath.siderealTime(d, lw) - c.ra;
     let h = SunMath.elevation(H, phi, c.dec);
@@ -46,13 +109,113 @@ export class MoonMath {
     };
   }
 
-  /*
+  private static moonCycles = [
+    {
+      from: 0,
+      to: 0.033863193308711,
+      id: 'newMoon',
+      emoji: '🌚',
+      code: ':new_moon_with_face:',
+      name: 'New Moon',
+      weight: 1,
+      css: 'wi-moon-new',
+    },
+    {
+      from: 0.033863193308711,
+      to: 0.216136806691289,
+      id: 'waxingCrescentMoon',
+      emoji: '🌒',
+      code: ':waxing_crescent_moon:',
+      name: 'Waxing Crescent',
+      weight: 6.3825,
+      css: 'wi-moon-wax-cres',
+    },
+    {
+      from: 0.216136806691289,
+      to: 0.283863193308711,
+      id: 'firstQuarterMoon',
+      emoji: '🌓',
+      code: ':first_quarter_moon:',
+      name: 'First Quarter',
+      weight: 1,
+      css: 'wi-moon-first-quart',
+    },
+    {
+      from: 0.283863193308711,
+      to: 0.466136806691289,
+      id: 'waxingGibbousMoon',
+      emoji: '🌔',
+      code: ':waxing_gibbous_moon:',
+      name: 'Waxing Gibbous',
+      weight: 6.3825,
+      css: 'wi-moon-wax-gibb',
+    },
+    {
+      from: 0.466136806691289,
+      to: 0.533863193308711,
+      id: 'fullMoon',
+      emoji: '🌝',
+      code: ':full_moon_with_face:',
+      name: 'Full Moon',
+      weight: 1,
+      css: 'wi-moon-full',
+    },
+    {
+      from: 0.533863193308711,
+      to: 0.716136806691289,
+      id: 'waningGibbousMoon',
+      emoji: '🌖',
+      code: ':waning_gibbous_moon:',
+      name: 'Waning Gibbous',
+      weight: 6.3825,
+      css: 'wi-moon-wan-gibb',
+    },
+    {
+      from: 0.716136806691289,
+      to: 0.783863193308711,
+      id: 'thirdQuarterMoon',
+      emoji: '🌗',
+      code: ':last_quarter_moon:',
+      name: 'third Quarter',
+      weight: 1,
+      css: 'wi-moon-third-quart',
+    },
+    {
+      from: 0.783863193308711,
+      to: 0.966136806691289,
+      id: 'waningCrescentMoon',
+      emoji: '🌘',
+      code: ':waning_crescent_moon:',
+      name: 'Waning Crescent',
+      weight: 6.3825,
+      css: 'wi-moon-wan-cres',
+    },
+    {
+      from: 0.966136806691289,
+      to: 1,
+      id: 'newMoon',
+      emoji: '🌚',
+      code: ':new_moon_with_face:',
+      name: 'New Moon',
+      weight: 1,
+      css: 'wi-moon-new',
+    },
+  ];
+
+  /**
    * calculations for illumination parameters of the moon,
    * based on http://idlastro.gsfc.nasa.gov/ftp/pro/astro/mphase.pro formulas and
    * Chapter 48 of "Astronomical Algorithms" 2nd edition by Jean Meeus (Willmann-Bell, Richmond) 1998.
+   * @param {number | Date} date Date object or timestamp for calculating moon-illumination
+   * @return {MoonIlluminationData} result object of moon-illumination
    */
-  static getMoonIllumination(date: Date) {
-    const d = SunMath.toDays(date || new Date());
+  // eslint-disable-next-line max-statements
+  static getMoonIllumination(date: number | Date): MoonIlluminationData {
+    const dateValue = date instanceof Date ? date.getTime() : date;
+
+    const lunarDaysMs = 2551442778; // The duration in days of a lunar cycle is 29.53058770576 days.
+    const firstNewMoon2000 = 947178840000; // first newMoon in the year 2000 2000-01-06 18:14
+    const d = SunMath.date2jSince2000(new Date(dateValue));
     const s = SunMath.getSunRaDec(d);
     const m = MoonMath.moonCoords(d);
     const sdist = 149598000; // distance from Earth to Sun in km
@@ -64,23 +227,104 @@ export class MoonMath {
       Math.cos(s.dec) * Math.sin(s.ra - m.ra),
       Math.sin(s.dec) * Math.cos(m.dec) - Math.cos(s.dec) * Math.sin(m.dec) * Math.cos(s.ra - m.ra),
     );
+    const phaseValue = 0.5 + (0.5 * inc * (angle < 0 ? -1 : 1)) / Math.PI;
 
-    const fraction = (1 + Math.cos(inc)) / 2;
-    const phase = 0.5 + (0.5 * inc * (angle < 0 ? -1 : 1)) / PI;
+    // calculates the difference in ms between the sirst fullMoon 2000 and given Date
+    const diffBase = dateValue - firstNewMoon2000;
+    // Calculate modulus to drop completed cycles
+    let cycleModMs = diffBase % lunarDaysMs;
+    // If negative number (date before new moon 2000) add lunarDaysMs
+
+    if (cycleModMs < 0) {
+      cycleModMs += lunarDaysMs;
+    }
+    const nextNewMoon = lunarDaysMs - cycleModMs + dateValue;
+    let nextFullMoon = lunarDaysMs / 2 - cycleModMs + dateValue;
+
+    if (nextFullMoon < dateValue) {
+      nextFullMoon += lunarDaysMs;
+    }
+    const quater = lunarDaysMs / 4;
+    let nextFirstQuarter = quater - cycleModMs + dateValue;
+
+    if (nextFirstQuarter < dateValue) {
+      nextFirstQuarter += lunarDaysMs;
+    }
+    let nextThirdQuarter = lunarDaysMs - quater - cycleModMs + dateValue;
+
+    if (nextThirdQuarter < dateValue) {
+      nextThirdQuarter += lunarDaysMs;
+    }
+    /*
+     * Calculate the fraction of the moon cycle
+     * const currentfrac = cycleModMs / lunarDaysMs;
+     */
+    const next = Math.min(nextNewMoon, nextFirstQuarter, nextFullMoon, nextThirdQuarter);
+    // eslint-disable-next-line init-declarations
+    let phase;
+
+    for (let index = 0; index < MoonMath.moonCycles.length; index++) {
+      const element = MoonMath.moonCycles[index];
+
+      if (phaseValue >= element.from && phaseValue <= element.to) {
+        phase = element;
+        break;
+      }
+    }
+
+    let type = '';
+
+    if (next === nextNewMoon) {
+      type = 'newMoon';
+    } else if (next === nextFirstQuarter) {
+      type = 'firstQuarter';
+    } else if (next === nextFullMoon) {
+      type = 'fullMoon';
+    } else {
+      type = 'thirdQuarter';
+    }
 
     return {
-      fraction,
+      fraction: (1 + Math.cos(inc)) / 2,
       phase,
+      phaseValue,
       angle,
+      next: {
+        value: next,
+        date: new Date(next).toISOString(),
+        type,
+        newMoon: {
+          value: nextNewMoon,
+          date: new Date(nextNewMoon).toISOString(),
+        },
+        fullMoon: {
+          value: nextFullMoon,
+          date: new Date(nextFullMoon).toISOString(),
+        },
+        firstQuarter: {
+          value: nextFirstQuarter,
+          date: new Date(nextFirstQuarter).toISOString(),
+        },
+        thirdQuarter: {
+          value: nextThirdQuarter,
+          date: new Date(nextThirdQuarter).toISOString(),
+        },
+      },
     };
   }
-  /*
-   * calculations for moon rise/set times are based on http://www.stargazing.net/kepler/moonrise.html article
-   */
-  static getMoonTimes(date: Date, lat: Radians, lon: Radians, inUTC = false) {
-    const t = new Date(date);
 
-    if (inUTC) {
+  /**
+   * calculations for moon rise/set times are based on http://www.stargazing.net/kepler/moonrise.html article
+   * @param {number|Date} dateValue Date object or timestamp for calculating moon-times
+   * @param {number} lat latitude for calculating moon-times
+   * @param {number} lon longitude for calculating moon-times
+   * @param {boolean} [isUtc] defines if the calculation should be in utc or local time (default is local)
+   * @return {IMoonTimes} result object of sunTime
+   */
+  static getMoonTimes(dateValue: Date, lat: Radians, lon: Radians, isUtc = false) {
+    const t = new Date(dateValue);
+
+    if (isUtc) {
       t.setUTCHours(0, 0, 0, 0);
     } else {
       t.setHours(0, 0, 0, 0);
@@ -88,18 +332,42 @@ export class MoonMath {
 
     const { rise, set, ye } = MoonMath.calculateRiseSetTimes(t, lat, lon);
 
-    const riseDate = rise ? MoonMath.hoursLater(t, rise) : null;
-    const setDate = set ? MoonMath.hoursLater(t, set) : null;
-
     const result = {
-      rise: riseDate,
-      set: setDate,
-      alwaysUp: false,
-      alwaysDown: false,
+      rise: null,
+      set: null,
+      ye: null,
+      alwaysUp: null,
+      alwaysDown: null,
+      highest: null,
     };
 
+    if (rise) {
+      result.rise = new Date(MoonMath.hoursLater(dateValue, rise));
+    } else {
+      result.rise = NaN;
+    }
+
+    if (set) {
+      result.set = new Date(MoonMath.hoursLater(dateValue, set));
+    } else {
+      result.set = NaN;
+    }
+
     if (!rise && !set) {
-      result[ye > 0 ? 'alwaysUp' : 'alwaysDown'] = true;
+      if (ye > 0) {
+        result.alwaysUp = true;
+        result.alwaysDown = false;
+      } else {
+        result.alwaysUp = false;
+        result.alwaysDown = true;
+      }
+    } else if (rise && set) {
+      result.alwaysUp = false;
+      result.alwaysDown = false;
+      result.highest = new Date(MoonMath.hoursLater(dateValue, Math.min(rise, set) + Math.abs(set - rise) / 2));
+    } else {
+      result.alwaysUp = false;
+      result.alwaysDown = false;
     }
 
     return result;
