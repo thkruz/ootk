@@ -430,8 +430,11 @@ export class SunMath {
    */
   static getSolarTime(date: Date, utcOffset: number, lon: number) {
     // calculate the day of year
-    const start = new Date(date.getFullYear(), 0, 0);
-    const diff = date.getTime() - start.getTime() + (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60 * 1000;
+    const start = new Date();
+
+    start.setUTCFullYear(date.getUTCFullYear(), 0, 1);
+    start.setUTCHours(0, 0, 0, 0);
+    const diff = date.getTime() - start.getTime();
     const dayOfYear = Math.floor(diff / MS_PER_DAY);
 
     const b = (360 / 365) * (dayOfYear - 81) * DEG2RAD;

@@ -7,7 +7,8 @@
 import { Utils } from '../../lib/ootk';
 
 const { SunMath, MoonMath } = Utils;
-const dateObj = new Date(2022, 7, 25);
+// Use number of milliseconds since epoch instead of local year, month, day, etc for consistency across machines
+const dateObj = new Date(1661400000000);
 
 describe('Sun and Moon', () => {
   test('SunMath Unit Tests', () => {
@@ -19,7 +20,8 @@ describe('Sun and Moon', () => {
   });
 
   test('Local Solar Time', () => {
-    const lst = SunMath.getSolarTime(new Date(2022, 6, 25, 23, 58), -5, -71);
+    // Use number of milliseconds since epoch instead of local year, month, day, etc for consistency across machines
+    const lst = SunMath.getSolarTime(new Date(1658807880000), -5, -71);
 
     expect(lst.toUTCString()).toEqual('Tue, 26 Jul 2022 04:07:49 GMT');
   });
