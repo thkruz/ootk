@@ -3,13 +3,15 @@
  * @since  0.2.0
  */
 
+import { Sgp4 } from '@lib/ootk';
 import { compareVectors } from '@test/lib/compareVectors';
-import { Sgp4 } from '@lib/sgp4.js'; // eslint-disable-line
 
-describe.skip('Julian date / time', () => {
-  let now;
+describe('Julian date / time', () => {
+  // Use number of milliseconds since epoch instead of local year, month, day, etc for consistency across machines
+  let now = new Date(1661400000000);
+
   beforeAll(() => {
-    now = new Date();
+    now = new Date(1661400000000);
   });
 
   describe('jday & invjday', () => {
@@ -76,58 +78,25 @@ describe.skip('Julian date / time', () => {
       expect(jday1).not.toEqual(jday2);
     });
 
-    it('invjday gives the same result as date and array', () => {
-      const jd = Sgp4.jday(now);
-      const date = Sgp4.invjday(jd);
-      const dateArray = Sgp4.invjday(jd, true);
-      expect(date.getUTCFullYear()).toEqual(dateArray[0]);
-      expect(date.getUTCMonth() + 1).toEqual(dateArray[1]);
-      expect(date.getUTCDate()).toEqual(dateArray[2]);
-      expect(date.getUTCHours()).toEqual(dateArray[3]);
-      expect(date.getUTCMinutes()).toEqual(dateArray[4]);
-      expect(date.getUTCSeconds()).toEqual(dateArray[5]);
+    it('invjday gives different results with jdfrac', () => {
+      const { jd } = Sgp4.jday(now);
+      const jday = Sgp4.invjday(jd);
+      const jdayWFrac = Sgp4.invjday(jd, 10);
+
+      expect(jday).not.toEqual(jdayWFrac);
     });
 
     it('date to jday and inverse conversion', () => {
-      const jd = Sgp4.jday(now);
+      const { jd, jdFrac } = Sgp4.jday(now);
       const expected = (now.getTime() - now.getMilliseconds()) / 1000;
       // Allow a single millisecond margin of error
-      expect(Sgp4.invjday(jd).getTime() / 1000).toBeCloseTo(expected, -1);
+      const time = Sgp4.invjday(jd, jdFrac);
+      const date = new Date();
+
+      date.setUTCFullYear(time.year, time.mon - 1, time.day);
+      date.setUTCHours(time.hr, time.min, time.sec);
+
+      expect(date.getTime() / 1000).toBeCloseTo(expected, -1);
     });
-  });
-
-  it('gstime gives the same result with different arguments describing the same time', () => {
-    expect(Sgp4.gstime(now)).toEqual(
-      Sgp4.gstime(
-        now.getUTCFullYear(),
-        now.getUTCMonth() + 1,
-        now.getUTCDate(),
-        now.getUTCHours(),
-        now.getUTCMinutes(),
-        now.getUTCSeconds(),
-        now.getUTCMilliseconds(),
-      ),
-    );
-  });
-
-  it('propagation gives the same result with different arguments describing the same time', () => {
-    const date = new Date(2016, 7, 22);
-    const tleLine1 = '1 27424U 02022A   16235.86686911  .00000105  00000-0  33296-4 0  9990';
-    const tleLine2 = '2 27424  98.2022 175.3843 0001285  39.9183  23.2024 14.57119903760831';
-    const satrec = Sgp4.createSatrec(tleLine1, tleLine2);
-
-    const propagationByDate = Sgp4.propagate(satrec, date);
-    const propagationByDateItems = Sgp4.propagate(
-      satrec,
-      date.getUTCFullYear(),
-      date.getUTCMonth() + 1,
-      date.getUTCDate(),
-      date.getUTCHours(),
-      date.getUTCMinutes(),
-      date.getUTCSeconds(),
-    );
-
-    compareVectors(propagationByDate.position, propagationByDateItems.position);
-    compareVectors(propagationByDate.velocity, propagationByDateItems.velocity);
   });
 });

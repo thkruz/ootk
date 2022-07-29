@@ -1,6 +1,6 @@
 {
   "verbose": true,
-  "silent": true,
+  "silent": false,
   "rootDir": "../",
   "testPathIgnorePatterns": ["/node_modules/", "/test/performance/", "/asc", "/dist"],
   "moduleDirectories": ["../", "../node_modules"],

@@ -3,7 +3,7 @@
  * @since  1.0.0-alpha3
  */
 
-import { Utils } from '@lib/utils.js'; // eslint-disable-line
+import { Utils } from '@lib/ootk'; // eslint-disable-line
 
 const numDigits = 8;
 
@@ -30,6 +30,7 @@ describe('Doppler factor', () => {
       z: 0,
     };
     const dopFactor = Utils.dopplerFactor(observerEcf, positionEcf, velocityEcf);
+
     expect(dopFactor).toBeCloseTo(1, numDigits);
   });
 
@@ -50,6 +51,7 @@ describe('Doppler factor', () => {
       z: 0,
     };
     const dopFactor = Utils.dopplerFactor(observerEcf, positionEcf, velocityEcf);
+
     expect(dopFactor).toBeCloseTo(1, numDigits);
   });
 
@@ -70,6 +72,7 @@ describe('Doppler factor', () => {
       z: 0,
     };
     const dopFactor = Utils.dopplerFactor(observerEcf, positionEcf, velocityEcf);
+
     expect(dopFactor).toBeCloseTo(1.0000107847789212, numDigits);
   });
 
@@ -90,6 +93,7 @@ describe('Doppler factor', () => {
       z: 0,
     };
     const dopFactor = Utils.dopplerFactor(observerEcf, positionEcf, velocityEcf);
+
     expect(dopFactor).toBeCloseTo(1.000013747277977, numDigits);
   });
 });

@@ -1,0 +1,79 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Sun and Moon MoonMath Unit Tests 1`] = `
+Object {
+  "angle": 2.0187380462851525,
+  "fraction": 0.04918501150967336,
+  "next": Object {
+    "date": "2022-08-27T06:46:57.840Z",
+    "firstQuarter": Object {
+      "date": "2022-09-03T15:57:58.534Z",
+      "value": 1662220678534.5,
+    },
+    "fullMoon": Object {
+      "date": "2022-09-11T01:08:59.229Z",
+      "value": 1662858539229,
+    },
+    "newMoon": Object {
+      "date": "2022-08-27T06:46:57.840Z",
+      "value": 1661582817840,
+    },
+    "thirdQuarter": Object {
+      "date": "2022-09-18T10:19:59.923Z",
+      "value": 1663496399923.5,
+    },
+    "type": "newMoon",
+    "value": 1661582817840,
+  },
+  "phase": Object {
+    "code": ":waning_crescent_moon:",
+    "css": "wi-moon-wan-cres",
+    "emoji": "🌘",
+    "from": 0.783863193308711,
+    "id": "waningCrescentMoon",
+    "name": "Waning Crescent",
+    "to": 0.966136806691289,
+    "weight": 6.3825,
+  },
+  "phaseValue": 0.9288143180691704,
+}
+`;
+
+exports[`Sun and Moon getMoonIllumination returns fraction and angle of moons illuminated limb and phase 1`] = `
+Object {
+  "angle": 2.0187380462851525,
+  "fraction": 0.04918501150967336,
+  "next": Object {
+    "date": "2022-08-27T06:46:57.840Z",
+    "firstQuarter": Object {
+      "date": "2022-09-03T15:57:58.534Z",
+      "value": 1662220678534.5,
+    },
+    "fullMoon": Object {
+      "date": "2022-09-11T01:08:59.229Z",
+      "value": 1662858539229,
+    },
+    "newMoon": Object {
+      "date": "2022-08-27T06:46:57.840Z",
+      "value": 1661582817840,
+    },
+    "thirdQuarter": Object {
+      "date": "2022-09-18T10:19:59.923Z",
+      "value": 1663496399923.5,
+    },
+    "type": "newMoon",
+    "value": 1661582817840,
+  },
+  "phase": Object {
+    "code": ":waning_crescent_moon:",
+    "css": "wi-moon-wan-cres",
+    "emoji": "🌘",
+    "from": 0.783863193308711,
+    "id": "waningCrescentMoon",
+    "name": "Waning Crescent",
+    "to": 0.966136806691289,
+    "weight": 6.3825,
+  },
+  "phaseValue": 0.9288143180691704,
+}
+`;

@@ -3,7 +3,7 @@
  * @since  0.2.0
  */
 
-import { Transforms } from '../../lib/transforms';
+import { Transforms } from '@lib/ootk';
 import transformData from './transforms.json';
 
 const numDigits = 6;
@@ -42,6 +42,7 @@ describe('Latitude & longitude conversions', () => {
   validGeodeticToEcf.forEach((item) => {
     it('convert valid LLA coordinates to ECF', () => {
       const ecfCoordinates = Transforms.lla2ecf(item.lla);
+
       expect(ecfCoordinates.x).toBeCloseTo(item.ecf.x);
       expect(ecfCoordinates.y).toBeCloseTo(item.ecf.y);
       expect(ecfCoordinates.z).toBeCloseTo(item.ecf.z);
@@ -51,6 +52,7 @@ describe('Latitude & longitude conversions', () => {
   validEciToGeodetic.forEach((item) => {
     it('convert valid ECI coordinates to LLA', () => {
       const llaCoordinates = Transforms.eci2lla(item.eci, item.gmst);
+
       expect(llaCoordinates.lon).toBeCloseTo(item.lla.lon);
       expect(llaCoordinates.lat).toBeCloseTo(item.lla.lat);
       expect(llaCoordinates.alt).toBeCloseTo(item.lla.alt);
@@ -60,6 +62,7 @@ describe('Latitude & longitude conversions', () => {
   validEciToEcf.forEach((item) => {
     it('convert valid ECI coordinates to ECF', () => {
       const ecfCoordinates = Transforms.eci2ecf(item.eci, item.gmst);
+
       expect(ecfCoordinates.x).toBeCloseTo(item.ecf.x);
       expect(ecfCoordinates.y).toBeCloseTo(item.ecf.y);
       expect(ecfCoordinates.z).toBeCloseTo(item.ecf.z);
@@ -69,6 +72,7 @@ describe('Latitude & longitude conversions', () => {
   validEcfToEci.forEach((item) => {
     it('convert valid ECF coordinates to ECI', () => {
       const eciCoordinates = Transforms.ecf2eci(item.ecf, item.gmst);
+
       expect(eciCoordinates.x).toBeCloseTo(item.eci.x);
       expect(eciCoordinates.y).toBeCloseTo(item.eci.y);
       expect(eciCoordinates.z).toBeCloseTo(item.eci.z);
@@ -78,6 +82,7 @@ describe('Latitude & longitude conversions', () => {
   validEcfToLookangles.forEach((item) => {
     it('convert valid ECF coordinates to RAE', () => {
       const raeCoordinates = Transforms.ecf2rae(item.lla, item.satelliteEcf);
+
       expect(raeCoordinates.rng).toBeCloseTo(item.rae.rng);
       expect(raeCoordinates.az).toBeCloseTo(item.rae.az);
       expect(raeCoordinates.el).toBeCloseTo(item.rae.el);
@@ -107,6 +112,7 @@ describe('Rae2Sez', () => {
   it('should convert valid RAE coordinates to SEZ', () => {
     const { rae, sez } = transformData.validRae2Sez[0];
     const sezCoordinates = Transforms.rae2sez(rae);
+
     expect(sezCoordinates.s).toBeCloseTo(sez.s);
     expect(sezCoordinates.e).toBeCloseTo(sez.e);
     expect(sezCoordinates.z).toBeCloseTo(sez.z);
@@ -117,6 +123,7 @@ describe('Rae2Ecf', () => {
   it('should convert valid RAE coordinates to ECF', () => {
     const { rae, ecf, lla } = transformData.validRae2Ecf[0];
     const ecfCoordinates = Transforms.rae2ecf(rae, lla);
+
     expect(ecfCoordinates.x).toBeCloseTo(ecf.x);
     expect(ecfCoordinates.y).toBeCloseTo(ecf.y);
     expect(ecfCoordinates.z).toBeCloseTo(ecf.z);

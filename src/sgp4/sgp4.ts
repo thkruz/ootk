@@ -9,32 +9,39 @@
  * in order provide context to the functions and clarify any adjustments made for
  * TypeScript/JavaScript compatibility.
  *
- * @copyright MIT License.
- * Copyright (c) 2020-2021 Theodore Kruczek
+ * @license AGPL-3.0-or-later
+ * @Copyright (c) 2020-2022 Theodore Kruczek
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * Orbital Object ToolKit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License along with
+ * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DEG2RAD, PI, TAU, temp4, x2o3 } from './utils/constants';
-import { SatelliteRecord, StateVector, Vec3Flat } from './types';
+// NOTE: This file is meant to maintain as much of the original format as possible.
+/* eslint-disable no-lonely-if */
+/* eslint-disable prefer-destructuring */
+/* eslint-disable complexity */
+/* eslint-disable max-len */
+/* eslint-disable no-param-reassign */
+/* eslint-disable max-params */
+/* eslint-disable no-shadow */
+/* eslint-disable init-declarations */
+/* eslint-disable max-statements */
+/* eslint-disable max-lines-per-function */
+/* eslint-disable max-lines */
 
-/*     ----------------------------------------------------------------
+import { DEG2RAD, PI, TAU, temp4, x2o3 } from '../utils/constants';
+import { SatelliteRecord, StateVector, Vec3Flat } from '../types/types';
+
+/*
+ *     ----------------------------------------------------------------
  *
  *                               sgp4unit.cpp
  *
@@ -89,74 +96,77 @@ import { SatelliteRecord, StateVector, Vec3Flat } from './types';
  *                           2nd edition baseline
  *                     80  norad
  *                           original baseline
- *       ----------------------------------------------------------------      */
+ *       ----------------------------------------------------------------
+ */
 class Sgp4 {
-  /* -----------------------------------------------------------------------------
- *
- *                           procedure dpper
- *
- *  this procedure provides deep space long period periodic contributions
- *    to the mean elements.  by design, these periodics are zero at epoch.
- *    this used to be dscom which included initialization, but it's really a
- *    recurring function.
- *
- *  author        : david vallado                  719-573-2600   28 jun 2005
- *
- *  inputs        :
- *    e3          -
- *    ee2         -
- *    peo         -
- *    pgho        -
- *    pho         -
- *    PInco       -
- *    plo         -
- *    se2 , se3 , sgh2, sgh3, sgh4, sh2, sh3, si2, si3, sl2, sl3, sl4 -
- *    t           -
- *    xh2, xh3, xi2, xi3, xl2, xl3, xl4 -
- *    zmol        -
- *    zmos        -
- *    ep          - eccentricity                           0.0 - 1.0
- *    inclo       - inclination - needed for lyddane modification
- *    nodep       - right ascension of ascending node
- *    argpp       - argument of perigee
- *    mp          - mean anomaly
- *
- *  outputs       :
- *    ep          - eccentricity                           0.0 - 1.0
- *    inclp       - inclination
- *    nodep        - right ascension of ascending node
- *    argpp       - argument of perigee
- *    mp          - mean anomaly
- *
- *  locals        :
- *    alfdp       -
- *    betdp       -
- *    cosip  , sinip  , cosop  , sinop  ,
- *    dalf        -
- *    dbet        -
- *    dls         -
- *    f2, f3      -
- *    pe          -
- *    pgh         -
- *    ph          -
- *    PInc        -
- *    pl          -
- *    sel   , ses   , sghl  , sghs  , shl   , shs   , sil   , sinzf , sis   ,
- *    sll   , sls
- *    xls         -
- *    xnoh        -
- *    zf          -
- *    zm          -
- *
- *  coupling      :
- *    none.
- *
- *  references    :
- *    hoots, roehrich, norad spacetrack report #3 1980
- *    hoots, norad spacetrack report #6 1986
- *    hoots, schumacher and glover 2004
- *    vallado, crawford, hujsak, kelso  2006
- ----------------------------------------------------------------------------*/
+  /*
+   * -----------------------------------------------------------------------------
+   *
+   *                           procedure dpper
+   *
+   *  this procedure provides deep space long period periodic contributions
+   *    to the mean elements.  by design, these periodics are zero at epoch.
+   *    this used to be dscom which included initialization, but it's really a
+   *    recurring function.
+   *
+   *  author        : david vallado                  719-573-2600   28 jun 2005
+   *
+   *  inputs        :
+   *    e3          -
+   *    ee2         -
+   *    peo         -
+   *    pgho        -
+   *    pho         -
+   *    PInco       -
+   *    plo         -
+   *    se2 , se3 , sgh2, sgh3, sgh4, sh2, sh3, si2, si3, sl2, sl3, sl4 -
+   *    t           -
+   *    xh2, xh3, xi2, xi3, xl2, xl3, xl4 -
+   *    zmol        -
+   *    zmos        -
+   *    ep          - eccentricity                           0.0 - 1.0
+   *    inclo       - inclination - needed for lyddane modification
+   *    nodep       - right ascension of ascending node
+   *    argpp       - argument of perigee
+   *    mp          - mean anomaly
+   *
+   *  outputs       :
+   *    ep          - eccentricity                           0.0 - 1.0
+   *    inclp       - inclination
+   *    nodep        - right ascension of ascending node
+   *    argpp       - argument of perigee
+   *    mp          - mean anomaly
+   *
+   *  locals        :
+   *    alfdp       -
+   *    betdp       -
+   *    cosip  , sinip  , cosop  , sinop  ,
+   *    dalf        -
+   *    dbet        -
+   *    dls         -
+   *    f2, f3      -
+   *    pe          -
+   *    pgh         -
+   *    ph          -
+   *    PInc        -
+   *    pl          -
+   *    sel   , ses   , sghl  , sghs  , shl   , shs   , sil   , sinzf , sis   ,
+   *    sll   , sls
+   *    xls         -
+   *    xnoh        -
+   *    zf          -
+   *    zm          -
+   *
+   *  coupling      :
+   *    none.
+   *
+   *  references    :
+   *    hoots, roehrich, norad spacetrack report #3 1980
+   *    hoots, norad spacetrack report #6 1986
+   *    hoots, schumacher and glover 2004
+   *    vallado, crawford, hujsak, kelso  2006
+   * ----------------------------------------------------------------------------
+   */
   private static dpper(
     satrec: SatelliteRecord,
     options: {
@@ -216,7 +226,8 @@ class Sgp4 {
 
     //  --------------- calculate time varying periodics -----------
     let zm = zmos + zns * t;
-    // be sure that the initial call has time set to zero
+    // Be sure that the initial call has time set to zero
+
     if (init === 'y') {
       zm = zmos;
     }
@@ -224,11 +235,12 @@ class Sgp4 {
     let sinzf = Math.sin(zf);
     let f2 = 0.5 * sinzf * sinzf - 0.25;
     let f3 = -0.5 * sinzf * Math.cos(zf);
-    let ses = se2 * f2 + se3 * f3;
-    let sis = si2 * f2 + si3 * f3;
-    let sls = sl2 * f2 + sl3 * f3 + sl4 * sinzf;
-    let sghs = sgh2 * f2 + sgh3 * f3 + sgh4 * sinzf;
-    let shs = sh2 * f2 + sh3 * f3;
+    const ses = se2 * f2 + se3 * f3;
+    const sis = si2 * f2 + si3 * f3;
+    const sls = sl2 * f2 + sl3 * f3 + sl4 * sinzf;
+    const sghs = sgh2 * f2 + sgh3 * f3 + sgh4 * sinzf;
+    const shs = sh2 * f2 + sh3 * f3;
+
     zm = zmol + znl * t;
     if (init === 'y') {
       zm = zmol;
@@ -237,11 +249,11 @@ class Sgp4 {
     sinzf = Math.sin(zf);
     f2 = 0.5 * sinzf * sinzf - 0.25;
     f3 = -0.5 * sinzf * Math.cos(zf);
-    let sel = ee2 * f2 + e3 * f3;
-    let sil = xi2 * f2 + xi3 * f3;
-    let sll = xl2 * f2 + xl3 * f3 + xl4 * sinzf;
-    let sghl = xgh2 * f2 + xgh3 * f3 + xgh4 * sinzf;
-    let shll = xh2 * f2 + xh3 * f3;
+    const sel = ee2 * f2 + e3 * f3;
+    const sil = xi2 * f2 + xi3 * f3;
+    const sll = xl2 * f2 + xl3 * f3 + xl4 * sinzf;
+    const sghl = xgh2 * f2 + xgh3 * f3 + xgh4 * sinzf;
+    const shll = xh2 * f2 + xh3 * f3;
     let pe = ses + sel;
     let PInc = sis + sil;
     let pl = sls + sll;
@@ -256,18 +268,20 @@ class Sgp4 {
       ph -= pho;
       inclp += PInc;
       ep += pe;
-      let sinip = Math.sin(inclp);
-      let cosip = Math.cos(inclp);
+      const sinip = Math.sin(inclp);
+      const cosip = Math.cos(inclp);
 
       /* ----------------- apply periodics directly ------------ */
-      // sgp4fix for lyddane choice
-      // strn3 used original inclination - this is technically feasible
-      // gsfc used perturbed inclination - also technically feasible
-      // probably best to readjust the 0.2 limit value and limit discontinuity
-      // 0.2 rad = 11.45916 deg
-      // use next line for original strn3 approach and original inclination
-      // if (inclo >= 0.2)
-      // use next line for gsfc version and perturbed inclination
+      /*
+       * Sgp4fix for lyddane choice
+       * strn3 used original inclination - this is technically feasible
+       * gsfc used perturbed inclination - also technically feasible
+       * probably best to readjust the 0.2 limit value and limit discontinuity
+       * 0.2 rad = 11.45916 deg
+       * use next line for original strn3 approach and original inclination
+       * if (inclo >= 0.2)
+       * use next line for gsfc version and perturbed inclination
+       */
       if (inclp >= 0.2) {
         ph /= sinip;
         pgh -= cosip * ph;
@@ -276,28 +290,37 @@ class Sgp4 {
         mp += pl;
       } else {
         //  ---- apply periodics with lyddane modification ----
-        let sinop = Math.sin(nodep);
-        let cosop = Math.cos(nodep);
+        const sinop = Math.sin(nodep);
+        const cosop = Math.cos(nodep);
         let alfdp = sinip * sinop;
         let betdp = sinip * cosop;
-        let dalf = ph * cosop + PInc * cosip * sinop;
-        let dbet = -ph * sinop + PInc * cosip * cosop;
+        const dalf = ph * cosop + PInc * cosip * sinop;
+        const dbet = -ph * sinop + PInc * cosip * cosop;
+
         alfdp += dalf;
         betdp += dbet;
         nodep %= TAU;
-        //  sgp4fix for afspc written intrinsic functions
-        //  nodep used without a trigonometric function ahead
+
+        /*
+         *  Sgp4fix for afspc written intrinsic functions
+         *  nodep used without a trigonometric function ahead
+         */
         /* istanbul ignore next */
         if (nodep < 0.0 && opsmode === 'a') {
           nodep += TAU;
         }
         let xls = mp + argpp + cosip * nodep;
-        let dls = pl + pgh - PInc * nodep * sinip;
+        const dls = pl + pgh - PInc * nodep * sinip;
+
         xls += dls;
-        let xnoh = nodep;
+        const xnoh = nodep;
+
         nodep = Math.atan2(alfdp, betdp);
-        //  sgp4fix for afspc written intrinsic functions
-        //  nodep used without a trigonometric function ahead
+
+        /*
+         *  Sgp4fix for afspc written intrinsic functions
+         *  nodep used without a trigonometric function ahead
+         */
         /* istanbul ignore next */
         if (nodep < 0.0 && opsmode === 'a') {
           nodep += TAU;
@@ -313,7 +336,7 @@ class Sgp4 {
         mp += pl;
         argpp = xls - mp - cosip * nodep;
       }
-    } // if init == 'n'
+    } // If init == 'n'
 
     return {
       ep,
@@ -322,75 +345,77 @@ class Sgp4 {
       argpp,
       mp,
     };
-  } // dpper
+  } // Dpper
 
-  /*-----------------------------------------------------------------------------
- *
- *                           procedure dscom
- *
- *  this procedure provides deep space common items used by both the secular
- *    and periodics subroutines.  input is provided as shown. this routine
- *    used to be called dpper, but the functions inside weren't well organized.
- *
- *  author        : david vallado                  719-573-2600   28 jun 2005
- *
- *  inputs        :
- *    epoch       -
- *    ep          - eccentricity
- *    argpp       - argument of perigee
- *    tc          -
- *    inclp       - inclination
- *    nodep       - right ascension of ascending node
- *    np          - mean motion
- *
- *  outputs       :
- *    sinim  , cosim  , sinomm , cosomm , snodm  , cnodm
- *    day         -
- *    e3          -
- *    ee2         -
- *    em          - eccentricity
- *    emsq        - eccentricity squared
- *    gam         -
- *    peo         -
- *    pgho        -
- *    pho         -
- *    PInco       -
- *    plo         -
- *    rtemsq      -
- *    se2, se3         -
- *    sgh2, sgh3, sgh4        -
- *    sh2, sh3, si2, si3, sl2, sl3, sl4         -
- *    s1, s2, s3, s4, s5, s6, s7          -
- *    ss1, ss2, ss3, ss4, ss5, ss6, ss7, sz1, sz2, sz3         -
- *    sz11, sz12, sz13, sz21, sz22, sz23, sz31, sz32, sz33        -
- *    xgh2, xgh3, xgh4, xh2, xh3, xi2, xi3, xl2, xl3, xl4         -
- *    nm          - mean motion
- *    z1, z2, z3, z11, z12, z13, z21, z22, z23, z31, z32, z33         -
- *    zmol        -
- *    zmos        -
- *
- *  locals        :
- *    a1, a2, a3, a4, a5, a6, a7, a8, a9, a10         -
- *    betasq      -
- *    cc          -
- *    ctem, stem        -
- *    x1, x2, x3, x4, x5, x6, x7, x8          -
- *    xnodce      -
- *    xnoi        -
- *    zcosg  , zsing  , zcosgl , zsingl , zcosh  , zsinh  , zcoshl , zsinhl ,
- *    zcosi  , zsini  , zcosil , zsinil ,
- *    zx          -
- *    zy          -
- *
- *  coupling      :
- *    none.
- *
- *  references    :
- *    hoots, roehrich, norad spacetrack report #3 1980
- *    hoots, norad spacetrack report #6 1986
- *    hoots, schumacher and glover 2004
- *    vallado, crawford, hujsak, kelso  2006
- ----------------------------------------------------------------------------*/
+  /*
+   *-----------------------------------------------------------------------------
+   *
+   *                           procedure dscom
+   *
+   *  this procedure provides deep space common items used by both the secular
+   *    and periodics subroutines.  input is provided as shown. this routine
+   *    used to be called dpper, but the functions inside weren't well organized.
+   *
+   *  author        : david vallado                  719-573-2600   28 jun 2005
+   *
+   *  inputs        :
+   *    epoch       -
+   *    ep          - eccentricity
+   *    argpp       - argument of perigee
+   *    tc          -
+   *    inclp       - inclination
+   *    nodep       - right ascension of ascending node
+   *    np          - mean motion
+   *
+   *  outputs       :
+   *    sinim  , cosim  , sinomm , cosomm , snodm  , cnodm
+   *    day         -
+   *    e3          -
+   *    ee2         -
+   *    em          - eccentricity
+   *    emsq        - eccentricity squared
+   *    gam         -
+   *    peo         -
+   *    pgho        -
+   *    pho         -
+   *    PInco       -
+   *    plo         -
+   *    rtemsq      -
+   *    se2, se3         -
+   *    sgh2, sgh3, sgh4        -
+   *    sh2, sh3, si2, si3, sl2, sl3, sl4         -
+   *    s1, s2, s3, s4, s5, s6, s7          -
+   *    ss1, ss2, ss3, ss4, ss5, ss6, ss7, sz1, sz2, sz3         -
+   *    sz11, sz12, sz13, sz21, sz22, sz23, sz31, sz32, sz33        -
+   *    xgh2, xgh3, xgh4, xh2, xh3, xi2, xi3, xl2, xl3, xl4         -
+   *    nm          - mean motion
+   *    z1, z2, z3, z11, z12, z13, z21, z22, z23, z31, z32, z33         -
+   *    zmol        -
+   *    zmos        -
+   *
+   *  locals        :
+   *    a1, a2, a3, a4, a5, a6, a7, a8, a9, a10         -
+   *    betasq      -
+   *    cc          -
+   *    ctem, stem        -
+   *    x1, x2, x3, x4, x5, x6, x7, x8          -
+   *    xnodce      -
+   *    xnoi        -
+   *    zcosg  , zsing  , zcosgl , zsingl , zcosh  , zsinh  , zcoshl , zsinhl ,
+   *    zcosi  , zsini  , zcosil , zsinil ,
+   *    zx          -
+   *    zy          -
+   *
+   *  coupling      :
+   *    none.
+   *
+   *  references    :
+   *    hoots, roehrich, norad spacetrack report #3 1980
+   *    hoots, norad spacetrack report #6 1986
+   *    hoots, schumacher and glover 2004
+   *    vallado, crawford, hujsak, kelso  2006
+   *----------------------------------------------------------------------------
+   */
   private static dscom(options: {
     epoch: number;
     ep: number;
@@ -512,62 +537,63 @@ class Sgp4 {
       ss6,
       ss7,
       sz1,
-      sz2,
-      sz3,
       sz11,
       sz12,
       sz13,
+      sz2,
       sz21,
       sz22,
       sz23,
+      sz3,
       sz31,
       sz32,
       sz33,
-      z31,
-      z32,
-      z33,
       z1,
-      z2,
-      z3,
       z11,
       z12,
       z13,
+      z2,
       z21,
       z22,
-      z23;
-    let nm = np;
-    let em = ep;
-    let snodm = Math.sin(nodep);
-    let cnodm = Math.cos(nodep);
-    let sinomm = Math.sin(argpp);
-    let cosomm = Math.cos(argpp);
-    let sinim = Math.sin(inclp);
-    let cosim = Math.cos(inclp);
-    let emsq = em * em;
-    let betasq = 1.0 - emsq;
-    let rtemsq = Math.sqrt(betasq);
+      z23,
+      z3,
+      z31,
+      z32,
+      z33;
+    const nm = np;
+    const em = ep;
+    const snodm = Math.sin(nodep);
+    const cnodm = Math.cos(nodep);
+    const sinomm = Math.sin(argpp);
+    const cosomm = Math.cos(argpp);
+    const sinim = Math.sin(inclp);
+    const cosim = Math.cos(inclp);
+    const emsq = em * em;
+    const betasq = 1.0 - emsq;
+    const rtemsq = Math.sqrt(betasq);
 
     //  ----------------- initialize lunar solar terms ---------------
-    let peo = 0.0;
-    let PInco = 0.0;
-    let plo = 0.0;
-    let pgho = 0.0;
-    let pho = 0.0;
-    let day = epoch + 18261.5 + tc / 1440.0;
-    let xnodce = (4.523602 - 9.2422029e-4 * day) % TAU;
-    let stem = Math.sin(xnodce);
-    let ctem = Math.cos(xnodce);
-    let zcosil = 0.91375164 - 0.03568096 * ctem;
-    let zsinil = Math.sqrt(1.0 - zcosil * zcosil);
-    let zsinhl = (0.089683511 * stem) / zsinil;
-    let zcoshl = Math.sqrt(1.0 - zsinhl * zsinhl);
-    let gam = 5.8351514 + 0.001944368 * day;
+    const peo = 0.0;
+    const PInco = 0.0;
+    const plo = 0.0;
+    const pgho = 0.0;
+    const pho = 0.0;
+    const day = epoch + 18261.5 + tc / 1440.0;
+    const xnodce = (4.523602 - 9.2422029e-4 * day) % TAU;
+    const stem = Math.sin(xnodce);
+    const ctem = Math.cos(xnodce);
+    const zcosil = 0.91375164 - 0.03568096 * ctem;
+    const zsinil = Math.sqrt(1.0 - zcosil * zcosil);
+    const zsinhl = (0.089683511 * stem) / zsinil;
+    const zcoshl = Math.sqrt(1.0 - zsinhl * zsinhl);
+    const gam = 5.8351514 + 0.001944368 * day;
     let zx = (0.39785416 * stem) / zsinil;
-    let zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
+    const zy = zcoshl * ctem + 0.91744867 * zsinhl * stem;
+
     zx = Math.atan2(zx, zy);
     zx += gam - xnodce;
-    let zcosgl = Math.cos(zx);
-    let zsingl = Math.sin(zx);
+    const zcosgl = Math.cos(zx);
+    const zsingl = Math.sin(zx);
 
     //  ------------------------- do solar terms ---------------------
     let zcosg = zcosgs;
@@ -577,28 +603,28 @@ class Sgp4 {
     let zcosh = cnodm;
     let zsinh = snodm;
     let cc = c1ss;
-    let xnoi = 1.0 / nm;
+    const xnoi = 1.0 / nm;
 
     for (let lsflg = 1; lsflg <= 2; lsflg++) {
-      let a1 = zcosg * zcosh + zsing * zcosi * zsinh;
-      let a3 = -zsing * zcosh + zcosg * zcosi * zsinh;
-      let a7 = -zcosg * zsinh + zsing * zcosi * zcosh;
-      let a8 = zsing * zsini;
-      let a9 = zsing * zsinh + zcosg * zcosi * zcosh;
-      let a10 = zcosg * zsini;
-      let a2 = cosim * a7 + sinim * a8;
-      let a4 = cosim * a9 + sinim * a10;
-      let a5 = -sinim * a7 + cosim * a8;
-      let a6 = -sinim * a9 + cosim * a10;
+      const a1 = zcosg * zcosh + zsing * zcosi * zsinh;
+      const a3 = -zsing * zcosh + zcosg * zcosi * zsinh;
+      const a7 = -zcosg * zsinh + zsing * zcosi * zcosh;
+      const a8 = zsing * zsini;
+      const a9 = zsing * zsinh + zcosg * zcosi * zcosh;
+      const a10 = zcosg * zsini;
+      const a2 = cosim * a7 + sinim * a8;
+      const a4 = cosim * a9 + sinim * a10;
+      const a5 = -sinim * a7 + cosim * a8;
+      const a6 = -sinim * a9 + cosim * a10;
 
-      let x1 = a1 * cosomm + a2 * sinomm;
-      let x2 = a3 * cosomm + a4 * sinomm;
-      let x3 = -a1 * sinomm + a2 * cosomm;
-      let x4 = -a3 * sinomm + a4 * cosomm;
-      let x5 = a5 * sinomm;
-      let x6 = a6 * sinomm;
-      let x7 = a5 * cosomm;
-      let x8 = a6 * cosomm;
+      const x1 = a1 * cosomm + a2 * sinomm;
+      const x2 = a3 * cosomm + a4 * sinomm;
+      const x3 = -a1 * sinomm + a2 * cosomm;
+      const x4 = -a3 * sinomm + a4 * cosomm;
+      const x5 = a5 * sinomm;
+      const x6 = a6 * sinomm;
+      const x7 = a5 * cosomm;
+      const x8 = a6 * cosomm;
 
       z31 = 12.0 * x1 * x1 - 3.0 * x3 * x3;
       z32 = 24.0 * x1 * x2 - 6.0 * x3 * x4;
@@ -659,36 +685,36 @@ class Sgp4 {
       }
     }
 
-    let zmol = (4.7199672 + (0.2299715 * day - gam)) % TAU;
-    let zmos = (6.2565837 + 0.017201977 * day) % TAU;
+    const zmol = (4.7199672 + (0.2299715 * day - gam)) % TAU;
+    const zmos = (6.2565837 + 0.017201977 * day) % TAU;
 
     //  ------------------------ do solar terms ----------------------
-    let se2 = 2.0 * ss1 * ss6;
-    let se3 = 2.0 * ss1 * ss7;
-    let si2 = 2.0 * ss2 * sz12;
-    let si3 = 2.0 * ss2 * (sz13 - sz11);
-    let sl2 = -2.0 * ss3 * sz2;
-    let sl3 = -2.0 * ss3 * (sz3 - sz1);
-    let sl4 = -2.0 * ss3 * (-21.0 - 9.0 * emsq) * zes;
-    let sgh2 = 2.0 * ss4 * sz32;
-    let sgh3 = 2.0 * ss4 * (sz33 - sz31);
-    let sgh4 = -18.0 * ss4 * zes;
-    let sh2 = -2.0 * ss2 * sz22;
-    let sh3 = -2.0 * ss2 * (sz23 - sz21);
+    const se2 = 2.0 * ss1 * ss6;
+    const se3 = 2.0 * ss1 * ss7;
+    const si2 = 2.0 * ss2 * sz12;
+    const si3 = 2.0 * ss2 * (sz13 - sz11);
+    const sl2 = -2.0 * ss3 * sz2;
+    const sl3 = -2.0 * ss3 * (sz3 - sz1);
+    const sl4 = -2.0 * ss3 * (-21.0 - 9.0 * emsq) * zes;
+    const sgh2 = 2.0 * ss4 * sz32;
+    const sgh3 = 2.0 * ss4 * (sz33 - sz31);
+    const sgh4 = -18.0 * ss4 * zes;
+    const sh2 = -2.0 * ss2 * sz22;
+    const sh3 = -2.0 * ss2 * (sz23 - sz21);
 
     //  ------------------------ do lunar terms ----------------------
-    let ee2 = 2.0 * s1 * s6;
-    let e3 = 2.0 * s1 * s7;
-    let xi2 = 2.0 * s2 * z12;
-    let xi3 = 2.0 * s2 * (z13 - z11);
-    let xl2 = -2.0 * s3 * z2;
-    let xl3 = -2.0 * s3 * (z3 - z1);
-    let xl4 = -2.0 * s3 * (-21.0 - 9.0 * emsq) * zel;
-    let xgh2 = 2.0 * s4 * z32;
-    let xgh3 = 2.0 * s4 * (z33 - z31);
-    let xgh4 = -18.0 * s4 * zel;
-    let xh2 = -2.0 * s2 * z22;
-    let xh3 = -2.0 * s2 * (z23 - z21);
+    const ee2 = 2.0 * s1 * s6;
+    const e3 = 2.0 * s1 * s7;
+    const xi2 = 2.0 * s2 * z12;
+    const xi3 = 2.0 * s2 * (z13 - z11);
+    const xl2 = -2.0 * s3 * z2;
+    const xl3 = -2.0 * s3 * (z3 - z1);
+    const xl4 = -2.0 * s3 * (-21.0 - 9.0 * emsq) * zel;
+    const xgh2 = 2.0 * s4 * z32;
+    const xgh3 = 2.0 * s4 * (z33 - z31);
+    const xgh4 = -18.0 * s4 * zel;
+    const xh2 = -2.0 * s2 * z22;
+    const xh3 = -2.0 * s2 * (z23 - z21);
 
     return {
       snodm,
@@ -773,87 +799,89 @@ class Sgp4 {
       zmol,
       zmos,
     };
-  } // dscom
+  } // Dscom
 
-  /*-----------------------------------------------------------------------------
- *
- *                           procedure dsinit
- *
- *  this procedure provides deep space contributions to mean motion dot due
- *    to geopotential resonance with half day and one day orbits.
- *
- *  author        : david vallado                  719-573-2600   28 jun 2005
- *
- *  inputs        :
- *    cosim, sinim-
- *    emsq        - eccentricity squared
- *    argpo       - argument of perigee
- *    s1, s2, s3, s4, s5      -
- *    ss1, ss2, ss3, ss4, ss5 -
- *    sz1, sz3, sz11, sz13, sz21, sz23, sz31, sz33 -
- *    t           - time
- *    tc          -
- *    gsto        - greenwich sidereal time                   rad
- *    mo          - mean anomaly
- *    mdot        - mean anomaly dot (rate)
- *    no          - mean motion
- *    nodeo       - right ascension of ascending node
- *    nodedot     - right ascension of ascending node dot (rate)
- *    xPIdot      -
- *    z1, z3, z11, z13, z21, z23, z31, z33 -
- *    eccm        - eccentricity
- *    argpm       - argument of perigee
- *    inclm       - inclination
- *    mm          - mean anomaly
- *    xn          - mean motion
- *    nodem       - right ascension of ascending node
- *
- *  outputs       :
- *    em          - eccentricity
- *    argpm       - argument of perigee
- *    inclm       - inclination
- *    mm          - mean anomaly
- *    nm          - mean motion
- *    nodem       - right ascension of ascending node
- *    irez        - flag for resonance           0-none, 1-one day, 2-half day
- *    atime       -
- *    d2201, d2211, d3210, d3222, d4410, d4422, d5220, d5232, d5421, d5433    -
- *    dedt        -
- *    didt        -
- *    dmdt        -
- *    dndt        -
- *    dnodt       -
- *    domdt       -
- *    del1, del2, del3        -
- *    ses  , sghl , sghs , sgs  , shl  , shs  , sis  , sls
- *    theta       -
- *    xfact       -
- *    xlamo       -
- *    xli         -
- *    xni
- *
- *  locals        :
- *    ainv2       -
- *    aonv        -
- *    cosisq      -
- *    eoc         -
- *    f220, f221, f311, f321, f322, f330, f441, f442, f522, f523, f542, f543  -
- *    g200, g201, g211, g300, g310, g322, g410, g422, g520, g521, g532, g533  -
- *    sini2       -
- *    temp        -
- *    temp1       -
- *    theta       -
- *    xno2        -
- *
- *  coupling      :
- *    getgravconst
- *
- *  references    :
- *    hoots, roehrich, norad spacetrack report #3 1980
- *    hoots, norad spacetrack report #6 1986
- *    hoots, schumacher and glover 2004
- *    vallado, crawford, hujsak, kelso  2006
- ----------------------------------------------------------------------------*/
+  /*
+   *-----------------------------------------------------------------------------
+   *
+   *                           procedure dsinit
+   *
+   *  this procedure provides deep space contributions to mean motion dot due
+   *    to geopotential resonance with half day and one day orbits.
+   *
+   *  author        : david vallado                  719-573-2600   28 jun 2005
+   *
+   *  inputs        :
+   *    cosim, sinim-
+   *    emsq        - eccentricity squared
+   *    argpo       - argument of perigee
+   *    s1, s2, s3, s4, s5      -
+   *    ss1, ss2, ss3, ss4, ss5 -
+   *    sz1, sz3, sz11, sz13, sz21, sz23, sz31, sz33 -
+   *    t           - time
+   *    tc          -
+   *    gsto        - greenwich sidereal time                   rad
+   *    mo          - mean anomaly
+   *    mdot        - mean anomaly dot (rate)
+   *    no          - mean motion
+   *    nodeo       - right ascension of ascending node
+   *    nodedot     - right ascension of ascending node dot (rate)
+   *    xPIdot      -
+   *    z1, z3, z11, z13, z21, z23, z31, z33 -
+   *    eccm        - eccentricity
+   *    argpm       - argument of perigee
+   *    inclm       - inclination
+   *    mm          - mean anomaly
+   *    xn          - mean motion
+   *    nodem       - right ascension of ascending node
+   *
+   *  outputs       :
+   *    em          - eccentricity
+   *    argpm       - argument of perigee
+   *    inclm       - inclination
+   *    mm          - mean anomaly
+   *    nm          - mean motion
+   *    nodem       - right ascension of ascending node
+   *    irez        - flag for resonance           0-none, 1-one day, 2-half day
+   *    atime       -
+   *    d2201, d2211, d3210, d3222, d4410, d4422, d5220, d5232, d5421, d5433    -
+   *    dedt        -
+   *    didt        -
+   *    dmdt        -
+   *    dndt        -
+   *    dnodt       -
+   *    domdt       -
+   *    del1, del2, del3        -
+   *    ses  , sghl , sghs , sgs  , shl  , shs  , sis  , sls
+   *    theta       -
+   *    xfact       -
+   *    xlamo       -
+   *    xli         -
+   *    xni
+   *
+   *  locals        :
+   *    ainv2       -
+   *    aonv        -
+   *    cosisq      -
+   *    eoc         -
+   *    f220, f221, f311, f321, f322, f330, f441, f442, f522, f523, f542, f543  -
+   *    g200, g201, g211, g300, g310, g322, g410, g422, g520, g521, g532, g533  -
+   *    sini2       -
+   *    temp        -
+   *    temp1       -
+   *    theta       -
+   *    xno2        -
+   *
+   *  coupling      :
+   *    getgravconst
+   *
+   *  references    :
+   *    hoots, roehrich, norad spacetrack report #3 1980
+   *    hoots, norad spacetrack report #6 1986
+   *    hoots, schumacher and glover 2004
+   *    vallado, crawford, hujsak, kelso  2006
+   *----------------------------------------------------------------------------
+   */
   private static dsinit(options: {
     xke: number;
     cosim: number;
@@ -960,9 +988,11 @@ class Sgp4 {
     xli: number;
     xni: number;
   } {
+    /*
+     * Sgp4fix just send in xke as a constant and eliminate getgravconst call
+     * gravconsttype whichconst,
+     */
     const {
-      // sgp4fix just send in xke as a constant and eliminate getgravconst call
-      // gravconsttype whichconst,
       xke,
       cosim,
       argpo,
@@ -1048,16 +1078,20 @@ class Sgp4 {
     const root22 = 1.7891679e-6;
     const root44 = 7.3636953e-9;
     const root54 = 2.1765803e-9;
-    const rptim = 4.37526908801129966e-3; // equates to 7.29211514668855e-5 rad/sec
+    // IDEA: Any way to fix this?
+    // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+    const rptim = 4.37526908801129966e-3; // Equates to 7.29211514668855e-5 rad/sec
     const root32 = 3.7393792e-7;
     const root52 = 1.1428639e-7;
     const x2o3 = 2.0 / 3.0;
     const znl = 1.5835218e-4;
     const zns = 1.19459e-5;
 
-    // sgp4fix identify constants and allow alternate values
-    // just xke is used here so pass it in rather than have multiple calls
-    // getgravconst( whichconst, tumin, mu, radiusearthkm, xke, j2, j3, j4, j3oj2 );
+    /*
+     * Sgp4fix identify constants and allow alternate values
+     * just xke is used here so pass it in rather than have multiple calls
+     * getgravconst( whichconst, tumin, mu, radiusearthkm, xke, j2, j3, j4, j3oj2 );
+     */
 
     // -------------------- deep space initialization ------------
     irez = 0;
@@ -1069,29 +1103,29 @@ class Sgp4 {
     }
 
     // ------------------------ do solar terms -------------------
-    let ses = ss1 * zns * ss5;
-    let sis = ss2 * zns * (sz11 + sz13);
-    let sls = -zns * ss3 * (sz1 + sz3 - 14.0 - 6.0 * emsq);
-    let sghs = ss4 * zns * (sz31 + sz33 - 6.0);
+    const ses = ss1 * zns * ss5;
+    const sis = ss2 * zns * (sz11 + sz13);
+    const sls = -zns * ss3 * (sz1 + sz3 - 14.0 - 6.0 * emsq);
+    const sghs = ss4 * zns * (sz31 + sz33 - 6.0);
     let shs = -zns * ss2 * (sz21 + sz23);
 
-    // sgp4fix for 180 deg incl
+    // Sgp4fix for 180 deg incl
     if (inclm < 5.2359877e-2 || inclm > PI - 5.2359877e-2) {
       shs = 0.0;
     }
     if (sinim !== 0.0) {
       shs /= sinim;
     }
-    let sgs = sghs - cosim * shs;
+    const sgs = sghs - cosim * shs;
 
     // ------------------------- do lunar terms ------------------
     dedt = ses + s1 * znl * s5;
     didt = sis + s2 * znl * (z11 + z13);
     dmdt = sls - znl * s3 * (z1 + z3 - 14.0 - 6.0 * emsq);
-    let sghl = s4 * znl * (z31 + z33 - 6.0);
+    const sghl = s4 * znl * (z31 + z33 - 6.0);
     let shll = -znl * s2 * (z21 + z23);
 
-    // sgp4fix for 180 deg incl
+    // Sgp4fix for 180 deg incl
     if (inclm < 5.2359877e-2 || inclm > PI - 5.2359877e-2) {
       shll = 0.0;
     }
@@ -1103,38 +1137,44 @@ class Sgp4 {
     }
 
     // ----------- calculate deep space resonance effects --------
-    let dndt = 0.0;
-    let theta = (gsto + tc * rptim) % TAU;
+    const dndt = 0.0;
+    const theta = (gsto + tc * rptim) % TAU;
+
     em += dedt * t;
     inclm += didt * t;
     argpm += domdt * t;
     nodem += dnodt * t;
     mm += dmdt * t;
 
-    // sgp4fix for negative inclinations
-    // the following if statement should be commented out
-    // if (inclm < 0.0)
-    // {
-    //   inclm  = -inclm;
-    //   argpm  = argpm - PI;
-    //   nodem = nodem + PI;
-    // }
+    /*
+     * Sgp4fix for negative inclinations
+     * the following if statement should be commented out
+     * if (inclm < 0.0)
+     * {
+     *   inclm  = -inclm;
+     *   argpm  = argpm - PI;
+     *   nodem = nodem + PI;
+     * }
+     */
 
     // -------------- initialize the resonance terms -------------
     if (irez !== 0) {
-      let aonv = (nm / xke) ** x2o3;
+      const aonv = (nm / xke) ** x2o3;
 
       // ---------- geopotential resonance for 12 hour orbits ------
       if (irez === 2) {
-        let cosisq = cosim * cosim;
-        let emo = em;
-        em = ecco;
-        let emsqo = emsq;
-        emsq = eccsq;
-        let eoc = em * emsq;
-        let g201 = -0.306 - (em - 0.64) * 0.44;
+        const cosisq = cosim * cosim;
+        const emo = em;
 
-        let g211, g310, g322, g410, g422, g520, g533, g521, g532;
+        em = ecco;
+        const emsqo = emsq;
+
+        emsq = eccsq;
+        const eoc = em * emsq;
+        const g201 = -0.306 - (em - 0.64) * 0.44;
+
+        let g211, g310, g322, g410, g422, g520, g521, g532, g533;
+
         if (em <= 0.65) {
           g211 = 3.616 - 13.247 * em + 16.29 * emsq;
           g310 = -19.302 + 117.39 * em - 228.419 * emsq + 156.591 * eoc;
@@ -1163,28 +1203,29 @@ class Sgp4 {
           g521 = -51752.104 + 218913.95 * em - 309468.16 * emsq + 146349.42 * eoc;
           g532 = -40023.88 + 170470.89 * em - 242699.48 * emsq + 115605.82 * eoc;
         }
-        let sini2 = sinim * sinim;
-        let f220 = 0.75 * (1.0 + 2.0 * cosim + cosisq);
-        let f221 = 1.5 * sini2;
-        let f321 = 1.875 * sinim * (1.0 - 2.0 * cosim - 3.0 * cosisq);
-        let f322 = -1.875 * sinim * (1.0 + 2.0 * cosim - 3.0 * cosisq);
-        let f441 = 35.0 * sini2 * f220;
-        let f442 = 39.375 * sini2 * sini2;
+        const sini2 = sinim * sinim;
+        const f220 = 0.75 * (1.0 + 2.0 * cosim + cosisq);
+        const f221 = 1.5 * sini2;
+        const f321 = 1.875 * sinim * (1.0 - 2.0 * cosim - 3.0 * cosisq);
+        const f322 = -1.875 * sinim * (1.0 + 2.0 * cosim - 3.0 * cosisq);
+        const f441 = 35.0 * sini2 * f220;
+        const f442 = 39.375 * sini2 * sini2;
 
-        let f522 =
+        const f522 =
           9.84375 *
           sinim *
           (sini2 * (1.0 - 2.0 * cosim - 5.0 * cosisq) + 0.33333333 * (-2.0 + 4.0 * cosim + 6.0 * cosisq));
-        let f523 =
+        const f523 =
           sinim *
           (4.92187512 * sini2 * (-2.0 - 4.0 * cosim + 10.0 * cosisq) + 6.56250012 * (1.0 + 2.0 * cosim - 3.0 * cosisq));
-        let f542 = 29.53125 * sinim * (2.0 - 8.0 * cosim + cosisq * (-12.0 + 8.0 * cosim + 10.0 * cosisq));
-        let f543 = 29.53125 * sinim * (-2.0 - 8.0 * cosim + cosisq * (12.0 + 8.0 * cosim - 10.0 * cosisq));
+        const f542 = 29.53125 * sinim * (2.0 - 8.0 * cosim + cosisq * (-12.0 + 8.0 * cosim + 10.0 * cosisq));
+        const f543 = 29.53125 * sinim * (-2.0 - 8.0 * cosim + cosisq * (12.0 + 8.0 * cosim - 10.0 * cosisq));
 
-        let xno2 = nm * nm;
-        let ainv2 = aonv * aonv;
+        const xno2 = nm * nm;
+        const ainv2 = aonv * aonv;
         let temp1 = 3.0 * xno2 * ainv2;
         let temp = temp1 * root22;
+
         d2201 = temp * f220 * g201;
         d2211 = temp * f221 * g211;
         temp1 *= aonv;
@@ -1210,12 +1251,13 @@ class Sgp4 {
 
       //  ---------------- synchronous resonance terms --------------
       if (irez === 1) {
-        let g200 = 1.0 + emsq * (-2.5 + 0.8125 * emsq);
-        let g310 = 1.0 + 2.0 * emsq;
-        let g300 = 1.0 + emsq * (-6.0 + 6.60937 * emsq);
-        let f220 = 0.75 * (1.0 + cosim) * (1.0 + cosim);
-        let f311 = 0.9375 * sinim * sinim * (1.0 + 3.0 * cosim) - 0.75 * (1.0 + cosim);
+        const g200 = 1.0 + emsq * (-2.5 + 0.8125 * emsq);
+        const g310 = 1.0 + 2.0 * emsq;
+        const g300 = 1.0 + emsq * (-6.0 + 6.60937 * emsq);
+        const f220 = 0.75 * (1.0 + cosim) * (1.0 + cosim);
+        const f311 = 0.9375 * sinim * sinim * (1.0 + 3.0 * cosim) - 0.75 * (1.0 + cosim);
         let f330 = 1.0 + cosim;
+
         f330 *= 1.875 * f330 * f330;
         del1 = 3.0 * nm * nm * aonv * aonv;
         del2 = 2.0 * del1 * f220 * g200 * q22;
@@ -1265,80 +1307,82 @@ class Sgp4 {
       xli,
       xni,
     };
-  } // dsinit
+  } // Dsinit
 
-  /*-----------------------------------------------------------------------------
- *
- *                           procedure dspace
- *
- *  this procedure provides deep space contributions to mean elements for
- *    perturbing third body.  these effects have been averaged over one
- *    revolution of the sun and moon.  for earth resonance effects, the
- *    effects have been averaged over no revolutions of the satellite.
- *    (mean motion)
- *
- *  author        : david vallado                  719-573-2600   28 jun 2005
- *
- *  inputs        :
- *    d2201, d2211, d3210, d3222, d4410, d4422, d5220, d5232, d5421, d5433 -
- *    dedt        -
- *    del1, del2, del3  -
- *    didt        -
- *    dmdt        -
- *    dnodt       -
- *    domdt       -
- *    irez        - flag for resonance           0-none, 1-one day, 2-half day
- *    argpo       - argument of perigee
- *    argpdot     - argument of perigee dot (rate)
- *    t           - time
- *    tc          -
- *    gsto        - gst
- *    xfact       -
- *    xlamo       -
- *    no          - mean motion
- *    atime       -
- *    em          - eccentricity
- *    ft          -
- *    argpm       - argument of perigee
- *    inclm       - inclination
- *    xli         -
- *    mm          - mean anomaly
- *    xni         - mean motion
- *    nodem       - right ascension of ascending node
- *
- *  outputs       :
- *    atime       -
- *    em          - eccentricity
- *    argpm       - argument of perigee
- *    inclm       - inclination
- *    xli         -
- *    mm          - mean anomaly
- *    xni         -
- *    nodem       - right ascension of ascending node
- *    dndt        -
- *    nm          - mean motion
- *
- *  locals        :
- *    delt        -
- *    ft          -
- *    theta       -
- *    x2li        -
- *    x2omi       -
- *    xl          -
- *    xldot       -
- *    xnddt       -
- *    xndt        -
- *    xomi        -
- *
- *  coupling      :
- *    none        -
- *
- *  references    :
- *    hoots, roehrich, norad spacetrack report #3 1980
- *    hoots, norad spacetrack report #6 1986
- *    hoots, schumacher and glover 2004
- *    vallado, crawford, hujsak, kelso  2006
- ----------------------------------------------------------------------------*/
+  /*
+   *-----------------------------------------------------------------------------
+   *
+   *                           procedure dspace
+   *
+   *  this procedure provides deep space contributions to mean elements for
+   *    perturbing third body.  these effects have been averaged over one
+   *    revolution of the sun and moon.  for earth resonance effects, the
+   *    effects have been averaged over no revolutions of the satellite.
+   *    (mean motion)
+   *
+   *  author        : david vallado                  719-573-2600   28 jun 2005
+   *
+   *  inputs        :
+   *    d2201, d2211, d3210, d3222, d4410, d4422, d5220, d5232, d5421, d5433 -
+   *    dedt        -
+   *    del1, del2, del3  -
+   *    didt        -
+   *    dmdt        -
+   *    dnodt       -
+   *    domdt       -
+   *    irez        - flag for resonance           0-none, 1-one day, 2-half day
+   *    argpo       - argument of perigee
+   *    argpdot     - argument of perigee dot (rate)
+   *    t           - time
+   *    tc          -
+   *    gsto        - gst
+   *    xfact       -
+   *    xlamo       -
+   *    no          - mean motion
+   *    atime       -
+   *    em          - eccentricity
+   *    ft          -
+   *    argpm       - argument of perigee
+   *    inclm       - inclination
+   *    xli         -
+   *    mm          - mean anomaly
+   *    xni         - mean motion
+   *    nodem       - right ascension of ascending node
+   *
+   *  outputs       :
+   *    atime       -
+   *    em          - eccentricity
+   *    argpm       - argument of perigee
+   *    inclm       - inclination
+   *    xli         -
+   *    mm          - mean anomaly
+   *    xni         -
+   *    nodem       - right ascension of ascending node
+   *    dndt        -
+   *    nm          - mean motion
+   *
+   *  locals        :
+   *    delt        -
+   *    ft          -
+   *    theta       -
+   *    x2li        -
+   *    x2omi       -
+   *    xl          -
+   *    xldot       -
+   *    xnddt       -
+   *    xndt        -
+   *    xomi        -
+   *
+   *  coupling      :
+   *    none        -
+   *
+   *  references    :
+   *    hoots, roehrich, norad spacetrack report #3 1980
+   *    hoots, norad spacetrack report #6 1986
+   *    hoots, schumacher and glover 2004
+   *    vallado, crawford, hujsak, kelso  2006
+   *----------------------------------------------------------------------------
+   */
   private static dspace(
     irez: number,
     d2201: number,
@@ -1386,14 +1430,17 @@ class Sgp4 {
     const g44 = 1.8014998;
     const g52 = 1.050833;
     const g54 = 4.4108898;
-    const rptim = 4.37526908801129966e-3; // equates to 7.29211514668855e-5 rad/sec
+    // IDEA: Any way to fix this?
+    // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+    const rptim = 4.37526908801129966e-3; // Equates to 7.29211514668855e-5 rad/sec
     const stepp = 720.0;
     const stepn = -720.0;
     const step2 = 259200.0;
 
     //  ----------- calculate deep space resonance effects -----------
     let dndt = 0.0;
-    let theta = (gsto + tc * rptim) % TAU;
+    const theta = (gsto + tc * rptim) % TAU;
+
     em += dedt * t;
 
     inclm += didt * t;
@@ -1401,44 +1448,52 @@ class Sgp4 {
     nodem += dnodt * t;
     mm += dmdt * t;
 
-    // sgp4fix for negative inclinations
-    // the following if statement should be commented out
-    // if (inclm < 0.0)
-    // {
-    //   inclm = -inclm;
-    //   argpm = argpm - PI;
-    //   nodem = nodem + PI;
-    // }
+    /*
+     * Sgp4fix for negative inclinations
+     * the following if statement should be commented out
+     * if (inclm < 0.0)
+     * {
+     *   inclm = -inclm;
+     *   argpm = argpm - PI;
+     *   nodem = nodem + PI;
+     * }
+     */
 
     /* - update resonances : numerical (euler-maclaurin) integration - */
     /* ------------------------- epoch restart ----------------------  */
-    //   sgp4fix for propagator problems
-    //   the following integration works for negative time steps and periods
-    //   the specific changes are unknown because the original code was so convoluted
+    /*
+     *   Sgp4fix for propagator problems
+     *   the following integration works for negative time steps and periods
+     *   the specific changes are unknown because the original code was so convoluted
+     */
 
-    // sgp4fix take out atime = 0.0 and fix for faster operation
-    // ft = 0.0; /** Ootk -- This has no value */
+    // Sgp4fix take out atime = 0.0 and fix for faster operation
+    // Ft = 0.0; /** Ootk -- This has no value */
     if (irez !== 0) {
-      //  sgp4fix streamline check
+      //  Sgp4fix streamline check
       if (atime === 0.0 || t * atime <= 0.0 || Math.abs(t) < Math.abs(atime)) {
         atime = 0.0;
         xni = no;
         xli = xlamo;
       }
 
-      // sgp4fix move check outside loop
+      // Sgp4fix move check outside loop
       let delt;
+
       if (t > 0.0) {
         delt = stepp;
       } else {
         delt = stepn;
       }
 
-      let xndt, xldot, xnddt, xomi, x2omi, x2li, ft;
-      let iretn = 381; // added for do loop
+      let ft, x2li, x2omi, xldot, xnddt, xndt, xomi;
+      let iretn = 381; // Added for do loop
+
       while (iretn === 381) {
-        //  ------------------- dot terms calculated -------------
-        //  ----------- near - synchronous resonance terms -------
+        /*
+         *  ------------------- dot terms calculated -------------
+         *  ----------- near - synchronous resonance terms -------
+         */
         if (irez !== 2) {
           xndt =
             del1 * Math.sin(xli - fasx2) + del2 * Math.sin(2.0 * (xli - fasx4)) + del3 * Math.sin(3.0 * (xli - fasx6));
@@ -1479,10 +1534,12 @@ class Sgp4 {
           xnddt *= xldot;
         }
 
-        //  ----------------------- integrator -------------------
-        //  sgp4fix move end checks to end of routine
+        /*
+         *  ----------------------- integrator -------------------
+         *  sgp4fix move end checks to end of routine
+         */
         if (Math.abs(t - atime) >= stepp) {
-          // iret = 0; /** Ootk -- This has no value */
+          // Iret = 0; /** Ootk -- This has no value */
           iretn = 381;
         } else {
           ft = t - atime;
@@ -1494,10 +1551,11 @@ class Sgp4 {
           xni += xndt * delt + xnddt * step2;
           atime += delt;
         }
-      } // while iretn = 381
+      } // While iretn = 381
 
       nm = xni + xndt * ft + xnddt * ft * ft * 0.5;
-      let xl = xli + xldot * ft + xndt * ft * ft * 0.5;
+      const xl = xli + xldot * ft + xndt * ft * ft * 0.5;
+
       if (irez !== 1) {
         mm = xl - 2.0 * nodem + 2.0 * theta;
         dndt = nm - no;
@@ -1509,60 +1567,62 @@ class Sgp4 {
     }
 
     return [em, argpm, inclm, mm, nodem, nm];
-  } // dspace
+  } // Dspace
 
-  /*-----------------------------------------------------------------------------
- *
- *                           procedure initl
- *
- *  this procedure initializes the sgp4 propagator. all the initialization is
- *    consolidated here instead of having multiple loops inside other routines.
- *
- *  author        : david vallado                  719-573-2600   28 jun 2005
- *
- *  inputs        :
- *    satn        - satellite number - not needed, placed in satrec
- *    xke         - reciprocal of tumin
- *    j2          - j2 zonal harmonic
- *    ecco        - eccentricity                           0.0 - 1.0
- *    epoch       - epoch time in days from jan 0, 1950. 0 hr
- *    inclo       - inclination of satellite
- *    no          - mean motion of satellite
- *
- *  outputs       :
- *    ainv        - 1.0 / a
- *    ao          - semi major axis
- *    con41       -
- *    con42       - 1.0 - 5.0 cos(i)
- *    cosio       - cosine of inclination
- *    cosio2      - cosio squared
- *    eccsq       - eccentricity squared
- *    method      - flag for deep space                    'd', 'n'
- *    omeosq      - 1.0 - ecco * ecco
- *    posq        - semi-parameter squared
- *    rp          - radius of perigee
- *    rteosq      - square root of (1.0 - ecco*ecco)
- *    sinio       - sine of inclination
- *    gsto        - gst at time of observation               rad
- *    no          - mean motion of satellite
- *
- *  locals        :
- *    ak          -
- *    d1          -
- *    del         -
- *    adel        -
- *    po          -
- *
- *  coupling      :
- *    getgravconst- no longer used
- *    gstime      - find greenwich sidereal time from the julian date
- *
- *  references    :
- *    hoots, roehrich, norad spacetrack report #3 1980
- *    hoots, norad spacetrack report #6 1986
- *    hoots, schumacher and glover 2004
- *    vallado, crawford, hujsak, kelso  2006
- ----------------------------------------------------------------------------*/
+  /*
+   *-----------------------------------------------------------------------------
+   *
+   *                           procedure initl
+   *
+   *  this procedure initializes the sgp4 propagator. all the initialization is
+   *    consolidated here instead of having multiple loops inside other routines.
+   *
+   *  author        : david vallado                  719-573-2600   28 jun 2005
+   *
+   *  inputs        :
+   *    satn        - satellite number - not needed, placed in satrec
+   *    xke         - reciprocal of tumin
+   *    j2          - j2 zonal harmonic
+   *    ecco        - eccentricity                           0.0 - 1.0
+   *    epoch       - epoch time in days from jan 0, 1950. 0 hr
+   *    inclo       - inclination of satellite
+   *    no          - mean motion of satellite
+   *
+   *  outputs       :
+   *    ainv        - 1.0 / a
+   *    ao          - semi major axis
+   *    con41       -
+   *    con42       - 1.0 - 5.0 cos(i)
+   *    cosio       - cosine of inclination
+   *    cosio2      - cosio squared
+   *    eccsq       - eccentricity squared
+   *    method      - flag for deep space                    'd', 'n'
+   *    omeosq      - 1.0 - ecco * ecco
+   *    posq        - semi-parameter squared
+   *    rp          - radius of perigee
+   *    rteosq      - square root of (1.0 - ecco*ecco)
+   *    sinio       - sine of inclination
+   *    gsto        - gst at time of observation               rad
+   *    no          - mean motion of satellite
+   *
+   *  locals        :
+   *    ak          -
+   *    d1          -
+   *    del         -
+   *    adel        -
+   *    po          -
+   *
+   *  coupling      :
+   *    getgravconst- no longer used
+   *    gstime      - find greenwich sidereal time from the julian date
+   *
+   *  references    :
+   *    hoots, roehrich, norad spacetrack report #3 1980
+   *    hoots, norad spacetrack report #6 1986
+   *    hoots, schumacher and glover 2004
+   *    vallado, crawford, hujsak, kelso  2006
+   *----------------------------------------------------------------------------
+   */
   private static initl(options: {
     opsmode: string;
     ecco: number;
@@ -1588,66 +1648,80 @@ class Sgp4 {
     sinio: number;
     gsto: number;
   } {
-    // sgp4fix satn not needed. include in satrec in case needed later
-    // int satn,
-    // sgp4fix just pass in xke and j2
-    // gravconsttype whichconst,
+    /*
+     * Sgp4fix satn not needed. include in satrec in case needed later
+     * int satn,
+     * sgp4fix just pass in xke and j2
+     * gravconsttype whichconst,
+     */
     const { opsmode, ecco, epoch, inclo, xke, j2 } = options;
-    let no = options.no;
+    let { no } = options;
 
     /* --------------------- local variables ------------------------ */
-    const PI = Math.PI;
+    const { PI } = Math;
     const TAU = PI * 2;
     const x2o3 = 2.0 / 3.0;
 
-    // sgp4fix use old way of finding gst
+    // Sgp4fix use old way of finding gst
     /** Ootk -- Some variables imported from outside the class at the top */
 
-    // ----------------------- earth constants ---------------------
-    // sgp4fix identify constants and allow alternate values
-    // only xke and j2 are used here so pass them in directly
-    // getgravconst( whichconst, tumin, mu, radiusearthkm, xke, j2, j3, j4, j3oj2 )
+    /*
+     * ----------------------- earth constants ---------------------
+     * sgp4fix identify constants and allow alternate values
+     * only xke and j2 are used here so pass them in directly
+     * getgravconst( whichconst, tumin, mu, radiusearthkm, xke, j2, j3, j4, j3oj2 )
+     */
 
     // ------------- calculate auxillary epoch quantities ----------
-    let eccsq = ecco * ecco;
-    let omeosq = 1.0 - eccsq;
-    let rteosq = Math.sqrt(omeosq);
-    let cosio = Math.cos(inclo);
-    let cosio2 = cosio * cosio;
+    const eccsq = ecco * ecco;
+    const omeosq = 1.0 - eccsq;
+    const rteosq = Math.sqrt(omeosq);
+    const cosio = Math.cos(inclo);
+    const cosio2 = cosio * cosio;
 
     // ------------------ un-kozai the mean motion -----------------
-    let ak = (xke / no) ** x2o3;
-    let d1 = (0.75 * j2 * (3.0 * cosio2 - 1.0)) / (rteosq * omeosq);
+    const ak = (xke / no) ** x2o3;
+    const d1 = (0.75 * j2 * (3.0 * cosio2 - 1.0)) / (rteosq * omeosq);
     let delPrime = d1 / (ak * ak);
-    let adel = ak * (1.0 - delPrime * delPrime - delPrime * (1.0 / 3.0 + (134.0 * delPrime * delPrime) / 81.0));
+    const adel = ak * (1.0 - delPrime * delPrime - delPrime * (1.0 / 3.0 + (134.0 * delPrime * delPrime) / 81.0));
+
     delPrime = d1 / (adel * adel);
-    no = no / (1.0 + delPrime);
+    no /= 1.0 + delPrime;
 
-    let ao = (xke / no) ** x2o3;
-    let sinio = Math.sin(inclo);
-    let po = ao * omeosq;
-    let con42 = 1.0 - 5.0 * cosio2;
-    let con41 = -con42 - cosio2 - cosio2;
-    let ainv = 1.0 / ao;
-    let posq = po * po;
-    let rp = ao * (1.0 - ecco);
-    let method = 'n';
+    const ao = (xke / no) ** x2o3;
+    const sinio = Math.sin(inclo);
+    const po = ao * omeosq;
+    const con42 = 1.0 - 5.0 * cosio2;
+    const con41 = -con42 - cosio2 - cosio2;
+    const ainv = 1.0 / ao;
+    const posq = po * po;
+    const rp = ao * (1.0 - ecco);
+    const method = 'n';
 
-    //  sgp4fix modern approach to finding sidereal time
+    //  Sgp4fix modern approach to finding sidereal time
     /** Ootk -- Continue allowing AFSPC mode for SGP4 Validation */
     let gsto;
-    if (opsmode == 'a') {
-      //  sgp4fix use old way of finding gst
-      //  count integer number of days from 0 jan 1970
-      let ts70 = epoch - 7305.0;
-      let ds70 = Math.floor(ts70 + 1.0e-8);
-      let tfrac = ts70 - ds70;
 
-      //  find greenwich location at epoch
-      let c1 = 1.72027916940703639e-2;
-      let thgr70 = 1.7321343856509374;
-      let fk5r = 5.07551419432269442e-15;
-      let c1p2p = c1 + TAU;
+    if (opsmode === 'a') {
+      /*
+       *  Sgp4fix use old way of finding gst
+       *  count integer number of days from 0 jan 1970
+       */
+      const ts70 = epoch - 7305.0;
+      const ds70 = Math.floor(ts70 + 1.0e-8);
+      const tfrac = ts70 - ds70;
+
+      //  Find greenwich location at epoch
+
+      // IDEA: Precision issues in JavaScript...
+      // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+      const c1 = 1.72027916940703639e-2;
+      // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+      const thgr70 = 1.7321343856509374;
+      // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
+      const fk5r = 5.07551419432269442e-15;
+      const c1p2p = c1 + TAU;
+
       gsto = (thgr70 + c1 * ds70 + c1p2p * tfrac + ts70 * ts70 * fk5r) % TAU;
       /* istanbul ignore next | This is no longer possible*/
       if (gsto < 0.0) {
@@ -1674,89 +1748,91 @@ class Sgp4 {
       sinio,
       gsto,
     };
-  } // initl
+  } // Initl
 
-  /*-----------------------------------------------------------------------------
- *
- *                             procedure sgp4init
- *
- *  this procedure initializes variables for sgp4.
- *
- *  author        : david vallado                  719-573-2600   28 jun 2005
- *
- *  inputs        :
- *    opsmode     - mode of operation afspc or improved 'a', 'i'
- *    whichconst  - which set of constants to use  72, 84
- *    satn        - satellite number
- *    bstar       - sgp4 type drag coefficient              kg/m2er
- *    ecco        - eccentricity
- *    epoch       - epoch time in days from jan 0, 1950. 0 hr
- *    argpo       - argument of perigee (output if ds)
- *    inclo       - inclination
- *    mo          - mean anomaly (output if ds)
- *    no          - mean motion
- *    nodeo       - right ascension of ascending node
- *
- *  outputs       :
- *    rec      - common values for subsequent calls
- *    return code - non-zero on error.
- *                   1 - mean elements, ecc >= 1.0 or ecc < -0.001 or a < 0.95 er
- *                   2 - mean motion less than 0.0
- *                   3 - pert elements, ecc < 0.0  or  ecc > 1.0
- *                   4 - semi-latus rectum < 0.0
- *                   5 - epoch elements are sub-orbital
- *                   6 - satellite has decayed
- *
- *  locals        :
- *    cnodm  , snodm  , cosim  , sinim  , cosomm , sinomm
- *    cc1sq  , cc2    , cc3
- *    coef   , coef1
- *    cosio4      -
- *    day         -
- *    dndt        -
- *    em          - eccentricity
- *    emsq        - eccentricity squared
- *    eeta        -
- *    etasq       -
- *    gam         -
- *    argpm       - argument of perigee
- *    nodem       -
- *    inclm       - inclination
- *    mm          - mean anomaly
- *    nm          - mean motion
- *    perige      - perigee
- *    PInvsq      -
- *    psisq       -
- *    qzms24      -
- *    rtemsq      -
- *    s1, s2, s3, s4, s5, s6, s7          -
- *    sfour       -
- *    ss1, ss2, ss3, ss4, ss5, ss6, ss7         -
- *    sz1, sz2, sz3
- *    sz11, sz12, sz13, sz21, sz22, sz23, sz31, sz32, sz33        -
- *    tc          -
- *    temp        -
- *    temp1, temp2, temp3       -
- *    tsi         -
- *    xPIdot      -
- *    xhdot1      -
- *    z1, z2, z3          -
- *    z11, z12, z13, z21, z22, z23, z31, z32, z33         -
- *
- *  coupling      :
- *    getgravconst-
- *    initl       -
- *    dscom       -
- *    dpper       -
- *    dsinit      -
- *    sgp4        -
- *
- *  references    :
- *    hoots, roehrich, norad spacetrack report #3 1980
- *    hoots, norad spacetrack report #6 1986
- *    hoots, schumacher and glover 2004
- *    vallado, crawford, hujsak, kelso  2006
- ----------------------------------------------------------------------------*/
+  /*
+   *-----------------------------------------------------------------------------
+   *
+   *                             procedure sgp4init
+   *
+   *  this procedure initializes variables for sgp4.
+   *
+   *  author        : david vallado                  719-573-2600   28 jun 2005
+   *
+   *  inputs        :
+   *    opsmode     - mode of operation afspc or improved 'a', 'i'
+   *    whichconst  - which set of constants to use  72, 84
+   *    satn        - satellite number
+   *    bstar       - sgp4 type drag coefficient              kg/m2er
+   *    ecco        - eccentricity
+   *    epoch       - epoch time in days from jan 0, 1950. 0 hr
+   *    argpo       - argument of perigee (output if ds)
+   *    inclo       - inclination
+   *    mo          - mean anomaly (output if ds)
+   *    no          - mean motion
+   *    nodeo       - right ascension of ascending node
+   *
+   *  outputs       :
+   *    rec      - common values for subsequent calls
+   *    return code - non-zero on error.
+   *                   1 - mean elements, ecc >= 1.0 or ecc < -0.001 or a < 0.95 er
+   *                   2 - mean motion less than 0.0
+   *                   3 - pert elements, ecc < 0.0  or  ecc > 1.0
+   *                   4 - semi-latus rectum < 0.0
+   *                   5 - epoch elements are sub-orbital
+   *                   6 - satellite has decayed
+   *
+   *  locals        :
+   *    cnodm  , snodm  , cosim  , sinim  , cosomm , sinomm
+   *    cc1sq  , cc2    , cc3
+   *    coef   , coef1
+   *    cosio4      -
+   *    day         -
+   *    dndt        -
+   *    em          - eccentricity
+   *    emsq        - eccentricity squared
+   *    eeta        -
+   *    etasq       -
+   *    gam         -
+   *    argpm       - argument of perigee
+   *    nodem       -
+   *    inclm       - inclination
+   *    mm          - mean anomaly
+   *    nm          - mean motion
+   *    perige      - perigee
+   *    PInvsq      -
+   *    psisq       -
+   *    qzms24      -
+   *    rtemsq      -
+   *    s1, s2, s3, s4, s5, s6, s7          -
+   *    sfour       -
+   *    ss1, ss2, ss3, ss4, ss5, ss6, ss7         -
+   *    sz1, sz2, sz3
+   *    sz11, sz12, sz13, sz21, sz22, sz23, sz31, sz32, sz33        -
+   *    tc          -
+   *    temp        -
+   *    temp1, temp2, temp3       -
+   *    tsi         -
+   *    xPIdot      -
+   *    xhdot1      -
+   *    z1, z2, z3          -
+   *    z11, z12, z13, z21, z22, z23, z31, z32, z33         -
+   *
+   *  coupling      :
+   *    getgravconst-
+   *    initl       -
+   *    dscom       -
+   *    dpper       -
+   *    dsinit      -
+   *    sgp4        -
+   *
+   *  references    :
+   *    hoots, roehrich, norad spacetrack report #3 1980
+   *    hoots, norad spacetrack report #6 1986
+   *    hoots, schumacher and glover 2004
+   *    vallado, crawford, hujsak, kelso  2006
+   *----------------------------------------------------------------------------
+   */
   private static sgp4init(
     satrec: SatelliteRecord,
     options?: {
@@ -1793,9 +1869,11 @@ class Sgp4 {
     } = options;
 
     /* ------------------------ initialization --------------------- */
-    // sgp4fix divisor for divide by zero check on inclination
-    // the old check used 1.0 + Math.cos(PI-1.0e-9), but then compared it to
-    // 1.5 e-12, so the threshold was changed to 1.5e-12 for consistency
+    /*
+     * Sgp4fix divisor for divide by zero check on inclination
+     * the old check used 1.0 + Math.cos(PI-1.0e-9), but then compared it to
+     * 1.5 e-12, so the threshold was changed to 1.5e-12 for consistency
+     */
 
     // ----------- set all near earth variables to zero ------------
     satrec.isimp = 0;
@@ -1885,9 +1963,12 @@ class Sgp4 {
     satrec.xni = 0.0;
 
     /* ------------------------ earth constants ----------------------- */
-    // sgp4fix identify constants and allow alternate values
-    // this is now the only call for the constants
+    /*
+     * Sgp4fix identify constants and allow alternate values
+     * this is now the only call for the constants
+     */
     const gravResults = Sgp4.getgravconst(whichconst);
+
     satrec.tumin = gravResults.tumin;
     satrec.mus = gravResults.mus;
     satrec.radiusearthkm = gravResults.radiusearthkm;
@@ -1896,62 +1977,70 @@ class Sgp4 {
     satrec.j3 = gravResults.j3;
     satrec.j4 = gravResults.j4;
     satrec.j3oj2 = gravResults.j3oj2;
-    let j2 = gravResults.j2;
-    let j4 = gravResults.j4;
-    let xke = gravResults.xke;
-    let j3oj2 = gravResults.j3oj2;
+    const { j2 } = gravResults;
+    const { j4 } = gravResults;
+    const { xke } = gravResults;
+    const { j3oj2 } = gravResults;
 
-    //-------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
 
     satrec.error = 0;
     satrec.operationmode = opsmode;
 
-    // new alpha5 or 9-digit number
-    /** Ootk -- Using JS code for string manipulation but same effect
+    // New alpha5 or 9-digit number
+    /**
+     * Ootk -- Using JS code for string manipulation but same effect
      * Ex. A2525 = 102525
      * Ex. Z1234 = 351234
      */
-    let leadingChar = satn.split('')[0].toLowerCase(); // Using uppercase will break the -96 math.
+    const leadingChar = satn.split('')[0].toLowerCase(); // Using uppercase will break the -96 math.
+
     if (isNaN(parseInt(leadingChar))) {
       satrec.satnum = parseInt(leadingChar.charCodeAt(0) - 96 + 9 + satrec.satnum.slice(1, 5)).toString();
     } else {
       satrec.satnum = satn;
     }
 
-    // sgp4fix - note the following variables are also passed directly via satrec.
-    // it is possible to streamline the sgp4init call by deleting the "x"
-    // variables, but the user would need to set the satrec.* values first. we
-    // include the additional assignments in case twoline2rv is not used.
+    /*
+     * Sgp4fix - note the following variables are also passed directly via satrec.
+     * it is possible to streamline the sgp4init call by deleting the "x"
+     * variables, but the user would need to set the satrec.* values first. we
+     * include the additional assignments in case twoline2rv is not used.
+     */
     satrec.bstar = xbstar;
-    // sgp4fix allow additional parameters in the struct
+    // Sgp4fix allow additional parameters in the struct
     satrec.ndot = xndot;
     satrec.nddot = xnddot;
     satrec.ecco = xecco;
     satrec.argpo = xargpo;
     satrec.inclo = xinclo;
     satrec.mo = xmo;
-    // sgp4fix rename variables to clarify which mean motion is intended
+    // Sgp4fix rename variables to clarify which mean motion is intended
     satrec.no = xno;
     satrec.nodeo = xnodeo;
 
-    // single averaged mean elements
-    // satrec.am = satrec.em = satrec.im = satrec.Om = satrec.mm = satrec.nm = 0.0;
+    /*
+     * Single averaged mean elements
+     * satrec.am = satrec.em = satrec.im = satrec.Om = satrec.mm = satrec.nm = 0.0;
+     */
 
-    // ------------------------ earth constants -----------------------
-    // sgp4fix identify constants and allow alternate values
-    // getgravconst( whichconst, tumin, mu, radiusearthkm, xke, j2, j3, j4, j3oj2 );
-    let ss = 78.0 / satrec.radiusearthkm + 1.0;
-    // sgp4fix use multiply for speed instead of pow
-    let qzms2ttemp = (120.0 - 78.0) / satrec.radiusearthkm;
-    let qzms2t = qzms2ttemp * qzms2ttemp * qzms2ttemp * qzms2ttemp;
+    /*
+     * ------------------------ earth constants -----------------------
+     * sgp4fix identify constants and allow alternate values
+     * getgravconst( whichconst, tumin, mu, radiusearthkm, xke, j2, j3, j4, j3oj2 );
+     */
+    const ss = 78.0 / satrec.radiusearthkm + 1.0;
+    // Sgp4fix use multiply for speed instead of pow
+    const qzms2ttemp = (120.0 - 78.0) / satrec.radiusearthkm;
+    const qzms2t = qzms2ttemp * qzms2ttemp * qzms2ttemp * qzms2ttemp;
 
     satrec.init = 'y';
     satrec.t = 0.0;
 
-    // sgp4fix remove satn as it is not needed in initl
-    let initlOptions = {
+    // Sgp4fix remove satn as it is not needed in initl
+    const initlOptions = {
       ecco: satrec.ecco,
-      epoch: epoch,
+      epoch,
       inclo: satrec.inclo,
       no: satrec.no,
       method: satrec.method,
@@ -1960,26 +2049,28 @@ class Sgp4 {
       j2: satrec.j2,
     };
 
-    let initlResult = Sgp4.initl(initlOptions);
+    const initlResult = Sgp4.initl(initlOptions);
 
     const { ao, con42, cosio, cosio2, eccsq, omeosq, posq, rp, rteosq, sinio } = initlResult;
 
     satrec.no = initlResult.no;
     satrec.con41 = initlResult.con41;
     satrec.gsto = initlResult.gsto;
-    satrec.a = Math.pow(satrec.no * satrec.tumin, -2.0 / 3.0);
+    satrec.a = (satrec.no * satrec.tumin) ** (-2.0 / 3.0);
     satrec.alta = satrec.a * (1.0 + satrec.ecco) - 1.0;
     satrec.altp = satrec.a * (1.0 - satrec.ecco) - 1.0;
     satrec.error = 0;
 
-    // sgp4fix remove this check as it is unnecessary
-    // the mrt check in sgp4 handles decaying satellite cases even if the starting
-    // condition is below the surface of te earth
-    // if (rp < 1.0)
-    // {
-    //   printf("// *** satn%d epoch elts sub-orbital ***\n", satn);
-    //   satrec.error = 5;
-    // }
+    /*
+     * Sgp4fix remove this check as it is unnecessary
+     * the mrt check in sgp4 handles decaying satellite cases even if the starting
+     * condition is below the surface of te earth
+     * if (rp < 1.0)
+     * {
+     *   printf("// *** satn%d epoch elts sub-orbital ***\n", satn);
+     *   satrec.error = 5;
+     * }
+     */
 
     if (omeosq >= 0.0 || satrec.no >= 0.0) {
       satrec.isimp = 0;
@@ -1988,7 +2079,7 @@ class Sgp4 {
       }
       let sfour = ss;
       let qzms24 = qzms2t;
-      let perige = (rp - 1.0) * satrec.radiusearthkm;
+      const perige = (rp - 1.0) * satrec.radiusearthkm;
 
       // - for perigees below 156 km, s and qoms2t are altered -
       if (perige < 156.0) {
@@ -1996,27 +2087,31 @@ class Sgp4 {
         if (perige < 98.0) {
           sfour = 20.0;
         }
-        // sgp4fix use multiply for speed instead of pow
-        let qzms24temp = (120.0 - sfour) / satrec.radiusearthkm;
+        // Sgp4fix use multiply for speed instead of pow
+        const qzms24temp = (120.0 - sfour) / satrec.radiusearthkm;
+
         qzms24 = qzms24temp * qzms24temp * qzms24temp * qzms24temp;
         sfour = sfour / satrec.radiusearthkm + 1.0;
       }
-      let PInvsq = 1.0 / posq;
+      const PInvsq = 1.0 / posq;
 
-      let tsi = 1.0 / (ao - sfour);
+      const tsi = 1.0 / (ao - sfour);
+
       satrec.eta = ao * satrec.ecco * tsi;
-      let etasq = satrec.eta * satrec.eta;
-      let eeta = satrec.ecco * satrec.eta;
-      let psisq = Math.abs(1.0 - etasq);
-      let coef = qzms24 * tsi ** 4.0;
-      let coef1 = coef / psisq ** 3.5;
-      let cc2 =
+      const etasq = satrec.eta * satrec.eta;
+      const eeta = satrec.ecco * satrec.eta;
+      const psisq = Math.abs(1.0 - etasq);
+      const coef = qzms24 * tsi ** 4.0;
+      const coef1 = coef / psisq ** 3.5;
+      const cc2 =
         coef1 *
         satrec.no *
         (ao * (1.0 + 1.5 * etasq + eeta * (4.0 + etasq)) +
           ((0.375 * j2 * tsi) / psisq) * satrec.con41 * (8.0 + 3.0 * etasq * (8.0 + etasq)));
+
       satrec.cc1 = satrec.bstar * cc2;
       let cc3 = 0.0;
+
       if (satrec.ecco > 1.0e-4) {
         cc3 = (-2.0 * coef * tsi * j3oj2 * satrec.no * sinio) / satrec.ecco;
       }
@@ -2033,10 +2128,11 @@ class Sgp4 {
             (-3.0 * satrec.con41 * (1.0 - 2.0 * eeta + etasq * (1.5 - 0.5 * eeta)) +
               0.75 * satrec.x1mth2 * (2.0 * etasq - eeta * (1.0 + etasq)) * Math.cos(2.0 * satrec.argpo)));
       satrec.cc5 = 2.0 * coef1 * ao * omeosq * (1.0 + 2.75 * (etasq + eeta) + eeta * etasq);
-      let cosio4 = cosio2 * cosio2;
-      let temp1 = 1.5 * j2 * PInvsq * satrec.no;
-      let temp2 = 0.5 * temp1 * j2 * PInvsq;
-      let temp3 = -0.46875 * j4 * PInvsq * PInvsq * satrec.no;
+      const cosio4 = cosio2 * cosio2;
+      const temp1 = 1.5 * j2 * PInvsq * satrec.no;
+      const temp2 = 0.5 * temp1 * j2 * PInvsq;
+      const temp3 = -0.46875 * j4 * PInvsq * PInvsq * satrec.no;
+
       satrec.mdot =
         satrec.no +
         0.5 * temp1 * rteosq * satrec.con41 +
@@ -2045,9 +2141,11 @@ class Sgp4 {
         -0.5 * temp1 * con42 +
         0.0625 * temp2 * (7.0 - 114.0 * cosio2 + 395.0 * cosio4) +
         temp3 * (3.0 - 36.0 * cosio2 + 49.0 * cosio4);
-      let xhdot1 = -temp1 * cosio;
+      const xhdot1 = -temp1 * cosio;
+
       satrec.nodedot = xhdot1 + (0.5 * temp2 * (4.0 - 19.0 * cosio2) + 2.0 * temp3 * (3.0 - 7.0 * cosio2)) * cosio;
-      let xPIdot = satrec.argpdot + satrec.nodedot;
+      const xPIdot = satrec.argpdot + satrec.nodedot;
+
       satrec.omgcof = satrec.bstar * cc3 * Math.cos(satrec.argpo);
       satrec.xmcof = 0.0;
       if (satrec.ecco > 1.0e-4) {
@@ -2056,7 +2154,7 @@ class Sgp4 {
       satrec.nodecf = 3.5 * omeosq * xhdot1 * satrec.cc1;
       satrec.t2cof = 1.5 * satrec.cc1;
 
-      // sgp4fix for divide by zero with xinco = 180 deg
+      // Sgp4fix for divide by zero with xinco = 180 deg
       if (Math.abs(cosio + 1.0) > 1.5e-12) {
         satrec.xlcof = (-0.25 * j3oj2 * sinio * (3.0 + 5.0 * cosio)) / (1.0 + cosio);
       } else {
@@ -2064,8 +2162,9 @@ class Sgp4 {
       }
       satrec.aycof = -0.5 * j3oj2 * sinio;
 
-      // sgp4fix use multiply for speed instead of pow
-      let delmotemp = 1.0 + satrec.eta * Math.cos(satrec.mo);
+      // Sgp4fix use multiply for speed instead of pow
+      const delmotemp = 1.0 + satrec.eta * Math.cos(satrec.mo);
+
       satrec.delmo = delmotemp * delmotemp * delmotemp;
       satrec.sinmao = Math.sin(satrec.mo);
       satrec.x7thm1 = 7.0 * cosio2 - 1.0;
@@ -2074,10 +2173,10 @@ class Sgp4 {
       if (TAU / satrec.no >= 225.0) {
         satrec.method = 'd';
         satrec.isimp = 1;
-        let tc = 0.0;
-        let inclm = satrec.inclo;
+        const tc = 0.0;
+        const inclm = satrec.inclo;
 
-        let dscomOptions = {
+        const dscomOptions = {
           epoch,
           ep: satrec.ecco,
           argpp: satrec.argpo,
@@ -2118,7 +2217,7 @@ class Sgp4 {
           zmos: satrec.zmos,
         };
 
-        let dscomResult = Sgp4.dscom(dscomOptions);
+        const dscomResult = Sgp4.dscom(dscomOptions);
 
         satrec.e3 = dscomResult.e3;
         satrec.ee2 = dscomResult.ee2;
@@ -2203,9 +2302,9 @@ class Sgp4 {
         satrec.argpo = dpperResult.argpp;
         satrec.mo = dpperResult.mp;
 
-        let argpm = 0.0;
-        let nodem = 0.0;
-        let mm = 0.0;
+        const argpm = 0.0;
+        const nodem = 0.0;
+        const mm = 0.0;
 
         const dsinitOptions = {
           xke,
@@ -2283,6 +2382,7 @@ class Sgp4 {
         };
 
         const dsinitResult = Sgp4.dsinit(dsinitOptions);
+
         satrec.irez = dsinitResult.irez;
         satrec.atime = dsinitResult.atime;
         satrec.d2201 = dsinitResult.d2201;
@@ -2316,9 +2416,11 @@ class Sgp4 {
 
       // ----------- set variables if not deep space -----------
       if (satrec.isimp !== 1) {
-        let cc1sq = satrec.cc1 * satrec.cc1;
+        const cc1sq = satrec.cc1 * satrec.cc1;
+
         satrec.d2 = 4.0 * ao * tsi * cc1sq;
-        let temp = (satrec.d2 * tsi * satrec.cc1) / 3.0;
+        const temp = (satrec.d2 * tsi * satrec.cc1) / 3.0;
+
         satrec.d3 = (17.0 * ao + sfour) * temp;
         satrec.d4 = 0.5 * temp * ao * tsi * (221.0 * ao + 31.0 * sfour) * satrec.cc1;
         satrec.t3cof = satrec.d2 + 2.0 * cc1sq;
@@ -2329,114 +2431,124 @@ class Sgp4 {
             12.0 * satrec.cc1 * satrec.d3 +
             6.0 * satrec.d2 * satrec.d2 +
             15.0 * cc1sq * (2.0 * satrec.d2 + cc1sq));
-      } // if omeosq = 0 ...
+      } // If omeosq = 0 ...
 
-      /* finally propogate to zero epoch to initialize all others. */
-      // sgp4fix take out check to let satellites process until they are actually below earth surface
-      // if(satrec.error == 0)
+      /* Finally propogate to zero epoch to initialize all others. */
+      /*
+       * Sgp4fix take out check to let satellites process until they are actually below earth surface
+       * if(satrec.error == 0)
+       */
     }
     Sgp4.propagate(satrec, 0);
 
     satrec.init = 'n';
 
-    //sgp4fix return boolean. satrec.error contains any error codes
-    // return satrec; -- no reason to return anything in JS
-  } // sgp4init
+    /*
+     * Sgp4fix return boolean. satrec.error contains any error codes
+     *  return satrec; -- no reason to return anything in JS
+     */
+  } // Sgp4init
 
-  /*----------------------------------------------------------------------------
- *
- *                             procedure sgp4
- *
- *  this procedure is the sgp4 prediction model from space command. this is an
- *    updated and combined version of sgp4 and sdp4, which were originally
- *    published separately in spacetrack report //3. this version follows the
- *    methodology from the aiaa paper (2006) describing the history and
- *    development of the code.
- *
- *  author        : david vallado                  719-573-2600   28 jun 2005
- *
- *  inputs        :
- *    satrec  - initialised structure from sgp4init() call.
- *    tsince  - time since epoch (minutes)
- *
- *  outputs       :
- *    r           - position vector                     km
- *    v           - velocity                            km/sec
- *  return code - non-zero on error.
- *                   1 - mean elements, ecc >= 1.0 or ecc < -0.001 or a < 0.95 er
- *                   2 - mean motion less than 0.0
- *                   3 - pert elements, ecc < 0.0  or  ecc > 1.0
- *                   4 - semi-latus rectum < 0.0
- *                   5 - epoch elements are sub-orbital
- *                   6 - satellite has decayed
- *
- *  locals        :
- *    am          -
- *    axnl, aynl        -
- *    betal       -
- *    cosim   , sinim   , cosomm  , sinomm  , cnod    , snod    , cos2u   ,
- *    sin2u   , coseo1  , sineo1  , cosi    , sini    , cosip   , sinip   ,
- *    cosisq  , cossu   , sinsu   , cosu    , sinu
- *    delm        -
- *    delomg      -
- *    dndt        -
- *    eccm        -
- *    emsq        -
- *    ecose       -
- *    el2         -
- *    eo1         -
- *    eccp        -
- *    esine       -
- *    argpm       -
- *    argpp       -
- *    omgadf      -
- *    pl          -
- *    r           -
- *    rtemsq      -
- *    rdotl       -
- *    rl          -
- *    rvdot       -
- *    rvdotl      -
- *    su          -
- *    t2  , t3   , t4    , tc
- *    tem5, temp , temp1 , temp2  , tempa  , tempe  , templ
- *    u   , ux   , uy    , uz     , vx     , vy     , vz
- *    inclm       - inclination
- *    mm          - mean anomaly
- *    nm          - mean motion
- *    nodem       - right asc of ascending node
- *    xinc        -
- *    xincp       -
- *    xl          -
- *    xlm         -
- *    mp          -
- *    xmdf        -
- *    xmx         -
- *    xmy         -
- *    nodedf      -
- *    xnode       -
- *    nodep       -
- *    np          -
- *
- *  coupling      :
- *    getgravconst-
- *    dpper
- *    dspace
- *
- *  references    :
- *    hoots, roehrich, norad spacetrack report //3 1980
- *    hoots, norad spacetrack report //6 1986
- *    hoots, schumacher and glover 2004
- *    vallado, crawford, hujsak, kelso  2006
- ----------------------------------------------------------------------------*/
+  /*
+   *----------------------------------------------------------------------------
+   *
+   *                             procedure sgp4
+   *
+   *  this procedure is the sgp4 prediction model from space command. this is an
+   *    updated and combined version of sgp4 and sdp4, which were originally
+   *    published separately in spacetrack report //3. this version follows the
+   *    methodology from the aiaa paper (2006) describing the history and
+   *    development of the code.
+   *
+   *  author        : david vallado                  719-573-2600   28 jun 2005
+   *
+   *  inputs        :
+   *    satrec  - initialised structure from sgp4init() call.
+   *    tsince  - time since epoch (minutes)
+   *
+   *  outputs       :
+   *    r           - position vector                     km
+   *    v           - velocity                            km/sec
+   *  return code - non-zero on error.
+   *                   1 - mean elements, ecc >= 1.0 or ecc < -0.001 or a < 0.95 er
+   *                   2 - mean motion less than 0.0
+   *                   3 - pert elements, ecc < 0.0  or  ecc > 1.0
+   *                   4 - semi-latus rectum < 0.0
+   *                   5 - epoch elements are sub-orbital
+   *                   6 - satellite has decayed
+   *
+   *  locals        :
+   *    am          -
+   *    axnl, aynl        -
+   *    betal       -
+   *    cosim   , sinim   , cosomm  , sinomm  , cnod    , snod    , cos2u   ,
+   *    sin2u   , coseo1  , sineo1  , cosi    , sini    , cosip   , sinip   ,
+   *    cosisq  , cossu   , sinsu   , cosu    , sinu
+   *    delm        -
+   *    delomg      -
+   *    dndt        -
+   *    eccm        -
+   *    emsq        -
+   *    ecose       -
+   *    el2         -
+   *    eo1         -
+   *    eccp        -
+   *    esine       -
+   *    argpm       -
+   *    argpp       -
+   *    omgadf      -
+   *    pl          -
+   *    r           -
+   *    rtemsq      -
+   *    rdotl       -
+   *    rl          -
+   *    rvdot       -
+   *    rvdotl      -
+   *    su          -
+   *    t2  , t3   , t4    , tc
+   *    tem5, temp , temp1 , temp2  , tempa  , tempe  , templ
+   *    u   , ux   , uy    , uz     , vx     , vy     , vz
+   *    inclm       - inclination
+   *    mm          - mean anomaly
+   *    nm          - mean motion
+   *    nodem       - right asc of ascending node
+   *    xinc        -
+   *    xincp       -
+   *    xl          -
+   *    xlm         -
+   *    mp          -
+   *    xmdf        -
+   *    xmx         -
+   *    xmy         -
+   *    nodedf      -
+   *    xnode       -
+   *    nodep       -
+   *    np          -
+   *
+   *  coupling      :
+   *    getgravconst-
+   *    dpper
+   *    dspace
+   *
+   *  references    :
+   *    hoots, roehrich, norad spacetrack report //3 1980
+   *    hoots, norad spacetrack report //6 1986
+   *    hoots, schumacher and glover 2004
+   *    vallado, crawford, hujsak, kelso  2006
+   *----------------------------------------------------------------------------
+   */
   public static propagate(satrec: SatelliteRecord, tsince: number): StateVector {
     /* ------------------ set mathematical constants --------------- */
-    // sgp4fix divisor for divide by zero check on inclination
-    // the old check used 1.0 + cos(PI-1.0e-9), but then compared it to
-    // 1.5 e-12, so the threshold was changed to 1.5e-12 for consistency
+    /*
+     * Sgp4fix divisor for divide by zero check on inclination
+     * the old check used 1.0 + cos(PI-1.0e-9), but then compared it to
+     * 1.5 e-12, so the threshold was changed to 1.5e-12 for consistency
+     */
 
-    // sgp4fix identify constants and allow alternate values
-    // getgravconst( whichconst, tumin, mu, radiusearthkm, xke, j2, j3, j4, j3oj2 );
+    /*
+     * Sgp4fix identify constants and allow alternate values
+     * getgravconst( whichconst, tumin, mu, radiusearthkm, xke, j2, j3, j4, j3oj2 );
+     */
     const { xke, j2, j3oj2 } = satrec;
     const vkmpersec = (satrec.radiusearthkm * satrec.xke) / 60.0;
 
@@ -2458,14 +2570,16 @@ class Sgp4 {
 
     if (satrec.isimp !== 1) {
       const delomg = satrec.omgcof * satrec.t;
-      //  sgp4fix use mutliply for speed instead of pow
+      //  Sgp4fix use mutliply for speed instead of pow
       const delmtemp = 1.0 + satrec.eta * Math.cos(xmdf);
       const delm = satrec.xmcof * (delmtemp * delmtemp * delmtemp - satrec.delmo);
       const temp = delomg + delm;
+
       mm = xmdf + temp;
       argpm = argpdf - temp;
       const t3 = t2 * satrec.t;
       const t4 = t3 * satrec.t;
+
       tempa = tempa - satrec.d2 * t2 - satrec.d3 * t3 - satrec.d4 * t4;
       tempe += satrec.bstar * satrec.cc5 * (Math.sin(mm) - satrec.sinmao);
       templ = templ + satrec.t3cof * t3 + t4 * (satrec.t4cof + satrec.t * satrec.t5cof);
@@ -2518,51 +2632,61 @@ class Sgp4 {
       );
 
       [em, argpm, inclm, mm, nodem, nm] = dspaceResult;
-    } // if methjod = d
+    } // If methjod = d
 
     if (nm <= 0.0) {
-      // printf("// error nm %f\n", nm);
+      // Printf("// error nm %f\n", nm);
       satrec.error = 2;
-      // sgp4fix add return
+      // Sgp4fix add return
+
       return { position: false, velocity: false };
     }
 
     const am = (xke / nm) ** x2o3 * tempa * tempa;
+
     nm = xke / am ** 1.5;
     em -= tempe;
 
-    // fix tolerance for error recognition
-    // sgp4fix am is fixed from the previous nm check
+    /*
+     * Fix tolerance for error recognition
+     * sgp4fix am is fixed from the previous nm check
+     */
     /* istanbul ignore next | This is no longer possible*/
     if (em >= 1.0 || em < -0.001) {
-      // || (am < 0.95)
-      // printf("// error em %f\n", em);
+      /*
+       * || (am < 0.95)
+       * printf("// error em %f\n", em);
+       */
       satrec.error = 1;
-      // sgp4fix to return if there is an error in eccentricity
+      // Sgp4fix to return if there is an error in eccentricity
+
       return { position: false, velocity: false };
     }
 
-    //  sgp4fix fix tolerance to avoid a divide by zero
+    //  Sgp4fix fix tolerance to avoid a divide by zero
     if (em < 1.0e-6) {
       em = 1.0e-6;
     }
 
     mm += satrec.no * templ;
     let xlm = mm + argpm + nodem;
+
     nodem %= TAU;
     argpm %= TAU;
     xlm %= TAU;
     mm = (xlm - argpm - nodem) % TAU;
 
-    // sgp4fix recover singly averaged mean elements
-    // TODO: Skip these?
-    // satrec.am = am;
-    // satrec.em = em;
-    // satrec.im = inclm;
-    // satrec.Om = nodem;
-    // satrec.om = argpm;
-    // satrec.mm = mm;
-    // satrec.nm = nm;
+    /*
+     * Sgp4fix recover singly averaged mean elements
+     * TODO: Skip these?
+     * satrec.am = am;
+     * satrec.em = em;
+     * satrec.im = inclm;
+     * satrec.Om = nodem;
+     * satrec.om = argpm;
+     * satrec.mm = mm;
+     * satrec.nm = nm;
+     */
 
     // ----------------- compute extra mean quantities -------------
     const sinim = Math.sin(inclm);
@@ -2576,6 +2700,7 @@ class Sgp4 {
     let mp = mm;
     let sinip = sinim;
     let cosip = cosim;
+
     if (satrec.method === 'd') {
       const dpperParameters = {
         inclo: satrec.inclo,
@@ -2600,9 +2725,10 @@ class Sgp4 {
         argpp -= PI;
       }
       if (ep < 0.0 || ep > 1.0) {
-        //  printf("// error ep %f\n", ep);
+        //  Printf("// error ep %f\n", ep);
         satrec.error = 3;
-        //  sgp4fix add return
+        //  Sgp4fix add return
+
         return { position: false, velocity: false };
       }
     }
@@ -2613,7 +2739,7 @@ class Sgp4 {
       cosip = Math.cos(xincp);
       satrec.aycof = -0.5 * j3oj2 * sinip;
 
-      //  sgp4fix for divide by zero for xincp = 180 deg
+      //  Sgp4fix for divide by zero for xincp = 180 deg
       /* istanbul ignore next | This is no longer possible*/
       if (Math.abs(cosip + 1.0) > 1.5e-12) {
         satrec.xlcof = (-0.25 * j3oj2 * sinip * (3.0 + 5.0 * cosip)) / (1.0 + cosip);
@@ -2632,9 +2758,13 @@ class Sgp4 {
     let eo1 = u;
     let tem5 = 9999.9;
     let ktr = 1;
-    //    sgp4fix for kepler iteration
-    //    the following iteration needs better limits on corrections
-    let sineo1, coseo1;
+
+    /*
+     *    Sgp4fix for kepler iteration
+     *    the following iteration needs better limits on corrections
+     */
+    let coseo1, sineo1;
+
     while (Math.abs(tem5) >= 1.0e-12 && ktr <= 10) {
       sineo1 = Math.sin(eo1);
       coseo1 = Math.cos(eo1);
@@ -2656,10 +2786,12 @@ class Sgp4 {
     const esine = axnl * sineo1 - aynl * coseo1;
     const el2 = axnl * axnl + aynl * aynl;
     const pl = am * (1.0 - el2);
+
     if (pl < 0.0) {
-      //  printf("// error pl %f\n", pl);
+      //  Printf("// error pl %f\n", pl);
       satrec.error = 4;
-      //  sgp4fix add return
+      //  Sgp4fix add return
+
       return { position: false, velocity: false };
     }
 
@@ -2667,12 +2799,14 @@ class Sgp4 {
     const rdotl = (Math.sqrt(am) * esine) / rl;
     const rvdotl = Math.sqrt(pl) / rl;
     const betal = Math.sqrt(1.0 - el2);
+
     temp = esine / (1.0 + betal);
     const sinu = (am / rl) * (sineo1 - aynl - axnl * temp);
     const cosu = (am / rl) * (coseo1 - axnl + aynl * temp);
     let su = Math.atan2(sinu, cosu);
     const sin2u = (cosu + cosu) * sinu;
     const cos2u = 1.0 - 2.0 * sinu * sinu;
+
     temp = 1.0 / pl;
     const temp1 = 0.5 * j2 * temp;
     const temp2 = temp1 * temp;
@@ -2680,6 +2814,7 @@ class Sgp4 {
     // -------------- update for short period periodics ------------
     if (satrec.method === 'd') {
       const cosisq = cosip * cosip;
+
       satrec.con41 = 3.0 * cosisq - 1.0;
       satrec.x1mth2 = 1.0 - cosisq;
       satrec.x7thm1 = 7.0 * cosisq - 1.0;
@@ -2688,10 +2823,11 @@ class Sgp4 {
     const mrt = rl * (1.0 - 1.5 * temp2 * betal * satrec.con41) + 0.5 * temp1 * satrec.x1mth2 * cos2u;
 
     /** Moved this up to reduce unnecessary computation if you are going to return false anyway */
-    // sgp4fix for decaying satellites
+    // Sgp4fix for decaying satellites
     if (mrt < 1.0) {
-      // printf("// decay condition %11.6f \n",mrt);
+      // Printf("// decay condition %11.6f \n",mrt);
       satrec.error = 6;
+
       return {
         position: false,
         velocity: false,
@@ -2738,35 +2874,37 @@ class Sgp4 {
     };
   }
 
-  /* -----------------------------------------------------------------------------
-  *
-  *                           function getgravconst
-  *
-  *  this function gets constants for the propagator. note that mu is identified to
-  *    facilitiate comparisons with newer models. the common useage is wgs72.
-  *
-  *  author        : david vallado                  719-573-2600   21 jul 2006
-  *
-  *  inputs        :
-  *    whichconst  - which set of constants to use  wgs72old, wgs72, wgs84
-  *
-  *  outputs       :
-  *    tumin       - minutes in one time unit
-  *    mu          - earth gravitational parameter
-  *    radiusearthkm - radius of the earth in km
-  *    xke         - reciprocal of tumin
-  *    j2, j3, j4  - un-normalized zonal harmonic values
-  *    j3oj2       - j3 divided by j2
-  *
-  *  locals        :
-  *
-  *  coupling      :
-  *    none
-  *
-  *  references    :
-  *    norad spacetrack report #3
-  *    vallado, crawford, hujsak, kelso  2006
-  --------------------------------------------------------------------------- */
+  /*
+   * -----------------------------------------------------------------------------
+   *
+   *                           function getgravconst
+   *
+   *  this function gets constants for the propagator. note that mu is identified to
+   *    facilitiate comparisons with newer models. the common useage is wgs72.
+   *
+   *  author        : david vallado                  719-573-2600   21 jul 2006
+   *
+   *  inputs        :
+   *    whichconst  - which set of constants to use  wgs72old, wgs72, wgs84
+   *
+   *  outputs       :
+   *    tumin       - minutes in one time unit
+   *    mu          - earth gravitational parameter
+   *    radiusearthkm - radius of the earth in km
+   *    xke         - reciprocal of tumin
+   *    j2, j3, j4  - un-normalized zonal harmonic values
+   *    j3oj2       - j3 divided by j2
+   *
+   *  locals        :
+   *
+   *  coupling      :
+   *    none
+   *
+   *  references    :
+   *    norad spacetrack report #3
+   *    vallado, crawford, hujsak, kelso  2006
+   * ---------------------------------------------------------------------------
+   */
 
   private static getgravconst(whichconst: string): {
     tumin: number;
@@ -2778,13 +2916,14 @@ class Sgp4 {
     j4: number;
     j3oj2: number;
   } {
-    let tumin, mus, radiusearthkm, xke, j2, j3, j4, j3oj2;
+    let j2, j3, j3oj2, j4, mus, radiusearthkm, tumin, xke;
+
     switch (whichconst) {
       // -- wgs-72 low precision str#3 constants --
       case 'wgs72old':
-        mus = 398600.79964; // in km3 / s2
-        radiusearthkm = 6378.135; // km
-        xke = 0.0743669161; // reciprocal of tumin
+        mus = 398600.79964; // In km3 / s2
+        radiusearthkm = 6378.135; // Km
+        xke = 0.0743669161; // Reciprocal of tumin
         tumin = 1.0 / xke;
         j2 = 0.001082616;
         j3 = -0.00000253881;
@@ -2793,8 +2932,8 @@ class Sgp4 {
         break;
       // ------------ wgs-72 constants ------------
       case 'wgs72':
-        mus = 398600.8; // in km3 / s2
-        radiusearthkm = 6378.135; // km
+        mus = 398600.8; // In km3 / s2
+        radiusearthkm = 6378.135; // Km
         xke = 60.0 / Math.sqrt((radiusearthkm * radiusearthkm * radiusearthkm) / mus);
         tumin = 1.0 / xke;
         j2 = 0.001082616;
@@ -2804,8 +2943,8 @@ class Sgp4 {
         break;
       case 'wgs84':
         // ------------ wgs-84 constants ------------
-        mus = 398600.5; // in km3 / s2
-        radiusearthkm = 6378.137; // km
+        mus = 398600.5; // In km3 / s2
+        radiusearthkm = 6378.137; // Km
         xke = 60.0 / Math.sqrt((radiusearthkm * radiusearthkm * radiusearthkm) / mus);
         tumin = 1.0 / xke;
         j2 = 0.00108262998905;
@@ -2816,6 +2955,7 @@ class Sgp4 {
       default:
         throw new Error(`unknown gravity option ${whichconst}`);
     }
+
     return {
       tumin,
       mus,
@@ -2826,51 +2966,53 @@ class Sgp4 {
       j4,
       j3oj2,
     };
-  } // getgravconst
+  } // Getgravconst
 
-  /* -----------------------------------------------------------------------------
- *
- *                           function twoline2rv
- *
- *  this function converts the two line element set character string data to
- *    variables and initializes the sgp4 variables. several intermediate varaibles
- *    and quantities are determined. note that the result is a structure so multiple
- *    satellites can be processed simultaneously without having to reinitialize. the
- *    verification mode is an important option that permits quick checks of any
- *    changes to the underlying technical theory. this option works using a
- *    modified tle file in which the start, stop, and delta time values are
- *    included at the end of the second line of data. this only works with the
- *    verification mode. the catalog mode simply propagates from -1440 to 1440 min
- *    from epoch and is useful when performing entire catalog runs.
- *
- *  author        : david vallado                  719-573-2600    1 mar 2001
- *
- *  inputs        :
- *    longstr1    - first line of the tle
- *    longstr2    - second line of the tle
- *    typerun     - type of run                    verification 'v', catalog 'c',
- *                                                 manual 'm'
- *    typeinput   - type of manual input           mfe 'm', epoch 'e', dayofyr 'd'
- *    opsmode     - mode of operation afspc or improved 'a', 'i'
- *    whichconst  - which set of constants to use  72, 84
- *
- *  outputs       :
- *    satrec      - structure containing all the sgp4 satellite information
- *
- *  coupling      :
- *    getgravconst-
- *    days2mdhms  - conversion of days to month, day, hour, minute, second
- *    jday        - convert day month year hour minute second into julian date
- *    sgp4init    - initialize the sgp4 variables
- *
- *  references    :
- *    norad spacetrack report #3
- *    vallado, crawford, hujsak, kelso  2006
- --------------------------------------------------------------------------- */
+  /*
+   * -----------------------------------------------------------------------------
+   *
+   *                           function twoline2rv
+   *
+   *  this function converts the two line element set character string data to
+   *    variables and initializes the sgp4 variables. several intermediate varaibles
+   *    and quantities are determined. note that the result is a structure so multiple
+   *    satellites can be processed simultaneously without having to reinitialize. the
+   *    verification mode is an important option that permits quick checks of any
+   *    changes to the underlying technical theory. this option works using a
+   *    modified tle file in which the start, stop, and delta time values are
+   *    included at the end of the second line of data. this only works with the
+   *    verification mode. the catalog mode simply propagates from -1440 to 1440 min
+   *    from epoch and is useful when performing entire catalog runs.
+   *
+   *  author        : david vallado                  719-573-2600    1 mar 2001
+   *
+   *  inputs        :
+   *    longstr1    - first line of the tle
+   *    longstr2    - second line of the tle
+   *    typerun     - type of run                    verification 'v', catalog 'c',
+   *                                                 manual 'm'
+   *    typeinput   - type of manual input           mfe 'm', epoch 'e', dayofyr 'd'
+   *    opsmode     - mode of operation afspc or improved 'a', 'i'
+   *    whichconst  - which set of constants to use  72, 84
+   *
+   *  outputs       :
+   *    satrec      - structure containing all the sgp4 satellite information
+   *
+   *  coupling      :
+   *    getgravconst-
+   *    days2mdhms  - conversion of days to month, day, hour, minute, second
+   *    jday        - convert day month year hour minute second into julian date
+   *    sgp4init    - initialize the sgp4 variables
+   *
+   *  references    :
+   *    norad spacetrack report #3
+   *    vallado, crawford, hujsak, kelso  2006
+   * ---------------------------------------------------------------------------
+   */
   public static createSatrec(tleLine1: string, tleLine2: string, whichconst = 'wgs72', opsmode = 'i'): SatelliteRecord {
     let year = 0;
 
-    let satrec = {
+    const satrec = {
       a: null,
       am: null,
       alta: null,
@@ -2990,8 +3132,10 @@ class Sgp4 {
       nm: null,
     };
 
-    // sgp4fix no longer needed
-    // getgravconst( whichconst, tumin, mu, radiusearthkm, xke, j2, j3, j4, j3oj2 );
+    /*
+     * Sgp4fix no longer needed
+     * getgravconst( whichconst, tumin, mu, radiusearthkm, xke, j2, j3, j4, j3oj2 );
+     */
     const xpdotp = 1440.0 / (2.0 * PI); // 229.1831180523293;
 
     satrec.error = 0;
@@ -3008,7 +3152,7 @@ class Sgp4 {
       `${tleLine1.substring(53, 54)}.${tleLine1.substring(54, 59)}E${tleLine1.substring(59, 61)}`,
     );
 
-    // satrec.satnum = tleLine2.substring(2, 7);
+    // Satrec.satnum = tleLine2.substring(2, 7);
     satrec.inclo = parseFloat(tleLine2.substring(8, 16));
     satrec.nodeo = parseFloat(tleLine2.substring(17, 25));
     satrec.ecco = parseFloat(`.${tleLine2.substring(26, 33)}`);
@@ -3017,16 +3161,22 @@ class Sgp4 {
     satrec.no = parseFloat(tleLine2.substring(52, 63));
 
     // ---- find no, ndot, nddot ----
-    satrec.no /= xpdotp; //   rad/min
+    satrec.no /= xpdotp; //   Rad/min
     /** Ootk -- nexp and ibexp are calculated above using template literals */
-    // satrec.nddot = satrec.nddot * Math.pow(10.0, nexp);
-    // satrec.bstar = satrec.bstar * Math.pow(10.0, ibexp);
+    /*
+     * Satrec.nddot = satrec.nddot * Math.pow(10.0, nexp);
+     * satrec.bstar = satrec.bstar * Math.pow(10.0, ibexp);
+     */
 
-    // ---- convert to sgp4 units ----
-    // satrec.a = (satrec.no * tumin) ** (-2.0 / 3.0);
+    /*
+     * ---- convert to sgp4 units ----
+     * satrec.a = (satrec.no * tumin) ** (-2.0 / 3.0);
+     */
     /** Ootk -- Not sure why the following two lines are added. 1st and 2nd derivatives aren't even used anymore */
-    // satrec.ndot /= xpdotp * 1440.0; // ? * minperday
-    // satrec.nddot /= xpdotp * 1440.0 * 1440;
+    /*
+     * Satrec.ndot /= xpdotp * 1440.0; // ? * minperday
+     * satrec.nddot /= xpdotp * 1440.0 * 1440;
+     */
 
     // ---- find standard orbital elements ----
     satrec.inclo *= DEG2RAD;
@@ -3034,18 +3184,24 @@ class Sgp4 {
     satrec.argpo *= DEG2RAD;
     satrec.mo *= DEG2RAD;
 
-    // sgp4fix not needed here
-    // satrec.alta = satrec.a * (1.0 + satrec.ecco) - 1.0;
-    // satrec.altp = satrec.a * (1.0 - satrec.ecco) - 1.0;
+    /*
+     * Sgp4fix not needed here
+     * satrec.alta = satrec.a * (1.0 + satrec.ecco) - 1.0;
+     * satrec.altp = satrec.a * (1.0 - satrec.ecco) - 1.0;
+     */
 
-    // ----------------------------------------------------------------
-    // find sgp4epoch time of element set
-    // remember that sgp4 uses units of days from 0 jan 1950 (sgp4epoch)
-    // and minutes from the epoch (time)
-    // ----------------------------------------------------------------
+    /*
+     * ----------------------------------------------------------------
+     * find sgp4epoch time of element set
+     * remember that sgp4 uses units of days from 0 jan 1950 (sgp4epoch)
+     * and minutes from the epoch (time)
+     * ----------------------------------------------------------------
+     */
 
-    // ---------------- temp fix for years from 1957-2056 -------------------
-    // --------- correct fix will occur when year is 4-digit in tle ---------
+    /*
+     * ---------------- temp fix for years from 1957-2056 -------------------
+     * --------- correct fix will occur when year is 4-digit in tle ---------
+     */
 
     if (satrec.epochyr < 57) {
       year = satrec.epochyr + 2000;
@@ -3053,9 +3209,9 @@ class Sgp4 {
       year = satrec.epochyr + 1900;
     }
 
-    const { mon, day, hr, minute, sec } = Sgp4.days2mdhms(year, satrec.epochdays);
+    const { mon, day, hr, min, sec } = Sgp4.days2mdhms(year, satrec.epochdays);
 
-    const jdayRes = Sgp4.jday(year, mon, day, hr, minute, sec);
+    const jdayRes = Sgp4.jday(year, mon, day, hr, min, sec);
 
     satrec.jdsatepoch = jdayRes.jd + jdayRes.jdFrac;
 
@@ -3077,9 +3233,10 @@ class Sgp4 {
     });
 
     return satrec;
-  } // twoline2rv
+  } // Twoline2rv
 
-  /* -----------------------------------------------------------------------------
+  /*
+   * -----------------------------------------------------------------------------
    *
    *                           function gstime
    *
@@ -3103,12 +3260,14 @@ class Sgp4 {
    *
    *  references    :
    *    vallado       2004, 191, eq 3-45
-   * --------------------------------------------------------------------------- */
+   * ---------------------------------------------------------------------------
+   */
   public static gstime(jdut1: number): number {
-    let tut1 = (jdut1 - 2451545.0) / 36525.0;
+    const tut1 = (jdut1 - 2451545.0) / 36525.0;
 
     let temp =
-      -6.2e-6 * tut1 * tut1 * tut1 + 0.093104 * tut1 * tut1 + (876600.0 * 3600 + 8640184.812866) * tut1 + 67310.54841; // sec
+      -6.2e-6 * tut1 * tut1 * tut1 + 0.093104 * tut1 * tut1 + (876600.0 * 3600 + 8640184.812866) * tut1 + 67310.54841; // Sec
+
     temp = ((temp * DEG2RAD) / 240.0) % TAU; // 360/86400 = 1/240, to deg, to rad
 
     //  ------------------------ check quadrants ---------------------
@@ -3122,12 +3281,13 @@ class Sgp4 {
   public static sgn(x: number): number {
     if (x < 0.0) {
       return -1.0;
-    } else {
-      return 1.0;
     }
-  } // sgn
 
-  /* -----------------------------------------------------------------------------
+    return 1.0;
+  } // Sgn
+
+  /*
+   * -----------------------------------------------------------------------------
    *
    *                           function mag
    *
@@ -3146,43 +3306,49 @@ class Sgp4 {
    *
    *  coupling      :
    *    none.
-   * --------------------------------------------------------------------------- */
+   * ---------------------------------------------------------------------------
+   */
 
   public static mag(x: Vec3Flat): number {
     return Math.sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
-  } // mag
+  } // Mag
 
-  /* -----------------------------------------------------------------------------
-  *
-  *                           procedure cross_SGP4
-  *
-  *  this procedure crosses two vectors.
-  *
-  *  author        : david vallado                  719-573-2600    1 mar 2001
-  *
-  *  inputs          description                    range / units
-  *    vec1        - vector number 1
-  *    vec2        - vector number 2
-  *
-  *  outputs       :
-  *    outvec      - vector result of a x b
-  *
-  *  locals        :
-  *    none.
-  *
-  *  coupling      :
-  *    mag           magnitude of a vector
-  ---------------------------------------------------------------------------- */
+  /*
+   * -----------------------------------------------------------------------------
+   *
+   *                           procedure cross_SGP4
+   *
+   *  this procedure crosses two vectors.
+   *
+   *  author        : david vallado                  719-573-2600    1 mar 2001
+   *
+   *  inputs          description                    range / units
+   *    vec1        - vector number 1
+   *    vec2        - vector number 2
+   *
+   *  outputs       :
+   *    outvec      - vector result of a x b
+   *
+   *  locals        :
+   *    none.
+   *
+   *  coupling      :
+   *    mag           magnitude of a vector
+   * ----------------------------------------------------------------------------
+   */
 
   public static cross(vec1: Vec3Flat, vec2: Vec3Flat): Vec3Flat {
     const outvec: Vec3Flat = [0, 0, 0];
+
     outvec[0] = vec1[1] * vec2[2] - vec1[2] * vec2[1];
     outvec[1] = vec1[2] * vec2[0] - vec1[0] * vec2[2];
     outvec[2] = vec1[0] * vec2[1] - vec1[1] * vec2[0];
-    return outvec;
-  } // end cross
 
-  /* -----------------------------------------------------------------------------
+    return outvec;
+  } // End cross
+
+  /*
+   * -----------------------------------------------------------------------------
    *
    *                           function dot_SGP4
    *
@@ -3202,13 +3368,15 @@ class Sgp4 {
    *
    *  coupling      :
    *    none.
-   * --------------------------------------------------------------------------- */
+   * ---------------------------------------------------------------------------
+   */
 
   public static dot(x: Vec3Flat, y: Vec3Flat): number {
     return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
-  } // dot
+  } // Dot
 
-  /* -----------------------------------------------------------------------------
+  /*
+   * -----------------------------------------------------------------------------
    *
    *                           procedure angle_SGP4
    *
@@ -3230,7 +3398,8 @@ class Sgp4 {
    *
    *  coupling      :
    *    dot           dot product of two vectors
-   * --------------------------------------------------------------------------- */
+   * ---------------------------------------------------------------------------
+   */
 
   public static angle(vec1: Vec3Flat, vec2: Vec3Flat): number {
     const small = 0.00000001;
@@ -3241,12 +3410,19 @@ class Sgp4 {
 
     if (magv1 * magv2 > small * small) {
       let temp = Sgp4.dot(vec1, vec2) / (magv1 * magv2);
-      if (Math.abs(temp) > 1.0) temp = Sgp4.sgn(temp) * 1.0;
-      return Math.acos(temp);
-    } else return unknown;
-  } // angle
 
-  /* -----------------------------------------------------------------------------
+      if (Math.abs(temp) > 1.0) {
+        temp = Number(Sgp4.sgn(temp));
+      }
+
+      return Math.acos(temp);
+    }
+
+    return unknown;
+  } // Angle
+
+  /*
+   * -----------------------------------------------------------------------------
    *
    *                           function asinh_SGP4
    *
@@ -3265,13 +3441,15 @@ class Sgp4 {
    *
    *  coupling      :
    *    none.
-   * --------------------------------------------------------------------------- */
+   * ---------------------------------------------------------------------------
+   */
 
   public static asinh(xval: number): number {
     return Math.log(xval + Math.sqrt(xval * xval + 1.0));
-  } // asinh
+  } // Asinh
 
-  /* -----------------------------------------------------------------------------
+  /*
+   * -----------------------------------------------------------------------------
    *
    *                           function newtonnu_SGP4
    *
@@ -3304,7 +3482,8 @@ class Sgp4 {
    *
    *  references    :
    *    vallado       2013, 77, alg 5
-   * --------------------------------------------------------------------------- */
+   * ---------------------------------------------------------------------------
+   */
 
   public static newtonnu(
     ecc: number,
@@ -3318,49 +3497,51 @@ class Sgp4 {
     let m = 999999.9;
     const small = 0.00000001;
 
-    // --------------------------- circular ------------------------
     if (Math.abs(ecc) < small) {
+      // --------------------------- circular ------------------------
       m = nu;
       e0 = nu;
-    }
-    // ---------------------- elliptical -----------------------
-    else if (ecc < 1.0 - small) {
+    } else if (ecc < 1.0 - small) {
+      // ---------------------- elliptical -----------------------
       const sine = (Math.sqrt(1.0 - ecc * ecc) * Math.sin(nu)) / (1.0 + ecc * Math.cos(nu));
       const cose = (ecc + Math.cos(nu)) / (1.0 + ecc * Math.cos(nu));
+
       e0 = Math.atan2(sine, cose);
       m = e0 - ecc * Math.sin(e0);
-    }
-    // -------------------- hyperbolic  --------------------
-    else if (ecc > 1.0 + small) {
+    } else if (ecc > 1.0 + small) {
+      // -------------------- hyperbolic  --------------------
       if (ecc > 1.0 && Math.abs(nu) + 0.00001 < PI - Math.acos(1.0 / ecc)) {
         const sine = (Math.sqrt(ecc * ecc - 1.0) * Math.sin(nu)) / (1.0 + ecc * Math.cos(nu));
+
         e0 = Sgp4.asinh(sine);
         m = ecc * Sgp4.sinh(e0) - e0;
       }
-    }
-    // ----------------- parabolic ---------------------
-    else if (Math.abs(nu) < (168.0 * PI) / 180.0) {
+    } else if (Math.abs(nu) < (168.0 * PI) / 180.0) {
+      // ----------------- parabolic ---------------------
       e0 = Math.tan(nu * 0.5);
       m = e0 + (e0 * e0 * e0) / 3.0;
     }
 
     if (ecc < 1.0) {
-      m = m % (2.0 * PI);
-      if (m < 0.0) m = m + 2.0 * PI;
-      e0 = e0 % (2.0 * PI);
+      m %= 2.0 * PI;
+      if (m < 0.0) {
+        m += 2.0 * PI;
+      }
+      e0 %= 2.0 * PI;
     }
 
     return {
       e0,
       m,
     };
-  } // newtonnu
+  } // Newtonnu
 
   public static sinh(x: number): number {
     return (Math.exp(x) - Math.exp(-x)) / 2;
   }
 
-  /* -----------------------------------------------------------------------------
+  /*
+   * -----------------------------------------------------------------------------
    *
    *                           function rv2coe_SGP4
    *
@@ -3415,7 +3596,8 @@ class Sgp4 {
    *
    *  references    :
    *    vallado       2013, 113, alg 9, ex 2-5
-   * --------------------------------------------------------------------------- */
+   * ---------------------------------------------------------------------------
+   */
 
   public static rv2coe(
     r: Vec3Flat,
@@ -3453,14 +3635,20 @@ class Sgp4 {
     let sme: number;
 
     let i;
-    // switch this to an integer msvs seems to have probelms with this and strncpy_s
-    //char typeorbit[2];
+
+    /*
+     *  Switch this to an integer msvs seems to have probelms with this and strncpy_s
+     * char typeorbit[2];
+     */
     let typeorbit;
-    // here
-    // typeorbit = 1 = 'ei'
-    // typeorbit = 2 = 'ce'
-    // typeorbit = 3 = 'ci'
-    // typeorbit = 4 = 'ee'
+
+    /*
+     * Here
+     * typeorbit = 1 = 'ei'
+     * typeorbit = 2 = 'ce'
+     * typeorbit = 3 = 'ci'
+     * typeorbit = 4 = 'ee'
+     */
 
     const halfpi = 0.5 * PI;
     const small = 0.00000001;
@@ -3474,28 +3662,37 @@ class Sgp4 {
     // ------------------  find h n and e vectors   ----------------
     const hbar = Sgp4.cross(r, v);
     const magh = Sgp4.mag(hbar);
+
     if (magh > small) {
       nbar[0] = -hbar[1];
       nbar[1] = hbar[0];
       nbar[2] = 0.0;
       magn = Sgp4.mag(nbar);
-      let c1 = magv * magv - mus / magr;
+      const c1 = magv * magv - mus / magr;
+
       rdotv = Sgp4.dot(r, v);
-      for (i = 0; i <= 2; i++) ebar[i] = (c1 * r[i] - rdotv * v[i]) / mus;
+      for (i = 0; i <= 2; i++) {
+        ebar[i] = (c1 * r[i] - rdotv * v[i]) / mus;
+      }
       ecc = Sgp4.mag(ebar);
 
       // ------------  find a e and semi-latus rectum   ----------
       sme = magv * magv * 0.5 - mus / magr;
-      if (Math.abs(sme) > small) a = -mus / (2.0 * sme);
-      else a = infinite;
+      if (Math.abs(sme) > small) {
+        a = -mus / (2.0 * sme);
+      } else {
+        a = infinite;
+      }
       p = (magh * magh) / mus;
 
       // -----------------  find inclination   -------------------
       hk = hbar[2] / magh;
       incl = Math.acos(hk);
 
-      // --------  determine type of orbit for later use  --------
-      // ------ elliptical, parabolic, hyperbolic inclined -------
+      /*
+       * --------  determine type of orbit for later use  --------
+       * ------ elliptical, parabolic, hyperbolic inclined -------
+       */
       typeorbit = 1;
 
       if (ecc < small) {
@@ -3516,50 +3713,89 @@ class Sgp4 {
       // ----------  find right ascension of the ascending node ------------
       if (magn > small) {
         let temp = nbar[0] / magn;
-        if (Math.abs(temp) > 1.0) temp = Sgp4.sgn(temp);
+
+        if (Math.abs(temp) > 1.0) {
+          temp = Sgp4.sgn(temp);
+        }
         omega = Math.acos(temp);
-        if (nbar[1] < 0.0) omega = TAU - omega;
-      } else omega = unknown;
+        if (nbar[1] < 0.0) {
+          omega = TAU - omega;
+        }
+      } else {
+        omega = unknown;
+      }
 
       // ---------------- find argument of perigee ---------------
-      if (typeorbit == 1) {
+      if (typeorbit === 1) {
         argp = Sgp4.angle(nbar, ebar);
-        if (ebar[2] < 0.0) argp = TAU - argp;
-      } else argp = unknown;
+        if (ebar[2] < 0.0) {
+          argp = TAU - argp;
+        }
+      } else {
+        argp = unknown;
+      }
 
       // ------------  find true anomaly at epoch    -------------
-      if (typeorbit == 1 || typeorbit == 4) {
+      if (typeorbit === 1 || typeorbit === 4) {
         nu = Sgp4.angle(ebar, r);
-        if (rdotv < 0.0) nu = TAU - nu;
-      } else nu = unknown;
+        if (rdotv < 0.0) {
+          nu = TAU - nu;
+        }
+      } else {
+        nu = unknown;
+      }
 
       // ----  find argument of latitude - circular inclined -----
-      if (typeorbit == 3) {
+      if (typeorbit === 3) {
         arglat = Sgp4.angle(nbar, r);
-        if (r[2] < 0.0) arglat = TAU - arglat;
+        if (r[2] < 0.0) {
+          arglat = TAU - arglat;
+        }
         m = arglat;
-      } else arglat = unknown;
+      } else {
+        arglat = unknown;
+      }
 
-      if (ecc > small && typeorbit == 4) {
+      if (ecc > small && typeorbit === 4) {
         let temp = ebar[0] / ecc;
-        if (Math.abs(temp) > 1.0) temp = Sgp4.sgn(temp);
+
+        if (Math.abs(temp) > 1.0) {
+          temp = Sgp4.sgn(temp);
+        }
         lonper = Math.acos(temp);
-        if (ebar[1] < 0.0) lonper = TAU - lonper;
-        if (incl > halfpi) lonper = TAU - lonper;
-      } else lonper = unknown;
+        if (ebar[1] < 0.0) {
+          lonper = TAU - lonper;
+        }
+        if (incl > halfpi) {
+          lonper = TAU - lonper;
+        }
+      } else {
+        lonper = unknown;
+      }
 
       // -------- find true longitude - circular equatorial ------
-      if (magr > small && typeorbit == 2) {
+      if (magr > small && typeorbit === 2) {
         let temp = r[0] / magr;
-        if (Math.abs(temp) > 1.0) temp = Sgp4.sgn(temp);
+
+        if (Math.abs(temp) > 1.0) {
+          temp = Sgp4.sgn(temp);
+        }
         truelon = Math.acos(temp);
-        if (r[1] < 0.0) truelon = TAU - truelon;
-        if (incl > halfpi) truelon = TAU - truelon;
+        if (r[1] < 0.0) {
+          truelon = TAU - truelon;
+        }
+        if (incl > halfpi) {
+          truelon = TAU - truelon;
+        }
         m = truelon;
-      } else truelon = unknown;
+      } else {
+        truelon = unknown;
+      }
 
       // ------------ find mean anomaly for all orbits -----------
-      if (typeorbit == 1 || typeorbit == 4) m = Sgp4.newtonnu(ecc, nu).m;
+      if (typeorbit === 1 || typeorbit === 4) {
+        m = Sgp4.newtonnu(ecc, nu).m;
+      }
     } else {
       p = unknown;
       a = unknown;
@@ -3587,9 +3823,10 @@ class Sgp4 {
       truelon,
       lonper,
     };
-  } // rv2coe
+  } // Rv2coe
 
-  /* -----------------------------------------------------------------------------
+  /*
+   * -----------------------------------------------------------------------------
    *
    *                           procedure jday
    *
@@ -3621,35 +3858,49 @@ class Sgp4 {
    *  references    :
    *    vallado       2013, 183, alg 14, ex 3-4
    *
-   * --------------------------------------------------------------------------- */
+   * ---------------------------------------------------------------------------
+   */
   public static jday(
-    year: number,
-    mon: number,
-    day: number,
-    hr: number,
-    minute: number,
-    sec: number,
+    year: number | Date,
+    mon = 0,
+    day = 0,
+    hr = 0,
+    min = 0,
+    sec = 0,
+    ms = 0,
   ): { jd: number; jdFrac: number } {
+    if (year instanceof Date) {
+      mon = year.getUTCMonth() + 1;
+      day = year.getUTCDate();
+      hr = year.getUTCHours();
+      min = year.getUTCMinutes();
+      sec = year.getUTCSeconds();
+      ms = year.getUTCMilliseconds();
+      year = year.getUTCFullYear();
+    }
+
     let jd =
       367.0 * year -
       Math.floor(7 * (year + Math.floor((mon + 9) / 12.0)) * 0.25) +
       Math.floor((275 * mon) / 9.0) +
       day +
-      1721013.5; // use - 678987.0 to go to mjd directly
-    let jdFrac = (sec + minute * 60.0 + hr * 3600.0) / 86400.0;
+      1721013.5; // Use - 678987.0 to go to mjd directly
+    let jdFrac = (ms / 1000 + sec + min * 60.0 + hr * 3600.0) / 86400.0;
 
-    // check that the day and fractional day are correct
+    // Check that the day and fractional day are correct
     if (Math.abs(jdFrac) > 1.0) {
       const dtt = Math.floor(jdFrac);
-      jd = jd + dtt;
-      jdFrac = jdFrac - dtt;
+
+      jd += dtt;
+      jdFrac -= dtt;
     }
     // - 0.5*sgn(100.0*year + mon - 190002.5) + 0.5;
 
     return { jd, jdFrac };
-  } // jday
+  } // Jday
 
-  /* -----------------------------------------------------------------------------
+  /*
+   * -----------------------------------------------------------------------------
    *
    *                           procedure days2mdhms
    *
@@ -3684,7 +3935,8 @@ class Sgp4 {
    *
    *  coupling      :
    *    none.
-   * --------------------------------------------------------------------------- */
+   * ---------------------------------------------------------------------------
+   */
   public static days2mdhms(
     year: number,
     days: number,
@@ -3692,45 +3944,50 @@ class Sgp4 {
     mon: number;
     day: number;
     hr: number;
-    minute: number;
+    min: number;
     sec: number;
   } {
-    let lmonth = [31, year % 4 === 0 ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const lmonth = [31, year % 4 === 0 ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
-    let dayofyr = Math.floor(days);
+    const dayofyr = Math.floor(days);
 
     //  ----------------- find month and day of month ----------------
     /** Ootk -- Incorporated in the above declaration */
-    // if ((year % 4) == 0)
-    // lmonth[2] = 29;
+    /*
+     * If ((year % 4) == 0)
+     * lmonth[2] = 29;
+     */
 
     let i = 1;
     let inttemp = 0;
+
     while (dayofyr > inttemp + lmonth[i - 1] && i < 12) {
       inttemp += lmonth[i - 1];
       i += 1;
     }
 
-    let mon = i;
-    let day = dayofyr - inttemp;
+    const mon = i;
+    const day = dayofyr - inttemp;
 
     //  ----------------- find hours minutes and seconds -------------
     let temp = (days - dayofyr) * 24.0;
-    let hr = Math.floor(temp);
+    const hr = Math.floor(temp);
+
     temp = (temp - hr) * 60.0;
-    let minute = Math.floor(temp);
-    let sec = (temp - minute) * 60.0;
+    const min = Math.floor(temp);
+    const sec = (temp - min) * 60.0;
 
     return {
       mon,
       day,
       hr,
-      minute,
+      min,
       sec,
     };
-  } // days2mdhms
+  } // Days2mdhms
 
-  /* -----------------------------------------------------------------------------
+  /*
+   * -----------------------------------------------------------------------------
    *
    *                           procedure invjday
    *
@@ -3769,54 +4026,57 @@ class Sgp4 {
    *
    *  references    :
    *    vallado       2013, 203, alg 22, ex 3-13
-   * --------------------------------------------------------------------------- */
+   * ---------------------------------------------------------------------------
+   */
   public static invjday(
     jd: number,
     jdfrac: number,
-  ): { year: number; mon: number; day: number; hr: number; minute: number; sec: number } {
+  ): { year: number; mon: number; day: number; hr: number; min: number; sec: number } {
     let leapyrs;
     let days;
 
-    // check jdfrac for multiple days
+    // Check jdfrac for multiple days
     if (Math.abs(jdfrac) >= 1.0) {
-      jd = jd + Math.floor(jdfrac);
-      jdfrac = jdfrac - Math.floor(jdfrac);
+      jd += Math.floor(jdfrac);
+      jdfrac -= Math.floor(jdfrac);
     }
 
-    // check for fraction of a day included in the jd
+    // Check for fraction of a day included in the jd
     const dt = jd - Math.floor(jd) - 0.5;
+
     if (Math.abs(dt) > 0.00000001) {
-      jd = jd - dt;
-      jdfrac = jdfrac + dt;
+      jd -= dt;
+      jdfrac += dt;
     }
 
     /* --------------- find year and days of the year --------------- */
     const temp = jd - 2415019.5;
     const tu = temp / 365.25;
     let year = 1900 + Math.floor(tu);
+
     leapyrs = Math.floor((year - 1901) * 0.25);
 
     days = Math.floor(temp - ((year - 1900) * 365.0 + leapyrs));
 
     /* ------------ check for case of beginning of a year ----------- */
     if (days + jdfrac < 1.0) {
-      year = year - 1;
+      year -= 1;
       leapyrs = Math.floor((year - 1901) * 0.25);
       days = Math.floor(temp - ((year - 1900) * 365.0 + leapyrs));
     }
 
     /* ----------------- find remaining data  ------------------------- */
-    const { mon, day, hr, minute, sec } = Sgp4.days2mdhms(year, days + jdfrac);
+    const { mon, day, hr, min, sec } = Sgp4.days2mdhms(year, days + jdfrac);
 
     return {
       year,
       mon,
       day,
       hr,
-      minute,
+      min,
       sec,
     };
-  } // invjday
+  } // Invjday
 }
 
 export { Sgp4 };

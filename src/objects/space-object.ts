@@ -3,7 +3,8 @@
  * @description Orbital Object ToolKit (OOTK) is a collection of tools for working
  * with satellites and other orbital objects.
  *
- * @file Commonly used constants.
+ * @file The SpaceObject class is meant to provide properties to satellites/stars that
+ * do not apply to ground based objects.
  *
  * @license AGPL-3.0-or-later
  * @Copyright (c) 2020-2022 Theodore Kruczek
@@ -20,17 +21,38 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export const { PI } = Math;
-export const TAU = PI * 2; // https://tauday.com/tau-manifesto
-export const DEG2RAD = PI / 180.0;
-export const x2o3 = 2.0 / 3.0;
-export const temp4 = 1.5e-12;
+import { BaseObject } from './base-object';
+import { SpaceObjectType } from '../types/types';
 
-export const RAD2DEG = 360 / TAU;
-export const MINUTES_PER_DAY = 1440;
-export const MS_PER_DAY = 86400000;
-export const DAY_TO_MS = 1.15741e-8;
-export const cMPerSec = 299792458;
-export const cKmPerSec = 299792458 / 1000;
-export const cKmPerMs = 299792458 / 1000 / 1000;
-export const RADIUS_OF_EARTH = 6371; // Radius of Earth in kilometers
+interface ObjectInfo {
+  name?: string;
+  type?: SpaceObjectType;
+  rcs?: number;
+  vmag?: number;
+}
+
+export class SpaceObject extends BaseObject {
+  public rcs: number;
+
+  public vmag: number;
+
+  constructor(info: ObjectInfo) {
+    super(info);
+
+    if (info.rcs) {
+      this.rcs = info.rcs;
+    }
+
+    if (info.vmag) {
+      this.vmag = info.vmag;
+    }
+  }
+
+  public getRcs(): number {
+    return this.rcs;
+  }
+
+  public getVmag(): number {
+    return this.vmag;
+  }
+}
