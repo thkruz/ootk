@@ -8,6 +8,14 @@
     "declaration": true,
     // "noImplicitAny": true,
     // "removeComments": true,
+    "baseUrl": ".",
+    "paths": {
+      "@lib/*": ["lib/*"],
+      "@dist/*": ["dist/*"],
+      "@src/*": ["src/*"],
+      "@test/*": ["test/*"]
+    },
+    "allowJs": true,
     "experimentalDecorators": true,
     "rootDir": "./src",
     "sourceMap": true,
@@ -17,7 +25,7 @@
     "noEmitOnError": true,
     "types": []
   },
-  "include": ["./src/**/*.ts", "src/objects/star.ts.ignore", "src/objects/.star.ts"],
+  "include": ["./src/**/*.ts"],
   "filesGlob": ["./src/**/*.ts"],
   "ignorePatterns": ["./asc/**/*.ts"]
 }

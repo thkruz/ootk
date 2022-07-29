@@ -3209,9 +3209,9 @@ class Sgp4 {
       year = satrec.epochyr + 1900;
     }
 
-    const { mon, day, hr, minute, sec } = Sgp4.days2mdhms(year, satrec.epochdays);
+    const { mon, day, hr, min, sec } = Sgp4.days2mdhms(year, satrec.epochdays);
 
-    const jdayRes = Sgp4.jday(year, mon, day, hr, minute, sec);
+    const jdayRes = Sgp4.jday(year, mon, day, hr, min, sec);
 
     satrec.jdsatepoch = jdayRes.jd + jdayRes.jdFrac;
 
@@ -3861,20 +3861,31 @@ class Sgp4 {
    * ---------------------------------------------------------------------------
    */
   public static jday(
-    year: number,
-    mon: number,
-    day: number,
-    hr: number,
-    minute: number,
-    sec: number,
+    year: number | Date,
+    mon = 0,
+    day = 0,
+    hr = 0,
+    min = 0,
+    sec = 0,
+    ms = 0,
   ): { jd: number; jdFrac: number } {
+    if (year instanceof Date) {
+      mon = year.getUTCMonth() + 1;
+      day = year.getUTCDate();
+      hr = year.getUTCHours();
+      min = year.getUTCMinutes();
+      sec = year.getUTCSeconds();
+      ms = year.getUTCMilliseconds();
+      year = year.getUTCFullYear();
+    }
+
     let jd =
       367.0 * year -
       Math.floor(7 * (year + Math.floor((mon + 9) / 12.0)) * 0.25) +
       Math.floor((275 * mon) / 9.0) +
       day +
       1721013.5; // Use - 678987.0 to go to mjd directly
-    let jdFrac = (sec + minute * 60.0 + hr * 3600.0) / 86400.0;
+    let jdFrac = (ms / 1000 + sec + min * 60.0 + hr * 3600.0) / 86400.0;
 
     // Check that the day and fractional day are correct
     if (Math.abs(jdFrac) > 1.0) {
@@ -3933,7 +3944,7 @@ class Sgp4 {
     mon: number;
     day: number;
     hr: number;
-    minute: number;
+    min: number;
     sec: number;
   } {
     const lmonth = [31, year % 4 === 0 ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
@@ -3963,14 +3974,14 @@ class Sgp4 {
     const hr = Math.floor(temp);
 
     temp = (temp - hr) * 60.0;
-    const minute = Math.floor(temp);
-    const sec = (temp - minute) * 60.0;
+    const min = Math.floor(temp);
+    const sec = (temp - min) * 60.0;
 
     return {
       mon,
       day,
       hr,
-      minute,
+      min,
       sec,
     };
   } // Days2mdhms
@@ -4020,7 +4031,7 @@ class Sgp4 {
   public static invjday(
     jd: number,
     jdfrac: number,
-  ): { year: number; mon: number; day: number; hr: number; minute: number; sec: number } {
+  ): { year: number; mon: number; day: number; hr: number; min: number; sec: number } {
     let leapyrs;
     let days;
 
@@ -4055,14 +4066,14 @@ class Sgp4 {
     }
 
     /* ----------------- find remaining data  ------------------------- */
-    const { mon, day, hr, minute, sec } = Sgp4.days2mdhms(year, days + jdfrac);
+    const { mon, day, hr, min, sec } = Sgp4.days2mdhms(year, days + jdfrac);
 
     return {
       year,
       mon,
       day,
       hr,
-      minute,
+      min,
       sec,
     };
   } // Invjday

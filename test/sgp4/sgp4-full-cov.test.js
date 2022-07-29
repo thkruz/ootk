@@ -128,7 +128,7 @@ describe('Test vector equations in SGP4', () => {
     expect(Sgp4.invjday(2450000, 0)).toEqual({
       day: 9,
       hr: 12,
-      minute: 0,
+      min: 0,
       mon: 10,
       sec: 0,
       year: 1995,
