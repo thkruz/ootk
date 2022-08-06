@@ -449,14 +449,16 @@ export class SunMath {
     const lw = -lon * DEG2RAD;
     const phi = lat * DEG2RAD;
     const d = SunMath.date2jSince2000(date);
-    const H = SunMath.siderealTime(d, lw) - (ra / 12) * Math.PI;
-    let h = SunMath.elevation(H, phi, (dec / 180) * Math.PI);
+    const H = SunMath.siderealTime(d, lw) - ra;
 
-    h += SunMath.astroRefraction(h); // elevation correction for refraction
+    let el = SunMath.elevation(H, phi, dec);
+    const az = SunMath.azimuth(H, phi, dec);
+
+    el += SunMath.astroRefraction(h); // elevation correction for refraction
 
     return {
-      az: SunMath.azimuth(H, phi, (dec / 180) * Math.PI),
-      el: h,
+      az,
+      el,
     };
   }
 
