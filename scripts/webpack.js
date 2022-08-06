@@ -1,9 +1,14 @@
 const CopyPlugin = require('copy-webpack-plugin');
 
-let config = {
+const config = {
   plugins: [
     new CopyPlugin({
-      patterns: [{ from: 'lib/*.d.ts', to: '[name][ext]' }],
+      patterns: [
+        {
+          from: '**/*.d.ts',
+          context: 'lib',
+        },
+      ],
     }),
   ],
   module: {
@@ -21,7 +26,7 @@ let config = {
   resolve: {
     alias: {
       // eslint-disable-next-line no-path-concat, no-undef
-      '@src': __dirname + '/../src',
+      '@src': `${__dirname}/../src`,
     },
   },
 };
@@ -38,7 +43,7 @@ const lib = {
     library: 'Ootk',
     libraryTarget: 'umd',
     // eslint-disable-next-line no-path-concat, no-undef
-    path: __dirname + '/../dist',
+    path: `${__dirname}/../dist`,
     globalObject: 'this',
   },
   optimization: {
