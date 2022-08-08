@@ -454,7 +454,7 @@ export class SunMath {
     let el = SunMath.elevation(H, phi, dec);
     const az = SunMath.azimuth(H, phi, dec);
 
-    el += SunMath.astroRefraction(h); // elevation correction for refraction
+    el += SunMath.astroRefraction(el); // elevation correction for refraction
 
     return {
       az,
