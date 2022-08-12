@@ -10,6 +10,10 @@
 
 - [Installation](#Installation)
 - [Usage](#Usage)
+  - [Loading the Library](#Loading-the-Library)
+  - [Propagating a TLE](#Propagating-a-TLE)
+  - [Creating a Satellite](#Creating-a-Satellite)
+  - [Creating a Sensor](#Creating-a-Sensor)
 - [Contributing](#Contributing)
 - [Building](#Building)
 - [Contributors](#Contributors)
@@ -25,7 +29,9 @@ npm i ootk
 
 ## :satellite: Usage
 
-### Common.js ([Node.js](https://nodejs.org))
+### Loading the Library
+
+#### Common.js ([Node.js](https://nodejs.org))
 
 ```js
 let Ootk = require('ootk.js');
@@ -33,7 +39,7 @@ let Ootk = require('ootk.js');
 const satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 ```
 
-### ES ([Babel.js](https://babeljs.io/))
+#### ES ([Babel.js](https://babeljs.io/))
 
 ```js
 import * as Ootk from 'ootk.es.js';
@@ -41,7 +47,7 @@ import * as Ootk from 'ootk.es.js';
 const satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 ```
 
-### Script tag
+#### Script tag
 
 Include `dist/ootk.js` as a script in your html:
 
@@ -53,6 +59,50 @@ Include `dist/ootk.js` as a script in your html:
 
 ```js
 var satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
+```
+
+### Propagating a TLE
+
+```js
+const satrec = Ootk.Sgp4.createSatrec(line1, line2);
+const state = Ootk.Sgp4.propagate(satrec, time);
+console.log(state.position); // [x, y, z]
+console.log(state.velocity); // [vx, vy, vz]
+```
+
+### Creating a Satellite
+
+```js
+const sat = new Ootk.Sat({ name: 'Test', tle1, tle2 });
+console.log(sat.intlDes); // International Designator
+console.log(sat.epochYear); // Epoch Year
+console.log(sat.epochDay); // Epoch Day
+console.log(sat.meanMoDev1); // Mean Motion Deviation 1
+console.log(sat.meanMoDev2); // Mean Motion Deviation 2
+console.log(sat.bstar); // Bstar (Drag Coefficient)
+console.log(sat.inclination); // inclination in degrees
+console.log(sat.raan); // right ascension of the ascending node in degrees
+console.log(sat.eccentricity); // eccentricity
+console.log(sat.argOfPerigee); // argument of perigee in degrees
+console.log(sat.meanAnomaly); // mean anomaly in degrees
+console.log(sat.meanMotion); // mean motion in revolutions per day
+console.log(sat.period); // period in seconds
+console.log(sat.apogee); // apogee in kilometers
+console.log(sat.perigee); // perigee in kilometers
+
+sat.propagate(time); // Propagate the satellite to the given time
+sat.getLla(); // Get the satellite's position in latitude, longitude, altitude at its current time
+sat.getEci(time); // Get the satellite's position in Earth-Centered Inertial coordinates at the given time without changing its state
+sat.getRae(sensor, time); // Get position in range, aziimuth, elevation relative to a sensor object at the given time without changing its state
+```
+
+### Creating a Sensor
+
+```js
+const sensor = new Ootk.Sensor({ name: 'Test', lat: lat, lon: lon, alt: alt });
+sensor.setTime(time); // Set the sensor's time to the given time
+sensor.getRae(sat); // Get satellite position in range, aziimuth, elevation at the sensor's current time
+sensor.getRae(sat, time); // Get position in range, aziimuth, elevation relative to a satellite object at the given time without changing its state
 ```
 
 ## :desktop_computer: Building
