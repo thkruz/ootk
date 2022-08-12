@@ -41,27 +41,36 @@ import { SunMath } from './sun-math';
 
 type MoonIlluminationData = {
   fraction: number;
-  phase: any;
+  phase: {
+    from: number;
+    to: number;
+    id: string;
+    emoji: string;
+    code: string;
+    name: string;
+    weight: number;
+    css: string;
+  };
   phaseValue: number;
-  angle: any;
+  angle: number;
   next: {
     value: number;
     date: string;
     type: string;
     newMoon: {
-      value: any;
+      value: number;
       date: string;
     };
     fullMoon: {
-      value: any;
+      value: number;
       date: string;
     };
     firstQuarter: {
-      value: any;
+      value: number;
       date: string;
     };
     thirdQuarter: {
-      value: any;
+      value: number;
       date: string;
     };
   };

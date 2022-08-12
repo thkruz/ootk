@@ -10,7 +10,10 @@ built
 
 test/performance
 test/satellite/transform*
+test/sgp4/sgp4prop
 
 # Future assembly work
 asc
 .asc
+
+**/**.out
