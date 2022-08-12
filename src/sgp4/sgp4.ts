@@ -2741,7 +2741,6 @@ class Sgp4 {
       satrec.aycof = -0.5 * j3oj2 * sinip;
 
       //  Sgp4fix for divide by zero for xincp = 180 deg
-      /* istanbul ignore next | This is no longer possible*/
       if (Math.abs(cosip + 1.0) > 1.5e-12) {
         satrec.xlcof = (-0.25 * j3oj2 * sinip * (3.0 + 5.0 * cosip)) / (1.0 + cosip);
       } else {
