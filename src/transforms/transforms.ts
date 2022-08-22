@@ -240,10 +240,10 @@ class Transforms {
     const el = Math.asin(sez.z / rng);
     const az = Math.atan2(-sez.e, sez.s) + PI;
 
-    return {
+    return <RaeVec3>{
       rng: <Kilometer>rng,
-      az: <Radians>az,
-      el: <Radians>el,
+      az: <Degrees>Transforms.rad2deg(az),
+      el: <Degrees>Transforms.rad2deg(el),
     };
   }
 }
