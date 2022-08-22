@@ -242,8 +242,8 @@ class Transforms {
 
     return {
       rng: <Kilometer>rng,
-      az: <Radians>az,
-      el: <Radians>el,
+      az: <Degrees>rad2deg(az),
+      el: <Degrees>rad2deg(el),
     };
   }
 }
