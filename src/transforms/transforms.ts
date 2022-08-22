@@ -233,7 +233,7 @@ class Transforms {
    * @param {Number} sez.s Positive horizontal vector S due south.
    * @param {Number} sez.e Positive horizontal vector E due east.
    * @param {Number} sez.z Vector Z normal to the surface of the earth (up).
-   * @returns {Object} Rng, Az, El array
+   * @returns {RaeVec3} Rng, Az, El array
    */
   public static sez2rae(sez: SezVec3): RaeVec3 {
     const rng = Math.sqrt(sez.s * sez.s + sez.e * sez.e + sez.z * sez.z);
@@ -242,8 +242,8 @@ class Transforms {
 
     return <RaeVec3>{
       rng: <Kilometer>rng,
-      az: <Degrees>Transforms.rad2deg(az),
-      el: <Degrees>Transforms.rad2deg(el),
+      az: <Radians>az,
+      el: <Radians>el,
     };
   }
 }

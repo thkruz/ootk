@@ -21,8 +21,8 @@ export type LlaVec3 = {
 };
 export type RaeVec3 = {
   rng: Kilometer;
-  az: Degrees;
-  el: Degrees;
+  az: Radians;
+  el: Radians;
 };
 export type SezVec3 = {
   s: Kilometer;
