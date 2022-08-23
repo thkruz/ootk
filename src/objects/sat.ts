@@ -188,4 +188,20 @@ export class Sat extends SpaceObject {
 
     return { gmst, m, j };
   }
+
+  public static checkSatrec(satrec: SatelliteRecord): boolean {
+    if (
+      isNaN(satrec.a) ||
+      isNaN(satrec.am) ||
+      isNaN(satrec.alta) ||
+      isNaN(satrec.em) ||
+      isNaN(satrec.mo) ||
+      isNaN(satrec.ecco) ||
+      isNaN(satrec.no)
+    ) {
+      return false;
+    }
+
+    return true;
+  }
 }
