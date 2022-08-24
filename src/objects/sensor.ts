@@ -23,6 +23,7 @@
 import { Degrees, Kilometer, RaeVec3, SpaceObjectType } from '../types/types';
 
 import { BaseObject } from './base-object';
+import { RAD2DEG } from '../utils/constants';
 import { Sat } from './sat';
 
 interface ObjectInfo {
@@ -179,7 +180,7 @@ export class Sensor extends BaseObject {
   }
 
   public isRaeInFov(rae: RaeVec3): boolean {
-    if (rae.el < this.minEl || rae.el > this.maxEl) {
+    if (rae.el * RAD2DEG < this.minEl || rae.el * RAD2DEG > this.maxEl) {
       return false;
     }
 
@@ -187,13 +188,13 @@ export class Sensor extends BaseObject {
       return false;
     }
 
-    if (this.minAz > this.maxAz) {
+    if (this.minAz * RAD2DEG > this.maxAz) {
       // North Facing Sensors
-      if (rae.az < this.minAz && rae.az > this.maxAz) {
+      if (rae.az * RAD2DEG < this.minAz && rae.az * RAD2DEG > this.maxAz) {
         return false;
       }
       // Normal Facing Sensors
-    } else if (rae.az < this.minAz || rae.az > this.maxAz) {
+    } else if (rae.az * RAD2DEG < this.minAz || rae.az * RAD2DEG > this.maxAz) {
       return false;
     }
 
