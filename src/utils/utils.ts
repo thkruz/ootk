@@ -90,6 +90,32 @@ class Utils {
     );
   };
 
+  public static getDayOfYear(date: Date): number {
+    date = date || new Date();
+
+    const dayCount = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+    const mn = date.getMonth();
+    const dn = date.getUTCDate();
+    let dayOfYear = dayCount[mn] + dn;
+
+    if (mn > 1 && Utils.isLeapYear(date)) {
+      dayOfYear++;
+    }
+
+    return dayOfYear;
+  }
+
+  private static isLeapYear(dateIn: Date) {
+    const year = dateIn.getUTCFullYear();
+
+    // eslint-disable-next-line no-bitwise
+    if ((year & 3) !== 0) {
+      return false;
+    }
+
+    return year % 100 !== 0 || year % 400 === 0;
+  }
+
   public static roundToNDecimalPlaces(value: number, places: number): number {
     return Math.round(value * 10 ** places) / 10 ** places;
   }
