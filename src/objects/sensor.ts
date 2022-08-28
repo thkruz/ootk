@@ -69,6 +69,20 @@ export class Sensor extends BaseObject {
   public minRng: Kilometer;
   public maxRng: Kilometer;
 
+  /**
+   * * name: Name as a string - OPTIONAL
+   * * type: SpaceObjectType - OPTIONAL
+   * * lat: Latitude in Radians
+   * * lon: Longitude in Radians
+   * * alt: Altitude in Kilometers
+   * * minAz: Minimum Azimuth in Degrees
+   * * maxAz: Maximum Azimuth in Degrees
+   * * minEl: Minimum Elevation in Degrees
+   * * maxEl: Maximum Elevation in Degrees
+   * * minRng: Minimum Range in Kilometers
+   * * maxRng: Maximum Range in Kilometers
+   * @param {ObjectInfo} info ObjectInfo object containing the object's information
+   */
   constructor(info: ObjectInfo) {
     // If there is a sensor type verify it is valid
     if (info.type) {

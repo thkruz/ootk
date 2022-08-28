@@ -162,6 +162,24 @@ export class Sat extends SpaceObject {
     return Transforms.ecf2rae({ lat: sensor.lat, lon: sensor.lon, alt: sensor.alt }, ecf);
   }
 
+  public getAzimuth(sensor: Sensor, date: Date = this.time): number {
+    const rae = this.getRae(sensor, date);
+
+    return rae.az;
+  }
+
+  public getElevation(sensor: Sensor, date: Date = this.time): number {
+    const rae = this.getRae(sensor, date);
+
+    return rae.el;
+  }
+
+  public getRange(sensor: Sensor, date: Date = this.time): number {
+    const rae = this.getRae(sensor, date);
+
+    return rae.range;
+  }
+
   /**
    * Calculates the time variables for a given date relative to the TLE epoch.
    * @param {Date} date Date to calculate
