@@ -32,12 +32,12 @@ interface ObjectInfo {
   lat: number;
   lon: number;
   alt: number;
-  minAz: Degrees;
-  maxAz: Degrees;
-  minEl: Degrees;
-  maxEl: Degrees;
-  minRng: Kilometer;
-  maxRng: Kilometer;
+  minAz?: Degrees;
+  maxAz?: Degrees;
+  minEl?: Degrees;
+  maxEl?: Degrees;
+  minRng?: Kilometer;
+  maxRng?: Kilometer;
 }
 
 export enum PassType {
