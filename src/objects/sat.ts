@@ -177,7 +177,7 @@ export class Sat extends SpaceObject {
   public getRange(sensor: Sensor, date: Date = this.time): number {
     const rae = this.getRae(sensor, date);
 
-    return rae.range;
+    return rae.rng;
   }
 
   /**
