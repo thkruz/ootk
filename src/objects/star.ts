@@ -105,7 +105,7 @@ export class Star extends SpaceObject {
       this.dec,
     );
 
-    return { az: <Degrees>(starPos.az * RAD2DEG), el: <Degrees>(starPos.el * RAD2DEG), rng: <Kilometers>250000 };
+    return { az: starPos.az, el: starPos.el, rng: <Kilometers>250000 };
   }
 
   private static calculateTimeVariables(date: Date): { gmst: GreenwichMeanSiderealTime; j: number } {

@@ -237,8 +237,8 @@ class Transforms {
    */
   public static sez2rae(sez: SezVec3): RaeVec3 {
     const rng = <Kilometers>Math.sqrt(sez.s * sez.s + sez.e * sez.e + sez.z * sez.z);
-    const el = <Degrees>Math.asin(sez.z / rng);
-    const az = <Degrees>(Math.atan2(-sez.e, sez.s) + PI);
+    const el = <Radians>Math.asin(sez.z / rng);
+    const az = <Radians>(Math.atan2(-sez.e, sez.s) + PI);
 
     return <RaeVec3>{
       rng,

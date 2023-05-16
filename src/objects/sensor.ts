@@ -230,8 +230,8 @@ export class Sensor extends BaseObject {
       const rae = this.getRae(sat, curTime);
 
       // Radians to Degrees
-      rae.az = <Degrees>((rae.az * 360) / TAU);
-      rae.el = <Degrees>((rae.el * 360) / TAU);
+      const azDeg = <Degrees>((rae.az * 360) / TAU);
+      const elDeg = <Degrees>((rae.el * 360) / TAU);
 
       const isInView = this.isRaeInFov(rae);
 
@@ -250,8 +250,8 @@ export class Sensor extends BaseObject {
         const pass = <Lookangles>{
           type,
           time: curTime,
-          az: rae.az,
-          el: rae.el,
+          az: azDeg,
+          el: elDeg,
           rng: rae.rng,
         };
 
