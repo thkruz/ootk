@@ -9,7 +9,7 @@
  * on some of the functions in satellite.js.
  *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2022 Theodore Kruczek
+ * @Copyright (c) 2020-2023 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -23,7 +23,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Degrees, EcfVec3, EciVec3, Kilometer, LlaVec3, Radians, RaeVec3, SezVec3 } from '../types/types';
+import { Degrees, EcfVec3, EciVec3, Kilometers, LlaVec3, Radians, RaeVec3, SezVec3 } from '../types/types';
 import { PI, TAU } from '../utils/constants';
 
 class Transforms {
@@ -60,11 +60,11 @@ class Transforms {
   }
 
   public static rad2deg(radians: Radians): Degrees {
-    return (radians * 180) / PI;
+    return <Degrees>((radians * 180) / PI);
   }
 
   public static deg2rad(degrees: Degrees): Radians {
-    return (degrees * PI) / 180.0;
+    return <Radians>((degrees * PI) / 180.0);
   }
 
   public static ecf2eci(ecf: EcfVec3, gmst: number): EciVec3 {
@@ -76,9 +76,9 @@ class Transforms {
      * [Z]eci  [0  0  1][Z]ecf
      *
      */
-    const X = ecf.x * Math.cos(gmst) - ecf.y * Math.sin(gmst);
-    const Y = ecf.x * Math.sin(gmst) + ecf.y * Math.cos(gmst);
-    const Z = ecf.z;
+    const X = <Kilometers>(ecf.x * Math.cos(gmst) - ecf.y * Math.sin(gmst));
+    const Y = <Kilometers>(ecf.x * Math.sin(gmst) + ecf.y * Math.cos(gmst));
+    const Z = <Kilometers>ecf.z;
 
     return { x: X, y: Y, z: Z };
   }
@@ -124,7 +124,7 @@ class Transforms {
     }
     const alt = R / Math.cos(lat) - a * C;
 
-    return { lon: <Radians>lon, lat: <Radians>lat, alt: <Kilometer>alt };
+    return { lon: <Radians>lon, lat: <Radians>lat, alt: <Kilometers>alt };
   }
 
   public static eci2ecf(eci: EciVec3, gmst: number): EcfVec3 {
@@ -142,9 +142,9 @@ class Transforms {
      * [Z]ecf  [0  0  1][Z]eci
      */
 
-    const x = eci.x * Math.cos(gmst) + eci.y * Math.sin(gmst);
-    const y = eci.x * -Math.sin(gmst) + eci.y * Math.cos(gmst);
-    const { z } = eci;
+    const x = <Kilometers>(eci.x * Math.cos(gmst) + eci.y * Math.sin(gmst));
+    const y = <Kilometers>(eci.x * -Math.sin(gmst) + eci.y * Math.cos(gmst));
+    const z = <Kilometers>eci.z;
 
     return {
       x,
@@ -167,9 +167,9 @@ class Transforms {
     const z = (normal * (1 - e2) + alt) * Math.sin(lat);
 
     return {
-      x: <Kilometer>x,
-      y: <Kilometer>y,
-      z: <Kilometer>z,
+      x: <Kilometers>x,
+      y: <Kilometers>y,
+      z: <Kilometers>z,
     };
   }
 
@@ -195,7 +195,7 @@ class Transforms {
 
     const zenith = Math.cos(lat) * Math.cos(lon) * rx + Math.cos(lat) * Math.sin(lon) * ry + Math.sin(lat) * rz;
 
-    return { s: <Kilometer>south, e: <Kilometer>east, z: <Kilometer>zenith };
+    return { s: <Kilometers>south, e: <Kilometers>east, z: <Kilometers>zenith };
   }
 
   public static rae2sez(rae: RaeVec3): SezVec3 {
@@ -205,9 +205,9 @@ class Transforms {
     const zenith = rae.rng * Math.sin(rae.el);
 
     return {
-      s: <Kilometer>south,
-      e: <Kilometer>east,
-      z: <Kilometer>zenith,
+      s: <Kilometers>south,
+      e: <Kilometers>east,
+      z: <Kilometers>zenith,
     };
   }
 
@@ -225,7 +225,7 @@ class Transforms {
     const y = slat * slon * sez.s + clon * sez.e + clat * slon * sez.z + obsEcf.y;
     const z = -clat * sez.s + slat * sez.z + obsEcf.z;
 
-    return { x: <Kilometer>x, y: <Kilometer>y, z: <Kilometer>z };
+    return { x: <Kilometers>x, y: <Kilometers>y, z: <Kilometers>z };
   }
 
   /**
@@ -236,14 +236,14 @@ class Transforms {
    * @returns {RaeVec3} Rng, Az, El array
    */
   public static sez2rae(sez: SezVec3): RaeVec3 {
-    const rng = Math.sqrt(sez.s * sez.s + sez.e * sez.e + sez.z * sez.z);
-    const el = Math.asin(sez.z / rng);
-    const az = Math.atan2(-sez.e, sez.s) + PI;
+    const rng = <Kilometers>Math.sqrt(sez.s * sez.s + sez.e * sez.e + sez.z * sez.z);
+    const el = <Degrees>Math.asin(sez.z / rng);
+    const az = <Degrees>(Math.atan2(-sez.e, sez.s) + PI);
 
     return <RaeVec3>{
-      rng: <Kilometer>rng,
-      az: <Radians>az,
-      el: <Radians>el,
+      rng,
+      az,
+      el,
     };
   }
 }

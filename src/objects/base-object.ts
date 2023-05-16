@@ -7,7 +7,7 @@
  * to ground and space based objects.
  *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2022 Theodore Kruczek
+ * @Copyright (c) 2020-2023 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EciVec3, SpaceObjectType } from '../types/types';
+import { EciVec3, Kilometers, SpaceObjectType } from '../types/types';
 
 interface ObjectInfo {
   name?: string;
@@ -41,9 +41,9 @@ export class BaseObject {
     this.name = info.name || 'Unknown';
 
     this.position = info.position || {
-      x: 0,
-      y: 0,
-      z: 0,
+      x: <Kilometers>0,
+      y: <Kilometers>0,
+      z: <Kilometers>0,
     }; // Default to the center of the earth until position is calculated
 
     this.time = info.time || new Date();

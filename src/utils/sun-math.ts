@@ -10,7 +10,7 @@
  *
  *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2022 Theodore Kruczek
+ * @Copyright (c) 2020-2023 Theodore Kruczek
  *
  * @Copyright (c) 2011-2015, Vladimir Agafonkin
  * SunCalc is a JavaScript library for calculating sun/moon position and light phases.
@@ -72,10 +72,10 @@ export class SunMath {
   /**
    * calculates the obderver angle
    * @param {number} alt  the observer altitude (in meters) relative to the horizon
-   * @returns {number} height for further calculations
+   * @returns {Degrees} height for further calculations
    */
   private static observerAngle(alt: Meters): Degrees {
-    return (-2.076 * Math.sqrt(alt)) / 60;
+    return <Degrees>((-2.076 * Math.sqrt(alt)) / 60);
   }
 
   /**
@@ -115,7 +115,7 @@ export class SunMath {
    * @returns {number} right ascension
    */
   static rightAscension(l: number, b: number): Radians {
-    return Math.atan2(Math.sin(l) * Math.cos(SunMath.e) - Math.tan(b) * Math.sin(SunMath.e), Math.cos(l));
+    return <Radians>Math.atan2(Math.sin(l) * Math.cos(SunMath.e) - Math.tan(b) * Math.sin(SunMath.e), Math.cos(l));
   }
 
   /**
@@ -125,7 +125,7 @@ export class SunMath {
    * @returns {number} declination
    */
   static declination(l: number, b: number): Radians {
-    return Math.asin(Math.sin(b) * Math.cos(SunMath.e) + Math.cos(b) * Math.sin(SunMath.e) * Math.sin(l));
+    return <Radians>Math.asin(Math.sin(b) * Math.cos(SunMath.e) + Math.cos(b) * Math.sin(SunMath.e) * Math.sin(l));
   }
 
   /**
@@ -136,7 +136,7 @@ export class SunMath {
    * @returns {Radians} azimuth in rad
    */
   static azimuth(H: number, phi: Radians, dec: Radians): Radians {
-    return Math.PI + Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi));
+    return <Radians>(Math.PI + Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi)));
   }
 
   /**
@@ -147,7 +147,7 @@ export class SunMath {
    * @returns {Radians} elevation
    */
   static elevation(H: number, phi: Radians, dec: Radians): Radians {
-    return Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H));
+    return <Radians>Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H));
   }
 
   /**
@@ -165,12 +165,12 @@ export class SunMath {
    * @param {Radians} h - elevation
    * @returns {number} refraction
    */
-  static astroRefraction(h: Degrees): Radians {
+  static astroRefraction(h: Radians): Radians {
     if (h < 0) {
-      h = 0;
+      h = <Radians>0;
     }
 
-    return 0.0002967 / Math.tan(h + 0.00312536 / (h + 0.08901179));
+    return <Radians>(0.0002967 / Math.tan(h + 0.00312536 / (h + 0.08901179)));
   }
 
   /**
@@ -178,11 +178,11 @@ export class SunMath {
    * @param {number} M - solar mean anomaly
    * @returns {number} ecliptic longitude
    */
-  static eclipticLongitude(M: number): number {
+  static eclipticLongitude(M: number): Radians {
     const C = DEG2RAD * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M));
     const P = DEG2RAD * 102.9372; // perihelion of Earth
 
-    return M + C + P + Math.PI; // Sun's mean longitude
+    return <Radians>(M + C + P + Math.PI); // Sun's mean longitude
   }
 
   /**
@@ -251,7 +251,7 @@ export class SunMath {
    * @param {number} L - ecliptic longitude
    * @returns {number} set time
    */
-  static getSetJulian(h: number, lw: number, phi: number, dec: number, n: number, M: number, L: number): number {
+  static getSetJulian(h: Meters, lw: number, phi: number, dec: number, n: number, M: number, L: number): number {
     const w = SunMath.hourAngle(h, phi, dec);
     const a = SunMath.approxTransit(w, lw, n);
 
@@ -293,7 +293,7 @@ export class SunMath {
    * @param {boolean} [isUtc=false] defines if the calculation should be in utc or local time (default is local)
    * @return {SunTime} result object of sunTime
    */
-  static getTimes(dateVal: Date, lat: Degrees, lon: Degrees, alt: Meters = 0, isUtc = false): SunTime {
+  static getTimes(dateVal: Date, lat: Degrees, lon: Degrees, alt: Meters = <Meters>0, isUtc = false): SunTime {
     if (isNaN(lat)) {
       throw new Error('latitude missing');
     }
@@ -312,7 +312,7 @@ export class SunMath {
     let i = 0;
     let len = 0;
     let time = [];
-    let h0 = 0;
+    let h0 = <Meters>0;
     let Jset = 0;
     let Jrise = 0;
 
@@ -327,7 +327,7 @@ export class SunMath {
     // Add all other unique times using Jnoon as a reference
     for (i = 0, len = SunMath.times.length; i < len; i += 1) {
       time = SunMath.times[i];
-      h0 = (time[0] + dh) * DEG2RAD;
+      h0 = <Meters>((time[0] + dh) * DEG2RAD);
 
       Jset = SunMath.getSetJ(h0, lw, phi, dec, n, M, L);
       Jrise = Jnoon - (Jset - Jnoon);
@@ -339,9 +339,9 @@ export class SunMath {
     return result;
   }
 
-  private static calculateJnoon(lon: number, lat: number, alt: number, date: Date) {
-    const lw = DEG2RAD * -lon;
-    const phi = DEG2RAD * lat;
+  private static calculateJnoon(lon: Degrees, lat: Degrees, alt: Meters, date: Date) {
+    const lw = <Radians>(DEG2RAD * -lon);
+    const phi = <Radians>(DEG2RAD * lat);
     const dh = SunMath.observerAngle(alt);
     const d = SunMath.date2jSince2000(date);
 
@@ -376,11 +376,11 @@ export class SunMath {
     }
 
     if (isDegrees) {
-      az *= DEG2RAD;
+      az = <Radians>(az * DEG2RAD);
     }
     const date = new Date(dateValue);
-    const lw = DEG2RAD * -lon;
-    const phi = DEG2RAD * lat;
+    const lw = <Radians>(DEG2RAD * -lon);
+    const phi = <Radians>(DEG2RAD * lat);
 
     let dateVal = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTime();
     let addval = MS_PER_DAY; // / 2);
@@ -445,16 +445,16 @@ export class SunMath {
     return new Date(date.getTime() + timeCorrection * 60 * 1000);
   }
 
-  static getStarAzEl(date: Date, lat: Degrees, lon: Degrees, ra: number, dec: number): AzEl {
-    const lw = -lon * DEG2RAD;
-    const phi = lat * DEG2RAD;
+  static getStarAzEl(date: Date, lat: Degrees, lon: Degrees, ra: Radians, dec: Radians): AzEl {
+    const lw = <Radians>(-lon * DEG2RAD);
+    const phi = <Radians>(lat * DEG2RAD);
     const d = SunMath.date2jSince2000(date);
     const H = SunMath.siderealTime(d, lw) - ra;
 
     let el = SunMath.elevation(H, phi, dec);
     const az = SunMath.azimuth(H, phi, dec);
 
-    el += SunMath.astroRefraction(el); // elevation correction for refraction
+    el = <Radians>(el + SunMath.astroRefraction(el)); // elevation correction for refraction
 
     return {
       az,
@@ -463,8 +463,8 @@ export class SunMath {
   }
 
   static getSunAzEl(date: Date, lat: Degrees, lon: Degrees): AzEl {
-    const lw = -lon * DEG2RAD;
-    const phi = lat * DEG2RAD;
+    const lw = <Radians>(-lon * DEG2RAD);
+    const phi = <Radians>(lat * DEG2RAD);
     const d = SunMath.date2jSince2000(date);
     const c = SunMath.getSunRaDec(d);
     const H = SunMath.siderealTime(d, lw) - c.ra;

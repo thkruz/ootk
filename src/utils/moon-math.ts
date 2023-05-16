@@ -10,7 +10,7 @@
  *
  *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2022 Theodore Kruczek
+ * @Copyright (c) 2020-2023 Theodore Kruczek
  *
  * @Copyright (c) 2011-2015, Vladimir Agafonkin
  * SunCalc is a JavaScript library for calculating sun/moon position and light phases.
@@ -99,8 +99,8 @@ export class MoonMath {
   }
 
   static getMoonPosition(date, lat, lon) {
-    const lw = DEG2RAD * -lon;
-    const phi = DEG2RAD * lat;
+    const lw = <Radians>(DEG2RAD * -lon);
+    const phi = <Radians>(DEG2RAD * lat);
     const d = SunMath.date2jSince2000(date);
     const c = MoonMath.moonCoords(d);
     const H = SunMath.siderealTime(d, lw) - c.ra;
@@ -108,7 +108,7 @@ export class MoonMath {
     // formula 14.1 of "Astronomical Algorithms" 2nd edition by Jean Meeus (Willmann-Bell, Richmond) 1998.
     const pa = Math.atan2(Math.sin(H), Math.tan(phi) * Math.cos(c.dec) - Math.sin(c.dec) * Math.cos(H));
 
-    h += SunMath.astroRefraction(h); // altitude correction for refraction
+    h = <Radians>(h + SunMath.astroRefraction(h)); // altitude correction for refraction
 
     return {
       az: SunMath.azimuth(H, phi, c.dec),

@@ -27,5 +27,6 @@
   },
   "include": ["./src/**/*.ts"],
   "filesGlob": ["./src/**/*.ts"],
-  "ignorePatterns": ["./asc/**/*.ts"]
+  "ignorePatterns": ["./src/sgp4/asc/**/*.ts"],
+  "exclude": ["./src/sgp4/asc/assembly/index.ts"]
 }

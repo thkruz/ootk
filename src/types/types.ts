@@ -1,6 +1,17 @@
-export type Kilometer = number;
-export type Radians = number;
-export type Degrees = number;
+// Generic definition somewhere in utils
+type Distinct<T, DistinctName> = T & { __TYPE__: DistinctName };
+
+// Possible usages
+export type Hours = Distinct<number, 'Hours'>;
+export type Minutes = Distinct<number, 'Minutes'>;
+export type Seconds = Distinct<number, 'Seconds'>;
+export type Milliseconds = Distinct<number, 'Milliseconds'>;
+
+export type Degrees = Distinct<number, 'Degrees'>;
+export type Radians = Distinct<number, 'Radians'>;
+
+export type Kilometers = Distinct<number, 'Kilometers'>;
+export type Meters = Distinct<number, 'Meters'>;
 
 export type Vec3<Type> = {
   x: Type;
@@ -8,26 +19,26 @@ export type Vec3<Type> = {
   z: Type;
 };
 
-export type EciVec3 = Vec3<Kilometer>;
+export type EciVec3 = Vec3<Kilometers>;
 export type EcfVec3 = {
-  x: Kilometer;
-  y: Kilometer;
-  z: Kilometer;
+  x: Kilometers;
+  y: Kilometers;
+  z: Kilometers;
 };
 export type LlaVec3 = {
   lat: Radians;
   lon: Radians;
-  alt: Kilometer;
+  alt: Kilometers;
 };
 export type RaeVec3 = {
-  rng: Kilometer;
-  az: Radians;
-  el: Radians;
+  rng: Kilometers;
+  az: Degrees;
+  el: Degrees;
 };
 export type SezVec3 = {
-  s: Kilometer;
-  e: Kilometer;
-  z: Kilometer;
+  s: Kilometers;
+  e: Kilometers;
+  z: Kilometers;
 };
 
 /**
@@ -282,8 +293,6 @@ export type AzEl = {
   az: Radians;
   el: Radians;
 };
-
-export type Meters = number;
 
 export type SunTime = {
   solarNoon: Date;
