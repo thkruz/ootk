@@ -4111,8 +4111,10 @@ class Sgp4 {
      */
   }
 
-  // #endregion Private Static Methods (7)
-// Invjday
+  /*
+   * #endregion Private Static Methods (7)
+   * Invjday
+   */
 }
 
 export { Sgp4 };
