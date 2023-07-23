@@ -21,7 +21,6 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DAY_TO_MS, DEG2RAD, RAD2DEG } from '../utils/constants';
 import {
   Degrees,
   EciVec3,
@@ -32,29 +31,29 @@ import {
   RaeVec3,
   SpaceObjectType,
 } from '../types/types';
+import { DAY_TO_MS, DEG2RAD, RAD2DEG } from '../utils/constants';
 
 import { Sgp4 } from '../sgp4/sgp4';
-import { SpaceObject } from './space-object';
 import { Transforms } from '../transforms/transforms';
 import { Utils } from '../utils/utils';
+import { SpaceObject } from './space-object';
 
 interface ObjectInfo {
+  bf?: string;
+  dec: Radians;
+  h?: string;
   name?: string;
+  pname?: string;
+  ra: Radians;
   type?: SpaceObjectType;
   vmag?: number;
-  ra: Radians;
-  dec: Radians;
-  pname?: string;
-  bf?: string;
-  h?: string;
 }
 
 export class Star extends SpaceObject {
-  public pname: string;
   public bf: string;
-  public h: string;
-
   public dec: Radians;
+  public h: string;
+  public pname: string;
   public ra: Radians;
 
   constructor(info: ObjectInfo) {
@@ -87,7 +86,7 @@ export class Star extends SpaceObject {
     date: Date = this.time,
   ): EciVec3 {
     const rae = this.getRae(lla, date);
-    const { gmst } = Star.calculateTimeVariables(date);
+    const { gmst } = Star.calculateTimeVariables_(date);
 
     // Arbitrary distance to enable using ECI coordinates
     return Transforms.ecf2eci(Transforms.rae2ecf(rae, { lat: <Radians>0, lon: <Radians>0, alt: <Kilometers>0 }), gmst);
@@ -108,7 +107,7 @@ export class Star extends SpaceObject {
     return { az: starPos.az, el: starPos.el, rng: <Kilometers>250000 };
   }
 
-  private static calculateTimeVariables(date: Date): { gmst: GreenwichMeanSiderealTime; j: number } {
+  private static calculateTimeVariables_(date: Date): { gmst: GreenwichMeanSiderealTime; j: number } {
     const j =
       Utils.jday(
         date.getUTCFullYear(),

@@ -22,8 +22,8 @@
 
 import { Degrees, Kilometers, Radians, RaeVec3, SpaceObjectType } from '../types/types';
 
-import { BaseObject } from './base-object';
 import { RAD2DEG } from '../utils/constants';
+import { BaseObject } from './base-object';
 import { Sat } from './sat';
 
 interface ObjectInfo {
@@ -242,7 +242,7 @@ export class Sensor extends BaseObject {
         isInViewLast = this.isRaeInFov(oldRae);
       }
 
-      const type = Sensor.getPassType(isInView, isInViewLast);
+      const type = Sensor.getPassType_(isInView, isInViewLast);
 
       maxElThisPass = <Degrees>Math.max(maxElThisPass, rae.el);
 
@@ -270,7 +270,7 @@ export class Sensor extends BaseObject {
     return msnPlanPasses;
   }
 
-  private static getPassType(isInView: boolean, isInViewLast: boolean) {
+  private static getPassType_(isInView: boolean, isInViewLast: boolean) {
     let type = PassType.OUT_OF_VIEW;
 
     if (isInView && !isInViewLast) {

@@ -22,8 +22,8 @@
 
 import { Line1Data, Line2Data, TleLine1, TleLine2 } from '../types/types';
 
-import { TleFormatData } from './tle-format-data';
 import { Utils } from '../utils/utils';
+import { TleFormatData } from './tle-format-data';
 
 type TleData = {
   satNum: number;
@@ -43,49 +43,49 @@ type TleData = {
 type TleDataFull = Line1Data & Line2Data;
 
 export class Tle {
-  private static lineNumber = new TleFormatData(1, 1);
+  public static readonly lineNumber = new TleFormatData(1, 1);
 
-  private static satNum = new TleFormatData(3, 7);
+  public static readonly satNum = new TleFormatData(3, 7);
 
-  private static classification = new TleFormatData(8, 8);
+  public static readonly classification = new TleFormatData(8, 8);
 
-  private static intlDes = new TleFormatData(10, 17);
+  public static readonly intlDes = new TleFormatData(10, 17);
 
-  private static intlDesYear = new TleFormatData(10, 11);
+  public static readonly intlDesYear = new TleFormatData(10, 11);
 
-  private static intlDesLaunchNum = new TleFormatData(12, 14);
+  public static readonly intlDesLaunchNum = new TleFormatData(12, 14);
 
-  private static intlDesLaunchPiece = new TleFormatData(15, 17);
+  public static readonly intlDesLaunchPiece = new TleFormatData(15, 17);
 
-  private static epochYear = new TleFormatData(19, 20);
+  public static readonly epochYear = new TleFormatData(19, 20);
 
-  private static epochDay = new TleFormatData(21, 32);
+  public static readonly epochDay = new TleFormatData(21, 32);
 
-  private static meanMoDev1 = new TleFormatData(34, 43);
+  public static readonly meanMoDev1 = new TleFormatData(34, 43);
 
-  private static meanMoDev2 = new TleFormatData(45, 52);
+  public static readonly meanMoDev2 = new TleFormatData(45, 52);
 
-  private static bstar = new TleFormatData(54, 61);
+  public static readonly bstar = new TleFormatData(54, 61);
 
-  private static ephemerisType = new TleFormatData(63, 63);
+  public static readonly ephemerisType = new TleFormatData(63, 63);
 
-  private static elsetNum = new TleFormatData(65, 68);
+  public static readonly elsetNum = new TleFormatData(65, 68);
 
-  private static checksum = new TleFormatData(69, 69);
+  public static readonly checksum = new TleFormatData(69, 69);
 
-  private static inclination = new TleFormatData(9, 16);
+  public static readonly inclination = new TleFormatData(9, 16);
 
-  private static raan = new TleFormatData(18, 25);
+  public static readonly raan = new TleFormatData(18, 25);
 
-  private static eccentricity = new TleFormatData(27, 33);
+  public static readonly eccentricity = new TleFormatData(27, 33);
 
-  private static argPerigee = new TleFormatData(35, 42);
+  public static readonly argPerigee = new TleFormatData(35, 42);
 
-  private static meanAnom = new TleFormatData(44, 51);
+  public static readonly meanAnom = new TleFormatData(44, 51);
 
-  private static meanMo = new TleFormatData(53, 63);
+  public static readonly meanMo = new TleFormatData(53, 63);
 
-  private static revNum = new TleFormatData(64, 68);
+  public static readonly revNum = new TleFormatData(64, 68);
 
   /**
    * Parses the TLE into orbital data.
@@ -549,11 +549,11 @@ export class Tle {
    * Range: 0 to 9
    * Example: 3
    *
-   * @param {string} tleLine1 The first line of the TLE to parse.
+   * @param {string} tleLine The first line of the TLE to parse.
    * @returns {number} The checksum value.
    */
-  public static getChecksum(tleLine1: TleLine1): number {
-    return parseInt(tleLine1.substring(Tle.checksum.start, Tle.checksum.stop));
+  public static getChecksum(tleLine: TleLine1 | TleLine2): number {
+    return parseInt(tleLine.substring(Tle.checksum.start, Tle.checksum.stop));
   }
 
   /**

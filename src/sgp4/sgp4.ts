@@ -37,8 +37,8 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-lines */
 
+import { GreenwichMeanSiderealTime, SatelliteRecord, StateVector, Vec3Flat } from '../types/types';
 import { DEG2RAD, PI, TAU, temp4, x2o3 } from '../utils/constants';
-import { SatelliteRecord, StateVector, Vec3Flat } from '../types/types';
 
 /*
  *     ----------------------------------------------------------------
@@ -426,7 +426,7 @@ class Sgp4 {
     satrec.jdsatepoch = jdayRes.jd + jdayRes.jdFrac;
 
     //  ---------------- initialize the orbit at sgp4epoch -------------------
-    Sgp4.sgp4init(satrec, {
+    Sgp4.sgp4init_(satrec, {
       whichconst,
       opsmode,
       satn: satrec.satnum,
@@ -627,7 +627,7 @@ class Sgp4 {
    *    vallado       2004, 191, eq 3-45
    * ---------------------------------------------------------------------------
    */
-  public static gstime(jdut1: number): number {
+  public static gstime(jdut1: number): GreenwichMeanSiderealTime {
     const tut1 = (jdut1 - 2451545.0) / 36525.0;
 
     let temp =
@@ -640,7 +640,7 @@ class Sgp4 {
       temp += TAU;
     }
 
-    return temp;
+    return temp as GreenwichMeanSiderealTime;
   }
 
   // Days2mdhms
@@ -1075,7 +1075,7 @@ class Sgp4 {
     if (satrec.method === 'd') {
       const tc = satrec.t;
 
-      const dspaceResult = Sgp4.dspace(
+      const dspaceResult = Sgp4.dspace_(
         satrec.irez,
         satrec.d2201,
         satrec.d2211,
@@ -1196,7 +1196,7 @@ class Sgp4 {
         opsmode: satrec.operationmode,
       };
 
-      const dpperResult = Sgp4.dpper(satrec, dpperParameters);
+      const dpperResult = Sgp4.dpper_(satrec, dpperParameters);
 
       ({ ep, nodep, argpp, mp } = dpperResult);
 
@@ -1725,7 +1725,7 @@ class Sgp4 {
    *    vallado, crawford, hujsak, kelso  2006
    * ----------------------------------------------------------------------------
    */
-  private static dpper(
+  private static dpper_(
     satrec: SatelliteRecord,
     options: {
       ep: number;
@@ -1976,7 +1976,7 @@ class Sgp4 {
    *    vallado, crawford, hujsak, kelso  2006
    *----------------------------------------------------------------------------
    */
-  private static dscom(options: {
+  private static dscom_(options: {
     epoch: number;
     ep: number;
     argpp: number;
@@ -2444,7 +2444,7 @@ class Sgp4 {
    *    vallado, crawford, hujsak, kelso  2006
    *----------------------------------------------------------------------------
    */
-  private static dsinit(options: {
+  private static dsinit_(options: {
     xke: number;
     cosim: number;
     argpo: number;
@@ -2947,7 +2947,7 @@ class Sgp4 {
    *    vallado, crawford, hujsak, kelso  2006
    *----------------------------------------------------------------------------
    */
-  private static dspace(
+  private static dspace_(
     irez: number,
     d2201: number,
     d2211: number,
@@ -3165,7 +3165,7 @@ class Sgp4 {
    *    vallado, crawford, hujsak, kelso  2006
    * ---------------------------------------------------------------------------
    */
-  private static getgravconst(whichconst: string): {
+  private static getgravconst_(whichconst: string): {
     tumin: number;
     mus: number;
     radiusearthkm: number;
@@ -3283,7 +3283,7 @@ class Sgp4 {
    *    vallado, crawford, hujsak, kelso  2006
    *----------------------------------------------------------------------------
    */
-  private static initl(options: {
+  private static initl_(options: {
     opsmode: string;
     ecco: number;
     epoch: number;
@@ -3495,7 +3495,7 @@ class Sgp4 {
    *    vallado, crawford, hujsak, kelso  2006
    *----------------------------------------------------------------------------
    */
-  private static sgp4init(
+  private static sgp4init_(
     satrec: SatelliteRecord,
     options?: {
       whichconst?: string;
@@ -3629,7 +3629,7 @@ class Sgp4 {
      * Sgp4fix identify constants and allow alternate values
      * this is now the only call for the constants
      */
-    const gravResults = Sgp4.getgravconst(whichconst);
+    const gravResults = Sgp4.getgravconst_(whichconst);
 
     satrec.tumin = gravResults.tumin;
     satrec.mus = gravResults.mus;
@@ -3711,7 +3711,7 @@ class Sgp4 {
       j2: satrec.j2,
     };
 
-    const initlResult = Sgp4.initl(initlOptions);
+    const initlResult = Sgp4.initl_(initlOptions);
 
     const { ao, con42, cosio, cosio2, eccsq, omeosq, posq, rp, rteosq, sinio } = initlResult;
 
@@ -3879,7 +3879,7 @@ class Sgp4 {
           zmos: satrec.zmos,
         };
 
-        const dscomResult = Sgp4.dscom(dscomOptions);
+        const dscomResult = Sgp4.dscom_(dscomOptions);
 
         satrec.e3 = dscomResult.e3;
         satrec.ee2 = dscomResult.ee2;
@@ -3956,7 +3956,7 @@ class Sgp4 {
           opsmode: satrec.operationmode,
         };
 
-        const dpperResult = Sgp4.dpper(satrec, dpperOptions);
+        const dpperResult = Sgp4.dpper_(satrec, dpperOptions);
 
         satrec.ecco = dpperResult.ep;
         satrec.inclo = dpperResult.inclp;
@@ -4043,7 +4043,7 @@ class Sgp4 {
           xni: satrec.xni,
         };
 
-        const dsinitResult = Sgp4.dsinit(dsinitOptions);
+        const dsinitResult = Sgp4.dsinit_(dsinitOptions);
 
         satrec.irez = dsinitResult.irez;
         satrec.atime = dsinitResult.atime;

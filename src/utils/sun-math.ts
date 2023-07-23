@@ -36,20 +36,20 @@
 
 /* eslint-disable max-params */
 
+import { Degrees, Radians } from '../ootk';
 import { AzEl, Meters, SunTime } from '../types/types';
 import { DEG2RAD, MS_PER_DAY } from './constants';
-import { Degrees, Radians } from '../ootk';
 
 type J2000Value = number;
 const TAU = Math.PI * 2; // https://tauday.com/tau-manifesto
 
 export class SunMath {
-  private static readonly J1970 = 2440587.5;
-  private static readonly J2000 = 2451545;
-  private static readonly J0 = 0.0009;
-  private static readonly e = DEG2RAD * 23.4397;
+  private static readonly J0_ = 0.0009;
+  private static readonly J1970_ = 2440587.5;
+  private static readonly J2000_ = 2451545;
+  private static readonly e_ = DEG2RAD * 23.4397;
 
-  private static times = [
+  private static times_ = [
     [6, 'goldenHourDawnEnd', 'goldenHourDuskStart'], // GOLDEN_HOUR_2
     [-0.3, 'sunriseEnd', 'sunsetStart'], // SUNRISE_END
     [-0.833, 'sunriseStart', 'sunsetEnd'], // SUNRISE
@@ -62,102 +62,15 @@ export class SunMath {
     [-18, 'astronomicalDawn', 'astronomicalDusk'], // ASTRO_DAWN
   ];
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private static julianCycle(d: number, lw: number): number {
-    const lonOffset = lw / TAU;
-
-    return Math.round(d - SunMath.J0 - lonOffset);
-  }
-
   /**
-   * calculates the obderver angle
-   * @param {number} alt  the observer altitude (in meters) relative to the horizon
-   * @returns {Degrees} height for further calculations
+   * approx transit
+   * @param {number} Ht - hourAngle
+   * @param {number} lw - rad * -lng
+   * @param {number} n - Julian cycle
+   * @returns {number} approx transit
    */
-  private static observerAngle(alt: Meters): Degrees {
-    return <Degrees>((-2.076 * Math.sqrt(alt)) / 60);
-  }
-
-  /**
-   * get solar mean anomaly
-   * @param {number} d - julian day
-   * @returns {number} solar mean anomaly
-   */
-  private static solarMeanAnomaly(d: number): number {
-    return DEG2RAD * (357.5291 + 0.98560028 * d);
-  }
-
-  /**
-   * convert Julian calendar to date object
-   * @param {number} julian day number in Julian calendar to convert
-   * @return {number} result date as timestamp
-   */
-  static julian2date(julian: number): Date {
-    return new Date((julian - SunMath.J1970) * MS_PER_DAY);
-  }
-
-  /**
-   * get number of days for a dateValue since 2000
-   *
-   * See: https://en.wikipedia.org/wiki/Epoch_(astronomy)
-   *
-   * @param {number} date date as timestamp to get days
-   * @return {number} count of days
-   */
-  static date2jSince2000(date: Date): number {
-    return date.getTime() / MS_PER_DAY + SunMath.J1970 - SunMath.J2000;
-  }
-
-  /**
-   * get right ascension
-   * @param {number} l - ecliptic longitude
-   * @param {number} b - ecliptic latitude
-   * @returns {number} right ascension
-   */
-  static rightAscension(l: number, b: number): Radians {
-    return <Radians>Math.atan2(Math.sin(l) * Math.cos(SunMath.e) - Math.tan(b) * Math.sin(SunMath.e), Math.cos(l));
-  }
-
-  /**
-   * get declination
-   * @param {number} l - ecliptic longitude
-   * @param {number} b - ecliptic latitude
-   * @returns {number} declination
-   */
-  static declination(l: number, b: number): Radians {
-    return <Radians>Math.asin(Math.sin(b) * Math.cos(SunMath.e) + Math.cos(b) * Math.sin(SunMath.e) * Math.sin(l));
-  }
-
-  /**
-   * get azimuth
-   * @param {number} H - siderealTime
-   * @param {Radians} phi - latitude
-   * @param {Radians} dec - The declination of the sun
-   * @returns {Radians} azimuth in rad
-   */
-  static azimuth(H: number, phi: Radians, dec: Radians): Radians {
-    return <Radians>(Math.PI + Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi)));
-  }
-
-  /**
-   * get elevation (sometimes called altitude)
-   * @param {number} H - siderealTime
-   * @param {Radians} phi - latitude
-   * @param {Radians} dec - The declination of the sun
-   * @returns {Radians} elevation
-   */
-  static elevation(H: number, phi: Radians, dec: Radians): Radians {
-    return <Radians>Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H));
-  }
-
-  /**
-   * side real time
-   * @param {number} d - julian day
-   * @param {Radians} lw - longitude of the observer
-   * @returns {number} sidereal time
-   */
-  static siderealTime(d: number, lw: Radians): number {
-    return DEG2RAD * (280.16 + 360.9856235 * d) - lw;
+  static approxTransit(Ht: number, lw: number, n: number): number {
+    return SunMath.J0_ + (Ht + lw) / TAU + n;
   }
 
   /**
@@ -174,15 +87,36 @@ export class SunMath {
   }
 
   /**
-   * ecliptic longitude
-   * @param {number} M - solar mean anomaly
-   * @returns {number} ecliptic longitude
+   * get azimuth
+   * @param {number} H - siderealTime
+   * @param {Radians} phi - latitude
+   * @param {Radians} dec - The declination of the sun
+   * @returns {Radians} azimuth in rad
    */
-  static eclipticLongitude(M: number): Radians {
-    const C = DEG2RAD * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M));
-    const P = DEG2RAD * 102.9372; // perihelion of Earth
+  static azimuth(H: number, phi: Radians, dec: Radians): Radians {
+    return <Radians>(Math.PI + Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi)));
+  }
 
-    return <Radians>(M + C + P + Math.PI); // Sun's mean longitude
+  /**
+   * get number of days for a dateValue since 2000
+   *
+   * See: https://en.wikipedia.org/wiki/Epoch_(astronomy)
+   *
+   * @param {number} date date as timestamp to get days
+   * @return {number} count of days
+   */
+  static date2jSince2000(date: Date): number {
+    return date.getTime() / MS_PER_DAY + SunMath.J1970_ - SunMath.J2000_;
+  }
+
+  /**
+   * get declination
+   * @param {number} l - ecliptic longitude
+   * @param {number} b - ecliptic latitude
+   * @returns {number} declination
+   */
+  static declination(l: number, b: number): Radians {
+    return <Radians>Math.asin(Math.sin(b) * Math.cos(SunMath.e_) + Math.cos(b) * Math.sin(SunMath.e_) * Math.sin(l));
   }
 
   /**
@@ -198,46 +132,26 @@ export class SunMath {
   }
 
   /**
-   * Julian cycle
-   * @param {number} d - number of days
-   * @param {number} lw - rad * -lng;
-   * @returns {number} julian cycle
+   * ecliptic longitude
+   * @param {number} M - solar mean anomaly
+   * @returns {number} ecliptic longitude
    */
-  static julianCyle(d: number, lw: number): number {
-    return Math.round(d - SunMath.J0 - lw / ((2 * TAU) / 2));
+  static eclipticLongitude(M: number): Radians {
+    const C = DEG2RAD * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M));
+    const P = DEG2RAD * 102.9372; // perihelion of Earth
+
+    return <Radians>(M + C + P + Math.PI); // Sun's mean longitude
   }
 
   /**
-   * approx transit
-   * @param {number} Ht - hourAngle
-   * @param {number} lw - rad * -lng
-   * @param {number} n - Julian cycle
-   * @returns {number} approx transit
+   * get elevation (sometimes called altitude)
+   * @param {number} H - siderealTime
+   * @param {Radians} phi - latitude
+   * @param {Radians} dec - The declination of the sun
+   * @returns {Radians} elevation
    */
-  static approxTransit(Ht: number, lw: number, n: number): number {
-    return SunMath.J0 + (Ht + lw) / TAU + n;
-  }
-
-  /**
-   * solar transit in Julian
-   * @param {number} ds - approxTransit
-   * @param {number} M - solar mean anomal
-   * @param {number} L - ecliptic longitude
-   * @returns {number} solar transit in Julian
-   */
-  static solarTransitJulian(ds: number, M: number, L: number): number {
-    return SunMath.J2000 + ds + 0.0053 * Math.sin(M) - 0.0069 * Math.sin(2 * L);
-  }
-
-  /**
-   * hour angle
-   * @param {number} h - heigh at 0
-   * @param {number} phi -  rad * lat;
-   * @param {number} dec - declination
-   * @returns {number} hour angle
-   */
-  static hourAngle(h: number, phi: number, dec: number): number {
-    return Math.acos((Math.sin(h) - Math.sin(phi) * Math.sin(dec)) / (Math.cos(phi) * Math.cos(dec)));
+  static elevation(H: number, phi: Radians, dec: Radians): Radians {
+    return <Radians>Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H));
   }
 
   /**
@@ -256,164 +170,6 @@ export class SunMath {
     const a = SunMath.approxTransit(w, lw, n);
 
     return SunMath.solarTransitJulian(a, M, L);
-  }
-
-  /**
-   * returns set time for the given sun altitude
-   * @param {Meters} alt - altitude at 0
-   * @param {Radians} lw - -lng
-   * @param {Radians} phi - lat;
-   * @param {Radians} dec - declination
-   * @param {number} n - Julian cycle
-   * @param {number} M - solar mean anomal
-   * @param {number} L - ecliptic longitude
-   * @return {J2000Value} sunset time in days since 2000
-   */
-  private static getSetJ(
-    alt: Meters,
-    lw: Radians,
-    phi: Radians,
-    dec: Radians,
-    n: number,
-    M: number,
-    L: Radians,
-  ): J2000Value {
-    const w = SunMath.hourAngle(alt, phi, dec);
-    const a = SunMath.approxTransit(w, lw, n);
-
-    return SunMath.solarTransitJulian(a, M, L);
-  }
-
-  /**
-   * calculates sun times for a given date and latitude/longitude
-   * @param {Date|number} dateVal Date object for calculating sun-times
-   * @param {number} lat latitude for calculating sun-times
-   * @param {number} lon longitude for calculating sun-times
-   * @param {number} [alt=0]  the observer height (in meters) relative to the horizon
-   * @param {boolean} [isUtc=false] defines if the calculation should be in utc or local time (default is local)
-   * @return {SunTime} result object of sunTime
-   */
-  static getTimes(dateVal: Date, lat: Degrees, lon: Degrees, alt: Meters = <Meters>0, isUtc = false): SunTime {
-    if (isNaN(lat)) {
-      throw new Error('latitude missing');
-    }
-    if (isNaN(lon)) {
-      throw new Error('longitude missing');
-    }
-
-    const date = new Date(dateVal);
-
-    if (isUtc) {
-      date.setUTCHours(12, 0, 0, 0);
-    } else {
-      date.setHours(12, 0, 0, 0);
-    }
-
-    let i = 0;
-    let len = 0;
-    let time = [];
-    let h0 = <Meters>0;
-    let Jset = 0;
-    let Jrise = 0;
-
-    const { Jnoon, dh, lw, phi, dec, n, M, L } = SunMath.calculateJnoon(lon, lat, alt, date);
-
-    // Determine when the sun is at its highest and lowest (darkest) points.
-    const result = {
-      solarNoon: SunMath.julian2date(Jnoon),
-      nadir: SunMath.julian2date(Jnoon + 0.5), // https://github.com/mourner/suncalc/pull/125
-    };
-
-    // Add all other unique times using Jnoon as a reference
-    for (i = 0, len = SunMath.times.length; i < len; i += 1) {
-      time = SunMath.times[i];
-      h0 = <Meters>((time[0] + dh) * DEG2RAD);
-
-      Jset = SunMath.getSetJ(h0, lw, phi, dec, n, M, L);
-      Jrise = Jnoon - (Jset - Jnoon);
-
-      result[time[1]] = SunMath.julian2date(Jrise);
-      result[time[2]] = SunMath.julian2date(Jset);
-    }
-
-    return result;
-  }
-
-  private static calculateJnoon(lon: Degrees, lat: Degrees, alt: Meters, date: Date) {
-    const lw = <Radians>(DEG2RAD * -lon);
-    const phi = <Radians>(DEG2RAD * lat);
-    const dh = SunMath.observerAngle(alt);
-    const d = SunMath.date2jSince2000(date);
-
-    const n = SunMath.julianCycle(d, lw);
-    const ds = SunMath.approxTransit(0, lw, n);
-    const M = SunMath.solarMeanAnomaly(ds);
-    const L = SunMath.eclipticLongitude(M);
-    const dec = SunMath.declination(L, 0);
-    const Jnoon = SunMath.solarTransitJulian(ds, M, L);
-
-    return { Jnoon, dh, lw, phi, dec, n, M, L };
-  }
-
-  /**
-   * calculates time for a given azimuth angle for a given date and latitude/longitude
-   * @param {number|Date} dateValue Date object or timestamp for calculating sun-time
-   * @param {Degrees} lat latitude for calculating sun-time
-   * @param {Degrees} lon longitude for calculating sun-time
-   * @param {Radians | Degrees} az azimuth for calculating sun-time
-   * @param {boolean} [isDegrees] true if the az angle is in degree and not in rad
-   * @return {Date} result time of sun-time
-   */
-  static getSunTimeByAzimuth(dateValue, lat: Degrees, lon: Degrees, az: Radians | Degrees, isDegrees = false) {
-    if (isNaN(az)) {
-      throw new Error('azimuth missing');
-    }
-    if (isNaN(lat)) {
-      throw new Error('latitude missing');
-    }
-    if (isNaN(lon)) {
-      throw new Error('longitude missing');
-    }
-
-    if (isDegrees) {
-      az = <Radians>(az * DEG2RAD);
-    }
-    const date = new Date(dateValue);
-    const lw = <Radians>(DEG2RAD * -lon);
-    const phi = <Radians>(DEG2RAD * lat);
-
-    let dateVal = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTime();
-    let addval = MS_PER_DAY; // / 2);
-
-    dateVal += addval;
-
-    while (addval > 200) {
-      // let nazi = this.getPosition(dateVal, lat, lng).azimuth;
-      const d = SunMath.date2jSince2000(new Date(dateVal));
-      const c = SunMath.getSunRaDec(d);
-      const H = SunMath.siderealTime(d, lw) - c.ra;
-      const newAz = SunMath.getAzimuth(H, phi, c.dec);
-
-      addval /= 2;
-      if (newAz < az) {
-        dateVal += addval;
-      } else {
-        dateVal -= addval;
-      }
-    }
-
-    return new Date(Math.floor(dateVal));
-  }
-
-  /**
-   * get azimuth
-   * @param {number} H - siderealTime
-   * @param {Radians} phi - latitude
-   * @param {Radians} dec - The declination of the sun
-   * @returns {Radians} azimuth
-   */
-  private static getAzimuth(H, phi, dec) {
-    return Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi)) + Math.PI;
   }
 
   /**
@@ -476,12 +232,256 @@ export class SunMath {
   }
 
   static getSunRaDec(d: number) {
-    const M = SunMath.solarMeanAnomaly(d);
+    const M = SunMath.solarMeanAnomaly_(d);
     const L = SunMath.eclipticLongitude(M);
 
     return {
       dec: SunMath.declination(L, 0),
       ra: SunMath.rightAscension(L, 0),
     };
+  }
+
+  /**
+   * calculates time for a given azimuth angle for a given date and latitude/longitude
+   * @param {number|Date} dateValue Date object or timestamp for calculating sun-time
+   * @param {Degrees} lat latitude for calculating sun-time
+   * @param {Degrees} lon longitude for calculating sun-time
+   * @param {Radians | Degrees} az azimuth for calculating sun-time
+   * @param {boolean} [isDegrees] true if the az angle is in degree and not in rad
+   * @return {Date} result time of sun-time
+   */
+  static getSunTimeByAzimuth(dateValue, lat: Degrees, lon: Degrees, az: Radians | Degrees, isDegrees = false) {
+    if (isNaN(az)) {
+      throw new Error('azimuth missing');
+    }
+    if (isNaN(lat)) {
+      throw new Error('latitude missing');
+    }
+    if (isNaN(lon)) {
+      throw new Error('longitude missing');
+    }
+
+    if (isDegrees) {
+      az = <Radians>(az * DEG2RAD);
+    }
+    const date = new Date(dateValue);
+    const lw = <Radians>(DEG2RAD * -lon);
+    const phi = <Radians>(DEG2RAD * lat);
+
+    let dateVal = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTime();
+    let addval = MS_PER_DAY; // / 2);
+
+    dateVal += addval;
+
+    while (addval > 200) {
+      // let nazi = this.getPosition(dateVal, lat, lng).azimuth;
+      const d = SunMath.date2jSince2000(new Date(dateVal));
+      const c = SunMath.getSunRaDec(d);
+      const H = SunMath.siderealTime(d, lw) - c.ra;
+      const newAz = SunMath.getAzimuth_(H, phi, c.dec);
+
+      addval /= 2;
+      if (newAz < az) {
+        dateVal += addval;
+      } else {
+        dateVal -= addval;
+      }
+    }
+
+    return new Date(Math.floor(dateVal));
+  }
+
+  /**
+   * calculates sun times for a given date and latitude/longitude
+   * @param {Date|number} dateVal Date object for calculating sun-times
+   * @param {number} lat latitude for calculating sun-times
+   * @param {number} lon longitude for calculating sun-times
+   * @param {number} [alt=0]  the observer height (in meters) relative to the horizon
+   * @param {boolean} [isUtc=false] defines if the calculation should be in utc or local time (default is local)
+   * @return {SunTime} result object of sunTime
+   */
+  static getTimes(dateVal: Date, lat: Degrees, lon: Degrees, alt: Meters = <Meters>0, isUtc = false): SunTime {
+    if (isNaN(lat)) {
+      throw new Error('latitude missing');
+    }
+    if (isNaN(lon)) {
+      throw new Error('longitude missing');
+    }
+
+    const date = new Date(dateVal);
+
+    if (isUtc) {
+      date.setUTCHours(12, 0, 0, 0);
+    } else {
+      date.setHours(12, 0, 0, 0);
+    }
+
+    let i = 0;
+    let len = 0;
+    let time = [];
+    let h0 = <Meters>0;
+    let Jset = 0;
+    let Jrise = 0;
+
+    const { Jnoon, dh, lw, phi, dec, n, M, L } = SunMath.calculateJnoon_(lon, lat, alt, date);
+
+    // Determine when the sun is at its highest and lowest (darkest) points.
+    const result = {
+      solarNoon: SunMath.julian2date(Jnoon),
+      nadir: SunMath.julian2date(Jnoon + 0.5), // https://github.com/mourner/suncalc/pull/125
+    };
+
+    // Add all other unique times using Jnoon as a reference
+    for (i = 0, len = SunMath.times_.length; i < len; i += 1) {
+      time = SunMath.times_[i];
+      h0 = <Meters>((time[0] + dh) * DEG2RAD);
+
+      Jset = SunMath.getSetJ_(h0, lw, phi, dec, n, M, L);
+      Jrise = Jnoon - (Jset - Jnoon);
+
+      result[time[1]] = SunMath.julian2date(Jrise);
+      result[time[2]] = SunMath.julian2date(Jset);
+    }
+
+    return result;
+  }
+
+  /**
+   * hour angle
+   * @param {number} h - heigh at 0
+   * @param {number} phi -  rad * lat;
+   * @param {number} dec - declination
+   * @returns {number} hour angle
+   */
+  static hourAngle(h: number, phi: number, dec: number): number {
+    return Math.acos((Math.sin(h) - Math.sin(phi) * Math.sin(dec)) / (Math.cos(phi) * Math.cos(dec)));
+  }
+
+  /**
+   * convert Julian calendar to date object
+   * @param {number} julian day number in Julian calendar to convert
+   * @return {number} result date as timestamp
+   */
+  static julian2date(julian: number): Date {
+    return new Date((julian - SunMath.J1970_) * MS_PER_DAY);
+  }
+
+  /**
+   * Julian cycle
+   * @param {number} d - number of days
+   * @param {number} lw - rad * -lng;
+   * @returns {number} julian cycle
+   */
+  static julianCyle(d: number, lw: number): number {
+    return Math.round(d - SunMath.J0_ - lw / ((2 * TAU) / 2));
+  }
+
+  /**
+   * get right ascension
+   * @param {number} l - ecliptic longitude
+   * @param {number} b - ecliptic latitude
+   * @returns {number} right ascension
+   */
+  static rightAscension(l: number, b: number): Radians {
+    return <Radians>Math.atan2(Math.sin(l) * Math.cos(SunMath.e_) - Math.tan(b) * Math.sin(SunMath.e_), Math.cos(l));
+  }
+
+  /**
+   * side real time
+   * @param {number} d - julian day
+   * @param {Radians} lw - longitude of the observer
+   * @returns {number} sidereal time
+   */
+  static siderealTime(d: number, lw: Radians): number {
+    return DEG2RAD * (280.16 + 360.9856235 * d) - lw;
+  }
+
+  /**
+   * solar transit in Julian
+   * @param {number} ds - approxTransit
+   * @param {number} M - solar mean anomal
+   * @param {number} L - ecliptic longitude
+   * @returns {number} solar transit in Julian
+   */
+  static solarTransitJulian(ds: number, M: number, L: number): number {
+    return SunMath.J2000_ + ds + 0.0053 * Math.sin(M) - 0.0069 * Math.sin(2 * L);
+  }
+
+  private static calculateJnoon_(lon: Degrees, lat: Degrees, alt: Meters, date: Date) {
+    const lw = <Radians>(DEG2RAD * -lon);
+    const phi = <Radians>(DEG2RAD * lat);
+    const dh = SunMath.observerAngle_(alt);
+    const d = SunMath.date2jSince2000(date);
+
+    const n = SunMath.julianCycle_(d, lw);
+    const ds = SunMath.approxTransit(0, lw, n);
+    const M = SunMath.solarMeanAnomaly_(ds);
+    const L = SunMath.eclipticLongitude(M);
+    const dec = SunMath.declination(L, 0);
+    const Jnoon = SunMath.solarTransitJulian(ds, M, L);
+
+    return { Jnoon, dh, lw, phi, dec, n, M, L };
+  }
+
+  /**
+   * get azimuth
+   * @param {number} H - siderealTime
+   * @param {Radians} phi - latitude
+   * @param {Radians} dec - The declination of the sun
+   * @returns {Radians} azimuth
+   */
+  private static getAzimuth_(H: number, phi: Radians, dec: Radians) {
+    return Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi)) + Math.PI;
+  }
+
+  /**
+   * returns set time for the given sun altitude
+   * @param {Meters} alt - altitude at 0
+   * @param {Radians} lw - -lng
+   * @param {Radians} phi - lat;
+   * @param {Radians} dec - declination
+   * @param {number} n - Julian cycle
+   * @param {number} M - solar mean anomal
+   * @param {number} L - ecliptic longitude
+   * @return {J2000Value} sunset time in days since 2000
+   */
+  private static getSetJ_(
+    alt: Meters,
+    lw: Radians,
+    phi: Radians,
+    dec: Radians,
+    n: number,
+    M: number,
+    L: Radians,
+  ): J2000Value {
+    const w = SunMath.hourAngle(alt, phi, dec);
+    const a = SunMath.approxTransit(w, lw, n);
+
+    return SunMath.solarTransitJulian(a, M, L);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private static julianCycle_(d: number, lw: number): number {
+    const lonOffset = lw / TAU;
+
+    return Math.round(d - SunMath.J0_ - lonOffset);
+  }
+
+  /**
+   * calculates the obderver angle
+   * @param {number} alt  the observer altitude (in meters) relative to the horizon
+   * @returns {Degrees} height for further calculations
+   */
+  private static observerAngle_(alt: Meters): Degrees {
+    return <Degrees>((-2.076 * Math.sqrt(alt)) / 60);
+  }
+
+  /**
+   * get solar mean anomaly
+   * @param {number} d - julian day
+   * @returns {number} solar mean anomaly
+   */
+  private static solarMeanAnomaly_(d: number): number {
+    return DEG2RAD * (357.5291 + 0.98560028 * d);
   }
 }

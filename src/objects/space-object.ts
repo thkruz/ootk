@@ -33,7 +33,6 @@ interface ObjectInfo {
 
 export class SpaceObject extends BaseObject {
   public rcs: number;
-
   public vmag: number;
 
   constructor(info: ObjectInfo) {

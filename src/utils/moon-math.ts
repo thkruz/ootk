@@ -34,9 +34,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DEG2RAD } from './constants';
+import { Degrees, Radians } from '../ootk';
 import { MS_PER_DAY } from '../utils/constants';
-import { Radians } from '../ootk';
+import { DEG2RAD } from './constants';
 import { SunMath } from './sun-math';
 
 type MoonIlluminationData = {
@@ -77,48 +77,7 @@ type MoonIlluminationData = {
 };
 
 export class MoonMath {
-  static moonCoords(d) {
-    // geocentric ecliptic coordinates of the moon
-
-    const L = DEG2RAD * (218.316 + 13.176396 * d); // ecliptic longitude
-    const M = DEG2RAD * (134.963 + 13.064993 * d); // mean anomaly
-    const F = DEG2RAD * (93.272 + 13.22935 * d); // mean distance
-    const l = L + DEG2RAD * 6.289 * Math.sin(M); // longitude
-    const b = DEG2RAD * 5.128 * Math.sin(F); // latitude
-    const dt = 385001 - 20905 * Math.cos(M); // distance to the moon in km
-
-    return {
-      ra: SunMath.rightAscension(l, b),
-      dec: SunMath.declination(l, b),
-      dist: dt,
-    };
-  }
-
-  static hoursLater(date: Date, h: number) {
-    return new Date(date.getTime() + (h * MS_PER_DAY) / 24);
-  }
-
-  static getMoonPosition(date, lat, lon) {
-    const lw = <Radians>(DEG2RAD * -lon);
-    const phi = <Radians>(DEG2RAD * lat);
-    const d = SunMath.date2jSince2000(date);
-    const c = MoonMath.moonCoords(d);
-    const H = SunMath.siderealTime(d, lw) - c.ra;
-    let h = SunMath.elevation(H, phi, c.dec);
-    // formula 14.1 of "Astronomical Algorithms" 2nd edition by Jean Meeus (Willmann-Bell, Richmond) 1998.
-    const pa = Math.atan2(Math.sin(H), Math.tan(phi) * Math.cos(c.dec) - Math.sin(c.dec) * Math.cos(H));
-
-    h = <Radians>(h + SunMath.astroRefraction(h)); // altitude correction for refraction
-
-    return {
-      az: SunMath.azimuth(H, phi, c.dec),
-      el: h,
-      rng: c.dist,
-      parallacticAngle: pa,
-    };
-  }
-
-  private static moonCycles = [
+  private static moonCycles_ = [
     {
       from: 0,
       to: 0.033863193308711,
@@ -272,8 +231,8 @@ export class MoonMath {
     // eslint-disable-next-line init-declarations
     let phase;
 
-    for (let index = 0; index < MoonMath.moonCycles.length; index++) {
-      const element = MoonMath.moonCycles[index];
+    for (let index = 0; index < MoonMath.moonCycles_.length; index++) {
+      const element = MoonMath.moonCycles_[index];
 
       if (phaseValue >= element.from && phaseValue <= element.to) {
         phase = element;
@@ -322,15 +281,35 @@ export class MoonMath {
     };
   }
 
+  static getMoonPosition(date: Date, lat: Degrees, lon: Degrees) {
+    const lw = <Radians>(DEG2RAD * -lon);
+    const phi = <Radians>(DEG2RAD * lat);
+    const d = SunMath.date2jSince2000(date);
+    const c = MoonMath.moonCoords(d);
+    const H = SunMath.siderealTime(d, lw) - c.ra;
+    let h = SunMath.elevation(H, phi, c.dec);
+    // formula 14.1 of "Astronomical Algorithms" 2nd edition by Jean Meeus (Willmann-Bell, Richmond) 1998.
+    const pa = Math.atan2(Math.sin(H), Math.tan(phi) * Math.cos(c.dec) - Math.sin(c.dec) * Math.cos(H));
+
+    h = <Radians>(h + SunMath.astroRefraction(h)); // altitude correction for refraction
+
+    return {
+      az: SunMath.azimuth(H, phi, c.dec),
+      el: h,
+      rng: c.dist,
+      parallacticAngle: pa,
+    };
+  }
+
   /**
    * calculations for moon rise/set times are based on http://www.stargazing.net/kepler/moonrise.html article
    * @param {number|Date} dateValue Date object or timestamp for calculating moon-times
-   * @param {number} lat latitude for calculating moon-times
-   * @param {number} lon longitude for calculating moon-times
+   * @param {Degrees} lat latitude for calculating moon-times
+   * @param {Degrees} lon longitude for calculating moon-times
    * @param {boolean} [isUtc] defines if the calculation should be in utc or local time (default is local)
    * @return {IMoonTimes} result object of sunTime
    */
-  static getMoonTimes(dateValue: Date, lat: Radians, lon: Radians, isUtc = false) {
+  static getMoonTimes(dateValue: number | Date, lat: Degrees, lon: Degrees, isUtc = false) {
     const t = new Date(dateValue);
 
     if (isUtc) {
@@ -339,7 +318,7 @@ export class MoonMath {
       t.setHours(0, 0, 0, 0);
     }
 
-    const { rise, set, ye } = MoonMath.calculateRiseSetTimes(t, lat, lon);
+    const { rise, set, ye } = MoonMath.calculateRiseSetTimes_(t, lat, lon);
 
     const result = {
       rise: null,
@@ -351,13 +330,13 @@ export class MoonMath {
     };
 
     if (rise) {
-      result.rise = new Date(MoonMath.hoursLater(dateValue, rise));
+      result.rise = new Date(MoonMath.hoursLater(t, rise));
     } else {
       result.rise = NaN;
     }
 
     if (set) {
-      result.set = new Date(MoonMath.hoursLater(dateValue, set));
+      result.set = new Date(MoonMath.hoursLater(t, set));
     } else {
       result.set = NaN;
     }
@@ -373,7 +352,7 @@ export class MoonMath {
     } else if (rise && set) {
       result.alwaysUp = false;
       result.alwaysDown = false;
-      result.highest = new Date(MoonMath.hoursLater(dateValue, Math.min(rise, set) + Math.abs(set - rise) / 2));
+      result.highest = new Date(MoonMath.hoursLater(t, Math.min(rise, set) + Math.abs(set - rise) / 2));
     } else {
       result.alwaysUp = false;
       result.alwaysDown = false;
@@ -382,8 +361,29 @@ export class MoonMath {
     return result;
   }
 
+  static hoursLater(date: Date, h: number) {
+    return new Date(date.getTime() + (h * MS_PER_DAY) / 24);
+  }
+
+  static moonCoords(d) {
+    // geocentric ecliptic coordinates of the moon
+
+    const L = DEG2RAD * (218.316 + 13.176396 * d); // ecliptic longitude
+    const M = DEG2RAD * (134.963 + 13.064993 * d); // mean anomaly
+    const F = DEG2RAD * (93.272 + 13.22935 * d); // mean distance
+    const l = L + DEG2RAD * 6.289 * Math.sin(M); // longitude
+    const b = DEG2RAD * 5.128 * Math.sin(F); // latitude
+    const dt = 385001 - 20905 * Math.cos(M); // distance to the moon in km
+
+    return {
+      ra: SunMath.rightAscension(l, b),
+      dec: SunMath.declination(l, b),
+      dist: dt,
+    };
+  }
+
   // eslint-disable-next-line max-statements
-  private static calculateRiseSetTimes(t: Date, lat: Radians, lon: Radians) {
+  private static calculateRiseSetTimes_(t: Date, lat: Degrees, lon: Degrees) {
     const hc = 0.133 * DEG2RAD;
     let h0 = MoonMath.getMoonPosition(t, lat, lon).el - hc;
     let h1 = 0;

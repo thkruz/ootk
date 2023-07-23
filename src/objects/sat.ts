@@ -32,6 +32,8 @@ import {
   SatelliteRecord,
   SpaceObjectType,
   StateVector,
+  TleLine1,
+  TleLine2,
 } from '../types/types';
 
 import { Sensor } from './sensor';
@@ -46,8 +48,8 @@ interface ObjectInfo {
   type?: SpaceObjectType;
   rcs?: number;
   vmag?: number;
-  tle1: string;
-  tle2: string;
+  tle1: TleLine1
+  tle2: TleLine2
 }
 
 export class Sat extends SpaceObject {
@@ -72,7 +74,7 @@ export class Sat extends SpaceObject {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public options: any;
 
-  constructor(info: ObjectInfo, options) {
+  constructor(info: ObjectInfo, options?) {
     super(info);
 
     const tleData = Tle.parseTle(info.tle1, info.tle2);
@@ -95,7 +97,7 @@ export class Sat extends SpaceObject {
     // NOTE: Calculate apogee and perigee
 
     this.satrec = Sgp4.createSatrec(info.tle1, info.tle2);
-    this.options = options;
+    this.options = options ? options : {};
   }
 
   public propagateTo(date: Date): Sat {
