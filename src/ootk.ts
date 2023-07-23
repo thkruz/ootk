@@ -19,7 +19,6 @@
  */
 
 export { Sgp4 } from './sgp4/sgp4';
-export { Sgp4Assembly } from './sgp4/Sgp4Assembly';
 export { Transforms } from './transforms/transforms';
 export { Utils } from './utils/utils';
 export { Tle } from './tle/tle';
