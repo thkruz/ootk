@@ -1,11 +1,11 @@
 {
   "name": "ootk",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Orbital Object Toolkit including SGP4 Propagator and Coordinate Transforms",
   "main": "dist/ootk.js",
   "scripts": {
-    "build": "node ./scripts/cleanup.js && tsc -p tsconfig.json && node --openssl-legacy-provider node_modules/webpack/bin/webpack.js --config ./scripts/webpack.js",
-    "build:legacy": "node ./scripts/cleanup.js && tsc && node node_modules/webpack/bin/webpack.js --config ./scripts/webpack.js",
+    "build": "node ./scripts/cleanup.js && tsc -p tsconfig.build.json && node --openssl-legacy-provider node_modules/webpack/bin/webpack.js --config ./scripts/webpack.js",
+    "build:legacy": "node ./scripts/cleanup.js && tsc -p tsconfig.build.json && node node_modules/webpack/bin/webpack.js --config ./scripts/webpack.js",
     "lcov": "node ./scripts/openLcov.mjs",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
