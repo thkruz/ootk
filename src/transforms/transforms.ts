@@ -23,7 +23,6 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DEG2RAD, PI, RAD2DEG, TAU } from '@src/utils/constants';
 import {
   Degrees,
   EcefVec3,
@@ -39,6 +38,7 @@ import {
   RuvVec3,
   SezVec3,
 } from '../types/types';
+import { DEG2RAD, PI, RAD2DEG, TAU } from '../utils/constants';
 
 class Transforms {
   public static getDegLat(radians: Radians): Degrees {

@@ -21,7 +21,14 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { LaunchDetails, OperationsDetails, SpaceCraftDetails, SpaceObjectType } from '../types/types';
+import {
+  LaunchDetails,
+  OperationsDetails,
+  SpaceCraftDetails,
+  SpaceObjectType,
+  TleLine1,
+  TleLine2,
+} from '../types/types';
 
 import { Sat } from './sat';
 
@@ -30,8 +37,8 @@ interface ObjectInfo {
   type?: SpaceObjectType;
   rcs?: number;
   vmag?: number;
-  tle1: string;
-  tle2: string;
+  tle1: TleLine1;
+  tle2: TleLine2;
 }
 
 export class DetailedSat extends Sat {
