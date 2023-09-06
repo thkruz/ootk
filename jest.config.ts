@@ -1,6 +1,4 @@
-import type { JestConfigWithTsJest } from 'ts-jest';
-
-const jestConfig: JestConfigWithTsJest = {
+const jestConfig = {
   testEnvironment: 'node',
   transform: {
     '\\.(js|ts|jsx|tsx)$': 'babel-jest',
