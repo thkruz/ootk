@@ -203,7 +203,7 @@ export class Sensor extends BaseObject {
     }
   }
 
-  public setTime(date: Date): Sensor {
+  public setTime(date: Date): this {
     this.time = date;
 
     return this;
