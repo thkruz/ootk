@@ -109,42 +109,26 @@ export class Sensor extends BaseObject {
   }
 
   private validateFov(info: ObjectInfo) {
-    if (info.minAz >= 0 && info.minAz <= 360) {
-      this.minAz = info.minAz;
-    } else if (typeof info.minAz === 'undefined') {
-      // Default is a telescope
-      this.minAz = <Degrees>0;
-    } else {
-      throw new Error('Invalid minimum azimuth - must be between 0 and 360');
-    }
+    this.validateMinAz(info);
+    this.validateMaxAz(info);
+    this.validateMinEl(info);
+    this.validateMaxEl(info);
+    this.validateMinRng(info);
+    this.validateMaxRng(info);
+  }
 
-    if (info.maxAz >= 0 && info.maxAz <= 360) {
-      this.maxAz = info.maxAz;
-    } else if (typeof info.maxAz === 'undefined') {
+  private validateMaxRng(info: ObjectInfo) {
+    if (info.maxRng >= 0) {
+      this.maxRng = info.maxRng;
+    } else if (typeof info.maxRng === 'undefined') {
       // Default is a telescope
-      this.maxAz = <Degrees>360;
+      this.maxRng = <Kilometers>50000; // arbitrary large number
     } else {
-      throw new Error('Invalid maximum azimuth - must be between 0 and 360');
+      throw new Error('Invalid maximum range - must be greater than 0');
     }
+  }
 
-    if (info.minEl >= 0 && info.minEl <= 90) {
-      this.minEl = info.minEl;
-    } else if (typeof info.minEl === 'undefined') {
-      // Default is a telescope
-      this.minEl = <Degrees>0;
-    } else {
-      throw new Error('Invalid minimum elevation - must be between 0 and 90');
-    }
-
-    if (info.maxEl >= 0 && info.maxEl <= 180) {
-      this.maxEl = info.maxEl;
-    } else if (typeof info.maxEl === 'undefined') {
-      // Default is a telescope
-      this.maxEl = <Degrees>90;
-    } else {
-      throw new Error('Invalid maximum elevation - must be between 0 and 180');
-    }
-
+  private validateMinRng(info: ObjectInfo) {
     if (info.minRng >= 0) {
       this.minRng = info.minRng;
     } else if (typeof info.minRng === 'undefined') {
@@ -153,13 +137,49 @@ export class Sensor extends BaseObject {
     } else {
       throw new Error('Invalid minimum range - must be greater than 0');
     }
-    if (info.maxRng >= 0) {
-      this.maxRng = info.maxRng;
-    } else if (typeof info.maxRng === 'undefined') {
+  }
+
+  private validateMaxEl(info: ObjectInfo) {
+    if (info.maxEl >= 0 && info.maxEl <= 180) {
+      this.maxEl = info.maxEl;
+    } else if (typeof info.maxEl === 'undefined') {
       // Default is a telescope
-      this.maxRng = <Kilometers>50000; // arbitrary large number
+      this.maxEl = <Degrees>90;
     } else {
-      throw new Error('Invalid maximum range - must be greater than 0');
+      throw new Error('Invalid maximum elevation - must be between 0 and 180');
+    }
+  }
+
+  private validateMinEl(info: ObjectInfo) {
+    if (info.minEl >= 0 && info.minEl <= 90) {
+      this.minEl = info.minEl;
+    } else if (typeof info.minEl === 'undefined') {
+      // Default is a telescope
+      this.minEl = <Degrees>0;
+    } else {
+      throw new Error('Invalid minimum elevation - must be between 0 and 90');
+    }
+  }
+
+  private validateMaxAz(info: ObjectInfo) {
+    if (info.maxAz >= 0 && info.maxAz <= 360) {
+      this.maxAz = info.maxAz;
+    } else if (typeof info.maxAz === 'undefined') {
+      // Default is a telescope
+      this.maxAz = <Degrees>360;
+    } else {
+      throw new Error('Invalid maximum azimuth - must be between 0 and 360');
+    }
+  }
+
+  private validateMinAz(info: ObjectInfo) {
+    if (info.minAz >= 0 && info.minAz <= 360) {
+      this.minAz = info.minAz;
+    } else if (typeof info.minAz === 'undefined') {
+      // Default is a telescope
+      this.minAz = <Degrees>0;
+    } else {
+      throw new Error('Invalid minimum azimuth - must be between 0 and 360');
     }
   }
 
