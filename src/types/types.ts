@@ -433,7 +433,7 @@ export type RfVec3<Units = Kilometers> = Vec3<Units>;
  * This format is particularly useful in scenarios where you need to perform operations on vectors,
  * such as addition, subtraction, scalar multiplication, dot product, and cross product.
  */
-export type Vec3Flat = [number, number, number];
+export type Vec3Flat<T = number> = [T, T, T];
 
 /**
  * A type that represents a two-line element set (TLE).
