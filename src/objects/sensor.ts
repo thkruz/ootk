@@ -6,7 +6,7 @@
  * @file The Sensor class is used for creating ground based observers.
  *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2022 Theodore Kruczek
+ * @Copyright (c) 2020-2023 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -20,24 +20,69 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { RaeVec3, SpaceObjectType } from '../types/types';
+import { Degrees, Kilometers, Radians, RaeVec3, SpaceObjectType } from '../types/types';
 
+import { RAD2DEG } from '../utils/constants';
 import { BaseObject } from './base-object';
 import { Sat } from './sat';
 
 interface ObjectInfo {
   name?: string;
   type?: SpaceObjectType;
-  lat: number;
-  lon: number;
-  alt: number;
+  lat: Radians;
+  lon: Radians;
+  alt: Kilometers;
+  minAz?: Degrees;
+  maxAz?: Degrees;
+  minEl?: Degrees;
+  maxEl?: Degrees;
+  minRng?: Kilometers;
+  maxRng?: Kilometers;
 }
 
-export class Sensor extends BaseObject {
-  public lat: number;
-  public lon: number;
-  public alt: number;
+export enum PassType {
+  OUT_OF_VIEW = -1,
+  ENTER = 0,
+  IN_VIEW = 1,
+  EXIT = 2,
+}
 
+type Lookangles = {
+  type: PassType;
+  time: Date;
+  az: Degrees;
+  el: Degrees;
+  rng: Kilometers;
+  maxElPass?: Degrees;
+};
+
+const TAU = Math.PI * 2;
+
+export class Sensor extends BaseObject {
+  public lat: Radians;
+  public lon: Radians;
+  public alt: Kilometers;
+  public minAz: Degrees;
+  public maxAz: Degrees;
+  public minEl: Degrees;
+  public maxEl: Degrees;
+  public minRng: Kilometers;
+  public maxRng: Kilometers;
+
+  /**
+   * * name: Name as a string - OPTIONAL
+   * * type: SpaceObjectType - OPTIONAL
+   * * lat: Latitude in Radians
+   * * lon: Longitude in Radians
+   * * alt: Altitude in Kilometers
+   * * minAz: Minimum Azimuth in Degrees
+   * * maxAz: Maximum Azimuth in Degrees
+   * * minEl: Minimum Elevation in Degrees
+   * * maxEl: Maximum Elevation in Degrees
+   * * minRng: Minimum Range in Kilometers
+   * * maxRng: Maximum Range in Kilometers
+   * @param {ObjectInfo} info ObjectInfo object containing the object's information
+   */
   constructor(info: ObjectInfo) {
     // If there is a sensor type verify it is valid
     if (info.type) {
@@ -55,6 +100,90 @@ export class Sensor extends BaseObject {
 
     super(info);
 
+    this.validateInputData(info);
+  }
+
+  private validateInputData(info: ObjectInfo) {
+    this.validateLla(info);
+    this.validateFov(info);
+  }
+
+  private validateFov(info: ObjectInfo) {
+    this.validateMinAz(info);
+    this.validateMaxAz(info);
+    this.validateMinEl(info);
+    this.validateMaxEl(info);
+    this.validateMinRng(info);
+    this.validateMaxRng(info);
+  }
+
+  private validateMaxRng(info: ObjectInfo) {
+    if (info.maxRng >= 0) {
+      this.maxRng = info.maxRng;
+    } else if (typeof info.maxRng === 'undefined') {
+      // Default is a telescope
+      this.maxRng = <Kilometers>50000; // arbitrary large number
+    } else {
+      throw new Error('Invalid maximum range - must be greater than 0');
+    }
+  }
+
+  private validateMinRng(info: ObjectInfo) {
+    if (info.minRng >= 0) {
+      this.minRng = info.minRng;
+    } else if (typeof info.minRng === 'undefined') {
+      // Default is a telescope
+      this.minRng = <Kilometers>0;
+    } else {
+      throw new Error('Invalid minimum range - must be greater than 0');
+    }
+  }
+
+  private validateMaxEl(info: ObjectInfo) {
+    if (info.maxEl >= 0 && info.maxEl <= 180) {
+      this.maxEl = info.maxEl;
+    } else if (typeof info.maxEl === 'undefined') {
+      // Default is a telescope
+      this.maxEl = <Degrees>90;
+    } else {
+      throw new Error('Invalid maximum elevation - must be between 0 and 180');
+    }
+  }
+
+  private validateMinEl(info: ObjectInfo) {
+    if (info.minEl >= 0 && info.minEl <= 90) {
+      this.minEl = info.minEl;
+    } else if (typeof info.minEl === 'undefined') {
+      // Default is a telescope
+      this.minEl = <Degrees>0;
+    } else {
+      throw new Error('Invalid minimum elevation - must be between 0 and 90');
+    }
+  }
+
+  private validateMaxAz(info: ObjectInfo) {
+    if (info.maxAz >= 0 && info.maxAz <= 360) {
+      this.maxAz = info.maxAz;
+    } else if (typeof info.maxAz === 'undefined') {
+      // Default is a telescope
+      this.maxAz = <Degrees>360;
+    } else {
+      throw new Error('Invalid maximum azimuth - must be between 0 and 360');
+    }
+  }
+
+  private validateMinAz(info: ObjectInfo) {
+    if (info.minAz >= 0 && info.minAz <= 360) {
+      this.minAz = info.minAz;
+    } else if (typeof info.minAz === 'undefined') {
+      // Default is a telescope
+      this.minAz = <Degrees>0;
+    } else {
+      throw new Error('Invalid minimum azimuth - must be between 0 and 360');
+    }
+  }
+
+  private validateLla(info: ObjectInfo) {
     if (info.lat >= -90 && info.lat <= 90) {
       this.lat = info.lat;
     } else {
@@ -74,7 +203,7 @@ export class Sensor extends BaseObject {
     }
   }
 
-  public setTime(date: Date): Sensor {
+  public setTime(date: Date): this {
     this.time = date;
 
     return this;
@@ -82,5 +211,96 @@ export class Sensor extends BaseObject {
 
   public getRae(sat: Sat, date: Date = this.time): RaeVec3 {
     return sat.getRae(this, date);
+  }
+
+  public isRaeInFov(rae: RaeVec3): boolean {
+    if (rae.el * RAD2DEG < this.minEl || rae.el * RAD2DEG > this.maxEl) {
+      return false;
+    }
+
+    if (rae.rng < this.minRng || rae.rng > this.maxRng) {
+      return false;
+    }
+
+    if (this.minAz * RAD2DEG > this.maxAz) {
+      // North Facing Sensors
+      if (rae.az * RAD2DEG < this.minAz && rae.az * RAD2DEG > this.maxAz) {
+        return false;
+      }
+      // Normal Facing Sensors
+    } else if (rae.az * RAD2DEG < this.minAz || rae.az * RAD2DEG > this.maxAz) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public isSatInFov(sat: Sat, date: Date = this.time): boolean {
+    return this.isRaeInFov(this.getRae(sat, date));
+  }
+
+  public calculatePasses(planningInterval: number, sat: Sat, date: Date = this.time) {
+    let isInViewLast = false;
+    let maxElThisPass = <Degrees>0;
+    const msnPlanPasses: Lookangles[] = [];
+    const startTime = date.getTime();
+
+    for (let timeOffset = 0; timeOffset < planningInterval; timeOffset++) {
+      const curTime = new Date(startTime + timeOffset * 1000);
+      const rae = this.getRae(sat, curTime);
+
+      // Radians to Degrees
+      const azDeg = <Degrees>((rae.az * 360) / TAU);
+      const elDeg = <Degrees>((rae.el * 360) / TAU);
+
+      const isInView = this.isRaeInFov(rae);
+
+      if (timeOffset === 0) {
+        // Propagate Backwards to get the previous pass
+        const oldRae = this.getRae(sat, new Date(Date.now() - 1 * 1000));
+
+        isInViewLast = this.isRaeInFov(oldRae);
+      }
+
+      const type = Sensor.getPassType_(isInView, isInViewLast);
+
+      maxElThisPass = <Degrees>Math.max(maxElThisPass, rae.el);
+
+      if (type === PassType.ENTER || type === PassType.EXIT) {
+        const pass = <Lookangles>{
+          type,
+          time: curTime,
+          az: azDeg,
+          el: elDeg,
+          rng: rae.rng,
+        };
+
+        // Only set maxEl for EXIT passes
+        if (type === PassType.EXIT) {
+          pass.maxElPass = maxElThisPass;
+        }
+
+        msnPlanPasses.push(pass);
+        maxElThisPass = <Degrees>0;
+      }
+
+      isInViewLast = isInView;
+    }
+
+    return msnPlanPasses;
+  }
+
+  private static getPassType_(isInView: boolean, isInViewLast: boolean) {
+    let type = PassType.OUT_OF_VIEW;
+
+    if (isInView && !isInViewLast) {
+      type = PassType.ENTER;
+    } else if (!isInView && isInViewLast) {
+      type = PassType.EXIT;
+    } else if (isInView && isInViewLast) {
+      type = PassType.IN_VIEW;
+    }
+
+    return type;
   }
 }

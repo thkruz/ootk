@@ -7,7 +7,7 @@
  * to earth based sensors and other orbital objects.
  *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2022 Theodore Kruczek
+ * @Copyright (c) 2020-2023 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -26,11 +26,14 @@ import {
   EcfVec3,
   EciVec3,
   GreenwichMeanSiderealTime,
+  Kilometers,
   LlaVec3,
   RaeVec3,
   SatelliteRecord,
   SpaceObjectType,
   StateVector,
+  TleLine1,
+  TleLine2,
 } from '../types/types';
 
 import { Sensor } from './sensor';
@@ -45,8 +48,8 @@ interface ObjectInfo {
   type?: SpaceObjectType;
   rcs?: number;
   vmag?: number;
-  tle1: string;
-  tle2: string;
+  tle1: TleLine1
+  tle2: TleLine2
 }
 
 export class Sat extends SpaceObject {
@@ -71,7 +74,7 @@ export class Sat extends SpaceObject {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public options: any;
 
-  constructor(info: ObjectInfo, options) {
+  constructor(info: ObjectInfo, options?) {
     super(info);
 
     const tleData = Tle.parseTle(info.tle1, info.tle2);
@@ -94,12 +97,16 @@ export class Sat extends SpaceObject {
     // NOTE: Calculate apogee and perigee
 
     this.satrec = Sgp4.createSatrec(info.tle1, info.tle2);
-    this.options = options;
+    this.options = options ? options : {};
   }
 
   public propagateTo(date: Date): Sat {
     const { m } = Sat.calculateTimeVariables(date, this.satrec);
-    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || { x: 0, y: 0, z: 0 };
+    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
+      x: <Kilometers>0,
+      y: <Kilometers>0,
+      z: <Kilometers>0,
+    };
 
     this.position = eci;
     this.time = date;
@@ -125,9 +132,13 @@ export class Sat extends SpaceObject {
    */
   public getEci(date: Date = this.time): EciVec3 {
     const { m } = Sat.calculateTimeVariables(date, this.satrec);
-    const eci = Sgp4.propagate(this.satrec, m).position;
+    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
+      x: <Kilometers>0,
+      y: <Kilometers>0,
+      z: <Kilometers>0,
+    };
 
-    return eci ? (eci as EciVec3) : { x: 0, y: 0, z: 0 };
+    return eci;
   }
 
   /**
@@ -137,7 +148,11 @@ export class Sat extends SpaceObject {
    */
   public getEcf(date: Date = this.time): EcfVec3 {
     const { m, gmst } = Sat.calculateTimeVariables(date, this.satrec);
-    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || { x: 0, y: 0, z: 0 };
+    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
+      x: <Kilometers>0,
+      y: <Kilometers>0,
+      z: <Kilometers>0,
+    };
 
     return Transforms.eci2ecf(eci, gmst);
   }
@@ -149,17 +164,43 @@ export class Sat extends SpaceObject {
    */
   public getLla(date: Date = this.time): LlaVec3 {
     const { m, gmst } = Sat.calculateTimeVariables(date, this.satrec);
-    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || { x: 0, y: 0, z: 0 };
+    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
+      x: <Kilometers>0,
+      y: <Kilometers>0,
+      z: <Kilometers>0,
+    };
 
     return Transforms.eci2lla(eci, gmst);
   }
 
   public getRae(sensor: Sensor, date: Date = this.time): RaeVec3 {
     const { m, gmst } = Sat.calculateTimeVariables(date, this.satrec);
-    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || { x: 0, y: 0, z: 0 };
+    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
+      x: <Kilometers>0,
+      y: <Kilometers>0,
+      z: <Kilometers>0,
+    };
     const ecf = Transforms.eci2ecf(eci, gmst);
 
     return Transforms.ecf2rae({ lat: sensor.lat, lon: sensor.lon, alt: sensor.alt }, ecf);
+  }
+
+  public getAzimuth(sensor: Sensor, date: Date = this.time): number {
+    const rae = this.getRae(sensor, date);
+
+    return rae.az;
+  }
+
+  public getElevation(sensor: Sensor, date: Date = this.time): number {
+    const rae = this.getRae(sensor, date);
+
+    return rae.el;
+  }
+
+  public getRange(sensor: Sensor, date: Date = this.time): number {
+    const rae = this.getRae(sensor, date);
+
+    return rae.rng;
   }
 
   /**
@@ -187,5 +228,21 @@ export class Sat extends SpaceObject {
     const m = satrec ? (j - satrec.jdsatepoch) * MINUTES_PER_DAY : null;
 
     return { gmst, m, j };
+  }
+
+  public static checkSatrec(satrec: SatelliteRecord): boolean {
+    if (
+      isNaN(satrec.a) ||
+      isNaN(satrec.am) ||
+      isNaN(satrec.alta) ||
+      isNaN(satrec.em) ||
+      isNaN(satrec.mo) ||
+      isNaN(satrec.ecco) ||
+      isNaN(satrec.no)
+    ) {
+      return false;
+    }
+
+    return true;
   }
 }

@@ -7,7 +7,7 @@
  * do not apply to ground based objects.
  *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2022 Theodore Kruczek
+ * @Copyright (c) 2020-2023 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -33,7 +33,6 @@ interface ObjectInfo {
 
 export class SpaceObject extends BaseObject {
   public rcs: number;
-
   public vmag: number;
 
   constructor(info: ObjectInfo) {

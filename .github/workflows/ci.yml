@@ -1,6 +1,6 @@
 name: CI
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
       - name: Load Node.js latest
         uses: actions/setup-node@v2-beta
         with:
-          node-version: "17.x"
+          node-version: '17.x'
 
       - name: Install all dependencies
         run: npm install
@@ -38,7 +38,7 @@ jobs:
       - name: Use Node.js latest
         uses: actions/setup-node@v2-beta
         with:
-          node-version: "17.x"
+          node-version: '17.x'
 
       - name: Get cached modules
         uses: actions/cache@v2
@@ -61,7 +61,7 @@ jobs:
       - name: Use Node.js latest
         uses: actions/setup-node@v2-beta
         with:
-          node-version: "17.x"
+          node-version: '17.x'
 
       - name: Get cached modules
         uses: actions/cache@v2

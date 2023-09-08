@@ -7,7 +7,7 @@
  * satellites and earth based sensors.
  *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2022 Theodore Kruczek
+ * @Copyright (c) 2020-2023 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -21,32 +21,40 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DAY_TO_MS, DEG2RAD } from '../utils/constants';
-import { EciVec3, GreenwichMeanSiderealTime, LlaVec3, RaeVec3, SpaceObjectType } from '../types/types';
+import {
+  Degrees,
+  EciVec3,
+  GreenwichMeanSiderealTime,
+  Kilometers,
+  LlaVec3,
+  Radians,
+  RaeVec3,
+  SpaceObjectType,
+} from '../types/types';
+import { DAY_TO_MS, DEG2RAD, RAD2DEG } from '../utils/constants';
 
 import { Sgp4 } from '../sgp4/sgp4';
-import { SpaceObject } from './space-object';
 import { Transforms } from '../transforms/transforms';
 import { Utils } from '../utils/utils';
+import { SpaceObject } from './space-object';
 
 interface ObjectInfo {
+  bf?: string;
+  dec: Radians;
+  h?: string;
   name?: string;
+  pname?: string;
+  ra: Radians;
   type?: SpaceObjectType;
   vmag?: number;
-  ra: number;
-  dec: number;
-  pname?: string;
-  bf?: string;
-  h?: string;
 }
 
 export class Star extends SpaceObject {
-  public pname: string;
   public bf: string;
+  public dec: Radians;
   public h: string;
-
-  public dec: number;
-  public ra: number;
+  public pname: string;
+  public ra: Radians;
 
   constructor(info: ObjectInfo) {
     if (info.type && info.type !== SpaceObjectType.STAR) {
@@ -73,21 +81,33 @@ export class Star extends SpaceObject {
     }
   }
 
-  getEci(lla: LlaVec3 = { lat: 180, lon: 0, alt: 0 }, date: Date = this.time): EciVec3 {
+  getEci(
+    lla: LlaVec3 = { lat: <Radians>(180 * DEG2RAD), lon: <Radians>0, alt: <Kilometers>0 },
+    date: Date = this.time,
+  ): EciVec3 {
     const rae = this.getRae(lla, date);
-    const { gmst } = Star.calculateTimeVariables(date);
+    const { gmst } = Star.calculateTimeVariables_(date);
 
     // Arbitrary distance to enable using ECI coordinates
-    return Transforms.ecf2eci(Transforms.rae2ecf(rae, { lat: 0, lon: 0, alt: 0 }), gmst);
+    return Transforms.ecf2eci(Transforms.rae2ecf(rae, { lat: <Radians>0, lon: <Radians>0, alt: <Kilometers>0 }), gmst);
   }
 
-  getRae(lla: LlaVec3 = { lat: 180, lon: 0, alt: 0 }, date: Date = this.time): RaeVec3 {
-    const starPos = Utils.SunMath.getStarAzEl(date, lla.lat * DEG2RAD, lla.lon * DEG2RAD, this.ra, this.dec);
+  getRae(
+    lla: LlaVec3 = { lat: <Radians>(180 * DEG2RAD), lon: <Radians>0, alt: <Kilometers>0 },
+    date: Date = this.time,
+  ): RaeVec3 {
+    const starPos = Utils.SunMath.getStarAzEl(
+      date,
+      <Degrees>(lla.lat * RAD2DEG),
+      <Degrees>(lla.lon * RAD2DEG),
+      this.ra,
+      this.dec,
+    );
 
-    return { az: starPos.az, el: starPos.el, rng: 250000 };
+    return { az: starPos.az, el: starPos.el, rng: <Kilometers>250000 };
   }
 
-  private static calculateTimeVariables(date: Date): { gmst: GreenwichMeanSiderealTime; j: number } {
+  private static calculateTimeVariables_(date: Date): { gmst: GreenwichMeanSiderealTime; j: number } {
     const j =
       Utils.jday(
         date.getUTCFullYear(),

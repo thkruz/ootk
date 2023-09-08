@@ -24,7 +24,7 @@ describe('Propagator Initialization', () => {
       xke,
       j2,
     };
-    const results = Sgp4.initl(options);
+    const results = Sgp4.initl_(options);
 
     expect(results.ainv).toBeCloseTo(0.1353414893496189);
     expect(results.ao).toBeCloseTo(7.3887172721793);

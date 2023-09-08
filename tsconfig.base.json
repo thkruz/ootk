@@ -1,0 +1,31 @@
+{
+  "typeAcquisition": {
+    "enable": true
+  },
+  "compilerOptions": {
+    "target": "es5",
+    "module": "es6",
+    "lib": ["esnext"],
+    "declaration": true,
+    // "noImplicitAny": true,
+    // "removeComments": true,
+    "baseUrl": ".",
+    "paths": {
+      "@lib/*": ["lib/*"],
+      "@dist/*": ["dist/*"],
+      "@src/*": ["src/*"],
+      "@test/*": ["test/*"]
+    },
+    "allowJs": true,
+    "experimentalDecorators": true,
+    "rootDir": ".",
+    "sourceMap": true,
+    "listFiles": true,
+    "newLine": "LF",
+    "skipLibCheck": true,
+    // "noEmitOnError": true,
+    "types": ["jest", "node"],
+    "moduleResolution": "Node",
+    "esModuleInterop": true
+  }
+}

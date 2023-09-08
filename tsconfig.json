@@ -1,31 +1,13 @@
+/**
+ * This is the tsconfig extension that is used by the IDE.
+ */
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "es5",
-    "module": "es6",
-    "outDir": "./lib",
-    "lib": ["esnext", "WebWorker"],
-    // "allowJs": true,
-    "declaration": true,
-    // "noImplicitAny": true,
-    // "removeComments": true,
-    "baseUrl": ".",
-    "paths": {
-      "@lib/*": ["lib/*"],
-      "@dist/*": ["dist/*"],
-      "@src/*": ["src/*"],
-      "@test/*": ["test/*"]
-    },
-    "allowJs": true,
-    "experimentalDecorators": true,
-    "rootDir": "./src",
-    "sourceMap": true,
-    "listFiles": true,
-    "newLine": "LF",
-    "skipLibCheck": true,
-    "noEmitOnError": true,
-    "types": []
+    "noEmit": true
   },
-  "include": ["./src/**/*.ts"],
-  "filesGlob": ["./src/**/*.ts"],
-  "ignorePatterns": ["./asc/**/*.ts"]
+  "include": ["./src/**/*.ts", "./test/**/*.ts"],
+  "filesGlob": ["./src/**/*.ts", "./test/**/*.ts"],
+  "ignorePatterns": ["./src/sgp4/asc/**/*.ts"],
+  "exclude": ["./src/sgp4/asc/assembly/index.ts"]
 }
