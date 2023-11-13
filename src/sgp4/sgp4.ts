@@ -99,8 +99,6 @@ import { DEG2RAD, PI, TAU, temp4, x2o3 } from '../utils/constants';
  *       ----------------------------------------------------------------
  */
 class Sgp4 {
-  // #region Public Static Methods (15)
-
   // Dot
 
   /*
@@ -128,7 +126,7 @@ class Sgp4 {
    *    dot           dot product of two vectors
    * ---------------------------------------------------------------------------
    */
-  public static angle(vec1: Vec3Flat, vec2: Vec3Flat): number {
+  static angle(vec1: Vec3Flat, vec2: Vec3Flat): number {
     const small = 0.00000001;
     const unknown = 999999.1; /** Ootk -- original 'undefined' is protected in JS */
 
@@ -172,7 +170,7 @@ class Sgp4 {
    *    none.
    * ---------------------------------------------------------------------------
    */
-  public static asinh(xval: number): number {
+  static asinh(xval: number): number {
     return Math.log(xval + Math.sqrt(xval * xval + 1.0));
   }
 
@@ -219,7 +217,7 @@ class Sgp4 {
    *    vallado, crawford, hujsak, kelso  2006
    * ---------------------------------------------------------------------------
    */
-  public static createSatrec(tleLine1: string, tleLine2: string, whichconst = 'wgs72', opsmode = 'i'): SatelliteRecord {
+  static createSatrec(tleLine1: string, tleLine2: string, whichconst = 'wgs72', opsmode = 'i'): SatelliteRecord {
     let year = 0;
 
     const satrec = {
@@ -470,7 +468,7 @@ class Sgp4 {
    *    mag           magnitude of a vector
    * ----------------------------------------------------------------------------
    */
-  public static cross(vec1: Vec3Flat, vec2: Vec3Flat): Vec3Flat {
+  static cross(vec1: Vec3Flat, vec2: Vec3Flat): Vec3Flat {
     const outvec: Vec3Flat = [0, 0, 0];
 
     outvec[0] = vec1[1] * vec2[2] - vec1[2] * vec2[1];
@@ -520,7 +518,7 @@ class Sgp4 {
    *    none.
    * ---------------------------------------------------------------------------
    */
-  public static days2mdhms(
+  static days2mdhms(
     year: number,
     days: number,
   ): {
@@ -594,7 +592,7 @@ class Sgp4 {
    *    none.
    * ---------------------------------------------------------------------------
    */
-  public static dot(x: Vec3Flat, y: Vec3Flat): number {
+  static dot(x: Vec3Flat, y: Vec3Flat): number {
     return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
   }
 
@@ -627,7 +625,7 @@ class Sgp4 {
    *    vallado       2004, 191, eq 3-45
    * ---------------------------------------------------------------------------
    */
-  public static gstime(jdut1: number): GreenwichMeanSiderealTime {
+  static gstime(jdut1: number): GreenwichMeanSiderealTime {
     const tut1 = (jdut1 - 2451545.0) / 36525.0;
 
     let temp =
@@ -687,7 +685,7 @@ class Sgp4 {
    *    vallado       2013, 203, alg 22, ex 3-13
    * ---------------------------------------------------------------------------
    */
-  public static invjday(
+  static invjday(
     jd: number,
     jdfrac: number,
   ): { year: number; mon: number; day: number; hr: number; min: number; sec: number } {
@@ -774,15 +772,7 @@ class Sgp4 {
    *
    * ---------------------------------------------------------------------------
    */
-  public static jday(
-    year: number | Date,
-    mon = 0,
-    day = 0,
-    hr = 0,
-    min = 0,
-    sec = 0,
-    ms = 0,
-  ): { jd: number; jdFrac: number } {
+  static jday(year: number | Date, mon = 0, day = 0, hr = 0, min = 0, sec = 0, ms = 0): { jd: number; jdFrac: number } {
     if (year instanceof Date) {
       mon = year.getUTCMonth() + 1;
       day = year.getUTCDate();
@@ -837,7 +827,7 @@ class Sgp4 {
    *    none.
    * ---------------------------------------------------------------------------
    */
-  public static mag(x: Vec3Flat): number {
+  static mag(x: Vec3Flat): number {
     return Math.sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
   }
 
@@ -879,7 +869,7 @@ class Sgp4 {
    *    vallado       2013, 77, alg 5
    * ---------------------------------------------------------------------------
    */
-  public static newtonnu(
+  static newtonnu(
     ecc: number,
     nu: number,
   ): {
@@ -1020,7 +1010,7 @@ class Sgp4 {
    *    vallado, crawford, hujsak, kelso  2006
    *----------------------------------------------------------------------------
    */
-  public static propagate(satrec: SatelliteRecord, tsince: number): StateVector {
+  static propagate(satrec: SatelliteRecord, tsince: number): StateVector {
     /* ------------------ set mathematical constants --------------- */
     /*
      * Sgp4fix divisor for divide by zero check on inclination
@@ -1414,7 +1404,7 @@ class Sgp4 {
    *    vallado       2013, 113, alg 9, ex 2-5
    * ---------------------------------------------------------------------------
    */
-  public static rv2coe(
+  static rv2coe(
     r: Vec3Flat,
     v: Vec3Flat,
     mus: number,
@@ -1640,7 +1630,7 @@ class Sgp4 {
     };
   }
 
-  public static sgn(x: number): number {
+  static sgn(x: number): number {
     if (x < 0.0) {
       return -1.0;
     }
@@ -1649,13 +1639,9 @@ class Sgp4 {
   }
 
   // Newtonnu
-  public static sinh(x: number): number {
+  static sinh(x: number): number {
     return (Math.exp(x) - Math.exp(-x)) / 2;
   }
-
-  // #endregion Public Static Methods (15)
-
-  // #region Private Static Methods (7)
 
   /*
    * -----------------------------------------------------------------------------

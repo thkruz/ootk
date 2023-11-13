@@ -31,10 +31,10 @@ interface ObjectInfo {
 }
 
 export class BaseObject {
-  public name: string;
-  public type: SpaceObjectType;
-  public position: EciVec3; // Where is the object
-  public time: Date; // When is the object
+  name: string;
+  type: SpaceObjectType;
+  position: EciVec3; // Where is the object
+  time: Date; // When is the object
 
   constructor(info: ObjectInfo) {
     this.type = info.type || SpaceObjectType.UNKNOWN;
@@ -49,15 +49,7 @@ export class BaseObject {
     this.time = info.time || new Date();
   }
 
-  public getName(): string {
-    return this.name;
-  }
-
-  public getType(): SpaceObjectType {
-    return this.type;
-  }
-
-  public getTypeString(): string {
+  getTypeString(): string {
     const typeToStringMap: { [key in SpaceObjectType]?: string } = {
       [SpaceObjectType.UNKNOWN]: 'Unknown',
       [SpaceObjectType.PAYLOAD]: 'Payload',

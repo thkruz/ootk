@@ -50,11 +50,11 @@ interface ObjectInfo {
 }
 
 export class Star extends SpaceObject {
-  public bf: string;
-  public dec: Radians;
-  public h: string;
-  public pname: string;
-  public ra: Radians;
+  bf: string;
+  dec: Radians;
+  h: string;
+  pname: string;
+  ra: Radians;
 
   constructor(info: ObjectInfo) {
     if (info.type && info.type !== SpaceObjectType.STAR) {

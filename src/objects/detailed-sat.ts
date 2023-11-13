@@ -30,61 +30,48 @@ import {
   TleLine2,
 } from '../types/types';
 
-import { Sat } from './sat';
+import { OptionsParams, Sat } from './sat';
 
+/**
+ * Information about a space object.
+ */
 interface ObjectInfo {
   name?: string;
-  type?: SpaceObjectType;
   rcs?: number;
-  vmag?: number;
   tle1: TleLine1;
   tle2: TleLine2;
+  type?: SpaceObjectType;
+  vmag?: number;
 }
 
+/**
+ * Represents a detailed satellite object with launch, spacecraft, and operations details.
+ */
 export class DetailedSat extends Sat {
-  public launchDate: string;
-
-  public launchMass: string;
-
-  public launchSite: string;
-
-  public launchVehicle: string;
-
-  public lifetime: string | number;
-
-  public maneuver: string;
-
-  public manufacturer: string;
-
-  public motor: string;
-
-  public power: string;
-
-  public payload: string;
-
-  public purpose: string;
-
-  public shape: string;
-
-  public span: string;
-
-  public user: string;
-
-  public mission: string;
-
-  public owner: string;
-
-  public configuration: string;
-
-  public equipment: string;
-
-  public dryMass: string;
-
-  public country: string;
+  configuration: string;
+  country: string;
+  dryMass: string;
+  equipment: string;
+  launchDate: string;
+  launchMass: string;
+  launchSite: string;
+  launchVehicle: string;
+  lifetime: string | number;
+  maneuver: string;
+  manufacturer: string;
+  mission: string;
+  motor: string;
+  owner: string;
+  payload: string;
+  power: string;
+  purpose: string;
+  shape: string;
+  span: string;
+  user: string;
 
   constructor(
     info: ObjectInfo,
-    options,
+    options: OptionsParams,
     details: {
       launchDetails: LaunchDetails;
       spaceCraftDetails: SpaceCraftDetails;
@@ -98,22 +85,11 @@ export class DetailedSat extends Sat {
     this.setOperationsDetails(details.operationsDetails);
   }
 
-  public setLaunchDetails(details: LaunchDetails): void {
-    if (details.launchDate) {
-      this.launchDate = details.launchDate;
-    }
-    if (details.launchMass) {
-      this.launchMass = details.launchMass;
-    }
-    if (details.launchSite) {
-      this.launchSite = details.launchSite;
-    }
-    if (details.launchVehicle) {
-      this.launchVehicle = details.launchVehicle;
-    }
-  }
-
-  public getLaunchDetails(): LaunchDetails {
+  /**
+   * Returns the launch details of the satellite.
+   * @returns An object containing the launch date, launch mass, launch site, and launch vehicle of the satellite.
+   */
+  getLaunchDetails(): LaunchDetails {
     return {
       launchDate: this.launchDate,
       launchMass: this.launchMass,
@@ -122,46 +98,24 @@ export class DetailedSat extends Sat {
     };
   }
 
-  public setSpaceCraftDetails(details: SpaceCraftDetails): void {
-    if (details.lifetime) {
-      this.lifetime = details.lifetime;
-    }
-    if (details.maneuver) {
-      this.maneuver = details.maneuver;
-    }
-    if (details.manufacturer) {
-      this.manufacturer = details.manufacturer;
-    }
-    if (details.motor) {
-      this.motor = details.motor;
-    }
-    if (details.power) {
-      this.power = details.power;
-    }
-    if (details.payload) {
-      this.payload = details.payload;
-    }
-    if (details.purpose) {
-      this.purpose = details.purpose;
-    }
-    if (details.shape) {
-      this.shape = details.shape;
-    }
-    if (details.span) {
-      this.span = details.span;
-    }
-    if (details.configuration) {
-      this.configuration = details.configuration;
-    }
-    if (details.equipment) {
-      this.equipment = details.equipment;
-    }
-    if (details.dryMass) {
-      this.dryMass = details.dryMass;
-    }
+  /**
+   * Returns an object containing the details of the operations.
+   * @returns An object containing the user, mission, owner, and country details.
+   */
+  getOperationsDetails(): OperationsDetails {
+    return {
+      user: this.user,
+      mission: this.mission,
+      owner: this.owner,
+      country: this.country,
+    };
   }
 
-  public getSpaceCraftDetails(): SpaceCraftDetails {
+  /**
+   * Returns the space craft details.
+   * @returns {SpaceCraftDetails} The space craft details.
+   */
+  getSpaceCraftDetails(): SpaceCraftDetails {
     return {
       lifetime: this.lifetime,
       maneuver: this.maneuver,
@@ -178,27 +132,58 @@ export class DetailedSat extends Sat {
     };
   }
 
-  public setOperationsDetails(details: OperationsDetails): void {
-    if (details.user) {
-      this.user = details.user;
-    }
-    if (details.mission) {
-      this.mission = details.mission;
-    }
-    if (details.owner) {
-      this.owner = details.owner;
-    }
-    if (details.country) {
-      this.country = details.country;
-    }
+  /**
+   * Sets the launch details of the satellite.
+   * @param details - The launch details to set.
+   */
+  setLaunchDetails(details: LaunchDetails): void {
+    const keys = ['launchDate', 'launchMass', 'launchSite', 'launchVehicle'];
+
+    keys.forEach((key) => {
+      if (details[key]) {
+        this[key] = details[key];
+      }
+    });
   }
 
-  public getOperationsDetails(): OperationsDetails {
-    return {
-      user: this.user,
-      mission: this.mission,
-      owner: this.owner,
-      country: this.country,
-    };
+  /**
+   * Sets the operations details for the satellite.
+   * @param details - The operations details to set.
+   */
+  setOperationsDetails(details: OperationsDetails): void {
+    const keys = ['user', 'mission', 'owner', 'country'];
+
+    keys.forEach((key) => {
+      if (details[key]) {
+        this[key] = details[key];
+      }
+    });
+  }
+
+  /**
+   * Sets the details of a spacecraft.
+   * @param details - The details of the spacecraft to set.
+   */
+  setSpaceCraftDetails(details: SpaceCraftDetails): void {
+    const keys = [
+      'lifetime',
+      'maneuver',
+      'manufacturer',
+      'motor',
+      'power',
+      'payload',
+      'purpose',
+      'shape',
+      'span',
+      'configuration',
+      'equipment',
+      'dryMass',
+    ];
+
+    keys.forEach((key) => {
+      if (details[key]) {
+        this[key] = details[key];
+      }
+    });
   }
 }

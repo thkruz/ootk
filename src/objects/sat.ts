@@ -10,18 +10,17 @@
  * @Copyright (c) 2020-2023 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free Software
+ * terms of the GNU Affero General License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later version.
  *
  * Orbital Object ToolKit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Affero General Public License for more details.
+ * See the GNU Affero General License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with
+ * You should have received a copy of the GNU Affero General License along with
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DAY_TO_MS, MINUTES_PER_DAY } from '../utils/constants';
 import {
   EcfVec3,
   EciVec3,
@@ -35,46 +34,56 @@ import {
   TleLine1,
   TleLine2,
 } from '../types/types';
+import { DAY_TO_MS, MINUTES_PER_DAY } from '../utils/constants';
 
-import { Sensor } from './sensor';
 import { Sgp4 } from '../sgp4/sgp4';
-import { SpaceObject } from './space-object';
 import { Tle } from '../tle/tle';
 import { Transforms } from '../transforms/transforms';
 import { Utils } from '../utils/utils';
+import { Sensor } from './sensor';
+import { SpaceObject } from './space-object';
 
+/**
+ * Information about a space object.
+ */
 interface ObjectInfo {
   name?: string;
-  type?: SpaceObjectType;
   rcs?: number;
+  tle1: TleLine1;
+  tle2: TleLine2;
+  type?: SpaceObjectType;
   vmag?: number;
-  tle1: TleLine1
-  tle2: TleLine2
 }
 
+export interface OptionsParams {
+  notes: string;
+}
+
+/**
+ * Represents a satellite object with orbital information and methods for calculating its position and other properties.
+ */
 export class Sat extends SpaceObject {
-  public satNum: number;
-  public satrec: SatelliteRecord;
-  public intlDes: string;
-  public epochYear: number;
-  public epochDay: number;
-  public meanMoDev1: number;
-  public meanMoDev2: number;
-  public bstar: number;
-  public inclination: number;
-  public raan: number;
-  public eccentricity: number;
-  public argOfPerigee: number;
-  public meanAnomaly: number;
-  public meanMotion: number;
-  public period: number;
-  public apogee: number;
-  public perigee: number;
-
+  apogee: number;
+  argOfPerigee: number;
+  bstar: number;
+  eccentricity: number;
+  epochDay: number;
+  epochYear: number;
+  inclination: number;
+  intlDes: string;
+  meanAnomaly: number;
+  meanMoDev1: number;
+  meanMoDev2: number;
+  meanMotion: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public options: any;
+  options: OptionsParams;
+  perigee: number;
+  period: number;
+  raan: number;
+  satNum: number;
+  satrec: SatelliteRecord;
 
-  constructor(info: ObjectInfo, options?) {
+  constructor(info: ObjectInfo, options?: OptionsParams) {
     super(info);
 
     const tleData = Tle.parseTle(info.tle1, info.tle2);
@@ -97,48 +106,43 @@ export class Sat extends SpaceObject {
     // NOTE: Calculate apogee and perigee
 
     this.satrec = Sgp4.createSatrec(info.tle1, info.tle2);
-    this.options = options ? options : {};
-  }
-
-  public propagateTo(date: Date): Sat {
-    const { m } = Sat.calculateTimeVariables(date, this.satrec);
-    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
-      x: <Kilometers>0,
-      y: <Kilometers>0,
-      z: <Kilometers>0,
+    this.options = options || {
+      notes: '',
     };
-
-    this.position = eci;
-    this.time = date;
-
-    return this;
   }
 
   /**
-   * Calculates position and velocity in ECI coordinates at a given time.
-   * @param {Date} date Date to calculate the state vector for
-   * @returns {StateVector} State vector for the given date
+   * Checks if the given SatelliteRecord object is valid by checking if its properties are all numbers.
+   * @param satrec - The SatelliteRecord object to check.
+   * @returns True if the SatelliteRecord object is valid, false otherwise.
    */
-  public getStateVec(date: Date = this.time): StateVector {
-    const { m } = Sat.calculateTimeVariables(date, this.satrec);
+  static isValidSatrec(satrec: SatelliteRecord): boolean {
+    if (
+      isNaN(satrec.a) ||
+      isNaN(satrec.am) ||
+      isNaN(satrec.alta) ||
+      isNaN(satrec.em) ||
+      isNaN(satrec.mo) ||
+      isNaN(satrec.ecco) ||
+      isNaN(satrec.no)
+    ) {
+      return false;
+    }
 
-    return Sgp4.propagate(this.satrec, m);
+    return true;
   }
 
   /**
-   * Calculates ECI position at a given time.
-   * @param {Date} date Date to calculate
-   * @returns {EciVec3} ECI position vector
+   * Calculates the azimuth angle of the satellite relative to the given sensor at the specified date.
+   * If no date is provided, the current time of the satellite is used.
+   * @param sensor The sensor observing the satellite.
+   * @param date The date at which to calculate the azimuth angle.
+   * @returns The azimuth angle in degrees.
    */
-  public getEci(date: Date = this.time): EciVec3 {
-    const { m } = Sat.calculateTimeVariables(date, this.satrec);
-    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
-      x: <Kilometers>0,
-      y: <Kilometers>0,
-      z: <Kilometers>0,
-    };
+  getAzimuth(sensor: Sensor, date: Date = this.time): number {
+    const rae = this.getRae(sensor, date);
 
-    return eci;
+    return rae.az;
   }
 
   /**
@@ -146,7 +150,7 @@ export class Sat extends SpaceObject {
    * @param {Date} date Date to calculate
    * @returns {EcfVec3} ECF position vector
    */
-  public getEcf(date: Date = this.time): EcfVec3 {
+  getEcf(date: Date = this.time): EcfVec3 {
     const { m, gmst } = Sat.calculateTimeVariables(date, this.satrec);
     const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
       x: <Kilometers>0,
@@ -158,11 +162,39 @@ export class Sat extends SpaceObject {
   }
 
   /**
+   * Calculates ECI position at a given time.
+   * @param {Date} date Date to calculate
+   * @returns {EciVec3} ECI position vector
+   */
+  getEci(date: Date = this.time): EciVec3 {
+    const { m } = Sat.calculateTimeVariables(date, this.satrec);
+    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
+      x: <Kilometers>0,
+      y: <Kilometers>0,
+      z: <Kilometers>0,
+    };
+
+    return eci;
+  }
+
+  /**
+   * Returns the elevation angle of the satellite as seen by the given sensor at the specified time.
+   * @param sensor - The sensor observing the satellite.
+   * @param date - The time at which to calculate the elevation angle. Defaults to the current time of the satellite.
+   * @returns The elevation angle of the satellite in degrees.
+   */
+  getElevation(sensor: Sensor, date: Date = this.time): number {
+    const rae = this.getRae(sensor, date);
+
+    return rae.el;
+  }
+
+  /**
    * Calculates LLA position at a given time.
    * @param {Date} date Date to calculate
    * @returns {LlaVec3} LLA position vector
    */
-  public getLla(date: Date = this.time): LlaVec3 {
+  getLla(date: Date = this.time): LlaVec3 {
     const { m, gmst } = Sat.calculateTimeVariables(date, this.satrec);
     const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
       x: <Kilometers>0,
@@ -173,7 +205,13 @@ export class Sat extends SpaceObject {
     return Transforms.eci2lla(eci, gmst);
   }
 
-  public getRae(sensor: Sensor, date: Date = this.time): RaeVec3 {
+  /**
+   * Calculates the RAE (Range, Azimuth, Elevation) vector for a given sensor and time.
+   * @param sensor - The sensor for which to calculate the RAE vector.
+   * @param date - The date and time for which to calculate the RAE vector. Defaults to the current time.
+   * @returns The RAE vector for the given sensor and time.
+   */
+  getRae(sensor: Sensor, date: Date = this.time): RaeVec3 {
     const { m, gmst } = Sat.calculateTimeVariables(date, this.satrec);
     const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
       x: <Kilometers>0,
@@ -185,22 +223,46 @@ export class Sat extends SpaceObject {
     return Transforms.ecf2rae({ lat: sensor.lat, lon: sensor.lon, alt: sensor.alt }, ecf);
   }
 
-  public getAzimuth(sensor: Sensor, date: Date = this.time): number {
-    const rae = this.getRae(sensor, date);
-
-    return rae.az;
-  }
-
-  public getElevation(sensor: Sensor, date: Date = this.time): number {
-    const rae = this.getRae(sensor, date);
-
-    return rae.el;
-  }
-
-  public getRange(sensor: Sensor, date: Date = this.time): number {
+  /**
+   * Returns the range of the satellite from the given sensor at the specified time.
+   * @param sensor The sensor observing the satellite.
+   * @param date The time at which to calculate the range. Defaults to the current time of the satellite.
+   * @returns The range of the satellite from the sensor, in kilometers.
+   */
+  getRange(sensor: Sensor, date: Date = this.time): number {
     const rae = this.getRae(sensor, date);
 
     return rae.rng;
+  }
+
+  /**
+   * Calculates position and velocity in ECI coordinates at a given time.
+   * @param {Date} date Date to calculate the state vector for
+   * @returns {StateVector} State vector for the given date
+   */
+  getStateVec(date: Date = this.time): StateVector {
+    const { m } = Sat.calculateTimeVariables(date, this.satrec);
+
+    return Sgp4.propagate(this.satrec, m);
+  }
+
+  /**
+   * Propagates the satellite position to the given date using the SGP4 model.
+   * @param date The date to propagate the satellite position to.
+   * @returns This satellite object with updated position and time properties.
+   */
+  propagateTo(date: Date): this {
+    const { m } = Sat.calculateTimeVariables(date, this.satrec);
+    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
+      x: <Kilometers>0,
+      y: <Kilometers>0,
+      z: <Kilometers>0,
+    };
+
+    this.position = eci;
+    this.time = date;
+
+    return this;
   }
 
   /**
@@ -228,21 +290,5 @@ export class Sat extends SpaceObject {
     const m = satrec ? (j - satrec.jdsatepoch) * MINUTES_PER_DAY : null;
 
     return { gmst, m, j };
-  }
-
-  public static checkSatrec(satrec: SatelliteRecord): boolean {
-    if (
-      isNaN(satrec.a) ||
-      isNaN(satrec.am) ||
-      isNaN(satrec.alta) ||
-      isNaN(satrec.em) ||
-      isNaN(satrec.mo) ||
-      isNaN(satrec.ecco) ||
-      isNaN(satrec.no)
-    ) {
-      return false;
-    }
-
-    return true;
   }
 }

@@ -10,19 +10,19 @@
  * @Copyright (c) 2020-2023 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free Software
+ * terms of the GNU Affero General License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later version.
  *
  * Orbital Object ToolKit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Affero General Public License for more details.
+ * See the GNU Affero General License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with
+ * You should have received a copy of the GNU Affero General License along with
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { BaseObject } from './base-object';
 import { SpaceObjectType } from '../types/types';
+import { BaseObject } from './base-object';
 
 interface ObjectInfo {
   name?: string;
@@ -32,26 +32,13 @@ interface ObjectInfo {
 }
 
 export class SpaceObject extends BaseObject {
-  public rcs: number;
-  public vmag: number;
+  rcs: number;
+  vmag: number;
 
   constructor(info: ObjectInfo) {
     super(info);
 
-    if (info.rcs) {
-      this.rcs = info.rcs;
-    }
-
-    if (info.vmag) {
-      this.vmag = info.vmag;
-    }
-  }
-
-  public getRcs(): number {
-    return this.rcs;
-  }
-
-  public getVmag(): number {
-    return this.vmag;
+    this.rcs = info.rcs;
+    this.vmag = info.vmag;
   }
 }

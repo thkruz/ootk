@@ -9,14 +9,14 @@
  * @Copyright (c) 2020-2023 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free Software
+ * terms of the GNU Affero General License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later version.
  *
  * Orbital Object ToolKit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Affero General Public License for more details.
+ * See the GNU Affero General License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License along with
+ * You should have received a copy of the GNU Affero General License along with
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -27,17 +27,17 @@ import { BaseObject } from './base-object';
 import { Sat } from './sat';
 
 interface ObjectInfo {
-  name?: string;
-  type?: SpaceObjectType;
+  alt: Kilometers;
   lat: Radians;
   lon: Radians;
-  alt: Kilometers;
-  minAz?: Degrees;
   maxAz?: Degrees;
-  minEl?: Degrees;
   maxEl?: Degrees;
-  minRng?: Kilometers;
   maxRng?: Kilometers;
+  minAz?: Degrees;
+  minEl?: Degrees;
+  minRng?: Kilometers;
+  name?: string;
+  type?: SpaceObjectType;
 }
 
 export enum PassType {
@@ -59,15 +59,15 @@ type Lookangles = {
 const TAU = Math.PI * 2;
 
 export class Sensor extends BaseObject {
-  public lat: Radians;
-  public lon: Radians;
-  public alt: Kilometers;
-  public minAz: Degrees;
-  public maxAz: Degrees;
-  public minEl: Degrees;
-  public maxEl: Degrees;
-  public minRng: Kilometers;
-  public maxRng: Kilometers;
+  alt: Kilometers;
+  lat: Radians;
+  lon: Radians;
+  maxAz: Degrees;
+  maxEl: Degrees;
+  maxRng: Kilometers;
+  minAz: Degrees;
+  minEl: Degrees;
+  minRng: Kilometers;
 
   /**
    * * name: Name as a string - OPTIONAL
@@ -103,143 +103,7 @@ export class Sensor extends BaseObject {
     this.validateInputData(info);
   }
 
-  private validateInputData(info: ObjectInfo) {
-    this.validateLla(info);
-    this.validateFov(info);
-  }
-
-  private validateFov(info: ObjectInfo) {
-    this.validateMinAz(info);
-    this.validateMaxAz(info);
-    this.validateMinEl(info);
-    this.validateMaxEl(info);
-    this.validateMinRng(info);
-    this.validateMaxRng(info);
-  }
-
-  private validateMaxRng(info: ObjectInfo) {
-    if (info.maxRng >= 0) {
-      this.maxRng = info.maxRng;
-    } else if (typeof info.maxRng === 'undefined') {
-      // Default is a telescope
-      this.maxRng = <Kilometers>50000; // arbitrary large number
-    } else {
-      throw new Error('Invalid maximum range - must be greater than 0');
-    }
-  }
-
-  private validateMinRng(info: ObjectInfo) {
-    if (info.minRng >= 0) {
-      this.minRng = info.minRng;
-    } else if (typeof info.minRng === 'undefined') {
-      // Default is a telescope
-      this.minRng = <Kilometers>0;
-    } else {
-      throw new Error('Invalid minimum range - must be greater than 0');
-    }
-  }
-
-  private validateMaxEl(info: ObjectInfo) {
-    if (info.maxEl >= 0 && info.maxEl <= 180) {
-      this.maxEl = info.maxEl;
-    } else if (typeof info.maxEl === 'undefined') {
-      // Default is a telescope
-      this.maxEl = <Degrees>90;
-    } else {
-      throw new Error('Invalid maximum elevation - must be between 0 and 180');
-    }
-  }
-
-  private validateMinEl(info: ObjectInfo) {
-    if (info.minEl >= 0 && info.minEl <= 90) {
-      this.minEl = info.minEl;
-    } else if (typeof info.minEl === 'undefined') {
-      // Default is a telescope
-      this.minEl = <Degrees>0;
-    } else {
-      throw new Error('Invalid minimum elevation - must be between 0 and 90');
-    }
-  }
-
-  private validateMaxAz(info: ObjectInfo) {
-    if (info.maxAz >= 0 && info.maxAz <= 360) {
-      this.maxAz = info.maxAz;
-    } else if (typeof info.maxAz === 'undefined') {
-      // Default is a telescope
-      this.maxAz = <Degrees>360;
-    } else {
-      throw new Error('Invalid maximum azimuth - must be between 0 and 360');
-    }
-  }
-
-  private validateMinAz(info: ObjectInfo) {
-    if (info.minAz >= 0 && info.minAz <= 360) {
-      this.minAz = info.minAz;
-    } else if (typeof info.minAz === 'undefined') {
-      // Default is a telescope
-      this.minAz = <Degrees>0;
-    } else {
-      throw new Error('Invalid minimum azimuth - must be between 0 and 360');
-    }
-  }
-
-  private validateLla(info: ObjectInfo) {
-    if (info.lat >= -90 && info.lat <= 90) {
-      this.lat = info.lat;
-    } else {
-      throw new Error('Invalid latitude');
-    }
-
-    if (info.lon >= -180 && info.lon <= 180) {
-      this.lon = info.lon;
-    } else {
-      throw new Error('Invalid longitude');
-    }
-
-    if (info.alt >= 0) {
-      this.alt = info.alt;
-    } else {
-      throw new Error('Invalid altitude');
-    }
-  }
-
-  public setTime(date: Date): this {
-    this.time = date;
-
-    return this;
-  }
-
-  public getRae(sat: Sat, date: Date = this.time): RaeVec3 {
-    return sat.getRae(this, date);
-  }
-
-  public isRaeInFov(rae: RaeVec3): boolean {
-    if (rae.el * RAD2DEG < this.minEl || rae.el * RAD2DEG > this.maxEl) {
-      return false;
-    }
-
-    if (rae.rng < this.minRng || rae.rng > this.maxRng) {
-      return false;
-    }
-
-    if (this.minAz * RAD2DEG > this.maxAz) {
-      // North Facing Sensors
-      if (rae.az * RAD2DEG < this.minAz && rae.az * RAD2DEG > this.maxAz) {
-        return false;
-      }
-      // Normal Facing Sensors
-    } else if (rae.az * RAD2DEG < this.minAz || rae.az * RAD2DEG > this.maxAz) {
-      return false;
-    }
-
-    return true;
-  }
-
-  public isSatInFov(sat: Sat, date: Date = this.time): boolean {
-    return this.isRaeInFov(this.getRae(sat, date));
-  }
-
-  public calculatePasses(planningInterval: number, sat: Sat, date: Date = this.time) {
+  calculatePasses(planningInterval: number, sat: Sat, date: Date = this.time) {
     let isInViewLast = false;
     let maxElThisPass = <Degrees>0;
     const msnPlanPasses: Lookangles[] = [];
@@ -290,6 +154,42 @@ export class Sensor extends BaseObject {
     return msnPlanPasses;
   }
 
+  getRae(sat: Sat, date: Date = this.time): RaeVec3 {
+    return sat.getRae(this, date);
+  }
+
+  isRaeInFov(rae: RaeVec3): boolean {
+    if (rae.el * RAD2DEG < this.minEl || rae.el * RAD2DEG > this.maxEl) {
+      return false;
+    }
+
+    if (rae.rng < this.minRng || rae.rng > this.maxRng) {
+      return false;
+    }
+
+    if (this.minAz * RAD2DEG > this.maxAz) {
+      // North Facing Sensors
+      if (rae.az * RAD2DEG < this.minAz && rae.az * RAD2DEG > this.maxAz) {
+        return false;
+      }
+      // Normal Facing Sensors
+    } else if (rae.az * RAD2DEG < this.minAz || rae.az * RAD2DEG > this.maxAz) {
+      return false;
+    }
+
+    return true;
+  }
+
+  isSatInFov(sat: Sat, date: Date = this.time): boolean {
+    return this.isRaeInFov(this.getRae(sat, date));
+  }
+
+  setTime(date: Date): this {
+    this.time = date;
+
+    return this;
+  }
+
   private static getPassType_(isInView: boolean, isInViewLast: boolean) {
     let type = PassType.OUT_OF_VIEW;
 
@@ -302,5 +202,105 @@ export class Sensor extends BaseObject {
     }
 
     return type;
+  }
+
+  private validateFov(info: ObjectInfo) {
+    this.validateMinAz(info);
+    this.validateMaxAz(info);
+    this.validateMinEl(info);
+    this.validateMaxEl(info);
+    this.validateMinRng(info);
+    this.validateMaxRng(info);
+  }
+
+  private validateInputData(info: ObjectInfo) {
+    this.validateLla(info);
+    this.validateFov(info);
+  }
+
+  private validateLla(info: ObjectInfo) {
+    if (info.lat >= -90 && info.lat <= 90) {
+      this.lat = info.lat;
+    } else {
+      throw new Error('Invalid latitude');
+    }
+
+    if (info.lon >= -180 && info.lon <= 180) {
+      this.lon = info.lon;
+    } else {
+      throw new Error('Invalid longitude');
+    }
+
+    if (info.alt >= 0) {
+      this.alt = info.alt;
+    } else {
+      throw new Error('Invalid altitude');
+    }
+  }
+
+  private validateMaxAz(info: ObjectInfo) {
+    if (info.maxAz >= 0 && info.maxAz <= 360) {
+      this.maxAz = info.maxAz;
+    } else if (typeof info.maxAz === 'undefined') {
+      // Default is a telescope
+      this.maxAz = <Degrees>360;
+    } else {
+      throw new Error('Invalid maximum azimuth - must be between 0 and 360');
+    }
+  }
+
+  private validateMaxEl(info: ObjectInfo) {
+    if (info.maxEl >= 0 && info.maxEl <= 180) {
+      this.maxEl = info.maxEl;
+    } else if (typeof info.maxEl === 'undefined') {
+      // Default is a telescope
+      this.maxEl = <Degrees>90;
+    } else {
+      throw new Error('Invalid maximum elevation - must be between 0 and 180');
+    }
+  }
+
+  private validateMaxRng(info: ObjectInfo) {
+    if (info.maxRng >= 0) {
+      this.maxRng = info.maxRng;
+    } else if (typeof info.maxRng === 'undefined') {
+      // Default is a telescope
+      this.maxRng = <Kilometers>50000; // arbitrary large number
+    } else {
+      throw new Error('Invalid maximum range - must be greater than 0');
+    }
+  }
+
+  private validateMinAz(info: ObjectInfo) {
+    if (info.minAz >= 0 && info.minAz <= 360) {
+      this.minAz = info.minAz;
+    } else if (typeof info.minAz === 'undefined') {
+      // Default is a telescope
+      this.minAz = <Degrees>0;
+    } else {
+      throw new Error('Invalid minimum azimuth - must be between 0 and 360');
+    }
+  }
+
+  private validateMinEl(info: ObjectInfo) {
+    if (info.minEl >= 0 && info.minEl <= 90) {
+      this.minEl = info.minEl;
+    } else if (typeof info.minEl === 'undefined') {
+      // Default is a telescope
+      this.minEl = <Degrees>0;
+    } else {
+      throw new Error('Invalid minimum elevation - must be between 0 and 90');
+    }
+  }
+
+  private validateMinRng(info: ObjectInfo) {
+    if (info.minRng >= 0) {
+      this.minRng = info.minRng;
+    } else if (typeof info.minRng === 'undefined') {
+      // Default is a telescope
+      this.minRng = <Kilometers>0;
+    } else {
+      throw new Error('Invalid minimum range - must be greater than 0');
+    }
   }
 }
