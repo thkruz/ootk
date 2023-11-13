@@ -3643,7 +3643,7 @@ class Sgp4 {
      */
     const leadingChar = satn.split('')[0].toLowerCase(); // Using uppercase will break the -96 math.
 
-    if (isNaN(parseInt(leadingChar))) {
+    if (isNaN(parseInt(leadingChar)) && leadingChar !== ' ') {
       satrec.satnum = parseInt(leadingChar.charCodeAt(0) - 96 + 9 + satrec.satnum.slice(1, 5)).toString();
     } else {
       satrec.satnum = satn;
