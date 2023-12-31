@@ -37,8 +37,15 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-lines */
 
+import { Sgp4OpsMode } from '@src/coordinate/TLE';
 import { GreenwichMeanSiderealTime, SatelliteRecord, StateVector, Vec3Flat } from '../types/types';
 import { DEG2RAD, PI, TAU, temp4, x2o3 } from '../utils/constants';
+
+export enum Sgp4GravConstants {
+  wgs72old = 'wgs72old',
+  wgs72 = 'wgs72',
+  wgs84 = 'wgs84',
+}
 
 /*
  *     ----------------------------------------------------------------
@@ -126,18 +133,18 @@ class Sgp4 {
    *    dot           dot product of two vectors
    * ---------------------------------------------------------------------------
    */
-  static angle(vec1: Vec3Flat, vec2: Vec3Flat): number {
+  private static angle_(vec1: Vec3Flat, vec2: Vec3Flat): number {
     const small = 0.00000001;
     const unknown = 999999.1; /** Ootk -- original 'undefined' is protected in JS */
 
-    const magv1 = Sgp4.mag(vec1);
-    const magv2 = Sgp4.mag(vec2);
+    const magv1 = Sgp4.mag_(vec1);
+    const magv2 = Sgp4.mag_(vec2);
 
     if (magv1 * magv2 > small * small) {
-      let temp = Sgp4.dot(vec1, vec2) / (magv1 * magv2);
+      let temp = Sgp4.dot_(vec1, vec2) / (magv1 * magv2);
 
       if (Math.abs(temp) > 1.0) {
-        temp = Number(Sgp4.sgn(temp));
+        temp = Number(Sgp4.sgn_(temp));
       }
 
       return Math.acos(temp);
@@ -170,7 +177,7 @@ class Sgp4 {
    *    none.
    * ---------------------------------------------------------------------------
    */
-  static asinh(xval: number): number {
+  private static asinh_(xval: number): number {
     return Math.log(xval + Math.sqrt(xval * xval + 1.0));
   }
 
@@ -217,7 +224,12 @@ class Sgp4 {
    *    vallado, crawford, hujsak, kelso  2006
    * ---------------------------------------------------------------------------
    */
-  static createSatrec(tleLine1: string, tleLine2: string, whichconst = 'wgs72', opsmode = 'i'): SatelliteRecord {
+  static createSatrec(
+    tleLine1: string,
+    tleLine2: string,
+    whichconst = Sgp4GravConstants.wgs72,
+    opsmode = Sgp4OpsMode.improved,
+  ): SatelliteRecord {
     let year = 0;
 
     const satrec = {
@@ -468,7 +480,7 @@ class Sgp4 {
    *    mag           magnitude of a vector
    * ----------------------------------------------------------------------------
    */
-  static cross(vec1: Vec3Flat, vec2: Vec3Flat): Vec3Flat {
+  private static cross_(vec1: Vec3Flat, vec2: Vec3Flat): Vec3Flat {
     const outvec: Vec3Flat = [0, 0, 0];
 
     outvec[0] = vec1[1] * vec2[2] - vec1[2] * vec2[1];
@@ -592,7 +604,7 @@ class Sgp4 {
    *    none.
    * ---------------------------------------------------------------------------
    */
-  static dot(x: Vec3Flat, y: Vec3Flat): number {
+  private static dot_(x: Vec3Flat, y: Vec3Flat): number {
     return x[0] * y[0] + x[1] * y[1] + x[2] * y[2];
   }
 
@@ -827,7 +839,7 @@ class Sgp4 {
    *    none.
    * ---------------------------------------------------------------------------
    */
-  static mag(x: Vec3Flat): number {
+  private static mag_(x: Vec3Flat): number {
     return Math.sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
   }
 
@@ -869,7 +881,7 @@ class Sgp4 {
    *    vallado       2013, 77, alg 5
    * ---------------------------------------------------------------------------
    */
-  static newtonnu(
+  private static newtonnu_(
     ecc: number,
     nu: number,
   ): {
@@ -897,8 +909,8 @@ class Sgp4 {
       if (ecc > 1.0 && Math.abs(nu) + 0.00001 < PI - Math.acos(1.0 / ecc)) {
         const sine = (Math.sqrt(ecc * ecc - 1.0) * Math.sin(nu)) / (1.0 + ecc * Math.cos(nu));
 
-        e0 = Sgp4.asinh(sine);
-        m = ecc * Sgp4.sinh(e0) - e0;
+        e0 = Sgp4.asinh_(sine);
+        m = ecc * Sgp4.sinh_(e0) - e0;
       }
     } else if (Math.abs(nu) < (168.0 * PI) / 180.0) {
       // ----------------- parabolic ---------------------
@@ -1404,7 +1416,7 @@ class Sgp4 {
    *    vallado       2013, 113, alg 9, ex 2-5
    * ---------------------------------------------------------------------------
    */
-  static rv2coe(
+  static rv2coe_(
     r: Vec3Flat,
     v: Vec3Flat,
     mus: number,
@@ -1461,25 +1473,25 @@ class Sgp4 {
     const infinite = 999999.9;
 
     // -------------------------  implementation   -----------------
-    const magr = Sgp4.mag(r);
-    const magv = Sgp4.mag(v);
+    const magr = Sgp4.mag_(r);
+    const magv = Sgp4.mag_(v);
 
     // ------------------  find h n and e vectors   ----------------
-    const hbar = Sgp4.cross(r, v);
-    const magh = Sgp4.mag(hbar);
+    const hbar = Sgp4.cross_(r, v);
+    const magh = Sgp4.mag_(hbar);
 
     if (magh > small) {
       nbar[0] = -hbar[1];
       nbar[1] = hbar[0];
       nbar[2] = 0.0;
-      magn = Sgp4.mag(nbar);
+      magn = Sgp4.mag_(nbar);
       const c1 = magv * magv - mus / magr;
 
-      rdotv = Sgp4.dot(r, v);
+      rdotv = Sgp4.dot_(r, v);
       for (i = 0; i <= 2; i++) {
         ebar[i] = (c1 * r[i] - rdotv * v[i]) / mus;
       }
-      ecc = Sgp4.mag(ebar);
+      ecc = Sgp4.mag_(ebar);
 
       // ------------  find a e and semi-latus rectum   ----------
       sme = magv * magv * 0.5 - mus / magr;
@@ -1520,7 +1532,7 @@ class Sgp4 {
         let temp = nbar[0] / magn;
 
         if (Math.abs(temp) > 1.0) {
-          temp = Sgp4.sgn(temp);
+          temp = Sgp4.sgn_(temp);
         }
         omega = Math.acos(temp);
         if (nbar[1] < 0.0) {
@@ -1532,7 +1544,7 @@ class Sgp4 {
 
       // ---------------- find argument of perigee ---------------
       if (typeorbit === 1) {
-        argp = Sgp4.angle(nbar, ebar);
+        argp = Sgp4.angle_(nbar, ebar);
         if (ebar[2] < 0.0) {
           argp = TAU - argp;
         }
@@ -1542,7 +1554,7 @@ class Sgp4 {
 
       // ------------  find true anomaly at epoch    -------------
       if (typeorbit === 1 || typeorbit === 4) {
-        nu = Sgp4.angle(ebar, r);
+        nu = Sgp4.angle_(ebar, r);
         if (rdotv < 0.0) {
           nu = TAU - nu;
         }
@@ -1552,7 +1564,7 @@ class Sgp4 {
 
       // ----  find argument of latitude - circular inclined -----
       if (typeorbit === 3) {
-        arglat = Sgp4.angle(nbar, r);
+        arglat = Sgp4.angle_(nbar, r);
         if (r[2] < 0.0) {
           arglat = TAU - arglat;
         }
@@ -1565,7 +1577,7 @@ class Sgp4 {
         let temp = ebar[0] / ecc;
 
         if (Math.abs(temp) > 1.0) {
-          temp = Sgp4.sgn(temp);
+          temp = Sgp4.sgn_(temp);
         }
         lonper = Math.acos(temp);
         if (ebar[1] < 0.0) {
@@ -1583,7 +1595,7 @@ class Sgp4 {
         let temp = r[0] / magr;
 
         if (Math.abs(temp) > 1.0) {
-          temp = Sgp4.sgn(temp);
+          temp = Sgp4.sgn_(temp);
         }
         truelon = Math.acos(temp);
         if (r[1] < 0.0) {
@@ -1599,7 +1611,7 @@ class Sgp4 {
 
       // ------------ find mean anomaly for all orbits -----------
       if (typeorbit === 1 || typeorbit === 4) {
-        m = Sgp4.newtonnu(ecc, nu).m;
+        m = Sgp4.newtonnu_(ecc, nu).m;
       }
     } else {
       p = unknown;
@@ -1630,7 +1642,7 @@ class Sgp4 {
     };
   }
 
-  static sgn(x: number): number {
+  private static sgn_(x: number): number {
     if (x < 0.0) {
       return -1.0;
     }
@@ -1639,7 +1651,7 @@ class Sgp4 {
   }
 
   // Newtonnu
-  static sinh(x: number): number {
+  private static sinh_(x: number): number {
     return (Math.exp(x) - Math.exp(-x)) / 2;
   }
 
@@ -3151,7 +3163,7 @@ class Sgp4 {
    *    vallado, crawford, hujsak, kelso  2006
    * ---------------------------------------------------------------------------
    */
-  private static getgravconst_(whichconst: string): {
+  private static getgravconst_(whichconst: Sgp4GravConstants): {
     tumin: number;
     mus: number;
     radiusearthkm: number;
@@ -3484,8 +3496,8 @@ class Sgp4 {
   private static sgp4init_(
     satrec: SatelliteRecord,
     options?: {
-      whichconst?: string;
-      opsmode?: string;
+      whichconst?: Sgp4GravConstants;
+      opsmode?: Sgp4OpsMode;
       satn?: string;
       epoch: number;
       xbstar: number;
@@ -3501,8 +3513,8 @@ class Sgp4 {
   ): void {
     /* eslint-disable no-param-reassign */
     const {
-      whichconst = 'wgs72',
-      opsmode = 'i',
+      whichconst = Sgp4GravConstants.wgs72,
+      opsmode = Sgp4OpsMode.improved,
       satn = satrec.satnum,
       epoch,
       xbstar,
