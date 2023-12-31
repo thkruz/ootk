@@ -1,7 +1,7 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
 import { J2000 } from '../coordinate/J2000';
 import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
 
 // / Lambert two-position and time initial orbit determination.
 export class LambertIOD {

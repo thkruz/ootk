@@ -1,3 +1,4 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { J2000 } from '../coordinate/J2000';
 import { RIC } from '../coordinate/RIC';
 import { deg2rad } from '../operations/constants';
@@ -7,16 +8,15 @@ import { RandomGaussianSource } from '../operations/RandomGaussianSource';
 import { Vector } from '../operations/Vector';
 import { Vector3D } from '../operations/Vector3D';
 import { Propagator } from '../propagator/Propagator';
-import { EpochUTC } from '../time/EpochUTC';
 import { Observation } from './Observation';
 import { normalizeAngle, observationDerivative, observationNoiseFromSigmas } from './ObservationUtils';
 import { PropagatorPairs } from './PropagatorPairs';
-import { Razel } from './Razel';
+import { RAE } from './RAE';
 
 // / Radar observation data.
 export class ObservationRadar extends Observation {
   // / Create a new [ObservationRadar] object.
-  constructor(private _site: J2000, public observation: Razel, private _noise: Matrix = ObservationRadar.defaultNoise) {
+  constructor(private _site: J2000, public observation: RAE, private _noise: Matrix = ObservationRadar.defaultNoise) {
     super();
   }
 
@@ -47,7 +47,7 @@ export class ObservationRadar extends Observation {
 
   ricDiff(propagator: Propagator): Vector3D {
     const r0 = propagator.propagate(this.epoch);
-    const r1 = Razel.fromStateVectors(r0, this.site);
+    const r1 = RAE.fromStateVectors(r0, this.site);
     const r2 = this.observation.position(this.site, r1.azimuth, r1.elevation);
 
     return RIC.fromJ2000(new J2000(this.epoch, r2, Vector3D.origin), r0).position;
@@ -58,7 +58,7 @@ export class ObservationRadar extends Observation {
 
     return new ObservationRadar(
       this.site,
-      new Razel(this.observation.epoch, result[0], result[1], result[2]),
+      new RAE(this.observation.epoch, result[0], result[1], result[2]),
       this.noise,
     );
   }
@@ -71,8 +71,8 @@ export class ObservationRadar extends Observation {
       const [high, low] = propPairs.get(i);
       const sl = low.propagate(this.epoch);
       const sh = high.propagate(this.epoch);
-      const ol = Razel.fromStateVectors(sl, this.site);
-      const oh = Razel.fromStateVectors(sh, this.site);
+      const ol = RAE.fromStateVectors(sl, this.site);
+      const oh = RAE.fromStateVectors(sh, this.site);
 
       result[0][i] = observationDerivative(oh.range, ol.range, step);
       result[1][i] = observationDerivative(oh.azimuth, ol.azimuth, step, true);
@@ -85,7 +85,7 @@ export class ObservationRadar extends Observation {
   residual(propagator: Propagator): Matrix {
     const result = array2d(3, 1, 0.0);
     const state = propagator.propagate(this.epoch);
-    const razel = Razel.fromStateVectors(state, this.site);
+    const razel = RAE.fromStateVectors(state, this.site);
 
     result[0][0] = this.observation.range - razel.range;
     result[1][0] = normalizeAngle(this.observation.azimuth, razel.azimuth);

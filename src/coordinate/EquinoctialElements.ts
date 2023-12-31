@@ -1,6 +1,6 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
 import { newtonM } from '../operations/functions';
-import { EpochUTC } from '../time/EpochUTC';
 import { secondsPerDay, tau } from './../operations/constants';
 import { ClassicalElements } from './ClassicalElements';
 import { PositionVelocity } from './StateVector';

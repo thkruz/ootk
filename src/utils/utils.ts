@@ -24,11 +24,9 @@ import * as Types from '../types/types';
 import { EciVec3, Kilometers } from '../types/types';
 import { DAY_TO_MS } from './constants';
 import { MoonMath } from './moon-math';
-import { SunMath } from './sun-math';
 
 class Utils {
   static MoonMath = MoonMath;
-  static SunMath = SunMath;
   static Types = Types;
 
   // eslint-disable-next-line max-params

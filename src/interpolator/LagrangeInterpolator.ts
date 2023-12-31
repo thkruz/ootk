@@ -1,7 +1,7 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { EpochWindow } from '@src/time/EpochWindow';
 import { J2000 } from '../coordinate/J2000';
 import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
 import { StateInterpolator } from './StateInterpolator';
 
 export class LagrangeInterpolator extends StateInterpolator {

@@ -102,7 +102,7 @@ export class EpochUTC extends Epoch {
     const weekFloor = Math.floor(week);
     const seconds = (week - weekFloor) * secondsPerWeek;
 
-    return new EpochGPS(weekFloor, seconds);
+    return new EpochGPS(weekFloor, seconds, EpochUTC.fromDateTimeString('1980-01-06T00:00:00.000Z'));
   }
 
   gmstAngle(): number {

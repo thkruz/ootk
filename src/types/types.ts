@@ -209,7 +209,7 @@ export type LlaVec3<A = Radians, D = Kilometers> = {
  * reference direction.
  * @property el The elevation dimension of the vector, representing the angle from the horizontal plane to the point.
  */
-export type RaeVec3<DistanceUnit = Kilometers, AngleUnit = Radians> = {
+export type RaeVec3<DistanceUnit = Kilometers, AngleUnit = Degrees> = {
   rng: DistanceUnit;
   az: AngleUnit;
   el: AngleUnit;
@@ -381,6 +381,11 @@ export type StateVectorSgp4 = {
         z: number;
       }
     | boolean;
+};
+
+export type PosVel<T> = {
+  position: Vec3<T>;
+  velocity: Vec3<T>;
 };
 
 /**

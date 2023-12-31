@@ -1,7 +1,7 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { deg2rad } from '../operations/constants';
 import { angularDiameter, AngularDiameterMethod } from '../operations/functions';
 import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
 import { Earth } from './Earth';
 import { Sun } from './Sun';
 

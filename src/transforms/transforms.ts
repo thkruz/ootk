@@ -182,7 +182,7 @@ export function enu2rf<D extends number, A extends number = Radians>({ x, y, z }
 /**
  * Calculates Geodetic Lat Lon Alt to ECEF coordinates.
  */
-export function lla2ecf<A extends number, D extends number>(lla: LlaVec3<A, D>): EcefVec3<D> {
+export function lla2ecf<D extends number>(lla: LlaVec3<Radians, D>): EcefVec3<D> {
   const { lat, lon, alt } = lla;
   const a = 6378.137; // semi-major axis length in meters according to the WGS84
   const b = 6356.752314245; // semi-minor axis length in meters according to the WGS84
@@ -199,10 +199,15 @@ export function lla2ecf<A extends number, D extends number>(lla: LlaVec3<A, D>):
  * Converts LLA to SEZ coordinates.
  * @see http://www.celestrak.com/columns/v02n02/
  */
-export function lla2sez<A extends number, D extends number>(lla: LlaVec3<A, D>, ecf: EcfVec3<D>): SezVec3<D> {
-  const { lon, lat } = lla;
+export function lla2sez<D extends number>(lla: LlaVec3<Degrees, D>, ecf: EcfVec3<D>): SezVec3<D> {
+  const lon = (lla.lon * DEG2RAD) as Radians;
+  const lat = (lla.lat * DEG2RAD) as Radians;
 
-  const observerEcf = lla2ecf(lla);
+  const observerEcf = lla2ecf({
+    lat,
+    lon,
+    alt: <Kilometers>0,
+  });
 
   const rx = ecf.x - observerEcf.x;
   const ry = ecf.y - observerEcf.y;
@@ -247,8 +252,12 @@ export function rae2sez<D extends number, A extends number>(rae: RaeVec3<D, A>):
  * @param lla - The vector in LLA coordinate system.
  * @returns The vector in ECF coordinate system.
  */
-export function rae2ecf<D extends number, A extends number>(rae: RaeVec3<D, A>, lla: LlaVec3<A, D>): EcfVec3<D> {
-  const obsEcf = lla2ecf(lla);
+export function rae2ecf<D extends number>(rae: RaeVec3<D, Degrees>, lla: LlaVec3<Degrees, D>): EcfVec3<D> {
+  const obsEcf = lla2ecf({
+    lat: (lla.lat * DEG2RAD) as Radians,
+    lon: (lla.lon * DEG2RAD) as Radians,
+    alt: <Kilometers>0,
+  });
   const sez = rae2sez(rae);
 
   // Some needed calculations
@@ -289,11 +298,14 @@ export function rae2raeOffBoresight(
   sensor: RadarSensor,
   maxSensorAz: Degrees,
 ): { az: Radians; el: Radians } {
-  // Correct azimuth for sensor orientation.
-  rae.az = rae.az > maxSensorAz * DEG2RAD ? ((rae.az - TAU) as Radians) : rae.az;
+  let az = (rae.az * DEG2RAD) as Radians;
+  let el = (rae.el * DEG2RAD) as Radians;
 
-  const az = (rae.az - sensor.boresight.az) as Radians;
-  const el = (rae.el - sensor.boresight.el) as Radians;
+  // Correct azimuth for sensor orientation.
+  az = az > maxSensorAz * DEG2RAD ? ((az - TAU) as Radians) : az;
+
+  az = (az - sensor.boresight.az) as Radians;
+  el = (el - sensor.boresight.el) as Radians;
 
   return { az, el };
 }
@@ -353,7 +365,7 @@ export function uv2azel(u: Radians, v: Radians, coneHalfAngle: Radians): { az: R
  * @param ecf The Earth-Centered Fixed (ECF) coordinates.
  * @returns The Right Ascension (RA), Elevation (E), and Azimuth (A) coordinates.
  */
-export function ecf2rae<A extends number, D extends number>(lla: LlaVec3<A, D>, ecf: EcfVec3<D>): RaeVec3<D, A> {
+export function ecf2rae<D extends number>(lla: LlaVec3<Degrees, D>, ecf: EcfVec3<D>): RaeVec3<D, Degrees> {
   const sezCoords = lla2sez(lla, ecf);
 
   return sez2rae(sezCoords);

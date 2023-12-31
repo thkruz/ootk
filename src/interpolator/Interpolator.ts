@@ -1,5 +1,5 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { EpochWindow } from '@src/time/EpochWindow';
-import { EpochUTC } from '../time/EpochUTC';
 
 // / Interpolator base class.
 export abstract class Interpolator {

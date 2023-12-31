@@ -1,9 +1,9 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { J2000 } from '../coordinate/J2000';
 import { RIC } from '../coordinate/RIC';
 import { Thrust } from '../force/Thrust';
 import { StateInterpolator } from '../interpolator/StateInterpolator';
 import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
 import { ForceModel } from './../force/ForceModel';
 import { DownhillSimplex } from './../optimize/DownhillSimplex';
 import { LambertIOD } from './../orbit_determination/LambertIOD';

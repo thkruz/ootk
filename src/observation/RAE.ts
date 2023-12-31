@@ -1,14 +1,14 @@
 /* eslint-disable no-undefined */
 import { Radians } from '@src/ootk';
+import { EpochUTC } from '@src/time/EpochUTC';
 import { ITRF } from '../coordinate/ITRF';
 import { J2000 } from '../coordinate/J2000';
 import { deg2rad, halfPi, rad2deg, tau } from '../operations/constants';
 import { angularDistance, AngularDistanceMethod } from '../operations/functions';
 import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
 
 // / Range, azimuth, and elevation.
-export class Razel {
+export class RAE {
   // / Create a new [Razel] object.
   constructor(
     public epoch: EpochUTC,
@@ -31,11 +31,11 @@ export class Razel {
     rangeRate?: number,
     azimuthRateDegrees?: number,
     elevationRateDegrees?: number,
-  ): Razel {
+  ): RAE {
     const azimuthRate = azimuthRateDegrees !== null ? azimuthRateDegrees * deg2rad : undefined;
     const elevationRate = elevationRateDegrees !== null ? elevationRateDegrees * deg2rad : undefined;
 
-    return new Razel(
+    return new RAE(
       epoch,
       range,
       (azimuthDegrees * deg2rad) as Radians,
@@ -50,7 +50,7 @@ export class Razel {
    * Create a [Razel] object from an inertial [state] and
    * [site] vector.
    */
-  static fromStateVectors(state: J2000, site: J2000): Razel {
+  static fromStateVectors(state: J2000, site: J2000): RAE {
     const stateEcef = state.toITRF();
     const siteEcef = site.toITRF();
     const po2 = halfPi;
@@ -79,7 +79,7 @@ export class Razel {
     const azimuthRate = (pSDot * pE - pEDot * pS) / (pS * pS + pE * pE);
     const elevationRate = (pZDot - rangeRate * Math.sin(elevation)) / pSEMag;
 
-    return new Razel(
+    return new RAE(
       state.epoch,
       pMag,
       (azimuth % tau) as Radians,
@@ -182,7 +182,7 @@ export class Razel {
    * Calculate the angular distance _(rad)_ between this and another
    * [Razel] object.
    */
-  angle(razel: Razel, method: AngularDistanceMethod = AngularDistanceMethod.Cosine): number {
+  angle(razel: RAE, method: AngularDistanceMethod = AngularDistanceMethod.Cosine): number {
     return angularDistance(this.azimuth, this.elevation, razel.azimuth, razel.elevation, method);
   }
 
@@ -190,7 +190,7 @@ export class Razel {
    * Calculate the angular distance _(°)_ between this and another
    * [Razel] object.
    */
-  angleDegrees(razel: Razel, method: AngularDistanceMethod = AngularDistanceMethod.Cosine): number {
+  angleDegrees(razel: RAE, method: AngularDistanceMethod = AngularDistanceMethod.Cosine): number {
     return this.angle(razel, method) * rad2deg;
   }
 }

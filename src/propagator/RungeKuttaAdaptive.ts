@@ -1,8 +1,8 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { J2000 } from '../coordinate/J2000';
 import { ForceModel } from '../force/ForceModel';
 import { Thrust } from '../force/Thrust';
 import { Vector } from '../operations/Vector';
-import { EpochUTC } from '../time/EpochUTC';
 import { VerletBlendInterpolator } from './../interpolator/VerletBlendInterpolator';
 import { Propagator } from './Propagator';
 import { RkCheckpoint } from './RkCheckpoint';

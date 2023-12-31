@@ -22,22 +22,26 @@
  */
 
 import {
+  Degrees,
   EcfVec3,
   EciVec3,
   GreenwichMeanSiderealTime,
   Kilometers,
   LlaVec3,
+  PosVel,
+  Radians,
   RaeVec3,
   SatelliteRecord,
   SpaceObjectType,
-  StateVectorSgp4,
   TleLine1,
   TleLine2,
 } from '../types/types';
-import { DAY_TO_MS, MINUTES_PER_DAY } from '../utils/constants';
+import { DAY_TO_MS, DEG2RAD, MINUTES_PER_DAY, RAD2DEG } from '../utils/constants';
 
+import { Geodetic } from '@src/coordinate/Geodetic';
+import { ITRF } from '@src/coordinate/ITRF';
 import { J2000 } from '@src/coordinate/J2000';
-import { Razel } from '@src/observation/Razel';
+import { RAE } from '@src/observation/RAE';
 import { Transforms } from '@src/ootk';
 import { Vector3D } from '@src/operations/Vector3D';
 import { EpochUTC } from '@src/time/EpochUTC';
@@ -45,18 +49,24 @@ import { Sgp4 } from '../sgp4/sgp4';
 import { Tle } from '../tle/tle';
 import { Utils } from '../utils/utils';
 import { Sensor } from './sensor';
-import { SpaceObject } from './space-object';
+
+/**
+ * TODO: Reduce unnecessary calls to calculateTimeVariables using optional
+ * parameters and caching.
+ */
 
 /**
  * Information about a space object.
  */
-interface ObjectInfo {
+interface SatelliteObjectParams {
   name?: string;
   rcs?: number;
   tle1: TleLine1;
   tle2: TleLine2;
   type?: SpaceObjectType;
   vmag?: number;
+  position?: EciVec3;
+  time?: Date;
 }
 
 export interface OptionsParams {
@@ -66,7 +76,11 @@ export interface OptionsParams {
 /**
  * Represents a satellite object with orbital information and methods for calculating its position and other properties.
  */
-export class Sat extends SpaceObject {
+export class Satellite {
+  name: string;
+  type: SpaceObjectType;
+  position: EciVec3; // Where is the object
+  time: Date; // When is the object there
   apogee: number;
   argOfPerigee: number;
   bstar: number;
@@ -87,9 +101,7 @@ export class Sat extends SpaceObject {
   satNum: number;
   satrec: SatelliteRecord;
 
-  constructor(info: ObjectInfo, options?: OptionsParams) {
-    super(info);
-
+  constructor(info: SatelliteObjectParams, options?: OptionsParams) {
     const tleData = Tle.parseTle(info.tle1, info.tle2);
 
     this.satNum = tleData.satNum;
@@ -139,48 +151,62 @@ export class Sat extends SpaceObject {
   /**
    * Calculates the azimuth angle of the satellite relative to the given sensor at the specified date.
    * If no date is provided, the current time of the satellite is used.
-   * @param sensor The sensor observing the satellite.
-   * @param date The date at which to calculate the azimuth angle.
-   * @returns The azimuth angle in degrees.
+   *
+   * @optimized
    */
-  getAzimuth(sensor: Sensor, date: Date = this.time): number {
-    const rae = this.getRae(sensor, date);
-
-    return rae.az;
+  az(sensor: Sensor, date: Date = this.time): Degrees {
+    return (this.raeOpt(sensor, date).az * RAD2DEG) as Degrees;
   }
 
-  getRazel(sensor: Sensor, date: Date = this.time): Razel {
-    const rae = this.getRae(sensor, date);
-
+  /**
+   * Calculates the RAE (Range, Azimuth, Elevation) values for a given sensor and date.
+   * If no date is provided, the current time is used.
+   *
+   * @expanded
+   */
+  rae(sensor: Sensor, date: Date = this.time): RAE {
+    const rae = this.raeOpt(sensor, date);
     const epoch = new EpochUTC(date.getTime());
-    const razel = new Razel(epoch, rae.rng, rae.az, rae.el);
 
-    return razel;
+    return new RAE(epoch, rae.rng, (rae.az * DEG2RAD) as Radians, (rae.el * DEG2RAD) as Radians);
   }
 
   /**
    * Calculates ECF position at a given time.
-   * @param {Date} date Date to calculate
-   * @returns {EcfVec3} ECF position vector
+   *
+   * @optimized
    */
-  getEcf(date: Date = this.time): EcfVec3 {
-    const { m, gmst } = Sat.calculateTimeVariables(date, this.satrec);
-    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
-      x: <Kilometers>0,
-      y: <Kilometers>0,
-      z: <Kilometers>0,
-    };
+  getEcf(date: Date = this.time): EcfVec3<Kilometers> {
+    const { gmst } = Satellite.calculateTimeVariables(date);
 
-    return Transforms.eci2ecf(eci, gmst);
+    return Transforms.eci2ecf(this.getEci(date).position, gmst);
   }
 
   /**
    * Calculates ECI position at a given time.
-   * @param {Date} date Date to calculate
-   * @returns {J2000} J2000 position vector
+   *
+   * @optimized
    */
-  getEci(date: Date = new Date()): J2000 {
-    const { m } = Sat.calculateTimeVariables(date, this.satrec);
+  getEci(date: Date = this.time): PosVel<Kilometers> {
+    const { m } = Satellite.calculateTimeVariables(date, this.satrec);
+    const pv = Sgp4.propagate(this.satrec, m);
+
+    if (!pv) {
+      throw new Error('Propagation failed!');
+    } else {
+      return pv as PosVel<Kilometers>;
+    }
+  }
+
+  /**
+   * Calculates the J2000 coordinates for a given date.
+   * If no date is provided, the current time is used.
+   * @param date - The date for which to calculate the J2000 coordinates.
+   * @returns The J2000 coordinates for the specified date.
+   * @throws Error if propagation fails.
+   */
+  getJ2000(date: Date = this.time): J2000 {
+    const { m } = Satellite.calculateTimeVariables(date, this.satrec);
     const pv = Sgp4.propagate(this.satrec, m);
 
     if (!pv.position) {
@@ -199,80 +225,65 @@ export class Sat extends SpaceObject {
 
   /**
    * Returns the elevation angle of the satellite as seen by the given sensor at the specified time.
-   * @param sensor - The sensor observing the satellite.
-   * @param date - The time at which to calculate the elevation angle. Defaults to the current time of the satellite.
-   * @returns The elevation angle of the satellite in degrees.
+   *
+   * @optimized
    */
-  getElevation(sensor: Sensor, date: Date = this.time): number {
-    const rae = this.getRae(sensor, date);
-
-    return rae.el;
+  el(sensor: Sensor, date: Date = this.time): Degrees {
+    return (this.raeOpt(sensor, date).el * RAD2DEG) as Degrees;
   }
 
   /**
    * Calculates LLA position at a given time.
-   * @param {Date} date Date to calculate
-   * @returns {LlaVec3} LLA position vector
    */
-  getLla(date: Date = this.time): LlaVec3 {
-    const { m, gmst } = Sat.calculateTimeVariables(date, this.satrec);
-    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
-      x: <Kilometers>0,
-      y: <Kilometers>0,
-      z: <Kilometers>0,
-    };
+  lla(date: Date = this.time): LlaVec3 {
+    const { gmst } = Satellite.calculateTimeVariables(date, this.satrec);
+    const pos = this.getEci(date).position;
 
-    return Transforms.eci2lla(eci, gmst);
+    return Transforms.eci2lla(pos, gmst);
+  }
+
+  getGeodetic(date: Date = this.time): Geodetic {
+    return this.getJ2000(date).toITRF().toGeodetic();
+  }
+
+  getITRF(date: Date = this.time): ITRF {
+    return this.getJ2000(date).toITRF();
   }
 
   /**
    * Calculates the RAE (Range, Azimuth, Elevation) vector for a given sensor and time.
-   * @param sensor - The sensor for which to calculate the RAE vector.
-   * @param date - The date and time for which to calculate the RAE vector. Defaults to the current time.
-   * @returns The RAE vector for the given sensor and time.
+   *
+   * @optimized
    */
-  getRae(sensor: Sensor, date: Date = this.time): RaeVec3 {
-    const { m, gmst } = Sat.calculateTimeVariables(date, this.satrec);
-    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
-      x: <Kilometers>0,
-      y: <Kilometers>0,
-      z: <Kilometers>0,
-    };
+  raeOpt(sensor: Sensor, date: Date = this.time): RaeVec3<Kilometers, Degrees> {
+    const { gmst } = Satellite.calculateTimeVariables(date, this.satrec);
+    const eci = this.getEci(date).position;
     const ecf = Transforms.eci2ecf(eci, gmst);
+    const rae = Transforms.ecf2rae(sensor, ecf);
 
-    return Transforms.ecf2rae({ lat: sensor.lat, lon: sensor.lon, alt: sensor.alt }, ecf);
+    return {
+      az: (rae.az * RAD2DEG) as Degrees,
+      el: (rae.el * RAD2DEG) as Degrees,
+      rng: rae.rng,
+    };
   }
 
   /**
    * Returns the range of the satellite from the given sensor at the specified time.
-   * @param sensor The sensor observing the satellite.
-   * @param date The time at which to calculate the range. Defaults to the current time of the satellite.
-   * @returns The range of the satellite from the sensor, in kilometers.
+   *
+   * @optimized
    */
-  getRange(sensor: Sensor, date: Date = this.time): number {
-    const rae = this.getRae(sensor, date);
-
-    return rae.rng;
-  }
-
-  /**
-   * Calculates position and velocity in ECI coordinates at a given time.
-   * @param {Date} date Date to calculate the state vector for
-   * @returns {StateVectorSgp4} State vector for the given date
-   */
-  getStateVec(date: Date = this.time): StateVectorSgp4 {
-    const { m } = Sat.calculateTimeVariables(date, this.satrec);
-
-    return Sgp4.propagate(this.satrec, m);
+  range(sensor: Sensor, date: Date = this.time): Kilometers {
+    return this.raeOpt(sensor, date).rng;
   }
 
   /**
    * Propagates the satellite position to the given date using the SGP4 model.
-   * @param date The date to propagate the satellite position to.
-   * @returns This satellite object with updated position and time properties.
+   *
+   * This method changes the position and time properties of the satellite object.
    */
   propagateTo(date: Date): this {
-    const { m } = Sat.calculateTimeVariables(date, this.satrec);
+    const { m } = Satellite.calculateTimeVariables(date, this.satrec);
     const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
       x: <Kilometers>0,
       y: <Kilometers>0,

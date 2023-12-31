@@ -33,8 +33,9 @@ import {
 } from '../types/types';
 import { DAY_TO_MS, DEG2RAD, RAD2DEG } from '../utils/constants';
 
+import { Celestial } from '@src/body/Celestial';
+import { ecf2eci, rae2ecf } from '@src/transforms/transforms';
 import { Sgp4 } from '../sgp4/sgp4';
-import { Transforms } from '../transforms/transforms';
 import { Utils } from '../utils/utils';
 import { SpaceObject } from './space-object';
 
@@ -89,14 +90,14 @@ export class Star extends SpaceObject {
     const { gmst } = Star.calculateTimeVariables_(date);
 
     // Arbitrary distance to enable using ECI coordinates
-    return Transforms.ecf2eci(Transforms.rae2ecf(rae, { lat: <Radians>0, lon: <Radians>0, alt: <Kilometers>0 }), gmst);
+    return ecf2eci(rae2ecf(rae, { lat: <Degrees>0, lon: <Degrees>0, alt: <Kilometers>0 }), gmst);
   }
 
   getRae(
     lla: LlaVec3 = { lat: <Radians>(180 * DEG2RAD), lon: <Radians>0, alt: <Kilometers>0 },
     date: Date = this.time,
   ): RaeVec3 {
-    const starPos = Utils.SunMath.getStarAzEl(
+    const starPos = Celestial.getStarAzEl(
       date,
       <Degrees>(lla.lat * RAD2DEG),
       <Degrees>(lla.lon * RAD2DEG),

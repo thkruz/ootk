@@ -1,9 +1,9 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
 import { Thrust } from './../force/Thrust';
 import { Waypoint } from './../maneuver/Waypoint';
 import { Matrix } from './../operations/Matrix';
 import { Vector3D } from './../operations/Vector3D';
-import { EpochUTC } from './../time/EpochUTC';
 import { J2000 } from './J2000';
 import { RelativeState } from './RelativeState';
 // / Hill Modified Equidistant Cyllindrical _(EQCM)_ coordinates.

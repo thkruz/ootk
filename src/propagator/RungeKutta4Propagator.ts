@@ -1,9 +1,9 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { J2000 } from '../coordinate/J2000';
 import { ForceModel } from '../force/ForceModel';
 import { Thrust } from '../force/Thrust';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
 import { Vector } from '../operations/Vector';
-import { EpochUTC } from '../time/EpochUTC';
 import { Propagator } from './Propagator';
 
 // / Runge-Kutta 4 fixed numerical propagator.

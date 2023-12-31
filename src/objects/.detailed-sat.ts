@@ -30,7 +30,7 @@ import {
   TleLine2,
 } from '../types/types';
 
-import { OptionsParams, Sat } from './sat';
+import { OptionsParams, Satellite } from './Satellite';
 
 /**
  * Information about a space object.
@@ -47,7 +47,7 @@ interface ObjectInfo {
 /**
  * Represents a detailed satellite object with launch, spacecraft, and operations details.
  */
-export class DetailedSat extends Sat {
+export class DetailedSat extends Satellite {
   configuration: string;
   country: string;
   dryMass: string;

@@ -1,4 +1,5 @@
 import { Radians } from '@src/ootk';
+import { EpochUTC } from '@src/time/EpochUTC';
 import { DataHandler } from '../data/DataHandler';
 import {
   asec2rad,
@@ -11,7 +12,6 @@ import {
 } from '../operations/constants';
 import { angularDiameter, AngularDiameterMethod, evalPoly } from '../operations/functions';
 import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
 import { NutationAngles } from './NutationAngles';
 import { PrecessionAngles } from './PrecessionAngles';
 

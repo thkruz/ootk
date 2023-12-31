@@ -1,6 +1,6 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { StateInterpolator } from '../interpolator/StateInterpolator';
 import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
 import { ChebyshevCoefficients } from './../interpolator/ChebyshevCoefficients';
 import { ChebyshevInterpolator } from './../interpolator/ChebyshevInterpolator';
 

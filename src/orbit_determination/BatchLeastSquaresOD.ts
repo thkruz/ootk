@@ -1,3 +1,4 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { J2000 } from '../coordinate/J2000';
 import { Observation } from '../observation/Observation';
 import { PropagatorPairs } from '../observation/PropagatorPairs';
@@ -6,7 +7,6 @@ import { Matrix } from '../operations/Matrix';
 import { Vector } from '../operations/Vector';
 import { Vector3D } from '../operations/Vector3D';
 import { Propagator } from '../propagator/Propagator';
-import { EpochUTC } from '../time/EpochUTC';
 import { CovarianceFrame, StateCovariance } from './../covariance/StateCovariance';
 import { ForceModel } from './../force/ForceModel';
 import { KeplerPropagator } from './../propagator/KeplerPropagator';

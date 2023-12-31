@@ -1,9 +1,9 @@
 import { EciVec3, SatelliteRecord, StateVectorSgp4 } from '@src/ootk';
 import { Sgp4, Sgp4GravConstants } from '@src/sgp4/sgp4';
+import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
 import { deg2rad, rad2deg, secondsPerDay, tau } from '../operations/constants';
 import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
 import { TEME } from './TEME';
 
 export enum Sgp4OpsMode {

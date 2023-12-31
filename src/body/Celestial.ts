@@ -1,4 +1,6 @@
-import { AzEl, Degrees, RaDec, Radians } from '@src/ootk';
+import { AzEl, RaDec, Radians } from '@src/ootk';
+import { RAD2DEG } from '@src/utils/constants';
+import { Degrees } from './../../lib/types/types.d';
 import { Sun } from './Sun';
 
 export class Celestial {
@@ -6,7 +8,7 @@ export class Celestial {
     // disable constructor
   }
 
-  static getStarAzEl(date: Date, lat: Degrees, lon: Degrees, ra: Radians, dec: Radians): AzEl<Radians> {
+  static getStarAzEl(date: Date, lat: Degrees, lon: Degrees, ra: Radians, dec: Radians): AzEl<Degrees> {
     const c: RaDec = {
       ra,
       dec,
@@ -16,8 +18,8 @@ export class Celestial {
     const el = <Radians>(azEl.el + Celestial.astroRefraction(azEl.el)); // elevation correction for refraction
 
     return {
-      az: azEl.az,
-      el,
+      az: (azEl.az * RAD2DEG) as Degrees,
+      el: (el * RAD2DEG) as Degrees,
     };
   }
 

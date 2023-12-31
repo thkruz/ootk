@@ -1,9 +1,9 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { EpochWindow } from '@src/time/EpochWindow';
 import { Earth } from '../body/Earth';
 import { J2000 } from '../coordinate/J2000';
 import { copySign } from '../operations/functions';
 import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
 import { CubicSplineInterpolator } from './CubicSplineInterpolator';
 import { LagrangeInterpolator } from './LagrangeInterpolator';
 import { StateInterpolator } from './StateInterpolator';

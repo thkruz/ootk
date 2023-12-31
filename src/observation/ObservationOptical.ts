@@ -1,3 +1,4 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { J2000 } from '../coordinate/J2000';
 import { RIC } from '../coordinate/RIC';
 import { deg2rad } from '../operations/constants';
@@ -7,7 +8,6 @@ import { RandomGaussianSource } from '../operations/RandomGaussianSource';
 import { Vector } from '../operations/Vector';
 import { Vector3D } from '../operations/Vector3D';
 import { Propagator } from '../propagator/Propagator';
-import { EpochUTC } from '../time/EpochUTC';
 import { Observation } from './Observation';
 import { normalizeAngle, observationDerivative, observationNoiseFromSigmas } from './ObservationUtils';
 import { PropagatorPairs } from './PropagatorPairs';

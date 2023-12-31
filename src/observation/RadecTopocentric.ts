@@ -1,9 +1,9 @@
 /* eslint-disable no-undefined */
+import { EpochUTC } from '@src/time/EpochUTC';
 import { J2000 } from '../coordinate/J2000';
 import { deg2rad, rad2deg, tau } from '../operations/constants';
 import { angularDistance, AngularDistanceMethod } from '../operations/functions';
 import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
 import { radecToPosition, radecToVelocity } from './ObservationUtils';
 
 // / Topocentric right-ascension and declination.

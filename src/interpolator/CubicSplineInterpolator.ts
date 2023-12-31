@@ -1,6 +1,6 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { EpochWindow } from '@src/time/EpochWindow';
 import { J2000 } from '../coordinate/J2000';
-import { EpochUTC } from '../time/EpochUTC';
 import { CubicSpline } from './CubicSpline';
 import { StateInterpolator } from './StateInterpolator';
 

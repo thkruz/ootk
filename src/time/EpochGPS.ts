@@ -1,23 +1,25 @@
 import { DataHandler } from '../data/DataHandler';
 import { secondsPerWeek } from '../operations/constants';
-import { EpochUTC } from './EpochUTC';
+import type { EpochUTC } from './EpochUTC';
 // / Global Positioning System _(GPS)_ formatted epoch.
 export class EpochGPS {
   /**
    * Create a new GPS epoch given the [week] since reference epoch, and number
    * of [seconds] into the [week].
    */
-  constructor(public week: number, public seconds: number) {
+  constructor(public week: number, public seconds: number, reference: EpochUTC) {
     if (week < 0) {
       throw new Error('GPS week must be non-negative.');
     }
     if (seconds < 0 || seconds >= secondsPerWeek) {
       throw new Error('GPS seconds must be within a week.');
     }
+
+    EpochGPS.reference = reference;
   }
 
   // / Number of weeks since the GPS reference epoch.
-  static reference: EpochUTC = EpochUTC.fromDateTimeString('1980-01-06T00:00:00.000Z');
+  static reference: EpochUTC;
 
   // / GPS leap second difference from TAI/UTC offsets.
   static offset = 19;

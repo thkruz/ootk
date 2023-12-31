@@ -1,4 +1,4 @@
-import { EpochUTC } from './EpochUTC';
+import { EpochUTC } from './Epoch';
 
 /**
  * Time stamped value container.

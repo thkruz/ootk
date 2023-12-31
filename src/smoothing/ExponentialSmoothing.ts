@@ -1,4 +1,4 @@
-import { EpochUTC } from '../time/EpochUTC';
+import { EpochUTC } from '@src/time/EpochUTC';
 
 // / Exponential data smoothing methods.
 export class ExponentialSmoothing {

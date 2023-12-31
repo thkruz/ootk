@@ -6,20 +6,34 @@ import { StateVector } from './StateVector';
 import { TEME } from './TEME';
 
 export class J2000 extends StateVector {
+  /**
+   * Creates a J2000 instance from classical elements.
+   */
   static fromClassicalElements(elements: ClassicalElements): J2000 {
     const rv = elements.toPositionVelocity();
 
     return new J2000(elements.epoch, rv.position, rv.velocity);
   }
 
+  /**
+   * Gets the name of the coordinate system.
+   */
   get name(): string {
     return 'J2000';
   }
 
+  /**
+   * Gets a value indicating whether the coordinate system is inertial.
+   */
   get inertial(): boolean {
     return true;
   }
 
+  /**
+   * Converts the coordinates from J2000 to the International Terrestrial Reference Frame (ITRF).
+   *
+   * This is an ECI to ECF transformation.
+   */
   toITRF(): ITRF {
     const p = Earth.precession(this.epoch);
     const n = Earth.nutation(this.epoch);

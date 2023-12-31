@@ -1,8 +1,8 @@
+import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
 import { deg2rad, rad2deg } from '../operations/constants';
 import { angularDistance, AngularDistanceMethod } from '../operations/functions';
 import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
 import { ITRF } from './ITRF';
 
 // / Geodetic coordinates.

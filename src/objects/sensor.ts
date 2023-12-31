@@ -20,16 +20,17 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Degrees, Kilometers, Radians, RaeVec3, SpaceObjectType } from '../types/types';
+import { tau } from '@src/operations/constants';
+import { Degrees, Kilometers, RaeVec3, SpaceObjectType } from '../types/types';
 
 import { RAD2DEG } from '../utils/constants';
 import { BaseObject } from './base-object';
-import { Sat } from './sat';
+import { Satellite } from './Satellite';
 
-interface ObjectInfo {
+interface SensorParams {
   alt: Kilometers;
-  lat: Radians;
-  lon: Radians;
+  lat: Degrees;
+  lon: Degrees;
   maxAz?: Degrees;
   maxEl?: Degrees;
   maxRng?: Kilometers;
@@ -56,12 +57,10 @@ type Lookangles = {
   maxElPass?: Degrees;
 };
 
-const TAU = Math.PI * 2;
-
 export class Sensor extends BaseObject {
   alt: Kilometers;
-  lat: Radians;
-  lon: Radians;
+  lat: Degrees;
+  lon: Degrees;
   maxAz: Degrees;
   maxEl: Degrees;
   maxRng: Kilometers;
@@ -81,9 +80,9 @@ export class Sensor extends BaseObject {
    * * maxEl: Maximum Elevation in Degrees
    * * minRng: Minimum Range in Kilometers
    * * maxRng: Maximum Range in Kilometers
-   * @param {ObjectInfo} info ObjectInfo object containing the object's information
+   * @param {SensorParams} info SensorParams object containing the object's information
    */
-  constructor(info: ObjectInfo) {
+  constructor(info: SensorParams) {
     // If there is a sensor type verify it is valid
     if (info.type) {
       switch (info.type) {
@@ -103,7 +102,7 @@ export class Sensor extends BaseObject {
     this.validateInputData(info);
   }
 
-  calculatePasses(planningInterval: number, sat: Sat, date: Date = this.time) {
+  calculatePasses(planningInterval: number, sat: Satellite, date: Date = this.time) {
     let isInViewLast = false;
     let maxElThisPass = <Degrees>0;
     const msnPlanPasses: Lookangles[] = [];
@@ -114,8 +113,8 @@ export class Sensor extends BaseObject {
       const rae = this.getRae(sat, curTime);
 
       // Radians to Degrees
-      const azDeg = <Degrees>((rae.az * 360) / TAU);
-      const elDeg = <Degrees>((rae.el * 360) / TAU);
+      const azDeg = <Degrees>((rae.az * 360) / tau);
+      const elDeg = <Degrees>((rae.el * 360) / tau);
 
       const isInView = this.isRaeInFov(rae);
 
@@ -154,8 +153,8 @@ export class Sensor extends BaseObject {
     return msnPlanPasses;
   }
 
-  getRae(sat: Sat, date: Date = this.time): RaeVec3 {
-    return sat.getRae(this, date);
+  getRae(sat: Satellite, date: Date = this.time): RaeVec3 {
+    return sat.raeOpt(this, date);
   }
 
   isRaeInFov(rae: RaeVec3): boolean {
@@ -180,7 +179,7 @@ export class Sensor extends BaseObject {
     return true;
   }
 
-  isSatInFov(sat: Sat, date: Date = this.time): boolean {
+  isSatInFov(sat: Satellite, date: Date = this.time): boolean {
     return this.isRaeInFov(this.getRae(sat, date));
   }
 
@@ -204,7 +203,7 @@ export class Sensor extends BaseObject {
     return type;
   }
 
-  private validateFov(info: ObjectInfo) {
+  private validateFov(info: SensorParams) {
     this.validateMinAz(info);
     this.validateMaxAz(info);
     this.validateMinEl(info);
@@ -213,12 +212,12 @@ export class Sensor extends BaseObject {
     this.validateMaxRng(info);
   }
 
-  private validateInputData(info: ObjectInfo) {
+  private validateInputData(info: SensorParams) {
     this.validateLla(info);
     this.validateFov(info);
   }
 
-  private validateLla(info: ObjectInfo) {
+  private validateLla(info: SensorParams) {
     if (info.lat >= -90 && info.lat <= 90) {
       this.lat = info.lat;
     } else {
@@ -238,7 +237,7 @@ export class Sensor extends BaseObject {
     }
   }
 
-  private validateMaxAz(info: ObjectInfo) {
+  private validateMaxAz(info: SensorParams) {
     if (info.maxAz >= 0 && info.maxAz <= 360) {
       this.maxAz = info.maxAz;
     } else if (typeof info.maxAz === 'undefined') {
@@ -249,7 +248,7 @@ export class Sensor extends BaseObject {
     }
   }
 
-  private validateMaxEl(info: ObjectInfo) {
+  private validateMaxEl(info: SensorParams) {
     if (info.maxEl >= 0 && info.maxEl <= 180) {
       this.maxEl = info.maxEl;
     } else if (typeof info.maxEl === 'undefined') {
@@ -260,7 +259,7 @@ export class Sensor extends BaseObject {
     }
   }
 
-  private validateMaxRng(info: ObjectInfo) {
+  private validateMaxRng(info: SensorParams) {
     if (info.maxRng >= 0) {
       this.maxRng = info.maxRng;
     } else if (typeof info.maxRng === 'undefined') {
@@ -271,7 +270,7 @@ export class Sensor extends BaseObject {
     }
   }
 
-  private validateMinAz(info: ObjectInfo) {
+  private validateMinAz(info: SensorParams) {
     if (info.minAz >= 0 && info.minAz <= 360) {
       this.minAz = info.minAz;
     } else if (typeof info.minAz === 'undefined') {
@@ -282,7 +281,7 @@ export class Sensor extends BaseObject {
     }
   }
 
-  private validateMinEl(info: ObjectInfo) {
+  private validateMinEl(info: SensorParams) {
     if (info.minEl >= 0 && info.minEl <= 90) {
       this.minEl = info.minEl;
     } else if (typeof info.minEl === 'undefined') {
@@ -293,7 +292,7 @@ export class Sensor extends BaseObject {
     }
   }
 
-  private validateMinRng(info: ObjectInfo) {
+  private validateMinRng(info: SensorParams) {
     if (info.minRng >= 0) {
       this.minRng = info.minRng;
     } else if (typeof info.minRng === 'undefined') {
