@@ -30,15 +30,19 @@ import {
   RaeVec3,
   SatelliteRecord,
   SpaceObjectType,
-  StateVector,
+  StateVectorSgp4,
   TleLine1,
   TleLine2,
 } from '../types/types';
 import { DAY_TO_MS, MINUTES_PER_DAY } from '../utils/constants';
 
+import { J2000 } from '@src/coordinate/J2000';
+import { Razel } from '@src/observation/Razel';
+import { Transforms } from '@src/ootk';
+import { Vector3D } from '@src/operations/Vector3D';
+import { EpochUTC } from '@src/time/EpochUTC';
 import { Sgp4 } from '../sgp4/sgp4';
 import { Tle } from '../tle/tle';
-import { Transforms } from '../transforms/transforms';
 import { Utils } from '../utils/utils';
 import { Sensor } from './sensor';
 import { SpaceObject } from './space-object';
@@ -145,6 +149,15 @@ export class Sat extends SpaceObject {
     return rae.az;
   }
 
+  getRazel(sensor: Sensor, date: Date = this.time): Razel {
+    const rae = this.getRae(sensor, date);
+
+    const epoch = new EpochUTC(date.getTime());
+    const razel = new Razel(epoch, rae.rng, rae.az, rae.el);
+
+    return razel;
+  }
+
   /**
    * Calculates ECF position at a given time.
    * @param {Date} date Date to calculate
@@ -164,17 +177,24 @@ export class Sat extends SpaceObject {
   /**
    * Calculates ECI position at a given time.
    * @param {Date} date Date to calculate
-   * @returns {EciVec3} ECI position vector
+   * @returns {J2000} J2000 position vector
    */
-  getEci(date: Date = this.time): EciVec3 {
+  getEci(date: Date = new Date()): J2000 {
     const { m } = Sat.calculateTimeVariables(date, this.satrec);
-    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
-      x: <Kilometers>0,
-      y: <Kilometers>0,
-      z: <Kilometers>0,
-    };
+    const pv = Sgp4.propagate(this.satrec, m);
 
-    return eci;
+    if (!pv.position) {
+      throw new Error('Propagation failed!');
+    } else {
+      const p = pv.position as EciVec3;
+      const v = pv.velocity as EciVec3;
+
+      const epoch = new EpochUTC(date.getTime());
+      const pos = new Vector3D(p.x, p.y, p.z);
+      const vel = new Vector3D(v.x, v.y, v.z);
+
+      return new J2000(epoch, pos, vel);
+    }
   }
 
   /**
@@ -238,9 +258,9 @@ export class Sat extends SpaceObject {
   /**
    * Calculates position and velocity in ECI coordinates at a given time.
    * @param {Date} date Date to calculate the state vector for
-   * @returns {StateVector} State vector for the given date
+   * @returns {StateVectorSgp4} State vector for the given date
    */
-  getStateVec(date: Date = this.time): StateVector {
+  getStateVec(date: Date = this.time): StateVectorSgp4 {
     const { m } = Sat.calculateTimeVariables(date, this.satrec);
 
     return Sgp4.propagate(this.satrec, m);

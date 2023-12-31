@@ -18,9 +18,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { Sgp4 } from './sgp4/sgp4';
-export { Transforms } from './transforms/transforms';
-export { Utils } from './utils/utils';
-export { Tle } from './tle/tle';
 export * from './objects/index';
+export { Sgp4 } from './sgp4/sgp4';
+export { Tle } from './tle/tle';
+export { Transforms } from './transforms';
 export * from './types/types';
+export { Utils } from './utils/utils';

@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2015",
+    "baseUrl": "../",
+    "paths": {
+      "@lib/*": ["lib/*"],
+      "@dist/*": ["dist/*"],
+      "@src/*": ["src/*"],
+      "@test/*": ["test/*"]
+    }
+  }
+}

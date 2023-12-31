@@ -38,7 +38,7 @@
 /* eslint-disable max-lines */
 
 import { Sgp4OpsMode } from '@src/coordinate/TLE';
-import { GreenwichMeanSiderealTime, SatelliteRecord, StateVector, Vec3Flat } from '../types/types';
+import { GreenwichMeanSiderealTime, SatelliteRecord, StateVectorSgp4, Vec3Flat } from '../types/types';
 import { DEG2RAD, PI, TAU, temp4, x2o3 } from '../utils/constants';
 
 export enum Sgp4GravConstants {
@@ -1022,7 +1022,7 @@ class Sgp4 {
    *    vallado, crawford, hujsak, kelso  2006
    *----------------------------------------------------------------------------
    */
-  static propagate(satrec: SatelliteRecord, tsince: number): StateVector {
+  static propagate(satrec: SatelliteRecord, tsince: number): StateVectorSgp4 {
     /* ------------------ set mathematical constants --------------- */
     /*
      * Sgp4fix divisor for divide by zero check on inclination

@@ -180,16 +180,16 @@ export type EnuVec3<Units = Kilometers> = Vec3<Units>;
  * This type is used to represent a point in space in terms of latitude, longitude, and altitude.
  * It is a generic type that allows for flexibility in the units of measure used for each dimension.
  *
- * @template AngleUnit The unit of measure used for the latitude and longitude dimensions.
+ * @template A The unit of measure used for the latitude and longitude dimensions.
  * This is typically a type representing an angle, such as degrees or radians. The default is Radians.
  *
- * @template DistanceUnit The unit of measure used for the altitude dimension.
+ * @template D The unit of measure used for the altitude dimension.
  * This is typically a type representing a distance, such as kilometers or meters. The default is Kilometers.
  */
-export type LlaVec3<AngleUnit = Radians, DistanceUnit = Kilometers> = {
-  lat: AngleUnit;
-  lon: AngleUnit;
-  alt: DistanceUnit;
+export type LlaVec3<A = Radians, D = Kilometers> = {
+  lat: A;
+  lon: A;
+  alt: D;
 };
 
 /**
@@ -221,20 +221,14 @@ export type RaeVec3<DistanceUnit = Kilometers, AngleUnit = Radians> = {
  * This type is used to represent a point in space in terms of south, east, and zenith.
  * It is a generic type that allows for flexibility in the units of measure used for each dimension.
  *
- * @template Units The unit of measure used for the dimensions.
- * This is typically a type representing a distance, such as kilometers or meters. The default is Kilometers.
- *
- * @property s The south dimension of the vector, representing the distance from the origin to
- * the point in the south direction.
- * @property e The east dimension of the vector, representing the distance from the origin to
- * the point in the east direction.
- * @property z The zenith dimension of the vector, representing the distance from the origin to
- * the point in the upward direction.
+ * @property s The south dimension of the vector
+ * @property e The east dimension of the vector
+ * @property z The zenith dimension of the vector
  */
-export type SezVec3<Units = Kilometers> = {
-  s: Units;
-  e: Units;
-  z: Units;
+export type SezVec3<D = Kilometers> = {
+  s: D;
+  e: D;
+  z: D;
 };
 
 /**
@@ -372,7 +366,7 @@ export interface SatelliteRecord {
  * This type is primarily used in the context of satellite tracking and prediction,
  * where it is crucial to know both the current position and velocity of a satellite.
  */
-export type StateVector = {
+export type StateVectorSgp4 = {
   position:
     | {
         x: number;
@@ -587,6 +581,14 @@ export type GreenwichMeanSiderealTime = Distinct<number, 'Greenwich Mean Siderea
 export type AzEl<Units = Radians> = {
   az: Units;
   el: Units;
+};
+
+/**
+ * Represents the coordinates of a celestial object in Right Ascension (RA) and Declination (Dec).
+ */
+export type RaDec = {
+  dec: Radians;
+  ra: Radians;
 };
 
 export interface RadarSensor extends Sensor {

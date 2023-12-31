@@ -40,347 +40,321 @@ import {
 } from '../types/types';
 import { DEG2RAD, PI, RAD2DEG, TAU } from '../utils/constants';
 
-class Transforms {
-  /**
-   * Converts Azimuth and Elevation to U and V.
-   * Azimuth is the angle off of boresight in the horizontal plane.
-   * Elevation is the angle off of boresight in the vertical plane.
-   * Cone half angle is the angle of the cone of the radar max field of view.
-   */
-  static azel2uv(az: Radians, el: Radians, coneHalfAngle: Radians): { u: Radians; v: Radians } {
-    if (az > coneHalfAngle && az < coneHalfAngle) {
-      throw new RangeError(`Azimuth is out of bounds: ${az}`);
-    }
-
-    if (el > coneHalfAngle && el < coneHalfAngle) {
-      throw new RangeError(`Elevation is out of bounds: ${el}`);
-    }
-
-    const alpha = (az / (coneHalfAngle * RAD2DEG)) * 90;
-    const beta = (el / (coneHalfAngle * RAD2DEG)) * 90;
-
-    const u = Math.sin(alpha) as Radians;
-    let v = -Math.sin(beta) as Radians;
-
-    v = Object.is(v, -0) ? (0 as Radians) : v;
-
-    return { u, v };
+/**
+ * Converts Azimuth and Elevation to U and V.
+ * Azimuth is the angle off of boresight in the horizontal plane.
+ * Elevation is the angle off of boresight in the vertical plane.
+ * Cone half angle is the angle of the cone of the radar max field of view.
+ */
+export function azel2uv(az: Radians, el: Radians, coneHalfAngle: Radians): { u: Radians; v: Radians } {
+  if (az > coneHalfAngle && az < coneHalfAngle) {
+    throw new RangeError(`Azimuth is out of bounds: ${az}`);
   }
 
-  static deg2rad(degrees: Degrees): Radians {
-    return <Radians>((degrees * PI) / 180.0);
+  if (el > coneHalfAngle && el < coneHalfAngle) {
+    throw new RangeError(`Elevation is out of bounds: ${el}`);
   }
 
-  static ecf2eci(ecf: EcfVec3, gmst: number): EciVec3 {
-    /*
-     * Ccar.colorado.edu/ASEN5070/handouts/coordsys.doc
-     *
-     * [X]     [C -S  0][X]
-     * [Y]  =  [S  C  0][Y]
-     * [Z]eci  [0  0  1][Z]ecf
-     *
-     */
-    const X = <Kilometers>(ecf.x * Math.cos(gmst) - ecf.y * Math.sin(gmst));
-    const Y = <Kilometers>(ecf.x * Math.sin(gmst) + ecf.y * Math.cos(gmst));
-    const Z = <Kilometers>ecf.z;
+  const alpha = (az / (coneHalfAngle * RAD2DEG)) * 90;
+  const beta = (el / (coneHalfAngle * RAD2DEG)) * 90;
 
-    return { x: X, y: Y, z: Z };
-  }
+  const u = Math.sin(alpha) as Radians;
+  let v = -Math.sin(beta) as Radians;
 
-  static ecf2enu(ecf: EcefVec3<Kilometers>, lla: LlaVec3): EnuVec3<Kilometers> {
-    const { lat, lon } = lla;
-    const { x, y, z } = ecf;
-    const e = (-Math.sin(lon) * x + Math.cos(lon) * y) as Kilometers;
-    const n = (-Math.sin(lat) * Math.cos(lon) * x -
-      Math.sin(lat) * Math.sin(lon) * y +
-      Math.cos(lat) * z) as Kilometers;
-    const u = (Math.cos(lat) * Math.cos(lon) * x + Math.cos(lat) * Math.sin(lon) * y + Math.sin(lat) * z) as Kilometers;
+  v = Object.is(v, -0) ? (0 as Radians) : v;
 
-    return { x: e, y: n, z: u };
-  }
-
-  static ecf2rae(lla: LlaVec3, ecf: EcfVec3): RaeVec3 {
-    const sezCoords = Transforms.lla2sez(lla, ecf);
-
-    return Transforms.sez2rae(sezCoords);
-  }
-
-  static eci2ecf(eci: EciVec3, gmst: number): EcfVec3 {
-    /*
-     * Ccar.colorado.edu/ASEN5070/handouts/coordsys.doc
-     *
-     * [X]     [C -S  0][X]
-     * [Y]  =  [S  C  0][Y]
-     * [Z]eci  [0  0  1][Z]ecf
-     *
-     *
-     * Inverse:
-     * [X]     [C  S  0][X]
-     * [Y]  =  [-S C  0][Y]
-     * [Z]ecf  [0  0  1][Z]eci
-     */
-
-    const x = <Kilometers>(eci.x * Math.cos(gmst) + eci.y * Math.sin(gmst));
-    const y = <Kilometers>(eci.x * -Math.sin(gmst) + eci.y * Math.cos(gmst));
-    const z = <Kilometers>eci.z;
-
-    return {
-      x,
-      y,
-      z,
-    };
-  }
-
-  /**
-   * EciToGeodetic converts eci coordinates to lla coordinates
-   * @param {vec3} eci takes xyz coordinates
-   * @param {number} gmst takes a number in gmst time
-   * @returns {array} array containing lla coordinates
-   */
-  static eci2lla(eci: EciVec3, gmst: number): LlaVec3 {
-    // http://www.celestrak.com/columns/v02n03/
-    const a = 6378.137;
-    const b = 6356.7523142;
-    const R = Math.sqrt(eci.x * eci.x + eci.y * eci.y);
-    const f = (a - b) / a;
-    const e2 = 2 * f - f * f;
-
-    let lon = Math.atan2(eci.y, eci.x) - gmst;
-
-    while (lon < -PI) {
-      lon += TAU;
-    }
-    while (lon > PI) {
-      lon -= TAU;
-    }
-
-    const kmax = 20;
-    let k = 0;
-    let lat = Math.atan2(eci.z, Math.sqrt(eci.x * eci.x + eci.y * eci.y));
-    let C: number;
-
-    while (k < kmax) {
-      C = 1 / Math.sqrt(1 - e2 * (Math.sin(lat) * Math.sin(lat)));
-      lat = Math.atan2(eci.z + a * C * e2 * Math.sin(lat), R);
-      k += 1;
-    }
-    const alt = R / Math.cos(lat) - a * C;
-
-    return { lon: <Radians>lon, lat: <Radians>lat, alt: <Kilometers>alt };
-  }
-
-  static enu2rf({ x, y, z }: EnuVec3<Kilometers>, az: Radians, el: Radians): RfVec3 {
-    const xrf = Math.cos(el) * Math.cos(az) * x - Math.sin(az) * y + Math.sin(el) * Math.cos(az) * z;
-    const yrf = Math.cos(el) * Math.sin(az) * x + Math.cos(az) * y + Math.sin(el) * Math.sin(az) * z;
-    const zrf = -Math.sin(el) * x + Math.cos(el) * z;
-
-    return {
-      x: xrf as Kilometers,
-      y: yrf as Kilometers,
-      z: zrf as Kilometers,
-    };
-  }
-
-  static getDegLat(radians: Radians): Degrees {
-    if (radians < -PI / 2 || radians > PI / 2) {
-      throw new RangeError('Latitude radians must be in range [-PI/2; PI/2].');
-    }
-
-    return Transforms.rad2deg(radians);
-  }
-
-  static getDegLon(radians: Radians): Degrees {
-    if (radians < -PI || radians > PI) {
-      throw new RangeError('Longitude radians must be in range [-PI; PI].');
-    }
-
-    return Transforms.rad2deg(radians);
-  }
-
-  static getRadLat(degrees: Degrees): Radians {
-    if (degrees < -90 || degrees > 90) {
-      throw new RangeError('Latitude degrees must be in range [-90; 90].');
-    }
-
-    return Transforms.deg2rad(degrees);
-  }
-
-  static getRadLon(degrees: Degrees): Radians {
-    if (degrees < -180 || degrees > 180) {
-      throw new RangeError('Longitude degrees must be in range [-180; 180].');
-    }
-
-    return Transforms.deg2rad(degrees);
-  }
-
-  /**
-   * Calculates Geodetic Lat Lon Alt to ECEF coordinates.
-   */
-  static lla2ecef(lla: LlaVec3): EcefVec3<Kilometers> {
-    const { lat, lon, alt } = lla;
-    const a = 6378.137; // semi-major axis length in meters according to the WGS84
-    const b = 6356.752314245; // semi-minor axis length in meters according to the WGS84
-    const e = Math.sqrt(1 - b ** 2 / a ** 2); // eccentricity
-    const N = a / Math.sqrt(1 - e ** 2 * Math.sin(lat) ** 2); // radius of curvature in the prime vertical
-    const x = ((N + alt) * Math.cos(lat) * Math.cos(lon)) as Kilometers;
-    const y = ((N + alt) * Math.cos(lat) * Math.sin(lon)) as Kilometers;
-    const z = ((N * (1 - e ** 2) + alt) * Math.sin(lat)) as Kilometers;
-
-    return { x, y, z };
-  }
-
-  static lla2ecf(lla: LlaVec3): EcfVec3 {
-    const { lon, lat, alt } = lla;
-
-    const a = 6378.137;
-    const b = 6356.7523142;
-    const f = (a - b) / a;
-    const e2 = 2 * f - f * f;
-    const normal = a / Math.sqrt(1 - e2 * (Math.sin(lat) * Math.sin(lat)));
-
-    const x = (normal + alt) * Math.cos(lat) * Math.cos(lon);
-    const y = (normal + alt) * Math.cos(lat) * Math.sin(lon);
-    const z = (normal * (1 - e2) + alt) * Math.sin(lat);
-
-    return {
-      x: <Kilometers>x,
-      y: <Kilometers>y,
-      z: <Kilometers>z,
-    };
-  }
-
-  static lla2sez(lla: LlaVec3, ecf: EcfVec3): SezVec3 {
-    /*
-     * http://www.celestrak.com/columns/v02n02/
-     * TS Kelso's method, except I'm using ECF frame
-     * and he uses ECI.
-     */
-
-    const { lon, lat } = lla;
-
-    const observerEcf = Transforms.lla2ecf(lla);
-
-    const rx = ecf.x - observerEcf.x;
-    const ry = ecf.y - observerEcf.y;
-    const rz = ecf.z - observerEcf.z;
-
-    // Top is short for topocentric
-    const south = Math.sin(lat) * Math.cos(lon) * rx + Math.sin(lat) * Math.sin(lon) * ry - Math.cos(lat) * rz;
-
-    const east = -Math.sin(lon) * rx + Math.cos(lon) * ry;
-
-    const zenith = Math.cos(lat) * Math.cos(lon) * rx + Math.cos(lat) * Math.sin(lon) * ry + Math.sin(lat) * rz;
-
-    return { s: <Kilometers>south, e: <Kilometers>east, z: <Kilometers>zenith };
-  }
-
-  static rad2deg(radians: Radians): Degrees {
-    return <Degrees>((radians * 180) / PI);
-  }
-
-  static rae2ecf(rae: RaeVec3, lla: LlaVec3): EcfVec3 {
-    const obsEcf = Transforms.lla2ecf(lla);
-    const sez = Transforms.rae2sez(rae);
-
-    // Some needed calculations
-    const slat = Math.sin(lla.lat);
-    const slon = Math.sin(lla.lon);
-    const clat = Math.cos(lla.lat);
-    const clon = Math.cos(lla.lon);
-
-    const x = slat * clon * sez.s + -slon * sez.e + clat * clon * sez.z + obsEcf.x;
-    const y = slat * slon * sez.s + clon * sez.e + clat * slon * sez.z + obsEcf.y;
-    const z = -clat * sez.s + slat * sez.z + obsEcf.z;
-
-    return { x: <Kilometers>x, y: <Kilometers>y, z: <Kilometers>z };
-  }
-
-  static rae2enu(rae: RaeVec3): EnuVec3<Kilometers> {
-    const e = (rae.rng * Math.cos(rae.el) * Math.sin(rae.az)) as Kilometers;
-    const n = (rae.rng * Math.cos(rae.el) * Math.cos(rae.az)) as Kilometers;
-    const u = (rae.rng * Math.sin(rae.el)) as Kilometers;
-
-    return { x: e, y: n, z: u };
-  }
-
-  /**
-   * Determine azimuth and elevation off of boresight based on sensor orientation and RAE.
-   *
-   * @param {rae} rae Range, Azimuth, Elevation
-   * @param {RadarSensor} sensor Radar sensor object
-   * @returns {az, el} Azimuth and Elevation off of boresight
-   */
-  static rae2raeOffBoresight(rae: RaeVec3, sensor: RadarSensor, maxSensorAz: Degrees): { az: Radians; el: Radians } {
-    // Correct azimuth for sensor orientation.
-    rae.az = rae.az > maxSensorAz * DEG2RAD ? ((rae.az - TAU) as Radians) : rae.az;
-
-    const az = (rae.az - sensor.boresight.az) as Radians;
-    const el = (rae.el - sensor.boresight.el) as Radians;
-
-    return { az, el };
-  }
-
-  /**
-   * Converts Range Az El to Range U V.
-   */
-  static rae2ruv(rae: RaeVec3, sensor: RadarSensor, maxSensorAz: Degrees): RuvVec3 {
-    const { az, el } = this.rae2raeOffBoresight(rae, sensor, maxSensorAz);
-    const { u, v } = this.azel2uv(az, el, sensor.coneHalfAngle);
-
-    return { rng: rae.rng, u, v };
-  }
-
-  static rae2sez(rae: RaeVec3): SezVec3 {
-    // Az,el,range to sez convertion
-    const south = -rae.rng * Math.cos(rae.el) * Math.cos(rae.az);
-    const east = rae.rng * Math.cos(rae.el) * Math.sin(rae.az);
-    const zenith = rae.rng * Math.sin(rae.el);
-
-    return {
-      s: <Kilometers>south,
-      e: <Kilometers>east,
-      z: <Kilometers>zenith,
-    };
-  }
-
-  /**
-   * @param {Object} sez Containing SEZ coordinates
-   * @param {Number} sez.s Positive horizontal vector S due south.
-   * @param {Number} sez.e Positive horizontal vector E due east.
-   * @param {Number} sez.z Vector Z normal to the surface of the earth (up).
-   * @returns {RaeVec3} Rng, Az, El array
-   */
-  static sez2rae(sez: SezVec3): RaeVec3 {
-    const rng = <Kilometers>Math.sqrt(sez.s * sez.s + sez.e * sez.e + sez.z * sez.z);
-    const el = <Radians>Math.asin(sez.z / rng);
-    const az = <Radians>(Math.atan2(-sez.e, sez.s) + PI);
-
-    return <RaeVec3>{
-      rng,
-      az,
-      el,
-    };
-  }
-
-  /**
-   * Converts U and V to Azimuth and Elevation off of boresight.
-   */
-  static uv2azel(u: Radians, v: Radians, coneHalfAngle: Radians): { az: Radians; el: Radians } {
-    if (u > 1 || u < -1) {
-      throw new RangeError(`u is out of bounds: ${u}`);
-    }
-
-    if (v > 1 || v < -1) {
-      throw new RangeError(`v is out of bounds: ${v}`);
-    }
-
-    const alpha = Math.asin(u) as Radians;
-    const beta = Math.asin(v) as Radians;
-    const az = ((alpha / 90) * (coneHalfAngle * RAD2DEG)) as Radians;
-    const el = ((beta / 90) * (coneHalfAngle * RAD2DEG)) as Radians;
-
-    return { az, el };
-  }
+  return { u, v };
 }
 
-export { Transforms };
+/**
+ * Converts ECF to ECI coordinates.
+ *
+ * [X]     [C -S  0][X]
+ * [Y]  =  [S  C  0][Y]
+ * [Z]eci  [0  0  1][Z]ecf
+ *
+ */
+export function ecf2eci<T extends number>(ecf: EcfVec3<T>, gmst: number): EciVec3<T> {
+  const X = (ecf.x * Math.cos(gmst) - ecf.y * Math.sin(gmst)) as T;
+  const Y = (ecf.x * Math.sin(gmst) + ecf.y * Math.cos(gmst)) as T;
+  const Z = ecf.z;
+
+  return { x: X, y: Y, z: Z };
+}
+
+/**
+ * Converts ECEF coordinates to ENU coordinates.
+ * @param ecf - The ECEF coordinates.
+ * @param lla - The LLA coordinates.
+ * @returns The ENU coordinates.
+ */
+export function ecf2enu<T extends number>(ecf: EcefVec3<T>, lla: LlaVec3): EnuVec3<T> {
+  const { lat, lon } = lla;
+  const { x, y, z } = ecf;
+  const e = (-Math.sin(lon) * x + Math.cos(lon) * y) as T;
+  const n = (-Math.sin(lat) * Math.cos(lon) * x - Math.sin(lat) * Math.sin(lon) * y + Math.cos(lat) * z) as T;
+  const u = (Math.cos(lat) * Math.cos(lon) * x + Math.cos(lat) * Math.sin(lon) * y + Math.sin(lat) * z) as T;
+
+  return { x: e, y: n, z: u };
+}
+
+/**
+ * Converts ECI to ECF coordinates.
+ *
+ * [X]     [C -S  0][X]
+ * [Y]  =  [S  C  0][Y]
+ * [Z]eci  [0  0  1][Z]ecf
+ *
+ * Inverse:
+ * [X]     [C  S  0][X]
+ * [Y]  =  [-S C  0][Y]
+ * [Z]ecf  [0  0  1][Z]eci
+ */
+export function eci2ecf<T extends number>(eci: EciVec3<T>, gmst: number): EcfVec3<T> {
+  const x = <T>(eci.x * Math.cos(gmst) + eci.y * Math.sin(gmst));
+  const y = <T>(eci.x * -Math.sin(gmst) + eci.y * Math.cos(gmst));
+  const z = eci.z;
+
+  return {
+    x,
+    y,
+    z,
+  };
+}
+
+/**
+ * EciToGeodetic converts eci coordinates to lla coordinates
+ * @param {vec3} eci takes xyz coordinates
+ * @param {number} gmst takes a number in gmst time
+ * @returns {array} array containing lla coordinates
+ */
+export function eci2lla(eci: EciVec3, gmst: number): LlaVec3 {
+  // http://www.celestrak.com/columns/v02n03/
+  const a = 6378.137;
+  const b = 6356.7523142;
+  const R = Math.sqrt(eci.x * eci.x + eci.y * eci.y);
+  const f = (a - b) / a;
+  const e2 = 2 * f - f * f;
+
+  let lon = Math.atan2(eci.y, eci.x) - gmst;
+
+  while (lon < -PI) {
+    lon += TAU;
+  }
+  while (lon > PI) {
+    lon -= TAU;
+  }
+
+  const kmax = 20;
+  let k = 0;
+  let lat = Math.atan2(eci.z, Math.sqrt(eci.x * eci.x + eci.y * eci.y));
+  let C: number;
+
+  while (k < kmax) {
+    C = 1 / Math.sqrt(1 - e2 * (Math.sin(lat) * Math.sin(lat)));
+    lat = Math.atan2(eci.z + a * C * e2 * Math.sin(lat), R);
+    k += 1;
+  }
+  const alt = R / Math.cos(lat) - a * C;
+
+  return { lon: <Radians>lon, lat: <Radians>lat, alt: <Kilometers>alt };
+}
+
+/**
+ * Converts coordinates from East-North-Up (ENU) to Right-Front-Up (RF) coordinate system.
+ * @param {EnuVec3<D>} enu - The ENU coordinates to be converted.
+ * @param {A} az - The azimuth angle in radians.
+ * @param {A} el - The elevation angle in radians.
+ * @returns {RfVec3} The converted RF coordinates.
+ */
+export function enu2rf<D extends number, A extends number = Radians>({ x, y, z }: EnuVec3<D>, az: A, el: A): RfVec3<D> {
+  const xrf = Math.cos(el) * Math.cos(az) * x - Math.sin(az) * y + Math.sin(el) * Math.cos(az) * z;
+  const yrf = Math.cos(el) * Math.sin(az) * x + Math.cos(az) * y + Math.sin(el) * Math.sin(az) * z;
+  const zrf = -Math.sin(el) * x + Math.cos(el) * z;
+
+  return {
+    x: xrf as D,
+    y: yrf as D,
+    z: zrf as D,
+  };
+}
+
+/**
+ * Calculates Geodetic Lat Lon Alt to ECEF coordinates.
+ */
+export function lla2ecf<A extends number, D extends number>(lla: LlaVec3<A, D>): EcefVec3<D> {
+  const { lat, lon, alt } = lla;
+  const a = 6378.137; // semi-major axis length in meters according to the WGS84
+  const b = 6356.752314245; // semi-minor axis length in meters according to the WGS84
+  const e = Math.sqrt(1 - b ** 2 / a ** 2); // eccentricity
+  const N = a / Math.sqrt(1 - e ** 2 * Math.sin(lat) ** 2); // radius of curvature in the prime vertical
+  const x = ((N + alt) * Math.cos(lat) * Math.cos(lon)) as D;
+  const y = ((N + alt) * Math.cos(lat) * Math.sin(lon)) as D;
+  const z = ((N * (1 - e ** 2) + alt) * Math.sin(lat)) as D;
+
+  return { x, y, z };
+}
+
+/**
+ * Converts LLA to SEZ coordinates.
+ * @see http://www.celestrak.com/columns/v02n02/
+ */
+export function lla2sez<A extends number, D extends number>(lla: LlaVec3<A, D>, ecf: EcfVec3<D>): SezVec3<D> {
+  const { lon, lat } = lla;
+
+  const observerEcf = lla2ecf(lla);
+
+  const rx = ecf.x - observerEcf.x;
+  const ry = ecf.y - observerEcf.y;
+  const rz = ecf.z - observerEcf.z;
+
+  // Top is short for topocentric
+  const south = Math.sin(lat) * Math.cos(lon) * rx + Math.sin(lat) * Math.sin(lon) * ry - Math.cos(lat) * rz;
+
+  const east = -Math.sin(lon) * rx + Math.cos(lon) * ry;
+
+  const zenith = Math.cos(lat) * Math.cos(lon) * rx + Math.cos(lat) * Math.sin(lon) * ry + Math.sin(lat) * rz;
+
+  return { s: <D>south, e: <D>east, z: <D>zenith };
+}
+
+/**
+ * Converts a vector in Right Ascension, Elevation, and Range (RAE) coordinate system
+ * to a vector in South, East, and Zenith (SEZ) coordinate system.
+ *
+ * @param rae The vector in RAE coordinate system.
+ * @returns The vector in SEZ coordinate system.
+ */
+export function rae2sez<D extends number, A extends number>(rae: RaeVec3<D, A>): SezVec3<D> {
+  const south = -rae.rng * Math.cos(rae.el) * Math.cos(rae.az);
+  const east = rae.rng * Math.cos(rae.el) * Math.sin(rae.az);
+  const zenith = rae.rng * Math.sin(rae.el);
+
+  return {
+    s: <D>south,
+    e: <D>east,
+    z: <D>zenith,
+  };
+}
+
+/**
+ * Converts a vector in Right Ascension, Elevation, and Range (RAE) coordinate system
+ * to Earth-Centered Fixed (ECF) coordinate system.
+ *
+ * @template D - The dimension of the RAE vector.
+ * @template A - The dimension of the LLA vector.
+ * @param rae - The vector in RAE coordinate system.
+ * @param lla - The vector in LLA coordinate system.
+ * @returns The vector in ECF coordinate system.
+ */
+export function rae2ecf<D extends number, A extends number>(rae: RaeVec3<D, A>, lla: LlaVec3<A, D>): EcfVec3<D> {
+  const obsEcf = lla2ecf(lla);
+  const sez = rae2sez(rae);
+
+  // Some needed calculations
+  const slat = Math.sin(lla.lat);
+  const slon = Math.sin(lla.lon);
+  const clat = Math.cos(lla.lat);
+  const clon = Math.cos(lla.lon);
+
+  const x = slat * clon * sez.s + -slon * sez.e + clat * clon * sez.z + obsEcf.x;
+  const y = slat * slon * sez.s + clon * sez.e + clat * slon * sez.z + obsEcf.y;
+  const z = -clat * sez.s + slat * sez.z + obsEcf.z;
+
+  return { x, y, z } as EcfVec3<D>;
+}
+
+/**
+ * Converts a vector in RAE (Range, Azimuth, Elevation) coordinates to ENU (East, North, Up) coordinates.
+ * @param rae - The vector in RAE coordinates.
+ * @returns The vector in ENU coordinates.
+ */
+export function rae2enu(rae: RaeVec3): EnuVec3<Kilometers> {
+  const e = (rae.rng * Math.cos(rae.el) * Math.sin(rae.az)) as Kilometers;
+  const n = (rae.rng * Math.cos(rae.el) * Math.cos(rae.az)) as Kilometers;
+  const u = (rae.rng * Math.sin(rae.el)) as Kilometers;
+
+  return { x: e, y: n, z: u };
+}
+
+/**
+ * Determine azimuth and elevation off of boresight based on sensor orientation and RAE.
+ *
+ * @param {rae} rae Range, Azimuth, Elevation
+ * @param {RadarSensor} sensor Radar sensor object
+ * @returns {az, el} Azimuth and Elevation off of boresight
+ */
+export function rae2raeOffBoresight(
+  rae: RaeVec3,
+  sensor: RadarSensor,
+  maxSensorAz: Degrees,
+): { az: Radians; el: Radians } {
+  // Correct azimuth for sensor orientation.
+  rae.az = rae.az > maxSensorAz * DEG2RAD ? ((rae.az - TAU) as Radians) : rae.az;
+
+  const az = (rae.az - sensor.boresight.az) as Radians;
+  const el = (rae.el - sensor.boresight.el) as Radians;
+
+  return { az, el };
+}
+
+/**
+ * Converts Range Az El to Range U V.
+ */
+export function rae2ruv(rae: RaeVec3, sensor: RadarSensor, maxSensorAz: Degrees): RuvVec3 {
+  const { az, el } = rae2raeOffBoresight(rae, sensor, maxSensorAz);
+  const { u, v } = azel2uv(az, el, sensor.coneHalfAngle);
+
+  return { rng: rae.rng, u, v };
+}
+
+/**
+ * Converts South, East, and Zenith (SEZ) coordinates to Right Ascension, Elevation, and Range (RAE) coordinates.
+ * @param sez The SEZ coordinates.
+ * @returns {RaeVec3} Rng, Az, El array
+ */
+export function sez2rae<D extends number, A extends number>(sez: SezVec3<D>): RaeVec3<D, A> {
+  const rng = <D>Math.sqrt(sez.s * sez.s + sez.e * sez.e + sez.z * sez.z);
+  const el = <A>Math.asin(sez.z / rng);
+  const az = <A>(Math.atan2(-sez.e, sez.s) + PI);
+
+  return { rng, az, el };
+}
+
+/**
+ * Converts U and V to Azimuth and Elevation off of boresight.
+ *
+ * @param u The U coordinate.
+ * @param v The V coordinate.
+ * @param coneHalfAngle The cone half angle of the radar.
+ */
+export function uv2azel(u: Radians, v: Radians, coneHalfAngle: Radians): { az: Radians; el: Radians } {
+  if (u > 1 || u < -1) {
+    throw new RangeError(`u is out of bounds: ${u}`);
+  }
+
+  if (v > 1 || v < -1) {
+    throw new RangeError(`v is out of bounds: ${v}`);
+  }
+
+  const alpha = Math.asin(u) as Radians;
+  const beta = Math.asin(v) as Radians;
+  const az = ((alpha / 90) * (coneHalfAngle * RAD2DEG)) as Radians;
+  const el = ((beta / 90) * (coneHalfAngle * RAD2DEG)) as Radians;
+
+  return { az, el };
+}
+
+/**
+ * Converts Earth-Centered Fixed (ECF) coordinates to Right Ascension (RA),
+ * Elevation (E), and Azimuth (A) coordinates.
+ *
+ * @param lla The Latitude, Longitude, and Altitude (LLA) coordinates.
+ * @param ecf The Earth-Centered Fixed (ECF) coordinates.
+ * @returns The Right Ascension (RA), Elevation (E), and Azimuth (A) coordinates.
+ */
+export function ecf2rae<A extends number, D extends number>(lla: LlaVec3<A, D>, ecf: EcfVec3<D>): RaeVec3<D, A> {
+  const sezCoords = lla2sez(lla, ecf);
+
+  return sez2rae(sezCoords);
+}

@@ -1,4 +1,4 @@
-import { EciVec3, SatelliteRecord, StateVector } from '@src/ootk';
+import { EciVec3, SatelliteRecord, StateVectorSgp4 } from '@src/ootk';
 import { Sgp4, Sgp4GravConstants } from '@src/sgp4/sgp4';
 import { Earth } from '../body/Earth';
 import { deg2rad, rad2deg, secondsPerDay, tau } from '../operations/constants';
@@ -131,7 +131,7 @@ export class TLE {
     return new TEME(epoch, new Vector3D(r[0], r[1], r[2]), new Vector3D(v[0], v[1], v[2]));
   }
 
-  private static sv2rv_(stateVector: StateVector, r: Float64Array, v: Float64Array) {
+  private static sv2rv_(stateVector: StateVectorSgp4, r: Float64Array, v: Float64Array) {
     const pos = stateVector.position as EciVec3;
     const vel = stateVector.velocity as EciVec3;
 
