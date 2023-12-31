@@ -5,6 +5,7 @@ import { angularDiameter, AngularDiameterMethod } from '../operations/functions'
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { DEG2RAD, MS_PER_DAY } from '../utils/constants';
+import { Celestial } from './Celestial';
 import { Earth } from './Earth';
 
 /**
@@ -14,7 +15,7 @@ export class Sun {
   private static readonly J0_ = 0.0009;
   private static readonly J1970_ = 2440587.5;
   private static readonly J2000_ = 2451545;
-  private static readonly e_ = DEG2RAD * 23.4397;
+  static readonly e = DEG2RAD * 23.4397;
 
   /**
    * Array representing the times for different phases of the sun.
@@ -83,8 +84,8 @@ export class Sun {
     const H = Sun.siderealTime(d, lw) - c.ra;
 
     return {
-      az: Sun.azimuth_(H, phi, c.dec),
-      el: Sun.elevation_(H, phi, c.dec),
+      az: Celestial.azimuth(H, phi, c.dec),
+      el: Celestial.elevation(H, phi, c.dec),
     };
   }
 
@@ -241,7 +242,7 @@ export class Sun {
       const d = Sun.date2jSince2000(newDate);
       const c = Sun.raDec(newDate);
       const H = Sun.siderealTime(d, lw) - c.ra;
-      const newAz = Sun.azimuth_(H, phi, c.dec);
+      const newAz = Celestial.azimuth(H, phi, c.dec);
 
       addval /= 2;
       if (newAz < az) {
@@ -432,8 +433,8 @@ export class Sun {
     const L = Sun.eclipticLongitude(M);
 
     return {
-      dec: Sun.declination_(L, 0),
-      ra: Sun.rightAscension_(L, 0),
+      dec: Celestial.declination(L, 0),
+      ra: Celestial.rightAscension(L, 0),
     };
   }
 
@@ -491,17 +492,6 @@ export class Sun {
     return Sun.J0_ + (Ht + lw) / tau + n;
   }
 
-  /**
-   * get azimuth
-   * @param {number} H - siderealTime
-   * @param {Radians} phi - latitude
-   * @param {Radians} dec - The declination of the sun
-   * @returns {Radians} azimuth in rad
-   */
-  private static azimuth_(H: number, phi: Radians, dec: Radians): Radians {
-    return <Radians>(Math.PI + Math.atan2(Math.sin(H), Math.cos(H) * Math.sin(phi) - Math.tan(dec) * Math.cos(phi)));
-  }
-
   private static calculateJnoon_(lon: Degrees, lat: Degrees, alt: Meters, date: Date) {
     const lw = <Radians>(DEG2RAD * -lon);
     const phi = <Radians>(DEG2RAD * lat);
@@ -512,31 +502,10 @@ export class Sun {
     const ds = Sun.approxTransit_(0, lw, n);
     const M = Sun.solarMeanAnomaly_(ds);
     const L = Sun.eclipticLongitude(M);
-    const dec = Sun.declination_(L, 0);
+    const dec = Celestial.declination(L, 0);
     const Jnoon = Sun.solarTransitJulian(ds, M, L);
 
     return { Jnoon, dh, lw, phi, dec, n, M, L };
-  }
-
-  /**
-   * get declination
-   * @param {number} l - ecliptic longitude
-   * @param {number} b - ecliptic latitude
-   * @returns {number} declination
-   */
-  private static declination_(l: number, b: number): Radians {
-    return <Radians>Math.asin(Math.sin(b) * Math.cos(Sun.e_) + Math.cos(b) * Math.sin(Sun.e_) * Math.sin(l));
-  }
-
-  /**
-   * get elevation (sometimes called altitude)
-   * @param {number} H - siderealTime
-   * @param {Radians} phi - latitude
-   * @param {Radians} dec - The declination of the sun
-   * @returns {Radians} elevation
-   */
-  private static elevation_(H: number, phi: Radians, dec: Radians): Radians {
-    return <Radians>Math.asin(Math.sin(phi) * Math.sin(dec) + Math.cos(phi) * Math.cos(dec) * Math.cos(H));
   }
 
   /**
@@ -578,16 +547,6 @@ export class Sun {
    */
   private static observerAngle_(alt: Meters): Degrees {
     return <Degrees>((-2.076 * Math.sqrt(alt)) / 60);
-  }
-
-  /**
-   * get right ascension
-   * @param {number} l - ecliptic longitude
-   * @param {number} b - ecliptic latitude
-   * @returns {number} right ascension
-   */
-  private static rightAscension_(l: number, b: number): Radians {
-    return <Radians>Math.atan2(Math.sin(l) * Math.cos(Sun.e_) - Math.tan(b) * Math.sin(Sun.e_), Math.cos(l));
   }
 
   /**

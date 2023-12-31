@@ -589,6 +589,7 @@ export type AzEl<Units = Radians> = {
 export type RaDec = {
   dec: Radians;
   ra: Radians;
+  dist?: Kilometers;
 };
 
 export interface RadarSensor extends Sensor {

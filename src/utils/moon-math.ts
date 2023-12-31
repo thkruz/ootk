@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (OOTK) is a collection of tools for working
  * with satellites and other orbital objects.
  *
- * @file MoonMath is a an extension to SunMath for calculating the position of the moon
+ * @file MoonMath is a an extension to Sun for calculating the position of the moon
  * and its phases. This was originally created by Vladimir Agafonkin. Robert Gester's
  * update was referenced for documentation. There were a couple of bugs in both versions
  * so there will be some differences if you are migrating from either to this library.
@@ -34,10 +34,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Degrees, Radians } from '../ootk';
+import { Celestial } from '@src/body/Celestial';
+import { Sun } from '@src/body/Sun';
+import { Degrees, Kilometers, RaDec, Radians } from '../ootk';
 import { MS_PER_DAY } from '../utils/constants';
 import { DEG2RAD } from './constants';
-import { SunMath } from './sun-math';
 
 type MoonIlluminationData = {
   fraction: number;
@@ -183,8 +184,9 @@ export class MoonMath {
 
     const lunarDaysMs = 2551442778; // The duration in days of a lunar cycle is 29.53058770576 days.
     const firstNewMoon2000 = 947178840000; // first newMoon in the year 2000 2000-01-06 18:14
-    const d = SunMath.date2jSince2000(new Date(dateValue));
-    const s = SunMath.getSunRaDec(d);
+    const dateObj = new Date(dateValue);
+    const d = Sun.date2jSince2000(dateObj);
+    const s = Sun.raDec(dateObj);
     const m = MoonMath.moonCoords(d);
     const sdist = 149598000; // distance from Earth to Sun in km
     const phi = Math.acos(
@@ -231,11 +233,9 @@ export class MoonMath {
     // eslint-disable-next-line init-declarations
     let phase;
 
-    for (let index = 0; index < MoonMath.moonCycles_.length; index++) {
-      const element = MoonMath.moonCycles_[index];
-
-      if (phaseValue >= element.from && phaseValue <= element.to) {
-        phase = element;
+    for (const moonCycle of MoonMath.moonCycles_) {
+      if (phaseValue >= moonCycle.from && phaseValue <= moonCycle.to) {
+        phase = moonCycle;
         break;
       }
     }
@@ -284,17 +284,17 @@ export class MoonMath {
   static getMoonPosition(date: Date, lat: Degrees, lon: Degrees) {
     const lw = <Radians>(DEG2RAD * -lon);
     const phi = <Radians>(DEG2RAD * lat);
-    const d = SunMath.date2jSince2000(date);
+    const d = Sun.date2jSince2000(date);
     const c = MoonMath.moonCoords(d);
-    const H = SunMath.siderealTime(d, lw) - c.ra;
-    let h = SunMath.elevation(H, phi, c.dec);
+    const H = Sun.siderealTime(d, lw) - c.ra;
+    let h = Celestial.elevation(H, phi, c.dec);
     // formula 14.1 of "Astronomical Algorithms" 2nd edition by Jean Meeus (Willmann-Bell, Richmond) 1998.
     const pa = Math.atan2(Math.sin(H), Math.tan(phi) * Math.cos(c.dec) - Math.sin(c.dec) * Math.cos(H));
 
-    h = <Radians>(h + SunMath.astroRefraction(h)); // altitude correction for refraction
+    h = <Radians>(h + Celestial.astroRefraction(h)); // altitude correction for refraction
 
     return {
-      az: SunMath.azimuth(H, phi, c.dec),
+      az: Celestial.azimuth(H, phi, c.dec),
       el: h,
       rng: c.dist,
       parallacticAngle: pa,
@@ -365,7 +365,7 @@ export class MoonMath {
     return new Date(date.getTime() + (h * MS_PER_DAY) / 24);
   }
 
-  static moonCoords(d) {
+  static moonCoords(d): RaDec {
     // geocentric ecliptic coordinates of the moon
 
     const L = DEG2RAD * (218.316 + 13.176396 * d); // ecliptic longitude
@@ -376,9 +376,9 @@ export class MoonMath {
     const dt = 385001 - 20905 * Math.cos(M); // distance to the moon in km
 
     return {
-      ra: SunMath.rightAscension(l, b),
-      dec: SunMath.declination(l, b),
-      dist: dt,
+      ra: Celestial.rightAscension(l, b),
+      dec: Celestial.declination(l, b),
+      dist: dt as Kilometers,
     };
   }
 
