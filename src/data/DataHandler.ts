@@ -13,7 +13,7 @@ import { leapSecondData } from './values/LeapSecondData';
  * [getInstance] method.
  */
 export class DataHandler {
-  private static instance_: DataHandler = new DataHandler();
+  private static instance_ = new DataHandler();
 
   private constructor() {
     // Prevent instantiation.
