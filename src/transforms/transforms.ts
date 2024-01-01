@@ -23,12 +23,14 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Sensor, Sgp4, Utils } from '@src/ootk';
 import {
   Degrees,
   EcefVec3,
   EcfVec3,
   EciVec3,
   EnuVec3,
+  GreenwichMeanSiderealTime,
   Kilometers,
   LlaVec3,
   RadarSensor,
@@ -38,7 +40,7 @@ import {
   RuvVec3,
   SezVec3,
 } from '../types/types';
-import { DEG2RAD, PI, RAD2DEG, TAU } from '../utils/constants';
+import { DAY_TO_MS, DEG2RAD, PI, RAD2DEG, TAU } from '../utils/constants';
 
 /**
  * Converts Azimuth and Elevation to U and V.
@@ -183,9 +185,34 @@ export function enu2rf<D extends number, A extends number = Radians>({ x, y, z }
 }
 
 /**
- * Calculates Geodetic Lat Lon Alt to ECEF coordinates.
+ * Calculates Geodetic Lat Lon Alt to ECF coordinates.
  */
-export function lla2ecf<D extends number>(lla: LlaVec3<Radians, D>): EcefVec3<D> {
+export function lla2ecf<D extends number>(lla: LlaVec3<Radians, D>): EcfVec3<D> {
+  const { lon, lat, alt } = lla;
+
+  const a = 6378.137;
+  const b = 6356.7523142;
+  const f = (a - b) / a;
+  const e2 = 2 * f - f * f;
+  const normal = a / Math.sqrt(1 - e2 * (Math.sin(lat) * Math.sin(lat)));
+
+  const x = (normal + alt) * Math.cos(lat) * Math.cos(lon);
+  const y = (normal + alt) * Math.cos(lat) * Math.sin(lon);
+  const z = (normal * (1 - e2) + alt) * Math.sin(lat);
+
+  return {
+    x: <D>x,
+    y: <D>y,
+    z: <D>z,
+  };
+}
+
+/**
+ * Calculates Geodetic Lat Lon Alt to ECEF coordinates.
+ *
+ * @deprecated This needs to be validated.
+ */
+export function lla2ecef<D extends number>(lla: LlaVec3<Degrees, D>): EcefVec3<D> {
   const { lat, lon, alt } = lla;
   const a = 6378.137; // semi-major axis length in meters according to the WGS84
   const b = 6356.752314245; // semi-minor axis length in meters according to the WGS84
@@ -202,13 +229,13 @@ export function lla2ecf<D extends number>(lla: LlaVec3<Radians, D>): EcefVec3<D>
  * Converts LLA to SEZ coordinates.
  * @see http://www.celestrak.com/columns/v02n02/
  */
-export function lla2sez<D extends number>(lla: LlaVec3<Degrees, D>, ecf: EcfVec3<D>): SezVec3<D> {
-  const lat = (lla.lat * DEG2RAD) as Radians;
-  const lon = (lla.lon * DEG2RAD) as Radians;
+export function lla2sez<D extends number>(lla: LlaVec3<Radians, D>, ecf: EcfVec3<D>): SezVec3<D> {
+  const lat = lla.lat;
+  const lon = lla.lon;
 
   const observerEcf = lla2ecf({
-    lat: (lla.lat * DEG2RAD) as Radians,
-    lon: (lla.lon * DEG2RAD) as Radians,
+    lat,
+    lon,
     alt: <Kilometers>0,
   });
 
@@ -375,13 +402,57 @@ export function uv2azel(u: Radians, v: Radians, coneHalfAngle: Radians): { az: R
  * @param ecf The Earth-Centered Fixed (ECF) coordinates.
  * @returns The Right Ascension (RA), Elevation (E), and Azimuth (A) coordinates.
  */
-export function ecf2rae<D extends number>(lla: LlaVec3<Degrees, D>, ecf: EcfVec3<D>): RaeVec3<D, Degrees> {
+export function ecf2rae<D extends number>(lla: LlaVec3<Radians, D>, ecf: EcfVec3<D>): RaeVec3<D, Degrees> {
   const sezCoords = lla2sez(lla, ecf);
   const rae = sez2rae(sezCoords);
 
-  return {
-    rng: rae.rng,
-    az: (rae.az * RAD2DEG) as Degrees,
-    el: (rae.el * RAD2DEG) as Degrees,
+  return { rng: rae.rng, az: (rae.az * RAD2DEG) as Degrees, el: (rae.el * RAD2DEG) as Degrees };
+}
+
+/**
+ * Calculates the Greenwich Mean Sidereal Time (GMST) for a given date.
+ *
+ * @param date - The date for which to calculate the GMST.
+ * @returns An object containing the GMST value and the Julian date.
+ */
+export function calcGmst(date: Date): { gmst: GreenwichMeanSiderealTime; j: number } {
+  const j =
+    Utils.jday(
+      date.getUTCFullYear(),
+      date.getUTCMonth() + 1,
+      date.getUTCDate(),
+      date.getUTCHours(),
+      date.getUTCMinutes(),
+      date.getUTCSeconds(),
+    ) +
+    date.getUTCMilliseconds() * DAY_TO_MS;
+
+  const gmst = Sgp4.gstime(j);
+
+  return { gmst, j };
+}
+
+/**
+ * Converts ECI coordinates to RAE (Right Ascension, Azimuth, Elevation) coordinates.
+ * @param {Date} now - Current date and time.
+ * @param {EciArr3} eci - ECI coordinates of the satellite.
+ * @param {SensorObject} sensor - Sensor object containing observer's geodetic coordinates.
+ * @returns {Object} Object containing azimuth, elevation and range in degrees and kilometers respectively.
+ */
+export function eci2rae(
+  now: Date,
+  eci: EciVec3<Kilometers>,
+  sensor: Sensor,
+): { az: Degrees; el: Degrees; rng: Kilometers } {
+  now = new Date(now);
+  const { gmst } = calcGmst(now);
+
+  const positionEcf = eci2ecf(eci, gmst);
+  const lla = {
+    lat: (sensor.lat * DEG2RAD) as Radians,
+    lon: (sensor.lon * DEG2RAD) as Radians,
+    alt: sensor.alt,
   };
+
+  return ecf2rae(lla, positionEcf);
 }

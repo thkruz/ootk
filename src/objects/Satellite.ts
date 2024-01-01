@@ -265,7 +265,13 @@ export class Satellite {
     const eci = this.getEci(date).position;
     const ecf = Transforms.eci2ecf(eci, gmst);
 
-    return Transforms.ecf2rae(sensor, ecf);
+    const lla = {
+      lat: (sensor.lat * DEG2RAD) as Radians,
+      lon: (sensor.lon * DEG2RAD) as Radians,
+      alt: sensor.alt,
+    };
+
+    return Transforms.ecf2rae(lla, ecf);
   }
 
   /**

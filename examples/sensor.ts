@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
 import { Satellite } from '@src/objects/Satellite';
+import { calcGmst, ecf2eci, eci2lla, eci2rae } from '@src/transforms/transforms';
+import { DEG2RAD } from '@src/utils/constants';
 import { Sensor } from '../src/objects';
 import { Degrees, Kilometers, SpaceObjectType, TleLine1, TleLine2, Transforms } from '../src/ootk';
 
@@ -30,15 +32,28 @@ const sat = new Satellite({
 
 const date = new Date('2023-12-31T20:51:19.934Z');
 
-const rae = Transforms.ecf2rae(testSensor, {
+const ecf = {
   x: 4000 as Kilometers,
   y: 7000 as Kilometers,
   z: 3000 as Kilometers,
-});
+};
+// const ecf2 = { x: 982.8336640053099, y: -6779.137352354403, z: 3813.7284924837254 } as EcfVec3<Kilometers>;
+
+const rae = Transforms.ecf2rae(testSensor, ecf);
+
+const { gmst } = calcGmst(date);
+const rae2 = eci2rae(date, ecf2eci(ecf, gmst), testSensor);
+const lla = eci2lla(ecf2eci(ecf, gmst), gmst);
 
 console.log(rae);
+console.log(rae2);
+console.log({
+  lat: lla.lat * DEG2RAD,
+  lon: lla.lon * DEG2RAD,
+  alt: lla.alt,
+});
 
 // sat.propagateTo(date);
 
-// console.log(sat.raeOpt(capeCodRadar, date));
-console.log(sat.getJ2000().inertial);
+console.log(sat.raeOpt(testSensor, date));
+console.log(sat.getJ2000(date).toITRF().toGeodetic());

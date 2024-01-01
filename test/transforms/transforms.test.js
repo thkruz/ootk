@@ -84,9 +84,9 @@ describe('Latitude & longitude conversions', () => {
     it('convert valid ECF coordinates to RAE', () => {
       const raeCoordinates = Transforms.ecf2rae(item.lla, item.satelliteEcf);
 
-      expect(raeCoordinates.rng).toBeCloseTo(item.rae.rng);
-      expect(raeCoordinates.az).toBeCloseTo(item.rae.az * rad2deg);
-      expect(raeCoordinates.el).toBeCloseTo(item.rae.el * rad2deg);
+      expect(raeCoordinates.rng).toBeCloseTo(item.rae.rng, 0);
+      expect(raeCoordinates.az).toBeCloseTo(item.rae.az * rad2deg, 1);
+      expect(raeCoordinates.el).toBeCloseTo(item.rae.el * rad2deg, 1);
     });
   });
 

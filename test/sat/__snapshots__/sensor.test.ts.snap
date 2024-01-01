@@ -1,121 +1,121 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Basic Sensor functionality should be able to get rae coordinates 1`] = `2.629108354091844`;
+exports[`Basic Sensor functionality should be able to get rae coordinates 1`] = `2.62910835409574`;
 
-exports[`Basic Sensor functionality should be able to get rae coordinates 2`] = `-0.4265038258082757`;
+exports[`Basic Sensor functionality should be able to get rae coordinates 2`] = `-0.42650382580852597`;
 
-exports[`Basic Sensor functionality should be able to get rae coordinates 3`] = `6156.556070063796`;
+exports[`Basic Sensor functionality should be able to get rae coordinates 3`] = `6156.5560701071345`;
 
-exports[`Basic Sensor functionality should be able to get rae coordinates 4`] = `2.629108354091844`;
+exports[`Basic Sensor functionality should be able to get rae coordinates 4`] = `2.62910835409574`;
 
-exports[`Basic Sensor functionality should be able to get rae coordinates 5`] = `-0.4265038258082757`;
+exports[`Basic Sensor functionality should be able to get rae coordinates 5`] = `-0.42650382580852597`;
 
-exports[`Basic Sensor functionality should be able to get rae coordinates 6`] = `6156.556070063796`;
+exports[`Basic Sensor functionality should be able to get rae coordinates 6`] = `6156.5560701071345`;
 
 exports[`Basic Sensor functionality should create a lookangles array 1`] = `
 Array [
   Object {
-    "az": 180.13876758624156,
-    "el": 0.015361507052862225,
-    "rng": 2342.737908604558,
+    "az": 3.144014604864707,
+    "el": 0.0002681088678837023,
+    "rng": 2342.737908649094,
     "time": 2022-08-25T07:15:53.000Z,
     "type": 0,
   },
   Object {
-    "az": 75.7980806492444,
-    "el": -0.028830957334440976,
-    "maxElPass": 0.17148507081196085,
-    "rng": 2358.7204661051765,
+    "az": 1.3229260740398223,
+    "el": -0.0005031951401863713,
+    "maxElPass": 0.17148507079617165,
+    "rng": 2358.7204660942584,
     "time": 2022-08-25T07:24:24.000Z,
     "type": 2,
   },
   Object {
-    "az": 232.18906583186794,
-    "el": 0.009600433988362477,
-    "rng": 2347.461425625144,
+    "az": 4.052463685880971,
+    "el": 0.0001675591744800231,
+    "rng": 2347.461425652447,
     "time": 2022-08-25T08:50:55.000Z,
     "type": 0,
   },
   Object {
-    "az": 54.52261565864341,
-    "el": -0.02413294135461665,
-    "maxElPass": 1.5418848225221131,
-    "rng": 2359.154162131899,
+    "az": 0.9515991600581195,
+    "el": -0.00042119929302788286,
+    "maxElPass": 1.5418848224515804,
+    "rng": 2359.154162106056,
     "time": 2022-08-25T09:01:48.000Z,
     "type": 2,
   },
   Object {
-    "az": 273.62009396619993,
-    "el": 0.04473721840290453,
-    "rng": 2349.43400753881,
+    "az": 4.775571539307538,
+    "el": 0.0007808117510869499,
+    "rng": 2349.4340075359833,
     "time": 2022-08-25T10:28:25.000Z,
     "type": 0,
   },
   Object {
-    "az": 49.638932677761765,
-    "el": -0.030434434506850978,
-    "maxElPass": 0.3482094176129491,
-    "rng": 2358.137482792154,
+    "az": 0.8663628124171412,
+    "el": -0.0005311810963317111,
+    "maxElPass": 0.34820941760929697,
+    "rng": 2358.137482763319,
     "time": 2022-08-25T10:38:29.000Z,
     "type": 2,
   },
   Object {
-    "az": 302.060157955515,
-    "el": 0.021825330760619138,
-    "rng": 2354.1913017184143,
+    "az": 5.2719442954018465,
+    "el": 0.00038092387390169485,
+    "rng": 2354.1913016947638,
     "time": 2022-08-25T12:06:27.000Z,
     "type": 0,
   },
   Object {
-    "az": 62.062147356797546,
-    "el": -0.047720598190494616,
-    "maxElPass": 0.23309471413013108,
-    "rng": 2355.3145751792804,
+    "az": 1.0831888122507203,
+    "el": -0.0008328815676606213,
+    "maxElPass": 0.2330947141235898,
+    "rng": 2355.3145751584284,
     "time": 2022-08-25T12:15:50.000Z,
     "type": 2,
   },
   Object {
-    "az": 310.644650630328,
-    "el": 0.034319691788985335,
-    "rng": 2351.3514012828773,
+    "az": 5.421771957192329,
+    "el": 0.0005989916117731009,
+    "rng": 2351.3514012538535,
     "time": 2022-08-25T13:43:37.000Z,
     "type": 0,
   },
   Object {
-    "az": 93.78468715091233,
-    "el": -0.05092447343831976,
-    "maxElPass": 0.41989657303646716,
-    "rng": 2346.7733683863107,
+    "az": 1.6368515787551787,
+    "el": -0.0008887997395797053,
+    "maxElPass": 0.41989657303552286,
+    "rng": 2346.773368389268,
     "time": 2022-08-25T13:53:54.000Z,
     "type": 2,
   },
   Object {
-    "az": 302.82920181425385,
-    "el": 0.008831974766942259,
-    "rng": 2350.585020694925,
+    "az": 5.285366642829193,
+    "el": 0.00015414703091340442,
+    "rng": 2350.585020670774,
     "time": 2022-08-25T15:20:18.000Z,
     "type": 0,
   },
   Object {
-    "az": 136.91615645014073,
-    "el": -0.06079535528704331,
-    "maxElPass": 0.9909446544534085,
-    "rng": 2338.0820302051443,
+    "az": 2.3896377292436397,
+    "el": -0.0010610791279322895,
+    "maxElPass": 0.9909446543741702,
+    "rng": 2338.082030237695,
     "time": 2022-08-25T15:31:03.000Z,
     "type": 2,
   },
   Object {
-    "az": 275.6078287616163,
-    "el": 0.009865997778276727,
-    "rng": 2342.5887956584797,
+    "az": 4.810264056144007,
+    "el": 0.00017219413697323465,
+    "rng": 2342.5887956541233,
     "time": 2022-08-25T16:58:14.000Z,
     "type": 0,
   },
   Object {
-    "az": 193.81307114785773,
-    "el": -0.03284642331569769,
-    "maxElPass": 0.09468940062113852,
-    "rng": 2331.5278975783554,
+    "az": 3.382676224927582,
+    "el": -0.0005732782426437735,
+    "maxElPass": 0.09468940060916482,
+    "rng": 2331.5278976216196,
     "time": 2022-08-25T17:05:13.000Z,
     "type": 2,
   },

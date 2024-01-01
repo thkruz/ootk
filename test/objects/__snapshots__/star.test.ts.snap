@@ -6,8 +6,8 @@ exports[`Basic Star functionality should be able to get ECI coordinates 2`] = `5
 
 exports[`Basic Star functionality should be able to get ECI coordinates 3`] = `-2.4943615850552645e-11`;
 
-exports[`Basic Star functionality should be able to get rae coordinates 1`] = `4.71238898038469`;
+exports[`Basic Star functionality should be able to get rae coordinates 1`] = `270`;
 
-exports[`Basic Star functionality should be able to get rae coordinates 2`] = `0.9966158375158686`;
+exports[`Basic Star functionality should be able to get rae coordinates 2`] = `57.10188128555508`;
 
 exports[`Basic Star functionality should be able to get rae coordinates 3`] = `250000`;

@@ -17,8 +17,8 @@ describe('Basic Star functionality', () => {
   it('should be able to get rae coordinates', () => {
     const rae = star.getRae(
       {
-        lat: <Radians>0,
-        lon: <Radians>0,
+        lat: <Degrees>0,
+        lon: <Degrees>0,
         alt: <Kilometers>0,
       },
       new Date(1661400000000),
