@@ -1,6 +1,6 @@
-import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
-import { secondsPerDay, tau } from '../utils/constants';
+import { EpochUTC } from '../time/EpochUTC';
+import { secondsPerDay, TAU } from '../utils/constants';
 import { newtonM } from '../utils/functions';
 import { ClassicalElements } from './ClassicalElements';
 import { PositionVelocity } from './StateVector';
@@ -49,7 +49,7 @@ export class EquinoctialElements {
 
   /** Compute the period _(seconds)_ of this orbit. */
   period(): number {
-    return tau * Math.sqrt(this.semimajorAxis() ** 3 / this.mu);
+    return TAU * Math.sqrt(this.semimajorAxis() ** 3 / this.mu);
   }
 
   // / Compute the number of revolutions completed per day for this orbit.

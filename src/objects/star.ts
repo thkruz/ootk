@@ -31,12 +31,11 @@ import {
   RaeVec3,
   SpaceObjectType,
 } from '../types/types';
-import { DAY_TO_MS } from '../utils/constants';
+import { MILLISECONDS_TO_DAYS } from '../utils/constants';
 
-import { Celestial } from '@src/body/Celestial';
-import { Utils } from '@src/ootk';
-import { ecf2eci, rae2ecf } from '@src/transforms/transforms';
+import { Celestial, Utils } from '../ootk';
 import { Sgp4 } from '../sgp4/sgp4';
+import { ecf2eci, rae2ecf } from '../transforms/transforms';
 import { SpaceObject } from './space-object';
 interface ObjectInfo {
   bf?: string;
@@ -108,7 +107,7 @@ export class Star extends SpaceObject {
         date.getUTCMinutes(),
         date.getUTCSeconds(),
       ) +
-      date.getUTCMilliseconds() * DAY_TO_MS;
+      date.getUTCMilliseconds() * MILLISECONDS_TO_DAYS;
     const gmst = Sgp4.gstime(j);
 
     return { gmst, j };

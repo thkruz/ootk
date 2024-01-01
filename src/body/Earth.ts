@@ -1,9 +1,8 @@
-import { Radians } from '@src/ootk';
-import { EpochUTC } from '@src/time/EpochUTC';
-import { AngularDiameterMethod } from '@src/types/types';
 import { DataHandler } from '../data/DataHandler';
+import { AngularDiameterMethod, Kilometers, Radians } from '../ootk';
 import { Vector3D } from '../operations/Vector3D';
-import { asec2rad, deg2rad, rad2deg, secondsPerDay, secondsPerSiderealDay, tau, ttasec2rad } from '../utils/constants';
+import { EpochUTC } from '../time/EpochUTC';
+import { asec2rad, DEG2RAD, RAD2DEG, secondsPerDay, secondsPerSiderealDay, TAU, ttasec2rad } from '../utils/constants';
 import { angularDiameter, evalPoly } from '../utils/functions';
 import { NutationAngles } from './NutationAngles';
 import { PrecessionAngles } from './PrecessionAngles';
@@ -17,17 +16,17 @@ export class Earth {
   // / Earth gravitational parameter _(km²/s³)_.
   static readonly mu: number = 398600.4415;
 
-  // / Earth equatorial radius _(km)_.
-  static readonly radiusEquator: number = 6378.1363;
+  // / Earth equatorial radius.
+  static readonly radiusEquator = 6378.1363 as Kilometers;
 
   // / Earth coefficient of flattening _(unitless)_.
   static readonly flattening: number = 1.0 / 298.257223563;
 
-  // / Earth polar radius _(km)_.
-  static readonly radiusPolar: number = Earth.radiusEquator * (1.0 - Earth.flattening);
+  // / Earth polar radius.
+  static readonly radiusPolar = (Earth.radiusEquator * (1.0 - Earth.flattening)) as Kilometers;
 
-  // / Earth mean radius _(km)_.
-  static readonly radiusMean: number = (2.0 * Earth.radiusEquator + Earth.radiusPolar) / 3.0;
+  // / Earth mean radius.
+  static readonly radiusMean = ((2.0 * Earth.radiusEquator + Earth.radiusPolar) / 3.0) as Kilometers;
 
   // / Earth eccentricity squared _(unitless)_.
   static readonly eccentricitySquared: number = Earth.flattening * (2.0 - Earth.flattening);
@@ -62,7 +61,7 @@ export class Earth {
    * @returns The semi-major axis value.
    */
   static revsPerDayToSma(rpd: number): number {
-    return Earth.mu ** (1 / 3) / ((tau * rpd) / secondsPerDay) ** (2 / 3);
+    return Earth.mu ** (1 / 3) / ((TAU * rpd) / secondsPerDay) ** (2 / 3);
   }
 
   // / Calculate Earth [PrecessionAngles] at a given UTC [epoch].
@@ -118,26 +117,26 @@ export class Earth {
 
   // / Convert a [semimajorAxis] _(km)_ to an eastward drift rate _(rad/day)_.
   static smaToDrift(semimajorAxis: number): number {
-    const t = (tau * Math.sqrt(semimajorAxis ** 3 / Earth.mu)) / secondsPerSiderealDay;
+    const t = (TAU * Math.sqrt(semimajorAxis ** 3 / Earth.mu)) / secondsPerSiderealDay;
 
-    return (1.0 - t) * tau;
+    return (1.0 - t) * TAU;
   }
 
   // / Convert a [semimajorAxis] _(km)_ to an eastward drift rate _(°/day)_.
   static smaToDriftDegrees(semimajorAxis: number): number {
-    return Earth.smaToDrift(semimajorAxis) * rad2deg;
+    return Earth.smaToDrift(semimajorAxis) * RAD2DEG;
   }
 
   // / Convert an eastward [driftRate] _(rad/day)_ to a semimajor-axis _(km)_.
   static driftToSemimajorAxis(driftRate: number): number {
-    const t = (-driftRate / tau + 1) * secondsPerSiderealDay;
+    const t = (-driftRate / TAU + 1) * secondsPerSiderealDay;
 
     return ((Earth.mu * t * t) / (4 * Math.PI * Math.PI)) ** (1 / 3);
   }
 
   // / Convert an eastward [driftRate] _(°/day)_ to a semimajor-axis _(km)_.
   static driftDegreesToSma(driftRate: number): number {
-    return Earth.driftToSemimajorAxis(deg2rad * driftRate);
+    return Earth.driftToSemimajorAxis(DEG2RAD * driftRate);
   }
 
   /**
@@ -174,42 +173,42 @@ export class Earth {
   ]);
 
   private static moonAnomPoly_: Float64Array = Float64Array.from([
-    1.4343e-5 * deg2rad,
-    0.0088553 * deg2rad,
-    (1325.0 * 360.0 + 198.8675605) * deg2rad,
-    134.96340251 * deg2rad,
+    1.4343e-5 * DEG2RAD,
+    0.0088553 * DEG2RAD,
+    (1325.0 * 360.0 + 198.8675605) * DEG2RAD,
+    134.96340251 * DEG2RAD,
   ]);
 
   // / Earth nutation Sun anomaly polynomial coefficients.
   private static sunAnomPoly_: Float64Array = Float64Array.from([
-    3.8e-8 * deg2rad,
-    -0.0001537 * deg2rad,
-    (99.0 * 360.0 + 359.0502911) * deg2rad,
-    357.52910918 * deg2rad,
+    3.8e-8 * DEG2RAD,
+    -0.0001537 * DEG2RAD,
+    (99.0 * 360.0 + 359.0502911) * DEG2RAD,
+    357.52910918 * DEG2RAD,
   ]);
 
   // / Earth nutation Moon latitude polynomial coefficients.
   private static moonLatPoly_: Float64Array = Float64Array.from([
-    -2.88e-7 * deg2rad,
-    -0.003542 * deg2rad,
-    (1342.0 * 360.0 + 82.0174577) * deg2rad,
-    93.27209062 * deg2rad,
+    -2.88e-7 * DEG2RAD,
+    -0.003542 * DEG2RAD,
+    (1342.0 * 360.0 + 82.0174577) * DEG2RAD,
+    93.27209062 * DEG2RAD,
   ]);
 
   // / Earth nutation Sun elongation polynomial coefficients.
   private static sunElongPoly_: Float64Array = Float64Array.from([
-    1.831e-6 * deg2rad,
-    -0.0017696 * deg2rad,
-    (1236.0 * 360.0 + 307.1114469) * deg2rad,
-    297.85019547 * deg2rad,
+    1.831e-6 * DEG2RAD,
+    -0.0017696 * DEG2RAD,
+    (1236.0 * 360.0 + 307.1114469) * DEG2RAD,
+    297.85019547 * DEG2RAD,
   ]);
 
   // / Earth nutation Moon right-ascension polynomial coefficients.
   private static moonRaanPoly_: Float64Array = Float64Array.from([
-    2.139e-6 * deg2rad,
-    0.0020756 * deg2rad,
-    -(5.0 * 360.0 + 134.1361851) * deg2rad,
-    125.04455501 * deg2rad,
+    2.139e-6 * DEG2RAD,
+    0.0020756 * DEG2RAD,
+    -(5.0 * 360.0 + 134.1361851) * DEG2RAD,
+    125.04455501 * DEG2RAD,
   ]);
 
   // / Earth nutation mean epsilon polynomial coefficients.

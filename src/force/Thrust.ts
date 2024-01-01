@@ -1,5 +1,5 @@
-import { EpochUTC } from '@src/time/EpochUTC';
 import { Vector3D } from '../operations/Vector3D';
+import { EpochUTC } from '../time/EpochUTC';
 import { J2000 } from './../coordinate/J2000';
 import { RIC } from './../coordinate/RIC';
 import { Force } from './Force';

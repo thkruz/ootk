@@ -1,7 +1,7 @@
-import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
 import { Vector3D } from '../operations/Vector3D';
-import { tau } from '../utils/constants';
+import { EpochUTC } from '../time/EpochUTC';
+import { TAU } from '../utils/constants';
 import { ClassicalElements } from './ClassicalElements';
 
 // / Position and velocity [Vector3D] container.
@@ -45,7 +45,7 @@ export abstract class StateVector {
   period(): number {
     const a = this.semimajorAxis();
 
-    return tau * Math.sqrt((a * a * a) / Earth.mu);
+    return TAU * Math.sqrt((a * a * a) / Earth.mu);
   }
 
   angularRate(): number {

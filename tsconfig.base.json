@@ -10,12 +10,6 @@
     // "noImplicitAny": true,
     // "removeComments": true,
     "baseUrl": ".",
-    "paths": {
-      "@lib/*": ["lib/*"],
-      "@dist/*": ["dist/*"],
-      "@src/*": ["src/*"],
-      "@test/*": ["test/*"]
-    },
     "allowJs": true,
     "experimentalDecorators": true,
     "rootDir": ".",

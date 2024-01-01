@@ -1,16 +1,24 @@
 .github
 .vscode
 coverage
+examples
 node_modules
 scripts
 src/*
 test
-.babelrc
+
+# Files
+.editorconfig
 .eslintignore
 .eslintrc
 .gitattributes
 .gitignore
 .npmignore
+.prettierrc
+babel.config.js
+codecov.yml
+jest.config.js
 package-lock.json
-tsconfig.json
+sandbox.html
+tsconfig.*
 

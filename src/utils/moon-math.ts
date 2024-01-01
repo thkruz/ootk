@@ -34,8 +34,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Celestial } from '@src/body/Celestial';
-import { Sun } from '@src/body/Sun';
+import { Celestial } from '../body/Celestial';
+import { Sun } from '../body/Sun';
 import { Degrees, Kilometers, RaDec, Radians } from '../ootk';
 import { MS_PER_DAY } from '../utils/constants';
 import { DEG2RAD } from './constants';

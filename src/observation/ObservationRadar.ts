@@ -1,4 +1,3 @@
-import { EpochUTC } from '@src/time/EpochUTC';
 import { J2000 } from '../coordinate/J2000';
 import { RIC } from '../coordinate/RIC';
 import { Matrix } from '../operations/Matrix';
@@ -6,7 +5,8 @@ import { RandomGaussianSource } from '../operations/RandomGaussianSource';
 import { Vector } from '../operations/Vector';
 import { Vector3D } from '../operations/Vector3D';
 import { Propagator } from '../propagator/Propagator';
-import { deg2rad } from '../utils/constants';
+import { EpochUTC } from '../time/EpochUTC';
+import { DEG2RAD } from '../utils/constants';
 import { array2d } from '../utils/functions';
 import { Observation } from './Observation';
 import { normalizeAngle, observationDerivative, observationNoiseFromSigmas } from './ObservationUtils';
@@ -21,7 +21,7 @@ export class ObservationRadar extends Observation {
   }
 
   // / Default noise matrix.
-  private static defaultNoise: Matrix = ObservationRadar.noiseFromSigmas(0.32, 0.015 * deg2rad, 0.015 * deg2rad);
+  private static defaultNoise: Matrix = ObservationRadar.noiseFromSigmas(0.32, 0.015 * DEG2RAD, 0.015 * DEG2RAD);
 
   get epoch(): EpochUTC {
     return this.observation.epoch;

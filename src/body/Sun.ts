@@ -1,8 +1,7 @@
-import { AzEl, Degrees, Kilometers, Meters, Radians, SunTime } from '@src/ootk';
-import { EpochUTC } from '@src/time/EpochUTC';
-import { AngularDiameterMethod, RaDec } from '@src/types/types';
+import { AngularDiameterMethod, AzEl, Degrees, Kilometers, Meters, RaDec, Radians, SunTime } from '../ootk';
 import { Vector3D } from '../operations/Vector3D';
-import { astronomicalUnit, deg2rad, DEG2RAD, MS_PER_DAY, speedOfLight, tau } from '../utils/constants';
+import { EpochUTC } from '../time/EpochUTC';
+import { astronomicalUnit, cKmPerSec, DEG2RAD, MS_PER_DAY, RAD2DEG, TAU } from '../utils/constants';
 import { angularDiameter } from '../utils/functions';
 import { Celestial } from './Celestial';
 import { Earth } from './Earth';
@@ -43,7 +42,7 @@ export class Sun {
   /**
    * The angle of the penumbra of the Sun, in radians.
    */
-  static readonly penumbraAngle = (0.26900424 * deg2rad) as Radians;
+  static readonly penumbraAngle = (0.26900424 * DEG2RAD) as Radians;
   /**
    * The radius of the Sun in kilometers.
    */
@@ -56,11 +55,11 @@ export class Sun {
    * The solar pressure exerted by the Sun. (N/m²)
    * It is calculated as the solar flux divided by the speed of light.
    */
-  static readonly solarPressure = Sun.solarFlux / (speedOfLight * 1000);
+  static readonly solarPressure = Sun.solarFlux / (cKmPerSec * 1000);
   /**
    * The angle of the umbra, in radians.
    */
-  static readonly umbraAngle = (0.26411888 * deg2rad) as Radians;
+  static readonly umbraAngle = (0.26411888 * DEG2RAD) as Radians;
 
   private constructor() {
     // disable constructor
@@ -139,10 +138,10 @@ export class Sun {
    * @returns {number} ecliptic latitude
    */
   static eclipticLatitude(B: number): number {
-    const C = tau / 360;
+    const C = TAU / 360;
     const L = B - 0.00569 - 0.00478 * Math.sin(C * B);
 
-    return tau * (L + 0.0003 * Math.sin(C * 2 * L));
+    return TAU * (L + 0.0003 * Math.sin(C * 2 * L));
   }
 
   /**
@@ -350,7 +349,7 @@ export class Sun {
     const lw = <Radians>(-lon * DEG2RAD);
     const d = Sun.date2jSince2000(date);
 
-    return Math.round(d - Sun.J0_ - lw / ((2 * tau) / 2));
+    return Math.round(d - Sun.J0_ - lw / ((2 * TAU) / 2));
   }
 
   /**
@@ -387,13 +386,61 @@ export class Sun {
   }
 
   /**
+   * Calculates the lighting factor based on the position of the satellite and the sun.
+   *
+   * @deprecated
+   * This method was previously used. It is now deprecated and will be removed in a future release.
+   *
+   * @param satPos The position of the satellite.
+   * @param sunPos The position of the sun.
+   * @returns The lighting factor.
+   */
+  static sunlightLegacy(satPos: Vector3D, sunPos: Vector3D): number {
+    let lighting = 1.0;
+
+    const semiDiamEarth =
+      Math.asin(Earth.radiusMean / Math.sqrt((-satPos.x) ** 2 + (-satPos.y) ** 2 + (-satPos.z) ** 2)) * RAD2DEG;
+
+    const semiDiamSun =
+      Math.asin(
+        Sun.radius / Math.sqrt((-satPos.x + sunPos.x) ** 2 + (-satPos.y + sunPos.y) ** 2 + (-satPos.z + sunPos.z) ** 2),
+      ) * RAD2DEG;
+
+    // Angle between earth and sun
+    const theta =
+      Math.acos(
+        satPos.negate().dot(sunPos.negate()) /
+          (Math.sqrt((-satPos.x) ** 2 + (-satPos.y) ** 2 + (-satPos.z) ** 2) *
+            Math.sqrt((-satPos.x + sunPos.x) ** 2 + (-satPos.y + sunPos.y) ** 2 + (-satPos.z + sunPos.z) ** 2)),
+      ) * RAD2DEG;
+
+    if (semiDiamEarth > semiDiamSun && theta < semiDiamEarth - semiDiamSun) {
+      lighting = 0;
+    }
+
+    if (Math.abs(semiDiamEarth - semiDiamSun) < theta && theta < semiDiamEarth + semiDiamSun) {
+      lighting = 0.5;
+    }
+
+    if (semiDiamSun > semiDiamEarth) {
+      lighting = 0.5;
+    }
+
+    if (theta < semiDiamSun - semiDiamEarth) {
+      lighting = 0.5;
+    }
+
+    return lighting;
+  }
+
+  /**
    * Calculates the position vector of the Sun at a given epoch in the Earth-centered inertial (ECI) coordinate system.
    * @param epoch - The epoch in UTC.
    * @returns The position vector of the Sun in meters.
    */
   static position(epoch: EpochUTC): Vector3D<Meters> {
     const jc = epoch.toJulianCenturies();
-    const dtr = deg2rad;
+    const dtr = DEG2RAD;
     const lamSun = 280.46 + 36000.77 * jc;
     const mSun = 357.5291092 + 35999.05034 * jc;
     const lamEc = lamSun + 1.914666471 * Math.sin(mSun * dtr) + 0.019994643 * Math.sin(2.0 * mSun * dtr);
@@ -415,7 +462,7 @@ export class Sun {
    */
   static positionApparent(epoch: EpochUTC): Vector3D {
     const distance = Sun.position(epoch).magnitude();
-    const dSec = distance / speedOfLight;
+    const dSec = distance / cKmPerSec;
 
     return Sun.position(epoch.roll(-dSec));
   }
@@ -488,7 +535,7 @@ export class Sun {
    * @returns {number} approx transit
    */
   private static approxTransit_(Ht: number, lw: number, n: number): number {
-    return Sun.J0_ + (Ht + lw) / tau + n;
+    return Sun.J0_ + (Ht + lw) / TAU + n;
   }
 
   private static calculateJnoon_(lon: Degrees, lat: Degrees, alt: Meters, date: Date) {
@@ -534,7 +581,7 @@ export class Sun {
   }
 
   private static julianCycle_(d: number, lw: number): number {
-    const lonOffset = lw / tau;
+    const lonOffset = lw / TAU;
 
     return Math.round(d - Sun.J0_ - lonOffset);
   }

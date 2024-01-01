@@ -4,7 +4,7 @@
  */
 
 import { Transforms } from '../../lib/ootk';
-import { rad2deg } from '../../lib/utils/constants';
+import { RAD2DEG } from '../../lib/utils/constants';
 import transformData from './transforms.json';
 
 const numDigits = 6;
@@ -54,8 +54,8 @@ describe('Latitude & longitude conversions', () => {
     it('convert valid ECI coordinates to LLA', () => {
       const llaCoordinates = Transforms.eci2lla(item.eci, item.gmst);
 
-      expect(llaCoordinates.lon).toBeCloseTo(item.lla.lon * rad2deg);
-      expect(llaCoordinates.lat).toBeCloseTo(item.lla.lat * rad2deg);
+      expect(llaCoordinates.lon).toBeCloseTo(item.lla.lon * RAD2DEG);
+      expect(llaCoordinates.lat).toBeCloseTo(item.lla.lat * RAD2DEG);
       expect(llaCoordinates.alt).toBeCloseTo(item.lla.alt);
     });
   });
@@ -85,8 +85,8 @@ describe('Latitude & longitude conversions', () => {
       const raeCoordinates = Transforms.ecf2rae(item.lla, item.satelliteEcf);
 
       expect(raeCoordinates.rng).toBeCloseTo(item.rae.rng, 0);
-      expect(raeCoordinates.az).toBeCloseTo(item.rae.az * rad2deg, 1);
-      expect(raeCoordinates.el).toBeCloseTo(item.rae.el * rad2deg, 1);
+      expect(raeCoordinates.az).toBeCloseTo(item.rae.az * RAD2DEG, 1);
+      expect(raeCoordinates.el).toBeCloseTo(item.rae.el * RAD2DEG, 1);
     });
   });
 

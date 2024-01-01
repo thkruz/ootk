@@ -1,11 +1,11 @@
 /* eslint-disable no-undefined */
-import { Radians } from '@src/ootk';
-import { EpochUTC } from '@src/time/EpochUTC';
-import { AngularDistanceMethod } from '@src/types/types';
 import { ITRF } from '../coordinate/ITRF';
 import { J2000 } from '../coordinate/J2000';
+import { Radians } from '../ootk';
 import { Vector3D } from '../operations/Vector3D';
-import { deg2rad, halfPi, rad2deg, tau } from '../utils/constants';
+import { EpochUTC } from '../time/EpochUTC';
+import { AngularDistanceMethod } from '../types/types';
+import { DEG2RAD, halfPi, RAD2DEG, TAU } from '../utils/constants';
 import { angularDistance } from '../utils/functions';
 
 // / Range, azimuth, and elevation.
@@ -33,14 +33,14 @@ export class RAE {
     azimuthRateDegrees?: number,
     elevationRateDegrees?: number,
   ): RAE {
-    const azimuthRate = azimuthRateDegrees !== null ? azimuthRateDegrees * deg2rad : undefined;
-    const elevationRate = elevationRateDegrees !== null ? elevationRateDegrees * deg2rad : undefined;
+    const azimuthRate = azimuthRateDegrees !== null ? azimuthRateDegrees * DEG2RAD : undefined;
+    const elevationRate = elevationRateDegrees !== null ? elevationRateDegrees * DEG2RAD : undefined;
 
     return new RAE(
       epoch,
       range,
-      (azimuthDegrees * deg2rad) as Radians,
-      (elevationDegrees * deg2rad) as Radians,
+      (azimuthDegrees * DEG2RAD) as Radians,
+      (elevationDegrees * DEG2RAD) as Radians,
       rangeRate,
       azimuthRate,
       elevationRate,
@@ -83,7 +83,7 @@ export class RAE {
     return new RAE(
       state.epoch,
       pMag,
-      (azimuth % tau) as Radians,
+      (azimuth % TAU) as Radians,
       elevation as Radians,
       rangeRate,
       azimuthRate,
@@ -92,22 +92,22 @@ export class RAE {
   }
   // / Azimuth _(°)_.
   get azimuthDegrees(): number {
-    return this.azimuth * rad2deg;
+    return this.azimuth * RAD2DEG;
   }
 
   // / Elevation _(°)_.
   get elevationDegrees(): number {
-    return this.elevation * rad2deg;
+    return this.elevation * RAD2DEG;
   }
 
   // / Azimuth rate _(°/s)_.
   get azimuthRateDegrees(): number | undefined {
-    return this.azimuthRate !== null ? this.azimuthRate * rad2deg : undefined;
+    return this.azimuthRate !== null ? this.azimuthRate * RAD2DEG : undefined;
   }
 
   // / Elevation rate _(°/s)_.
   get elevationRateDegrees(): number | undefined {
-    return this.elevationRate !== null ? this.elevationRate * rad2deg : undefined;
+    return this.elevationRate !== null ? this.elevationRate * RAD2DEG : undefined;
   }
 
   toString(): string {
@@ -192,6 +192,6 @@ export class RAE {
    * [Razel] object.
    */
   angleDegrees(razel: RAE, method: AngularDistanceMethod = AngularDistanceMethod.Cosine): number {
-    return this.angle(razel, method) * rad2deg;
+    return this.angle(razel, method) * RAD2DEG;
   }
 }

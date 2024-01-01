@@ -1,8 +1,8 @@
-import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
 import { J2000 } from '../coordinate/J2000';
 import { Vector3D } from '../operations/Vector3D';
-import { deg2rad, halfPi } from '../utils/constants';
+import { EpochUTC } from '../time/EpochUTC';
+import { DEG2RAD, halfPi } from '../utils/constants';
 import { ForceModel } from './../force/ForceModel';
 import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
 
@@ -17,7 +17,7 @@ export class GibbsIOD {
   }
 
   // / Abort solve if position plane exceeds this value.
-  private static readonly _coplanarThreshold: number = 5.0 * deg2rad;
+  private static readonly _coplanarThreshold: number = 5.0 * DEG2RAD;
 
   /**
    * Attempt to create a state estimate from three inertial position vectors.

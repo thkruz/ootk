@@ -1,4 +1,4 @@
-import { deg2rad, rad2deg } from '../utils/constants';
+import { DEG2RAD, RAD2DEG } from '../utils/constants';
 import { Matrix } from './Matrix';
 import { Vector3D } from './Vector3D';
 
@@ -28,9 +28,9 @@ export class EulerAngles {
    * angles _(deg)_.
    */
   static fromDegrees(rollDeg: number, pitchDeg: number, yawDeg: number): EulerAngles {
-    const roll = rollDeg * deg2rad;
-    const pitch = pitchDeg * deg2rad;
-    const yaw = yawDeg * deg2rad;
+    const roll = rollDeg * DEG2RAD;
+    const pitch = pitchDeg * DEG2RAD;
+    const yaw = yawDeg * DEG2RAD;
 
     return new EulerAngles(roll, pitch, yaw);
   }
@@ -49,17 +49,17 @@ export class EulerAngles {
 
   // / Roll component _(deg)_.
   get rollDegrees(): number {
-    return this.roll * rad2deg;
+    return this.roll * RAD2DEG;
   }
 
   // / Pitch component _(deg)_.
   get pitchDegrees(): number {
-    return this.pitch * rad2deg;
+    return this.pitch * RAD2DEG;
   }
 
   // / Yaw component _(deg)_.
   get yawDegrees(): number {
-    return this.yaw * rad2deg;
+    return this.yaw * RAD2DEG;
   }
 
   // / Roll component alias _(rad)_.
@@ -79,17 +79,17 @@ export class EulerAngles {
 
   // / Roll component alias _(deg)_.
   get phiDegrees(): number {
-    return this.phi * rad2deg;
+    return this.phi * RAD2DEG;
   }
 
   // / Pitch component alias _(deg)_.
   get thetaDegrees(): number {
-    return this.theta * rad2deg;
+    return this.theta * RAD2DEG;
   }
 
   // / Yaw component alias _(deg)_.
   get psiDegrees(): number {
-    return this.psi * rad2deg;
+    return this.psi * RAD2DEG;
   }
 
   toString(precision = 6): string {

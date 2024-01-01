@@ -1,33 +1,5 @@
-/**
- * @author Theodore Kruczek.
- * @description Orbital Object ToolKit (OOTK) is a collection of tools for working
- * with satellites and other orbital objects.
- *
- * @file The Sensor class is used for creating ground based observers.
- *
- * @license MIT License
- * @Copyright (c) 2020-2024 Theodore Kruczek
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-import { Degrees, Kilometers, RaeVec3, SpaceObjectType } from '../types/types';
+import { Degrees, Kilometers, LlaVec3, Radians, RaeVec3, SpaceObjectType } from '../types/types';
+import { DEG2RAD } from '../utils/constants';
 
 import { BaseObject } from './base-object';
 import { Satellite } from './Satellite';
@@ -36,12 +8,18 @@ interface SensorParams {
   alt: Kilometers;
   lat: Degrees;
   lon: Degrees;
-  maxAz?: Degrees;
-  maxEl?: Degrees;
-  maxRng?: Kilometers;
-  minAz?: Degrees;
-  minEl?: Degrees;
-  minRng?: Kilometers;
+  maxAz: Degrees;
+  maxAz2?: Degrees;
+  maxEl: Degrees;
+  maxEl2?: Degrees;
+  maxRng: Kilometers;
+  maxRng2?: Kilometers;
+  minAz: Degrees;
+  minAz2?: Degrees;
+  minEl: Degrees;
+  minEl2?: Degrees;
+  minRng: Kilometers;
+  minRng2?: Kilometers;
   name?: string;
   type?: SpaceObjectType;
 }
@@ -63,15 +41,23 @@ type Lookangles = {
 };
 
 export class Sensor extends BaseObject {
+  name: string;
+  type: SpaceObjectType;
   alt: Kilometers;
   lat: Degrees;
   lon: Degrees;
-  maxAz: Degrees;
-  maxEl: Degrees;
-  maxRng: Kilometers;
+  minRng: Kilometers;
   minAz: Degrees;
   minEl: Degrees;
-  minRng: Kilometers;
+  maxRng: Kilometers;
+  maxAz: Degrees;
+  maxEl: Degrees;
+  minRng2?: Kilometers;
+  minAz2?: Degrees;
+  minEl2?: Degrees;
+  maxRng2?: Kilometers;
+  maxAz2?: Degrees;
+  maxEl2?: Degrees;
 
   /**
    * * name: Name as a string - OPTIONAL
@@ -105,6 +91,9 @@ export class Sensor extends BaseObject {
     super(info);
 
     this.validateInputData(info);
+    Object.keys(info).forEach((key) => {
+      this[key] = info[key];
+    });
   }
 
   calculatePasses(planningInterval: number, sat: Satellite, date: Date = this.time) {
@@ -190,6 +179,22 @@ export class Sensor extends BaseObject {
     return this;
   }
 
+  getLlaRad(): LlaVec3<Radians, Kilometers> {
+    return {
+      lat: (this.lat * DEG2RAD) as Radians,
+      lon: (this.lon * DEG2RAD) as Radians,
+      alt: this.alt,
+    };
+  }
+
+  isDeepSpace(): boolean {
+    return this.maxRng > 6000;
+  }
+
+  isNearEarth(): boolean {
+    return this.maxRng <= 6000;
+  }
+
   private static getPassType_(isInView: boolean, isInViewLast: boolean) {
     let type = PassType.OUT_OF_VIEW;
 
@@ -205,102 +210,43 @@ export class Sensor extends BaseObject {
   }
 
   private validateFov(info: SensorParams) {
-    this.validateMinAz(info);
-    this.validateMaxAz(info);
-    this.validateMinEl(info);
-    this.validateMaxEl(info);
-    this.validateMinRng(info);
-    this.validateMaxRng(info);
+    this.validateParameter(info.maxAz, 0, 360, 'Invalid maximum azimuth - must be between 0 and 360');
+    this.validateParameter(info.minAz, 0, 360, 'Invalid maximum azimuth - must be between 0 and 360');
+    this.validateParameter(info.maxEl, 0, 180, 'Invalid maximum elevation - must be between 0 and 180');
+    this.validateParameter(info.minEl, 0, 90, 'Invalid minimum elevation - must be between 0 and 90');
+    this.validateParameter(info.maxRng, 0, null, 'Invalid maximum range - must be greater than 0');
+    this.validateParameter(info.minRng, 0, null, 'Invalid minimum range - must be greater than 0');
+  }
+
+  private validateFov2(info: SensorParams) {
+    this.validateParameter(info.maxAz2, 0, 360, 'Invalid maximum azimuth2 - must be between 0 and 360');
+    this.validateParameter(info.minAz2, 0, 360, 'Invalid maximum azimuth2 - must be between 0 and 360');
+    this.validateParameter(info.maxEl2, 0, 180, 'Invalid maximum elevation2 - must be between 0 and 180');
+    this.validateParameter(info.minEl2, 0, 90, 'Invalid minimum elevation2 - must be between 0 and 90');
+    this.validateParameter(info.maxRng2, 0, null, 'Invalid maximum range2 - must be greater than 0');
+    this.validateParameter(info.minRng2, 0, null, 'Invalid minimum range2 - must be greater than 0');
   }
 
   private validateInputData(info: SensorParams) {
     this.validateLla(info);
     this.validateFov(info);
+    if (info.minAz2 || info.maxAz2 || info.minEl2 || info.maxEl2 || info.minRng2 || info.maxRng2) {
+      this.validateFov2(info);
+    }
   }
 
   private validateLla(info: SensorParams) {
-    if (info.lat >= -90 && info.lat <= 90) {
-      this.lat = info.lat;
-    } else {
-      throw new Error('Invalid latitude');
-    }
-
-    if (info.lon >= -180 && info.lon <= 180) {
-      this.lon = info.lon;
-    } else {
-      throw new Error('Invalid longitude');
-    }
-
-    if (info.alt >= 0) {
-      this.alt = info.alt;
-    } else {
-      throw new Error('Invalid altitude');
-    }
+    this.validateParameter(info.lat, -90, 90, 'Invalid latitude - must be between -90 and 90');
+    this.validateParameter(info.lon, -180, 180, 'Invalid longitude - must be between -180 and 180');
+    this.validateParameter(info.alt, 0, null, 'Invalid altitude - must be greater than 0');
   }
 
-  private validateMaxAz(info: SensorParams) {
-    if (info.maxAz >= 0 && info.maxAz <= 360) {
-      this.maxAz = info.maxAz;
-    } else if (typeof info.maxAz === 'undefined') {
-      // Default is a telescope
-      this.maxAz = <Degrees>360;
-    } else {
-      throw new Error('Invalid maximum azimuth - must be between 0 and 360');
+  private validateParameter<T>(value: T, minValue: T, maxValue: T, errorMessage: string): void {
+    if (minValue !== null && value < minValue) {
+      throw new Error(errorMessage);
     }
-  }
-
-  private validateMaxEl(info: SensorParams) {
-    if (info.maxEl >= 0 && info.maxEl <= 180) {
-      this.maxEl = info.maxEl;
-    } else if (typeof info.maxEl === 'undefined') {
-      // Default is a telescope
-      this.maxEl = <Degrees>90;
-    } else {
-      throw new Error('Invalid maximum elevation - must be between 0 and 180');
-    }
-  }
-
-  private validateMaxRng(info: SensorParams) {
-    if (info.maxRng >= 0) {
-      this.maxRng = info.maxRng;
-    } else if (typeof info.maxRng === 'undefined') {
-      // Default is a telescope
-      this.maxRng = <Kilometers>50000; // arbitrary large number
-    } else {
-      throw new Error('Invalid maximum range - must be greater than 0');
-    }
-  }
-
-  private validateMinAz(info: SensorParams) {
-    if (info.minAz >= 0 && info.minAz <= 360) {
-      this.minAz = info.minAz;
-    } else if (typeof info.minAz === 'undefined') {
-      // Default is a telescope
-      this.minAz = <Degrees>0;
-    } else {
-      throw new Error('Invalid minimum azimuth - must be between 0 and 360');
-    }
-  }
-
-  private validateMinEl(info: SensorParams) {
-    if (info.minEl >= 0 && info.minEl <= 90) {
-      this.minEl = info.minEl;
-    } else if (typeof info.minEl === 'undefined') {
-      // Default is a telescope
-      this.minEl = <Degrees>0;
-    } else {
-      throw new Error('Invalid minimum elevation - must be between 0 and 90');
-    }
-  }
-
-  private validateMinRng(info: SensorParams) {
-    if (info.minRng >= 0) {
-      this.minRng = info.minRng;
-    } else if (typeof info.minRng === 'undefined') {
-      // Default is a telescope
-      this.minRng = <Kilometers>0;
-    } else {
-      throw new Error('Invalid minimum range - must be greater than 0');
+    if (maxValue !== null && value > maxValue) {
+      throw new Error(errorMessage);
     }
   }
 }

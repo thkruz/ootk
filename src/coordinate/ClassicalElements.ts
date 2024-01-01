@@ -1,7 +1,7 @@
-import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
 import { Vector3D } from '../operations/Vector3D';
-import { rad2deg, sec2min, secondsPerDay, tau } from '../utils/constants';
+import { EpochUTC } from '../time/EpochUTC';
+import { RAD2DEG, sec2min, secondsPerDay, TAU } from '../utils/constants';
 import { clamp, matchHalfPlane, newtonNu } from '../utils/functions';
 import { EquinoctialElements } from './EquinoctialElements';
 import { OrbitRegime } from './OrbitRegime';
@@ -82,17 +82,17 @@ export class ClassicalElements {
     let o = Math.acos(clamp(n.x / n.magnitude(), -1.0, 1.0));
 
     if (n.y < 0) {
-      o = tau - o;
+      o = TAU - o;
     }
     let w = n.angle(eVec);
 
     if (eVec.z < 0) {
-      w = tau - w;
+      w = TAU - w;
     }
     let v = eVec.angle(pos);
 
     if (pos.dot(vel) < 0) {
-      v = tau - v;
+      v = TAU - v;
     }
 
     return new ClassicalElements({
@@ -109,22 +109,22 @@ export class ClassicalElements {
 
   /** Inclination _(°)_. */
   get inclinationDegrees(): number {
-    return this.inclination * rad2deg;
+    return this.inclination * RAD2DEG;
   }
 
   /** Right-ascension of the ascending node _(°)_. */
   get rightAscensionDegrees(): number {
-    return this.rightAscension * rad2deg;
+    return this.rightAscension * RAD2DEG;
   }
 
   /** Argument of perigee _(°)_. */
   get argPerigeeDegrees(): number {
-    return this.argPerigee * rad2deg;
+    return this.argPerigee * RAD2DEG;
   }
 
   /** True anomaly _(°)_. */
   get trueAnomalyDegrees(): number {
-    return this.trueAnomaly * rad2deg;
+    return this.trueAnomaly * RAD2DEG;
   }
 
   /** Apogee distance from central body _(km)_. */
@@ -157,7 +157,7 @@ export class ClassicalElements {
 
   /** Compute the period _(seconds)_ of this orbit. */
   period(): number {
-    return tau * Math.sqrt(this.semimajorAxis ** 3 / this.mu);
+    return TAU * Math.sqrt(this.semimajorAxis ** 3 / this.mu);
   }
 
   /** Compute the number of revolutions completed per day for this orbit. */
@@ -225,7 +225,7 @@ export class ClassicalElements {
     let maInit = eaInit - this.eccentricity * Math.sin(eaInit);
 
     maInit = matchHalfPlane(maInit, eaInit);
-    const maFinal = (maInit + n * delta) % tau;
+    const maFinal = (maInit + n * delta) % TAU;
     let eaFinal = maFinal;
 
     for (let iter = 0; iter < 32; iter++) {

@@ -1,8 +1,8 @@
-import { EpochUTC } from '@src/time/EpochUTC';
-import { AngularDistanceMethod } from '@src/types/types';
 import { Earth } from '../body/Earth';
+import { AngularDistanceMethod } from '../ootk';
 import { Vector3D } from '../operations/Vector3D';
-import { deg2rad, rad2deg } from '../utils/constants';
+import { EpochUTC } from '../time/EpochUTC';
+import { DEG2RAD, RAD2DEG } from '../utils/constants';
 import { angularDistance } from '../utils/functions';
 import { ITRF } from './ITRF';
 
@@ -19,7 +19,7 @@ export class Geodetic {
   }
 
   static fromDegrees(latDeg: number, lonDeg: number, alt: number): Geodetic {
-    return new Geodetic(latDeg * deg2rad, lonDeg * deg2rad, alt);
+    return new Geodetic(latDeg * DEG2RAD, lonDeg * DEG2RAD, alt);
   }
 
   toString(): string {
@@ -32,11 +32,11 @@ export class Geodetic {
   }
 
   get latitudeDegrees(): number {
-    return this.latitude * rad2deg;
+    return this.latitude * RAD2DEG;
   }
 
   get longitudeDegrees(): number {
-    return this.longitude * rad2deg;
+    return this.longitude * RAD2DEG;
   }
 
   toITRF(epoch: EpochUTC): ITRF {
@@ -57,7 +57,7 @@ export class Geodetic {
   }
 
   angleDegrees(g: Geodetic, method: AngularDistanceMethod = AngularDistanceMethod.Haversine): number {
-    return this.angle(g, method) * rad2deg;
+    return this.angle(g, method) * RAD2DEG;
   }
 
   distance(g: Geodetic, method: AngularDistanceMethod = AngularDistanceMethod.Haversine): number {

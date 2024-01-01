@@ -1,7 +1,7 @@
-import { EpochUTC } from '@src/time/EpochUTC';
-import { AngularDiameterMethod } from '@src/types/types';
+import { AngularDiameterMethod } from '../ootk';
 import { Vector3D } from '../operations/Vector3D';
-import { deg2rad } from '../utils/constants';
+import { EpochUTC } from '../time/EpochUTC';
+import { DEG2RAD } from '../utils/constants';
 import { angularDiameter } from '../utils/functions';
 import { Earth } from './Earth';
 import { Sun } from './Sun';
@@ -21,7 +21,7 @@ export class Moon {
   // / Calculate the Moon's ECI position _(km)_ for a given UTC [epoch].
   static position(epoch: EpochUTC): Vector3D {
     const jc = epoch.toJulianCenturies();
-    const dtr = deg2rad;
+    const dtr = DEG2RAD;
     const lamEcl =
       218.32 +
       481267.8813 * jc +

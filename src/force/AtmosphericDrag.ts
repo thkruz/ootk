@@ -3,7 +3,7 @@ import { ITRF } from '../coordinate/ITRF';
 import { J2000 } from '../coordinate/J2000';
 import { DataHandler } from '../data/DataHandler';
 import { Vector3D } from '../operations/Vector3D';
-import { deg2rad } from '../utils/constants';
+import { DEG2RAD } from '../utils/constants';
 import { Sun } from './../body/Sun';
 import { Force } from './Force';
 
@@ -32,7 +32,7 @@ export class AtmosphericDrag implements Force {
     }
     const sunPos = Sun.positionApparent(state.epoch);
     const sunVec = new J2000(state.epoch, sunPos, Vector3D.origin).toITRF().position.normalize();
-    const bulVec = sunVec.rotZ(-30.0 * deg2rad);
+    const bulVec = sunVec.rotZ(-30.0 * DEG2RAD);
     const cosPsi = bulVec.normalize().dot(state.position.normalize());
     const c2Psi2 = 0.5 * (1.0 + cosPsi);
     const cPsi2 = Math.sqrt(c2Psi2);

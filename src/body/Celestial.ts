@@ -1,5 +1,5 @@
-import { AzEl, Degrees, RaDec, Radians } from '@src/ootk';
-import { RAD2DEG } from '@src/utils/constants';
+import { AzEl, Degrees, RaDec, Radians } from '../ootk';
+import { RAD2DEG } from '../utils/constants';
 import { Sun } from './Sun';
 
 export class Celestial {

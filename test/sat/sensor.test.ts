@@ -20,6 +20,12 @@ describe('Basic Sensor functionality', () => {
       lat: 41 as Degrees,
       lon: -71 as Degrees,
       alt: 0 as Kilometers,
+      minAz: 0 as Degrees,
+      maxAz: 360 as Degrees,
+      minEl: 0 as Degrees,
+      maxEl: 90 as Degrees,
+      minRng: 0 as Kilometers,
+      maxRng: 100000 as Kilometers,
     });
 
     const rae = sensor.getRae(sat, dateObj);
@@ -43,6 +49,12 @@ describe('Basic Sensor functionality', () => {
       lon: -71 as Degrees,
       alt: 0 as Kilometers,
       type: SpaceObjectType.OPTICAL,
+      minAz: 0 as Degrees,
+      maxAz: 360 as Degrees,
+      minEl: 0 as Degrees,
+      maxEl: 90 as Degrees,
+      minRng: 0 as Kilometers,
+      maxRng: 100000 as Kilometers,
     });
 
     const inView = sensor.isSatInFov(sat, dateObj);
@@ -83,6 +95,11 @@ describe('Basic Sensor functionality', () => {
         lon: -71 as Degrees,
         alt: 0 as Kilometers,
         minAz: -999 as Degrees,
+        maxAz: 360 as Degrees,
+        minEl: 0 as Degrees,
+        maxEl: 90 as Degrees,
+        minRng: 0 as Kilometers,
+        maxRng: 100000 as Kilometers,
       });
 
     expect(result).toThrow();
@@ -96,6 +113,11 @@ describe('Basic Sensor functionality', () => {
         lon: -71 as Degrees,
         alt: 0 as Kilometers,
         maxAz: -999 as Degrees,
+        minAz: 0 as Degrees,
+        minEl: 0 as Degrees,
+        maxEl: 90 as Degrees,
+        minRng: 0 as Kilometers,
+        maxRng: 100000 as Kilometers,
       });
 
     expect(result).toThrow();
@@ -109,6 +131,11 @@ describe('Basic Sensor functionality', () => {
         lon: -71 as Degrees,
         alt: 0 as Kilometers,
         minEl: -999 as Degrees,
+        minAz: 0 as Degrees,
+        maxAz: 360 as Degrees,
+        maxEl: 90 as Degrees,
+        minRng: 0 as Kilometers,
+        maxRng: 100000 as Kilometers,
       });
 
     expect(result).toThrow();
@@ -122,6 +149,11 @@ describe('Basic Sensor functionality', () => {
         lon: -71 as Degrees,
         alt: 0 as Kilometers,
         maxEl: -999 as Degrees,
+        minAz: 0 as Degrees,
+        maxAz: 360 as Degrees,
+        minEl: 0 as Degrees,
+        minRng: 0 as Kilometers,
+        maxRng: 100000 as Kilometers,
       });
 
     expect(result).toThrow();
@@ -135,6 +167,11 @@ describe('Basic Sensor functionality', () => {
         lon: -71 as Degrees,
         alt: 0 as Kilometers,
         minRng: -999 as Kilometers,
+        minAz: 0 as Degrees,
+        maxAz: 360 as Degrees,
+        minEl: 0 as Degrees,
+        maxEl: 90 as Degrees,
+        maxRng: 100000 as Kilometers,
       });
 
     expect(result).toThrow();
@@ -147,19 +184,48 @@ describe('Basic Sensor functionality', () => {
         lon: -71 as Degrees,
         alt: 0 as Kilometers,
         maxRng: -999 as Kilometers,
+        minAz: 0 as Degrees,
+        maxAz: 360 as Degrees,
+        minEl: 0 as Degrees,
+        maxEl: 90 as Degrees,
+        minRng: 0 as Kilometers,
       });
 
     expect(result).toThrow();
   });
 
   it('should error if bad lat', () => {
-    const result = () => new Sensor({ name: 'Test', lat: -999 as Degrees, lon: -71 as Degrees, alt: 0 as Kilometers });
+    const result = () =>
+      new Sensor({
+        name: 'Test',
+        lat: -999 as Degrees,
+        lon: -71 as Degrees,
+        alt: 0 as Kilometers,
+        minAz: 0 as Degrees,
+        maxAz: 360 as Degrees,
+        minEl: 0 as Degrees,
+        maxEl: 90 as Degrees,
+        minRng: 0 as Kilometers,
+        maxRng: 100000 as Kilometers,
+      });
 
     expect(result).toThrow();
   });
 
   it('should error if bad lon', () => {
-    const result = () => new Sensor({ name: 'Test', lat: 41 as Degrees, lon: -999 as Degrees, alt: 0 as Kilometers });
+    const result = () =>
+      new Sensor({
+        name: 'Test',
+        lat: 41 as Degrees,
+        lon: -999 as Degrees,
+        alt: 0 as Kilometers,
+        minAz: 0 as Degrees,
+        maxAz: 360 as Degrees,
+        minEl: 0 as Degrees,
+        maxEl: 90 as Degrees,
+        minRng: 0 as Kilometers,
+        maxRng: 100000 as Kilometers,
+      });
 
     expect(result).toThrow();
   });
@@ -171,6 +237,12 @@ describe('Basic Sensor functionality', () => {
         lat: 41 as Degrees,
         lon: -71 as Degrees,
         alt: -999 as Kilometers,
+        minAz: 0 as Degrees,
+        maxAz: 360 as Degrees,
+        minEl: 0 as Degrees,
+        maxEl: 90 as Degrees,
+        minRng: 0 as Kilometers,
+        maxRng: 100000 as Kilometers,
       });
 
     expect(result).toThrow();

@@ -1,5 +1,5 @@
-import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
+import { EpochUTC } from '../time/EpochUTC';
 import { Thrust } from './../force/Thrust';
 import { Waypoint } from './../maneuver/Waypoint';
 import { Matrix } from './../operations/Matrix';

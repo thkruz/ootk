@@ -37,7 +37,7 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-lines */
 
-import { Sgp4OpsMode } from '@src/coordinate/TLE';
+import { Sgp4OpsMode } from '../coordinate/TLE';
 import { GreenwichMeanSiderealTime, SatelliteRecord, StateVectorSgp4, Vec3Flat } from '../types/types';
 import { DEG2RAD, PI, TAU, temp4, x2o3 } from '../utils/constants';
 

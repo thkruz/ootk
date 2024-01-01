@@ -1,5 +1,5 @@
-import { Degrees, Radians } from '@src/ootk';
-import { DEG2RAD, PI, RAD2DEG } from '@src/utils/constants';
+import { Degrees, Radians } from '../ootk';
+import { DEG2RAD, PI, RAD2DEG } from '../utils/constants';
 
 /**
  * Converts radians to degrees.

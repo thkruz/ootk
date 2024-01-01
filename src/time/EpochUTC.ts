@@ -1,4 +1,4 @@
-import { deg2rad, msecPerDay, rad2deg, secondsPerWeek, tau } from '../utils/constants';
+import { DEG2RAD, MS_PER_DAY, RAD2DEG, secondsPerWeek, TAU } from '../utils/constants';
 import { evalPoly } from '../utils/functions';
 import { DataHandler } from './../data/DataHandler';
 import { Epoch } from './Epoch';
@@ -59,7 +59,7 @@ export class EpochUTC extends Epoch {
     // eslint-disable-next-line prefer-destructuring
     const timeField = fields[1];
     // Add day - 1 days in milliseconds to the epoch.
-    const dts = new Date(`${year}-01-01T${timeField}Z`).getTime() + (day - 1) * msecPerDay;
+    const dts = new Date(`${year}-01-01T${timeField}Z`).getTime() + (day - 1) * MS_PER_DAY;
 
     return new EpochUTC(dts / 1000);
   }
@@ -89,7 +89,7 @@ export class EpochUTC extends Epoch {
   toTDB(): EpochTDB {
     const tt = this.toTT();
     const tTT = tt.toJulianCenturies();
-    const mEarth = (357.5277233 + 35999.05034 * tTT) * deg2rad;
+    const mEarth = (357.5277233 + 35999.05034 * tTT) * DEG2RAD;
     const seconds = 0.001658 * Math.sin(mEarth) + 0.00001385 * Math.sin(2 * mEarth);
 
     return new EpochTDB(tt.posix + seconds);
@@ -108,17 +108,17 @@ export class EpochUTC extends Epoch {
   gmstAngle(): number {
     const t = this.toJulianCenturies();
     const seconds = evalPoly(t, EpochUTC.gmstPoly_);
-    let result = ((seconds / 240) * deg2rad) % tau;
+    let result = ((seconds / 240) * DEG2RAD) % TAU;
 
     if (result < 0) {
-      result += tau;
+      result += TAU;
     }
 
     return result;
   }
 
   gmstAngleDegrees(): number {
-    return this.gmstAngle() * rad2deg;
+    return this.gmstAngle() * RAD2DEG;
   }
 
   private static gmstPoly_: Float64Array = new Float64Array([

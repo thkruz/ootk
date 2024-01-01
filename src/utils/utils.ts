@@ -1,6 +1,6 @@
 import * as Types from '../types/types';
 import { EciVec3, Kilometers } from '../types/types';
-import { DAY_TO_MS } from './constants';
+import { MILLISECONDS_TO_DAYS } from './constants';
 import { sign } from './functions';
 import { MoonMath } from './moon-math';
 
@@ -15,7 +15,7 @@ class Utils {
       const jDayStart = new Date(now.getUTCFullYear(), 0, 0);
       const jDayDiff = now.getDate() - jDayStart.getDate();
 
-      return Math.floor(jDayDiff / DAY_TO_MS);
+      return Math.floor(jDayDiff / MILLISECONDS_TO_DAYS);
     }
 
     return (

@@ -1,9 +1,9 @@
 /* eslint-disable no-undefined */
-import { EpochUTC } from '@src/time/EpochUTC';
-import { AngularDistanceMethod } from '@src/types/types';
 import { J2000 } from '../coordinate/J2000';
 import { Vector3D } from '../operations/Vector3D';
-import { deg2rad, rad2deg, tau } from '../utils/constants';
+import { EpochUTC } from '../time/EpochUTC';
+import { AngularDistanceMethod } from '../types/types';
+import { DEG2RAD, RAD2DEG, TAU } from '../utils/constants';
 import { angularDistance } from '../utils/functions';
 import { radecToPosition, radecToVelocity } from './ObservationUtils';
 
@@ -35,13 +35,13 @@ export class RadecGeocentric {
     declinationRateDegrees?: number,
     rangeRate?: number,
   ): RadecGeocentric {
-    const rightAscensionRate = !rightAscensionRateDegrees && rightAscensionRateDegrees * deg2rad;
-    const declinationRate = !declinationRateDegrees && declinationRateDegrees * deg2rad;
+    const rightAscensionRate = !rightAscensionRateDegrees && rightAscensionRateDegrees * DEG2RAD;
+    const declinationRate = !declinationRateDegrees && declinationRateDegrees * DEG2RAD;
 
     return new RadecGeocentric(
       epoch,
-      rightAscensionDegrees * deg2rad,
-      declinationDegrees * deg2rad,
+      rightAscensionDegrees * DEG2RAD,
+      declinationDegrees * DEG2RAD,
       range,
       rightAscensionRate,
       declinationRate,
@@ -73,7 +73,7 @@ export class RadecGeocentric {
 
     return new RadecGeocentric(
       state.epoch,
-      rightAscension % tau,
+      rightAscension % TAU,
       declination,
       rMag,
       rightAscensionRate,
@@ -84,22 +84,22 @@ export class RadecGeocentric {
 
   // / Right-ascension _(°)_.
   get rightAscensionDegrees(): number {
-    return this.rightAscension * rad2deg;
+    return this.rightAscension * RAD2DEG;
   }
 
   // / Declination _(°)_.
   get declinationDegrees(): number {
-    return this.declination * rad2deg;
+    return this.declination * RAD2DEG;
   }
 
   // / Right-ascension rate _(°/s)_.
   get rightAscensionRateDegrees(): number | undefined {
-    return this.rightAscensionRate !== null ? this.rightAscensionRate * rad2deg : undefined;
+    return this.rightAscensionRate !== null ? this.rightAscensionRate * RAD2DEG : undefined;
   }
 
   // / Declination rate _(°/s)_.
   get declinationRateDegrees(): number | undefined {
-    return this.declinationRate !== null ? this.declinationRate * rad2deg : undefined;
+    return this.declinationRate !== null ? this.declinationRate * RAD2DEG : undefined;
   }
 
   /**
@@ -143,6 +143,6 @@ export class RadecGeocentric {
    * [RadecGeocentric] object.
    */
   angleDegrees(radec: RadecGeocentric, method: AngularDistanceMethod = AngularDistanceMethod.Cosine): number {
-    return this.angle(radec, method) * rad2deg;
+    return this.angle(radec, method) * RAD2DEG;
   }
 }

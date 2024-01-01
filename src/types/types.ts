@@ -1,4 +1,4 @@
-import { Sensor } from '@src/objects';
+import { Sensor } from '../objects';
 
 /**
  * Represents a distinct type.
@@ -14,6 +14,15 @@ import { Sensor } from '@src/objects';
 type Distinct<T, DistinctName> = T & { __TYPE__: DistinctName };
 
 // Possible usages
+
+/**
+ * Represents a quantity of days.
+ *
+ * This type is based on the number type, but is distinct and cannot be used interchangeably
+ * with other number-based types.
+ */
+export type Days = Distinct<number, 'Days'>;
+
 /**
  * Represents a quantity of hours.
  *
@@ -561,6 +570,9 @@ export enum SpaceObjectType {
   COUNTRY = 26,
   LAUNCH_VEHICLE_MANUFACTURER = 27,
   ENGINE_MANUFACTURER = 28,
+  NOTIONAL = 29,
+  FRAGMENT = 30,
+  MAX_SPACE_OBJECT_TYPE = 31,
 }
 
 /**

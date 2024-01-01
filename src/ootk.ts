@@ -28,9 +28,16 @@
  * SOFTWARE.
  */
 
+export { Celestial } from './body/Celestial';
+export { Earth } from './body/Earth';
+export { Moon } from './body/Moon';
+export { Sun } from './body/Sun';
 export * from './objects/index';
+export * from './operations/operations';
 export { Sgp4 } from './sgp4/sgp4';
+export * from './time/time';
 export { Tle } from './tle/tle';
-export { Transforms } from './transforms';
+export * from './transforms';
 export * from './types/types';
+export * from './utils/constants';
 export { Utils } from './utils/utils';

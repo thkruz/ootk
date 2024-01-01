@@ -1,9 +1,9 @@
-import { EciVec3, SatelliteRecord, StateVectorSgp4 } from '@src/ootk';
-import { Sgp4, Sgp4GravConstants } from '@src/sgp4/sgp4';
-import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
+import { EciVec3, SatelliteRecord, Sgp4, StateVectorSgp4 } from '../ootk';
 import { Vector3D } from '../operations/Vector3D';
-import { deg2rad, rad2deg, secondsPerDay, tau } from '../utils/constants';
+import { Sgp4GravConstants } from '../sgp4/sgp4';
+import { EpochUTC } from '../time/EpochUTC';
+import { DEG2RAD, RAD2DEG, secondsPerDay, TAU } from '../utils/constants';
 import { TEME } from './TEME';
 
 export enum Sgp4OpsMode {
@@ -74,7 +74,7 @@ export class TLE {
   }
 
   get inclinationDegrees(): number {
-    return TLE.tleInc_(this.line2) * rad2deg;
+    return TLE.tleInc_(this.line2) * RAD2DEG;
   }
 
   get apogee(): number {
@@ -86,7 +86,7 @@ export class TLE {
   }
 
   get period(): number {
-    return tau * Math.sqrt(this.semimajorAxis ** 3 / Earth.mu);
+    return TAU * Math.sqrt(this.semimajorAxis ** 3 / Earth.mu);
   }
 
   private static _parseEpoch(epochStr: string): EpochUTC {
@@ -161,7 +161,7 @@ export class TLE {
   private static tleSma_(line2: string): number {
     const n = parseFloat(line2.substring(52, 63));
 
-    return Earth.mu ** (1 / 3) / ((tau * n) / secondsPerDay) ** (2 / 3);
+    return Earth.mu ** (1 / 3) / ((TAU * n) / secondsPerDay) ** (2 / 3);
   }
 
   private static tleEcc_(line2: string): number {
@@ -169,6 +169,6 @@ export class TLE {
   }
 
   private static tleInc_(line2: string): number {
-    return parseFloat(line2.substring(8, 16)) * deg2rad;
+    return parseFloat(line2.substring(8, 16)) * DEG2RAD;
   }
 }

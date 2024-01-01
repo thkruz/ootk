@@ -43,17 +43,16 @@ import {
   TleLine1,
   TleLine2,
 } from '../types/types';
-import { DAY_TO_MS, DEG2RAD, MINUTES_PER_DAY, RAD2DEG } from '../utils/constants';
+import { DEG2RAD, MILLISECONDS_TO_DAYS, MINUTES_PER_DAY, RAD2DEG } from '../utils/constants';
 
-import { Geodetic } from '@src/coordinate/Geodetic';
-import { ITRF } from '@src/coordinate/ITRF';
-import { J2000 } from '@src/coordinate/J2000';
-import { Sensor } from '@src/objects';
-import { RAE } from '@src/observation/RAE';
-import { Transforms, Utils } from '@src/ootk';
-import { Vector3D } from '@src/operations/Vector3D';
-import { EpochUTC } from '@src/time/EpochUTC';
+import { Geodetic } from '../coordinate/Geodetic';
+import { ITRF } from '../coordinate/ITRF';
+import { J2000 } from '../coordinate/J2000';
+import { RAE } from '../observation/RAE';
+import { ecf2rae, eci2ecf, eci2lla, Sensor, Utils } from '../ootk';
+import { Vector3D } from '../operations/Vector3D';
 import { Sgp4 } from '../sgp4/sgp4';
+import { EpochUTC } from '../time/EpochUTC';
 import { Tle } from '../tle/tle';
 /**
  * TODO: Reduce unnecessary calls to calculateTimeVariables using optional
@@ -184,7 +183,7 @@ export class Satellite {
   getEcf(date: Date = this.time): EcfVec3<Kilometers> {
     const { gmst } = Satellite.calculateTimeVariables(date);
 
-    return Transforms.eci2ecf(this.getEci(date).position, gmst);
+    return eci2ecf(this.getEci(date).position, gmst);
   }
 
   /**
@@ -244,7 +243,7 @@ export class Satellite {
     const { gmst } = Satellite.calculateTimeVariables(date, this.satrec);
     const pos = this.getEci(date).position;
 
-    return Transforms.eci2lla(pos, gmst);
+    return eci2lla(pos, gmst);
   }
 
   getGeodetic(date: Date = this.time): Geodetic {
@@ -263,7 +262,7 @@ export class Satellite {
   raeOpt(sensor: Sensor, date: Date = this.time): RaeVec3<Kilometers, Degrees> {
     const { gmst } = Satellite.calculateTimeVariables(date, this.satrec);
     const eci = this.getEci(date).position;
-    const ecf = Transforms.eci2ecf(eci, gmst);
+    const ecf = eci2ecf(eci, gmst);
 
     const lla = {
       lat: (sensor.lat * DEG2RAD) as Radians,
@@ -271,7 +270,7 @@ export class Satellite {
       alt: sensor.alt,
     };
 
-    return Transforms.ecf2rae(lla, ecf);
+    return ecf2rae(lla, ecf);
   }
 
   /**
@@ -321,7 +320,7 @@ export class Satellite {
         date.getUTCMinutes(),
         date.getUTCSeconds(),
       ) +
-      date.getUTCMilliseconds() * DAY_TO_MS;
+      date.getUTCMilliseconds() * MILLISECONDS_TO_DAYS;
     const gmst = Sgp4.gstime(j);
 
     const m = satrec ? (j - satrec.jdsatepoch) * MINUTES_PER_DAY : null;

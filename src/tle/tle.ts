@@ -20,8 +20,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { toPrecision } from '@src/utils/functions';
 import { Line1Data, Line2Data, TleLine1, TleLine2 } from '../types/types';
+import { toPrecision } from '../utils/functions';
 import { TleFormatData } from './tle-format-data';
 
 /**

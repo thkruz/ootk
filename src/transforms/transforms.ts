@@ -23,7 +23,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Sensor, Sgp4, Utils } from '@src/ootk';
+import { Earth, Sensor, Sgp4, Utils } from '../ootk';
 import {
   Degrees,
   EcefVec3,
@@ -40,7 +40,7 @@ import {
   RuvVec3,
   SezVec3,
 } from '../types/types';
-import { DAY_TO_MS, DEG2RAD, PI, RAD2DEG, TAU } from '../utils/constants';
+import { DEG2RAD, MILLISECONDS_TO_DAYS, PI, RAD2DEG, TAU } from '../utils/constants';
 
 /**
  * Converts Azimuth and Elevation to U and V.
@@ -194,7 +194,7 @@ export function lla2ecf<D extends number>(lla: LlaVec3<Radians, D>): EcfVec3<D> 
   const b = 6356.7523142;
   const f = (a - b) / a;
   const e2 = 2 * f - f * f;
-  const normal = a / Math.sqrt(1 - e2 * (Math.sin(lat) * Math.sin(lat)));
+  const normal = a / Math.sqrt(1 - e2 * Math.sin(lat) ** 2);
 
   const x = (normal + alt) * Math.cos(lat) * Math.cos(lon);
   const y = (normal + alt) * Math.cos(lat) * Math.sin(lon);
@@ -205,6 +205,26 @@ export function lla2ecf<D extends number>(lla: LlaVec3<Radians, D>): EcfVec3<D> 
     y: <D>y,
     z: <D>z,
   };
+}
+
+/**
+ * Converts geodetic coordinates (latitude, longitude, altitude) to Earth-centered inertial (ECI) coordinates.
+ * @param lla The geodetic coordinates in radians and meters.
+ * @param gmst The Greenwich Mean Sidereal Time in seconds.
+ * @returns The ECI coordinates in meters.
+ */
+export function lla2eci(lla: LlaVec3<Radians, Kilometers>, gmst: number): EciVec3<Kilometers> {
+  const { lat, lon, alt } = lla;
+
+  const cosLat = Math.cos(lat);
+  const sinLat = Math.sin(lat);
+  const cosLon = Math.cos(lon + gmst);
+  const sinLon = Math.sin(lon + gmst);
+  const x = (Earth.radiusMean + alt) * cosLat * cosLon;
+  const y = (Earth.radiusMean + alt) * cosLat * sinLon;
+  const z = (Earth.radiusMean + alt) * sinLat;
+
+  return { x, y, z } as EciVec3<Kilometers>;
 }
 
 /**
@@ -308,6 +328,25 @@ export function rae2ecf<D extends number>(rae: RaeVec3<D, Degrees>, lla: LlaVec3
   const z = -clat * sez.s + slat * sez.z + obsEcf.z;
 
   return { x, y, z } as EcfVec3<D>;
+}
+
+/**
+ * Converts a vector from RAE (Range, Azimuth, Elevation) coordinates to ECI (Earth-Centered Inertial) coordinates.
+ *
+ * @param rae The vector in RAE coordinates.
+ * @param lla The vector in LLA (Latitude, Longitude, Altitude) coordinates.
+ * @param gmst The Greenwich Mean Sidereal Time.
+ * @returns The vector in ECI coordinates.
+ */
+export function rae2eci<D extends number>(
+  rae: RaeVec3<D, Degrees>,
+  lla: LlaVec3<Degrees, D>,
+  gmst: number,
+): EciVec3<D> {
+  const ecf = rae2ecf(rae, lla);
+  const eci = ecf2eci(ecf, gmst);
+
+  return eci;
 }
 
 /**
@@ -425,7 +464,7 @@ export function calcGmst(date: Date): { gmst: GreenwichMeanSiderealTime; j: numb
       date.getUTCMinutes(),
       date.getUTCSeconds(),
     ) +
-    date.getUTCMilliseconds() * DAY_TO_MS;
+    date.getUTCMilliseconds() * MILLISECONDS_TO_DAYS;
 
   const gmst = Sgp4.gstime(j);
 

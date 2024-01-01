@@ -1,7 +1,7 @@
-import { EpochUTC } from '@src/time/EpochUTC';
 import { J2000 } from '../coordinate/J2000';
 import { Thrust } from '../force/Thrust';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
+import { EpochUTC } from '../time/EpochUTC';
 import { GoldenSection } from './../optimize/GoldenSection';
 
 // Propagator base class.

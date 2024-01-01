@@ -1,20 +1,22 @@
 {
   "name": "ootk",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Orbital Object Toolkit including SGP4 Propagator and Coordinate Transforms",
-  "main": "dist/ootk.js",
   "scripts": {
-    "build": "node ./scripts/cleanup.js && ttsc -p tsconfig.build.json && node --openssl-legacy-provider node_modules/webpack/bin/webpack.js --config ./scripts/webpack.js",
-    "build:legacy": "node ./scripts/cleanup.js && tsc -p tsconfig.build.json && node node_modules/webpack/bin/webpack.js --config ./scripts/webpack.js",
+    "build": "node ./scripts/cleanup.mjs && ttsc -p tsconfig.build.json",
     "lcov": "node ./scripts/openLcov.mjs",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "lint:test": "eslint test",
-    "sandbox": "http-server ./",
     "test": "npm run build && jest",
     "test:coverage": "jest --coverage",
     "test:performance": "node test/performance/timing.test.mjs",
     "version": "auto-changelog -p && git add CHANGELOG.md"
+  },
+  "main": "./lib/ootk.js",
+  "exports": {
+    "import": "./lib/ootk.js",
+    "require": "./lib/ootk.js"
   },
   "repository": {
     "type": "git",
@@ -47,7 +49,6 @@
     "codecov": "^3.8.1",
     "copy-webpack-plugin": "^11.0.0",
     "eslint": "^7.32.0",
-    "imports-loader": "^4.0.1",
     "jest": "^28.1.3",
     "node-fetch": "^2.6.7",
     "opener": "^1.5.2",

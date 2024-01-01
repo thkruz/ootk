@@ -1,4 +1,4 @@
-import { tau } from '../utils/constants';
+import { TAU } from '../utils/constants';
 import { Random } from './Random';
 import { Vector } from './Vector';
 
@@ -31,8 +31,8 @@ export class BoxMuller {
     const u2 = this.rand.nextFloat();
     const mag = this.sigma * Math.sqrt(-2.0 * Math.log(u1));
 
-    this._cache[0] = mag * Math.cos(tau * u2) + this.mu;
-    this._cache[1] = mag * Math.sin(tau * u2) + this.mu;
+    this._cache[0] = mag * Math.cos(TAU * u2) + this.mu;
+    this._cache[1] = mag * Math.sin(TAU * u2) + this.mu;
   }
 
   /**

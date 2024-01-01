@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable class-methods-use-this */
 
-import { EpochUTC } from '@src/time/EpochUTC';
 import { J2000 } from '../coordinate/J2000';
+import { EpochUTC } from '../time/EpochUTC';
 import { Interpolator } from './Interpolator';
 
 // / Base class for state vector interpolators.

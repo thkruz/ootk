@@ -3,7 +3,7 @@ import { J2000 } from '../coordinate/J2000';
 import { ForceModel } from '../force/ForceModel';
 import { Vector3D } from '../operations/Vector3D';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
-import { tau } from '../utils/constants';
+import { TAU } from '../utils/constants';
 import { ObservationOptical } from './../observation/ObservationOptical';
 import { GibbsIOD } from './GibbsIOD';
 import { LambertIOD } from './LambertIOD';
@@ -99,7 +99,7 @@ export class GoodingIOD {
     let th = Math.atan2(p13.magnitude(), p1.dot(p3));
 
     if (!posigrade) {
-      th = tau - th;
+      th = TAU - th;
     }
 
     const v1 = new Float64Array(2);
