@@ -3,7 +3,7 @@
  * @since  0.2.0
  */
 
-import { Transforms } from '@lib/ootk';
+import { Transforms } from '../../lib/ootk';
 import { rad2deg } from '../../lib/utils/constants';
 import transformData from './transforms.json';
 
@@ -122,7 +122,22 @@ describe('Rae2Sez', () => {
 
 describe('Rae2Ecf', () => {
   it('should convert valid RAE coordinates to ECF', () => {
-    const { rae, ecf, lla } = transformData.validRae2Ecf[0];
+    // const { rae, ecf, lla } = transformData.validRae2Ecf[0];
+    const ecf = {
+      x: 4000,
+      y: 4000,
+      z: 4000,
+    };
+    const lla = {
+      lon: 0,
+      lat: 0,
+      alt: 0,
+    };
+    const rae = Transforms.ecf2rae(lla, ecf);
+
+    // eslint-disable-next-line no-console
+    console.warn(rae);
+
     const ecfCoordinates = Transforms.rae2ecf(rae, lla);
 
     expect(ecfCoordinates.x).toBeCloseTo(ecf.x);

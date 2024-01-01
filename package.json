@@ -4,14 +4,14 @@
   "description": "Orbital Object Toolkit including SGP4 Propagator and Coordinate Transforms",
   "main": "dist/ootk.js",
   "scripts": {
-    "build": "node ./scripts/cleanup.js && tsc -p tsconfig.build.json && node --openssl-legacy-provider node_modules/webpack/bin/webpack.js --config ./scripts/webpack.js",
+    "build": "node ./scripts/cleanup.js && ttsc -p tsconfig.build.json && node --openssl-legacy-provider node_modules/webpack/bin/webpack.js --config ./scripts/webpack.js",
     "build:legacy": "node ./scripts/cleanup.js && tsc -p tsconfig.build.json && node node_modules/webpack/bin/webpack.js --config ./scripts/webpack.js",
     "lcov": "node ./scripts/openLcov.mjs",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "lint:test": "eslint test",
     "sandbox": "http-server ./",
-    "test": "jest",
+    "test": "npm run build && jest",
     "test:coverage": "jest --coverage",
     "test:performance": "node test/performance/timing.test.mjs",
     "version": "auto-changelog -p && git add CHANGELOG.md"
@@ -64,5 +64,9 @@
     "lib": "lib",
     "src": "src",
     "test": "test"
+  },
+  "dependencies": {
+    "ttypescript": "^1.5.15",
+    "typescript-transform-paths": "^3.4.6"
   }
 }
