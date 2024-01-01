@@ -1,13 +1,13 @@
 import { EpochUTC } from '@src/time/EpochUTC';
 import { J2000 } from '../coordinate/J2000';
 import { RIC } from '../coordinate/RIC';
-import { deg2rad } from '../operations/constants';
-import { array2d } from '../operations/functions';
 import { Matrix } from '../operations/Matrix';
 import { RandomGaussianSource } from '../operations/RandomGaussianSource';
 import { Vector } from '../operations/Vector';
 import { Vector3D } from '../operations/Vector3D';
 import { Propagator } from '../propagator/Propagator';
+import { deg2rad } from '../utils/constants';
+import { array2d } from '../utils/functions';
 import { Observation } from './Observation';
 import { normalizeAngle, observationDerivative, observationNoiseFromSigmas } from './ObservationUtils';
 import { PropagatorPairs } from './PropagatorPairs';

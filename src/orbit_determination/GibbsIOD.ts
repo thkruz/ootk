@@ -1,8 +1,8 @@
 import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
 import { J2000 } from '../coordinate/J2000';
-import { deg2rad, halfPi } from '../operations/constants';
 import { Vector3D } from '../operations/Vector3D';
+import { deg2rad, halfPi } from '../utils/constants';
 import { ForceModel } from './../force/ForceModel';
 import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
 

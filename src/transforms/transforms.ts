@@ -128,7 +128,7 @@ export function eci2ecf<T extends number>(eci: EciVec3<T>, gmst: number): EcfVec
  * @param {number} gmst takes a number in gmst time
  * @returns {array} array containing lla coordinates
  */
-export function eci2lla(eci: EciVec3, gmst: number): LlaVec3 {
+export function eci2lla(eci: EciVec3, gmst: number): LlaVec3<Degrees, Kilometers> {
   // http://www.celestrak.com/columns/v02n03/
   const a = 6378.137;
   const b = 6356.7523142;
@@ -157,7 +157,10 @@ export function eci2lla(eci: EciVec3, gmst: number): LlaVec3 {
   }
   const alt = R / Math.cos(lat) - a * C;
 
-  return { lon: <Radians>lon, lat: <Radians>lat, alt: <Kilometers>alt };
+  lon = (lon * RAD2DEG) as Degrees;
+  lat = (lat * RAD2DEG) as Degrees;
+
+  return { lon: <Degrees>lon, lat: <Degrees>lat, alt: <Kilometers>alt };
 }
 
 /**
@@ -200,12 +203,12 @@ export function lla2ecf<D extends number>(lla: LlaVec3<Radians, D>): EcefVec3<D>
  * @see http://www.celestrak.com/columns/v02n02/
  */
 export function lla2sez<D extends number>(lla: LlaVec3<Degrees, D>, ecf: EcfVec3<D>): SezVec3<D> {
-  const lon = (lla.lon * DEG2RAD) as Radians;
   const lat = (lla.lat * DEG2RAD) as Radians;
+  const lon = (lla.lon * DEG2RAD) as Radians;
 
   const observerEcf = lla2ecf({
-    lat,
-    lon,
+    lat: (lla.lat * DEG2RAD) as Radians,
+    lon: (lla.lon * DEG2RAD) as Radians,
     alt: <Kilometers>0,
   });
 
@@ -230,7 +233,7 @@ export function lla2sez<D extends number>(lla: LlaVec3<Degrees, D>, ecf: EcfVec3
  * @param rae The vector in RAE coordinate system.
  * @returns The vector in SEZ coordinate system.
  */
-export function rae2sez<D extends number, A extends number>(rae: RaeVec3<D, A>): SezVec3<D> {
+export function rae2sez<D extends number>(rae: RaeVec3<D, Radians>): SezVec3<D> {
   const south = -rae.rng * Math.cos(rae.el) * Math.cos(rae.az);
   const east = rae.rng * Math.cos(rae.el) * Math.sin(rae.az);
   const zenith = rae.rng * Math.sin(rae.el);
@@ -253,18 +256,25 @@ export function rae2sez<D extends number, A extends number>(rae: RaeVec3<D, A>):
  * @returns The vector in ECF coordinate system.
  */
 export function rae2ecf<D extends number>(rae: RaeVec3<D, Degrees>, lla: LlaVec3<Degrees, D>): EcfVec3<D> {
-  const obsEcf = lla2ecf({
+  const llaRad = {
     lat: (lla.lat * DEG2RAD) as Radians,
     lon: (lla.lon * DEG2RAD) as Radians,
-    alt: <Kilometers>0,
-  });
-  const sez = rae2sez(rae);
+    alt: lla.alt,
+  };
+  const raeRad = {
+    az: (rae.az * DEG2RAD) as Radians,
+    el: (rae.el * DEG2RAD) as Radians,
+    rng: rae.rng,
+  };
+
+  const obsEcf = lla2ecf(llaRad);
+  const sez = rae2sez(raeRad);
 
   // Some needed calculations
-  const slat = Math.sin(lla.lat);
-  const slon = Math.sin(lla.lon);
-  const clat = Math.cos(lla.lat);
-  const clon = Math.cos(lla.lon);
+  const slat = Math.sin(llaRad.lat);
+  const slon = Math.sin(llaRad.lon);
+  const clat = Math.cos(llaRad.lat);
+  const clon = Math.cos(llaRad.lon);
 
   const x = slat * clon * sez.s + -slon * sez.e + clat * clon * sez.z + obsEcf.x;
   const y = slat * slon * sez.s + clon * sez.e + clat * slon * sez.z + obsEcf.y;
@@ -325,10 +335,10 @@ export function rae2ruv(rae: RaeVec3, sensor: RadarSensor, maxSensorAz: Degrees)
  * @param sez The SEZ coordinates.
  * @returns {RaeVec3} Rng, Az, El array
  */
-export function sez2rae<D extends number, A extends number>(sez: SezVec3<D>): RaeVec3<D, A> {
+export function sez2rae<D extends number>(sez: SezVec3<D>): RaeVec3<D, Radians> {
   const rng = <D>Math.sqrt(sez.s * sez.s + sez.e * sez.e + sez.z * sez.z);
-  const el = <A>Math.asin(sez.z / rng);
-  const az = <A>(Math.atan2(-sez.e, sez.s) + PI);
+  const el = <Radians>Math.asin(sez.z / rng);
+  const az = <Radians>(Math.atan2(-sez.e, sez.s) + PI);
 
   return { rng, az, el };
 }
@@ -367,6 +377,11 @@ export function uv2azel(u: Radians, v: Radians, coneHalfAngle: Radians): { az: R
  */
 export function ecf2rae<D extends number>(lla: LlaVec3<Degrees, D>, ecf: EcfVec3<D>): RaeVec3<D, Degrees> {
   const sezCoords = lla2sez(lla, ecf);
+  const rae = sez2rae(sezCoords);
 
-  return sez2rae(sezCoords);
+  return {
+    rng: rae.rng,
+    az: (rae.az * RAD2DEG) as Degrees,
+    el: (rae.el * RAD2DEG) as Degrees,
+  };
 }

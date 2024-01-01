@@ -1,28 +1,7 @@
-/**
- * @author Theodore Kruczek.
- * @description Orbital Object ToolKit (OOTK) is a collection of tools for working
- * with satellites and other orbital objects.
- *
- * @file The Utils module.
- *
- * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2023 Theodore Kruczek
- *
- * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
- *
- * Orbital Object ToolKit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License along with
- * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
- */
-
 import * as Types from '../types/types';
 import { EciVec3, Kilometers } from '../types/types';
 import { DAY_TO_MS } from './constants';
+import { sign } from './functions';
 import { MoonMath } from './moon-math';
 
 class Utils {
@@ -82,41 +61,7 @@ class Utils {
 
     const rangeRate = (range.x * rangeVel.x + range.y * rangeVel.y + range.z * rangeVel.z) / distance;
 
-    return <Kilometers>(1 + (rangeRate / c) * Utils.sign_(rangeRate));
-  }
-
-  static getDayOfYear(date: Date): number {
-    date = date || new Date();
-
-    const dayCount = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
-    const mn = date.getMonth();
-    const dn = date.getUTCDate();
-    let dayOfYear = dayCount[mn] + dn;
-
-    if (mn > 1 && Utils.isLeapYear_(date)) {
-      dayOfYear++;
-    }
-
-    return dayOfYear;
-  }
-
-  static roundToNDecimalPlaces(value: number, places: number): number {
-    return Math.round(value * 10 ** places) / 10 ** places;
-  }
-
-  private static isLeapYear_(dateIn: Date) {
-    const year = dateIn.getUTCFullYear();
-
-    // eslint-disable-next-line no-bitwise
-    if ((year & 3) !== 0) {
-      return false;
-    }
-
-    return year % 100 !== 0 || year % 400 === 0;
-  }
-
-  private static sign_(value: number) {
-    return value >= 0 ? 1 : -1;
+    return <Kilometers>(1 + (rangeRate / c) * sign(rangeRate));
   }
 }
 

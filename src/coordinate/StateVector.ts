@@ -1,7 +1,7 @@
 import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
 import { Vector3D } from '../operations/Vector3D';
-import { tau } from './../operations/constants';
+import { tau } from '../utils/constants';
 import { ClassicalElements } from './ClassicalElements';
 
 // / Position and velocity [Vector3D] container.

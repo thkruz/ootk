@@ -2,8 +2,8 @@ import { Earth } from '../body/Earth';
 import { ITRF } from '../coordinate/ITRF';
 import { J2000 } from '../coordinate/J2000';
 import { DataHandler } from '../data/DataHandler';
-import { deg2rad } from '../operations/constants';
 import { Vector3D } from '../operations/Vector3D';
+import { deg2rad } from '../utils/constants';
 import { Sun } from './../body/Sun';
 import { Force } from './Force';
 

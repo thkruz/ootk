@@ -1,4 +1,4 @@
-import { factorial } from '../../operations/functions';
+import { factorial } from '../../utils/functions';
 import { egm96 } from './egm96';
 
 // / EGM-96 entry for l, m indexes and clm, slm values.

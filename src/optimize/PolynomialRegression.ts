@@ -1,6 +1,6 @@
 /* eslint-disable require-jsdoc */
 /* eslint-disable func-style */
-import { evalPoly } from '../operations/functions';
+import { evalPoly } from '../utils/functions';
 import { DownhillSimplex } from './DownhillSimplex';
 import { PolynomicalRegressionResult } from './PolynomicalRegressionResult';
 // / Polynomial regression optimizer.

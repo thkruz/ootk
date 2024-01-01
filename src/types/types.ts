@@ -186,7 +186,7 @@ export type EnuVec3<Units = Kilometers> = Vec3<Units>;
  * @template D The unit of measure used for the altitude dimension.
  * This is typically a type representing a distance, such as kilometers or meters. The default is Kilometers.
  */
-export type LlaVec3<A = Radians, D = Kilometers> = {
+export type LlaVec3<A = Degrees, D = Kilometers> = {
   lat: A;
   lon: A;
   alt: D;
@@ -647,3 +647,32 @@ export type OperationsDetails = {
   owner?: string;
   country?: string;
 };
+/**
+ * Enumeration representing different methods for calculating angular diameter.
+ */
+
+export enum AngularDiameterMethod {
+  Circle,
+  Sphere,
+}
+/**
+ * Enumeration representing different methods for calculating angular distance.
+ */
+
+export enum AngularDistanceMethod {
+  Cosine,
+  Haversine,
+}
+/**
+ * Represents a function that calculates the Jacobian matrix.
+ * @param xs - The input values as a Float64Array.
+ * @returns The Jacobian matrix as a Float64Array.
+ */
+export type JacobianFunction = (xs: Float64Array) => Float64Array;
+/**
+ * Represents a differentiable function.
+ * @param x The input value.
+ * @returns The output value.
+ */
+
+export type DifferentiableFunction = (x: number) => number;

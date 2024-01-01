@@ -4,6 +4,7 @@
  */
 
 import { Utils } from '@lib/ootk'; // eslint-disable-line
+import { getDayOfYear } from '@lib/utils/functions';
 
 const numDigits = 8;
 
@@ -113,32 +114,32 @@ describe('Create Vector Function', () => {
 
 describe('doy Functions', () => {
   test('if doy is correct', () => {
-    expect(Utils.getDayOfYear(new Date(2022, 0, 1))).toEqual(1);
-    expect(Utils.getDayOfYear(new Date(2022, 1, 1))).toEqual(32);
-    expect(Utils.getDayOfYear(new Date(2022, 2, 1))).toEqual(60);
-    expect(Utils.getDayOfYear(new Date(2022, 3, 1))).toEqual(91);
-    expect(Utils.getDayOfYear(new Date(2022, 4, 1))).toEqual(121);
-    expect(Utils.getDayOfYear(new Date(2022, 5, 1))).toEqual(152);
-    expect(Utils.getDayOfYear(new Date(2022, 6, 1))).toEqual(182);
-    expect(Utils.getDayOfYear(new Date(2022, 7, 1))).toEqual(213);
-    expect(Utils.getDayOfYear(new Date(2022, 8, 1))).toEqual(244);
-    expect(Utils.getDayOfYear(new Date(2022, 9, 1))).toEqual(274);
-    expect(Utils.getDayOfYear(new Date(2022, 10, 1))).toEqual(305);
-    expect(Utils.getDayOfYear(new Date(2022, 11, 1))).toEqual(335);
+    expect(getDayOfYear(new Date(2022, 0, 1))).toEqual(1);
+    expect(getDayOfYear(new Date(2022, 1, 1))).toEqual(32);
+    expect(getDayOfYear(new Date(2022, 2, 1))).toEqual(60);
+    expect(getDayOfYear(new Date(2022, 3, 1))).toEqual(91);
+    expect(getDayOfYear(new Date(2022, 4, 1))).toEqual(121);
+    expect(getDayOfYear(new Date(2022, 5, 1))).toEqual(152);
+    expect(getDayOfYear(new Date(2022, 6, 1))).toEqual(182);
+    expect(getDayOfYear(new Date(2022, 7, 1))).toEqual(213);
+    expect(getDayOfYear(new Date(2022, 8, 1))).toEqual(244);
+    expect(getDayOfYear(new Date(2022, 9, 1))).toEqual(274);
+    expect(getDayOfYear(new Date(2022, 10, 1))).toEqual(305);
+    expect(getDayOfYear(new Date(2022, 11, 1))).toEqual(335);
   });
 
   test('if getDayOfYear is correct in leap year', () => {
-    expect(Utils.getDayOfYear(new Date(2020, 0, 1, 0))).toEqual(1);
-    expect(Utils.getDayOfYear(new Date(2020, 1, 1, 0))).toEqual(32);
-    expect(Utils.getDayOfYear(new Date(2020, 2, 1, 0))).toEqual(61);
-    expect(Utils.getDayOfYear(new Date(2020, 3, 1, 0))).toEqual(92);
-    expect(Utils.getDayOfYear(new Date(2020, 4, 1, 0))).toEqual(122);
-    expect(Utils.getDayOfYear(new Date(2020, 5, 1, 0))).toEqual(153);
-    expect(Utils.getDayOfYear(new Date(2020, 6, 1, 0))).toEqual(183);
-    expect(Utils.getDayOfYear(new Date(2020, 7, 1, 0))).toEqual(214);
-    expect(Utils.getDayOfYear(new Date(2020, 8, 1, 0))).toEqual(245);
-    expect(Utils.getDayOfYear(new Date(2020, 9, 1, 0))).toEqual(275);
-    expect(Utils.getDayOfYear(new Date(2020, 10, 1, 0))).toEqual(306);
-    expect(Utils.getDayOfYear(new Date(2020, 11, 1, 0))).toEqual(336);
+    expect(getDayOfYear(new Date(2020, 0, 1, 0))).toEqual(1);
+    expect(getDayOfYear(new Date(2020, 1, 1, 0))).toEqual(32);
+    expect(getDayOfYear(new Date(2020, 2, 1, 0))).toEqual(61);
+    expect(getDayOfYear(new Date(2020, 3, 1, 0))).toEqual(92);
+    expect(getDayOfYear(new Date(2020, 4, 1, 0))).toEqual(122);
+    expect(getDayOfYear(new Date(2020, 5, 1, 0))).toEqual(153);
+    expect(getDayOfYear(new Date(2020, 6, 1, 0))).toEqual(183);
+    expect(getDayOfYear(new Date(2020, 7, 1, 0))).toEqual(214);
+    expect(getDayOfYear(new Date(2020, 8, 1, 0))).toEqual(245);
+    expect(getDayOfYear(new Date(2020, 9, 1, 0))).toEqual(275);
+    expect(getDayOfYear(new Date(2020, 10, 1, 0))).toEqual(306);
+    expect(getDayOfYear(new Date(2020, 11, 1, 0))).toEqual(336);
   });
 });

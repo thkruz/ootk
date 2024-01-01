@@ -1,4 +1,4 @@
-import { secondsPerDay } from '../operations/constants';
+import { secondsPerDay } from '../utils/constants';
 import { Comparable } from './Comparable';
 
 // / Base class for [Epoch] data.

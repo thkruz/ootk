@@ -1,4 +1,4 @@
-import { deg2rad, rad2deg } from './constants';
+import { deg2rad, rad2deg } from '../utils/constants';
 import { Matrix } from './Matrix';
 import { Vector3D } from './Vector3D';
 

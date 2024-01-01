@@ -5,8 +5,8 @@
  */
 
 import { Sgp4 } from '@lib/ootk';
-import sgp4Data from './sgp4-full-cov.json';
 import sgp4FailData from './sgp4-full-cov-fail.json';
+import sgp4Data from './sgp4-full-cov.json';
 
 describe('Verification TLE Data in Appendix D of Revisiting Spacetrack Report #3: Rev 1', () => {
   sgp4Data.forEach((sgp4DataItem) => {
@@ -65,65 +65,6 @@ describe('Verification of Fail Cases', () => {
 });
 
 describe('Test vector equations in SGP4', () => {
-  test('if mag computes a magnitude', () => {
-    expect(Sgp4.mag([10, 10, 10])).toEqual(17.320508075688775);
-  });
-
-  test('if cross computes a cross product', () => {
-    expect(Sgp4.cross([10, 10, 10], [-10, -10, -10])).toEqual([0, 0, 0]);
-  });
-  test('if dot computes a dot product', () => {
-    expect(Sgp4.dot([10, 10, 10], [-10, -10, -10])).toEqual(-300);
-  });
-  test('if angle computes an angle in radians', () => {
-    expect(Sgp4.angle([10, 10, 10], [-10, -10, -10])).toEqual(3.1415926325163688);
-  });
-
-  /** This test is dumb and using 99999.1 should be replaced with an actual error */
-  test('if angle returns a huge number when it is the same value', () => {
-    expect(Sgp4.angle([0, 0, 10], [0, 0, 0])).toEqual(999999.1);
-  });
-  test('if asinh computes...', () => {
-    expect(Sgp4.asinh(Math.PI)).toEqual(1.8622957433108482);
-  });
-  test('if newtonnu works for circular orbits', () => {
-    expect(Sgp4.newtonnu(0, 0)).toEqual({ e0: 0, m: 0 });
-  });
-  test('if newtonnu works for elliptical orbits', () => {
-    expect(Sgp4.newtonnu(0.5, 0)).toEqual({ e0: 0, m: 0 });
-  });
-  test('if newtonnu works for hyperbolic orbits', () => {
-    expect(Sgp4.newtonnu(1, 0)).toEqual({ e0: 0, m: 0 });
-  });
-  test('if newtonnu works for parabolic orbits', () => {
-    expect(Sgp4.newtonnu(1.5, 0)).toEqual({ e0: 0, m: 0 });
-  });
-  test('if newtonnu works for negative orbits', () => {
-    expect(Sgp4.newtonnu(0, -1)).toEqual({ e0: -1, m: 5.283185307179586 });
-  });
-
-  test('if vectors can be converted into elements', () => {
-    expect(
-      Sgp4.rv2coe(
-        [-2469.18115234375, -6742.41845703125, -4302.49951171875],
-        [5.526907444000244, -4.195889472961426, 0.920195996761322],
-        398600.8,
-      ),
-    ).toEqual({
-      a: 8620.589416586823,
-      arglat: 999999.1,
-      argp: 3.5324404502518094,
-      ecc: 0.1845590057042562,
-      incl: 0.5976602330329903,
-      lonper: 999999.1,
-      m: 1.2308092930674526,
-      nu: 1.5991142060024006,
-      omega: 5.4377740711189215,
-      p: 8326.95467068737,
-      truelon: 999999.1,
-    });
-  });
-
   test('if invjday calculates date', () => {
     expect(Sgp4.invjday(2450000, 0)).toEqual({
       day: 9,
@@ -238,14 +179,5 @@ describe('Ensure bstar and ndot account for leading zeros', () => {
     const satrec = Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 
     expect(satrec.nddot).toEqual(-0.00023);
-  });
-});
-
-describe('verify sgn exports the sign of a number', () => {
-  test('if sign is negative then it exports -1', () => {
-    expect(Sgp4.sgn(-50)).toEqual(-1);
-  });
-  test('if sign is positive then it exports 1', () => {
-    expect(Sgp4.sgn(25)).toEqual(1);
   });
 });

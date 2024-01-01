@@ -4,8 +4,7 @@
  * @since  1.2.0
  */
 
-import { Degrees, Kilometers, Radians, Sat, Sensor, SpaceObjectType, TleLine1, TleLine2 } from '../../src/ootk';
-import { DEG2RAD } from './../../src/utils/constants';
+import { Degrees, Kilometers, Sat, Sensor, SpaceObjectType, TleLine1, TleLine2 } from '../../src/ootk';
 
 const dateObj = new Date(1661400000000);
 
@@ -18,8 +17,8 @@ describe('Basic Sensor functionality', () => {
   it('should be able to get rae coordinates', () => {
     const sensor = new Sensor({
       name: 'Test',
-      lat: (41 * DEG2RAD) as Radians,
-      lon: (-71 * DEG2RAD) as Radians,
+      lat: 41 as Degrees,
+      lon: -71 as Degrees,
       alt: 0 as Kilometers,
     });
 
@@ -40,8 +39,8 @@ describe('Basic Sensor functionality', () => {
   it('should be able to determine InView without FOV', () => {
     const sensor = new Sensor({
       name: 'Test',
-      lat: (41 * DEG2RAD) as Radians,
-      lon: (-71 * DEG2RAD) as Radians,
+      lat: 41 as Degrees,
+      lon: -71 as Degrees,
       alt: 0 as Kilometers,
       type: SpaceObjectType.OPTICAL,
     });
@@ -57,8 +56,8 @@ describe('Basic Sensor functionality', () => {
   it('should be able to determine InView with FOV', () => {
     const sensor = new Sensor({
       name: 'Test',
-      lat: (41 * DEG2RAD) as Radians,
-      lon: (-71 * DEG2RAD) as Radians,
+      lat: 41 as Degrees,
+      lon: -71 as Degrees,
       alt: 0 as Kilometers,
       minAz: 0 as Degrees,
       maxAz: 360 as Degrees,
@@ -80,8 +79,8 @@ describe('Basic Sensor functionality', () => {
     const result = () =>
       new Sensor({
         name: 'Test',
-        lat: (41 * DEG2RAD) as Radians,
-        lon: (-71 * DEG2RAD) as Radians,
+        lat: 41 as Degrees,
+        lon: -71 as Degrees,
         alt: 0 as Kilometers,
         minAz: -999 as Degrees,
       });
@@ -93,8 +92,8 @@ describe('Basic Sensor functionality', () => {
     const result = () =>
       new Sensor({
         name: 'Test',
-        lat: (41 * DEG2RAD) as Radians,
-        lon: (-71 * DEG2RAD) as Radians,
+        lat: 41 as Degrees,
+        lon: -71 as Degrees,
         alt: 0 as Kilometers,
         maxAz: -999 as Degrees,
       });
@@ -106,8 +105,8 @@ describe('Basic Sensor functionality', () => {
     const result = () =>
       new Sensor({
         name: 'Test',
-        lat: (41 * DEG2RAD) as Radians,
-        lon: (-71 * DEG2RAD) as Radians,
+        lat: 41 as Degrees,
+        lon: -71 as Degrees,
         alt: 0 as Kilometers,
         minEl: -999 as Degrees,
       });
@@ -119,8 +118,8 @@ describe('Basic Sensor functionality', () => {
     const result = () =>
       new Sensor({
         name: 'Test',
-        lat: (41 * DEG2RAD) as Radians,
-        lon: (-71 * DEG2RAD) as Radians,
+        lat: 41 as Degrees,
+        lon: -71 as Degrees,
         alt: 0 as Kilometers,
         maxEl: -999 as Degrees,
       });
@@ -132,8 +131,8 @@ describe('Basic Sensor functionality', () => {
     const result = () =>
       new Sensor({
         name: 'Test',
-        lat: (41 * DEG2RAD) as Radians,
-        lon: (-71 * DEG2RAD) as Radians,
+        lat: 41 as Degrees,
+        lon: -71 as Degrees,
         alt: 0 as Kilometers,
         minRng: -999 as Kilometers,
       });
@@ -144,8 +143,8 @@ describe('Basic Sensor functionality', () => {
     const result = () =>
       new Sensor({
         name: 'Test',
-        lat: (41 * DEG2RAD) as Radians,
-        lon: (-71 * DEG2RAD) as Radians,
+        lat: 41 as Degrees,
+        lon: -71 as Degrees,
         alt: 0 as Kilometers,
         maxRng: -999 as Kilometers,
       });
@@ -154,15 +153,13 @@ describe('Basic Sensor functionality', () => {
   });
 
   it('should error if bad lat', () => {
-    const result = () =>
-      new Sensor({ name: 'Test', lat: -999 as Radians, lon: (-71 * DEG2RAD) as Radians, alt: 0 as Kilometers });
+    const result = () => new Sensor({ name: 'Test', lat: -999 as Degrees, lon: -71 as Degrees, alt: 0 as Kilometers });
 
     expect(result).toThrow();
   });
 
   it('should error if bad lon', () => {
-    const result = () =>
-      new Sensor({ name: 'Test', lat: (41 * DEG2RAD) as Radians, lon: -999 as Radians, alt: 0 as Kilometers });
+    const result = () => new Sensor({ name: 'Test', lat: 41 as Degrees, lon: -999 as Degrees, alt: 0 as Kilometers });
 
     expect(result).toThrow();
   });
@@ -171,8 +168,8 @@ describe('Basic Sensor functionality', () => {
     const result = () =>
       new Sensor({
         name: 'Test',
-        lat: (41 * DEG2RAD) as Radians,
-        lon: (-71 * DEG2RAD) as Radians,
+        lat: 41 as Degrees,
+        lon: -71 as Degrees,
         alt: -999 as Kilometers,
       });
 
@@ -182,8 +179,8 @@ describe('Basic Sensor functionality', () => {
   it('should create a lookangles array', () => {
     const sensor = new Sensor({
       name: 'Test',
-      lat: (41 * DEG2RAD) as Radians,
-      lon: (-71 * DEG2RAD) as Radians,
+      lat: 41 as Degrees,
+      lon: -71 as Degrees,
       alt: 0 as Kilometers,
       minAz: 0 as Degrees,
       maxAz: 360 as Degrees,

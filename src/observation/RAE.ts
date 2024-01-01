@@ -1,11 +1,12 @@
 /* eslint-disable no-undefined */
 import { Radians } from '@src/ootk';
 import { EpochUTC } from '@src/time/EpochUTC';
+import { AngularDistanceMethod } from '@src/types/types';
 import { ITRF } from '../coordinate/ITRF';
 import { J2000 } from '../coordinate/J2000';
-import { deg2rad, halfPi, rad2deg, tau } from '../operations/constants';
-import { angularDistance, AngularDistanceMethod } from '../operations/functions';
 import { Vector3D } from '../operations/Vector3D';
+import { deg2rad, halfPi, rad2deg, tau } from '../utils/constants';
+import { angularDistance } from '../utils/functions';
 
 // / Range, azimuth, and elevation.
 export class RAE {

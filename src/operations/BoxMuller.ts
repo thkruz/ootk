@@ -1,4 +1,4 @@
-import { tau } from './constants';
+import { tau } from '../utils/constants';
 import { Random } from './Random';
 import { Vector } from './Vector';
 

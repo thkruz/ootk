@@ -5,7 +5,7 @@
  */
 
 import { Star } from '@src/objects';
-import { Kilometers, Radians } from '@src/ootk';
+import { Degrees, Kilometers, Radians } from '@src/ootk';
 
 describe('Basic Star functionality', () => {
   const star = new Star({
@@ -32,8 +32,8 @@ describe('Basic Star functionality', () => {
   it('should be able to get ECI coordinates', () => {
     const eci = star.getEci(
       {
-        lat: <Radians>0,
-        lon: <Radians>0,
+        lat: <Degrees>0,
+        lon: <Degrees>0,
         alt: <Kilometers>0,
       },
       new Date(1661400000000),

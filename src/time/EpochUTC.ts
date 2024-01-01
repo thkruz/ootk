@@ -1,5 +1,5 @@
-import { deg2rad, msecPerDay, rad2deg, secondsPerWeek, tau } from '../operations/constants';
-import { evalPoly } from '../operations/functions';
+import { deg2rad, msecPerDay, rad2deg, secondsPerWeek, tau } from '../utils/constants';
+import { evalPoly } from '../utils/functions';
 import { DataHandler } from './../data/DataHandler';
 import { Epoch } from './Epoch';
 import { EpochGPS } from './EpochGPS';

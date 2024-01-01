@@ -20,9 +20,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { toPrecision } from '@src/utils/functions';
 import { Line1Data, Line2Data, TleLine1, TleLine2 } from '../types/types';
-
-import { Utils } from '../utils/utils';
 import { TleFormatData } from './tle-format-data';
 
 /**
@@ -117,7 +116,7 @@ export class Tle {
       throw new Error(`Invalid argument of perigee: ${argPe}`);
     }
 
-    return Utils.roundToNDecimalPlaces(argPe, 4);
+    return toPrecision(argPe, 4);
   }
 
   /**
@@ -158,7 +157,7 @@ export class Tle {
       throw new Error(`Invalid BSTAR symbol: ${bstarSymbol}`);
     }
 
-    return Utils.roundToNDecimalPlaces(bstar1, 14);
+    return toPrecision(bstar1, 14);
   }
 
   /**
@@ -204,7 +203,7 @@ export class Tle {
       throw new Error(`Invalid eccentricity: ${ecc}`);
     }
 
-    return Utils.roundToNDecimalPlaces(ecc, 7);
+    return toPrecision(ecc, 7);
   }
 
   /**
@@ -252,7 +251,7 @@ export class Tle {
       throw new Error('Invalid epoch day');
     }
 
-    return Utils.roundToNDecimalPlaces(epochDay, 8);
+    return toPrecision(epochDay, 8);
   }
 
   /**
@@ -319,7 +318,7 @@ export class Tle {
       throw new Error(`Invalid inclination: ${inc}`);
     }
 
-    return Utils.roundToNDecimalPlaces(inc, 4);
+    return toPrecision(inc, 4);
   }
 
   /**
@@ -410,7 +409,7 @@ export class Tle {
       throw new Error(`Invalid mean anomaly: ${meanA}`);
     }
 
-    return Utils.roundToNDecimalPlaces(meanA, 4);
+    return toPrecision(meanA, 4);
   }
 
   /**
@@ -432,7 +431,7 @@ export class Tle {
       throw new Error('Invalid first derivative of mean motion.');
     }
 
-    return Utils.roundToNDecimalPlaces(meanMoDev1, 8);
+    return toPrecision(meanMoDev1, 8);
   }
 
   /**
@@ -476,7 +475,7 @@ export class Tle {
       throw new Error(`Invalid mean motion: ${meanMo}`);
     }
 
-    return Utils.roundToNDecimalPlaces(meanMo, 8);
+    return toPrecision(meanMo, 8);
   }
 
   /**
@@ -500,7 +499,7 @@ export class Tle {
       throw new Error(`Invalid RAAN: ${raan}`);
     }
 
-    return Utils.roundToNDecimalPlaces(raan, 4);
+    return toPrecision(raan, 4);
   }
 
   /**

@@ -1,4 +1,4 @@
-import { DifferentiableFunction } from '../operations/functions';
+import { DifferentiableFunction } from '@src/types/types';
 
 // / Golden Section bounded single value optimizer.
 export class GoldenSection {

@@ -1,17 +1,10 @@
 import { Radians } from '@src/ootk';
 import { EpochUTC } from '@src/time/EpochUTC';
+import { AngularDiameterMethod } from '@src/types/types';
 import { DataHandler } from '../data/DataHandler';
-import {
-  asec2rad,
-  deg2rad,
-  rad2deg,
-  secondsPerDay,
-  secondsPerSiderealDay,
-  tau,
-  ttasec2rad,
-} from '../operations/constants';
-import { angularDiameter, AngularDiameterMethod, evalPoly } from '../operations/functions';
 import { Vector3D } from '../operations/Vector3D';
+import { asec2rad, deg2rad, rad2deg, secondsPerDay, secondsPerSiderealDay, tau, ttasec2rad } from '../utils/constants';
+import { angularDiameter, evalPoly } from '../utils/functions';
 import { NutationAngles } from './NutationAngles';
 import { PrecessionAngles } from './PrecessionAngles';
 

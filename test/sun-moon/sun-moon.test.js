@@ -4,24 +4,26 @@
  * @since  1.3.0
  */
 
+import { Celestial } from '../../lib/body/Celestial';
+import { Sun } from '../../lib/body/Sun';
 import { Utils } from '../../lib/ootk';
 
-const { SunMath, MoonMath } = Utils;
+const { MoonMath } = Utils;
 // Use number of milliseconds since epoch instead of local year, month, day, etc for consistency across machines
 const dateObj = new Date(1661400000000);
 
 describe('Sun and Moon', () => {
-  test('SunMath Unit Tests', () => {
-    const d = SunMath.julian2date(SunMath.date2jSince2000(dateObj));
-    const c = SunMath.getSunRaDec(d);
+  test('Sun Unit Tests', () => {
+    const d = Sun.julian2date(Sun.date2jSince2000(dateObj));
+    const c = Sun.raDec(d);
 
-    SunMath.getStarAzEl(dateObj, 0, 0, c.ra, c.dec);
-    SunMath.getSunAzEl(dateObj, 0, 0);
+    Celestial.getStarAzEl(dateObj, 0, 0, c.ra, c.dec);
+    Sun.azEl(dateObj, 0, 0);
   });
 
   test('Local Solar Time', () => {
     // Use number of milliseconds since epoch instead of local year, month, day, etc for consistency across machines
-    const lst = SunMath.getSolarTime(new Date(1658807880000), -5, -71);
+    const lst = Sun.getSolarTime(new Date(1658807880000), -5, -71);
 
     expect(lst.toUTCString()).toEqual('Tue, 26 Jul 2022 04:07:49 GMT');
   });
@@ -48,7 +50,7 @@ describe('Sun and Moon', () => {
 describe('Test for #6 fix', () => {
   test('Test for #6 fix', () => {
     const date = new Date('2013-03-05UTC');
-    const result = (SunMath.getSunAzEl(date, 50.5, 30.5).az * 180) / Math.PI;
+    const result = (Sun.azEl(date, 50.5, 30.5).az * 180) / Math.PI;
 
     expect(result).toBeCloseTo(36.742354609606814);
   });
@@ -83,7 +85,7 @@ describe('Test for variety of date/time stamps', () => {
         const date = new Date(testDateStrings[i]);
         const testDateDay = date.getDate();
 
-        const times = SunMath.getTimes(date, lat, lng);
+        const times = Sun.getTimes(date, lat, lng);
 
         expect(times.solarNoon.getDate()).toEqual(testDateDay);
       });
@@ -122,7 +124,7 @@ describe('Suncalc.js tests', () => {
   };
 
   test('getTimes returns sun phases for the given date and location', () => {
-    const times = SunMath.getTimes(date, lat, lon, 0, true);
+    const times = Sun.getTimes(date, lat, lon, 0, true);
 
     // eslint-disable-next-line guard-for-in
     for (const i in testTimes) {
@@ -131,7 +133,7 @@ describe('Suncalc.js tests', () => {
   });
 
   test('getTimes adjusts sun phases when additionally given the observer height', () => {
-    const times = SunMath.getTimes(date, lat, lon, alt, true);
+    const times = Sun.getTimes(date, lat, lon, alt, true);
 
     // eslint-disable-next-line guard-for-in
     for (const i in heightTestTimes) {
@@ -140,7 +142,7 @@ describe('Suncalc.js tests', () => {
   });
 
   test('getSunAzEl returns azimuth and altitude for the given time and location', () => {
-    const sunPos = SunMath.getSunAzEl(date, lat, lon);
+    const sunPos = Sun.azEl(date, lat, lon);
 
     expect(sunPos.az).toBeCloseTo(0.6412750628729547);
     expect(sunPos.el).toBeCloseTo(-0.7000406838781611);
@@ -202,7 +204,7 @@ describe('Tests from Hypnos3', () => {
   };
 
   test('southern hemisphere', () => {
-    const times = SunMath.getTimes(date, lat, lon);
+    const times = Sun.getTimes(date, lat, lon);
 
     // eslint-disable-next-line guard-for-in
     for (const i in testTimes) {
@@ -211,7 +213,7 @@ describe('Tests from Hypnos3', () => {
   });
 
   test('getSolarTime returns the solar time', () => {
-    const solarTime = SunMath.getSolarTime(date, -5, -71);
+    const solarTime = Sun.getSolarTime(date, -5, -71);
 
     expect(solarTime.toUTCString()).toEqual('Tue, 05 Mar 2013 00:03:33 GMT');
   });

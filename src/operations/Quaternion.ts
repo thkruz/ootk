@@ -1,4 +1,4 @@
-import { wrapAngle } from './functions';
+import { wrapAngle } from '../utils/functions';
 import { Matrix } from './Matrix';
 import { Vector } from './Vector';
 import { Vector3D } from './Vector3D';

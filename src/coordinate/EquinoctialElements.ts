@@ -1,7 +1,7 @@
 import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
-import { newtonM } from '../operations/functions';
-import { secondsPerDay, tau } from './../operations/constants';
+import { secondsPerDay, tau } from '../utils/constants';
+import { newtonM } from '../utils/functions';
 import { ClassicalElements } from './ClassicalElements';
 import { PositionVelocity } from './StateVector';
 /** Equinoctial element set. */

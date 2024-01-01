@@ -1,9 +1,8 @@
 import { EpochUTC } from '@src/time/EpochUTC';
 import { Earth } from '../body/Earth';
-import { sec2min, secondsPerDay } from '../operations/constants';
-import { clamp, matchHalfPlane, newtonNu } from '../operations/functions';
 import { Vector3D } from '../operations/Vector3D';
-import { rad2deg, tau } from './../operations/constants';
+import { rad2deg, sec2min, secondsPerDay, tau } from '../utils/constants';
+import { clamp, matchHalfPlane, newtonNu } from '../utils/functions';
 import { EquinoctialElements } from './EquinoctialElements';
 import { OrbitRegime } from './OrbitRegime';
 import { PositionVelocity, StateVector } from './StateVector';

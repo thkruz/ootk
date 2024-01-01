@@ -31,14 +31,13 @@ import {
   RaeVec3,
   SpaceObjectType,
 } from '../types/types';
-import { DAY_TO_MS, DEG2RAD, RAD2DEG } from '../utils/constants';
+import { DAY_TO_MS } from '../utils/constants';
 
 import { Celestial } from '@src/body/Celestial';
+import { Utils } from '@src/ootk';
 import { ecf2eci, rae2ecf } from '@src/transforms/transforms';
 import { Sgp4 } from '../sgp4/sgp4';
-import { Utils } from '../utils/utils';
 import { SpaceObject } from './space-object';
-
 interface ObjectInfo {
   bf?: string;
   dec: Radians;
@@ -82,10 +81,7 @@ export class Star extends SpaceObject {
     }
   }
 
-  getEci(
-    lla: LlaVec3 = { lat: <Radians>(180 * DEG2RAD), lon: <Radians>0, alt: <Kilometers>0 },
-    date: Date = this.time,
-  ): EciVec3 {
+  getEci(lla: LlaVec3 = { lat: <Degrees>180, lon: <Degrees>0, alt: <Kilometers>0 }, date: Date = this.time): EciVec3 {
     const rae = this.getRae(lla, date);
     const { gmst } = Star.calculateTimeVariables_(date);
 
@@ -94,16 +90,10 @@ export class Star extends SpaceObject {
   }
 
   getRae(
-    lla: LlaVec3 = { lat: <Radians>(180 * DEG2RAD), lon: <Radians>0, alt: <Kilometers>0 },
+    lla: LlaVec3<Degrees, Kilometers> = { lat: <Degrees>180, lon: <Degrees>0, alt: <Kilometers>0 },
     date: Date = this.time,
   ): RaeVec3 {
-    const starPos = Celestial.getStarAzEl(
-      date,
-      <Degrees>(lla.lat * RAD2DEG),
-      <Degrees>(lla.lon * RAD2DEG),
-      this.ra,
-      this.dec,
-    );
+    const starPos = Celestial.getStarAzEl(date, lla.lat, lla.lon, this.ra, this.dec);
 
     return { az: starPos.az, el: starPos.el, rng: <Kilometers>250000 };
   }

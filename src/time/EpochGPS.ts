@@ -1,5 +1,5 @@
 import { DataHandler } from '../data/DataHandler';
-import { secondsPerWeek } from '../operations/constants';
+import { secondsPerWeek } from '../utils/constants';
 import type { EpochUTC } from './EpochUTC';
 // / Global Positioning System _(GPS)_ formatted epoch.
 export class EpochGPS {

@@ -3,22 +3,29 @@
  * @description Orbital Object ToolKit (OOTK) is a collection of tools for working
  * with satellites and other orbital objects.
  *
- * @file The Sat class provides functions for calculating satellites positions relative
- * to earth based sensors and other orbital objects.
+ * @file The Satellite class provides functions for calculating satellites positions
+ * relative to earth based sensors and other orbital objects.
  *
- * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2023 Theodore Kruczek
+ * @license MIT License
+ * @Copyright (c) 2020-2024 Theodore Kruczek
  *
- * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Orbital Object ToolKit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Affero General License for more details.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU Affero General License along with
- * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 import {
@@ -41,15 +48,13 @@ import { DAY_TO_MS, DEG2RAD, MINUTES_PER_DAY, RAD2DEG } from '../utils/constants
 import { Geodetic } from '@src/coordinate/Geodetic';
 import { ITRF } from '@src/coordinate/ITRF';
 import { J2000 } from '@src/coordinate/J2000';
+import { Sensor } from '@src/objects';
 import { RAE } from '@src/observation/RAE';
-import { Transforms } from '@src/ootk';
+import { Transforms, Utils } from '@src/ootk';
 import { Vector3D } from '@src/operations/Vector3D';
 import { EpochUTC } from '@src/time/EpochUTC';
 import { Sgp4 } from '../sgp4/sgp4';
 import { Tle } from '../tle/tle';
-import { Utils } from '../utils/utils';
-import { Sensor } from './sensor';
-
 /**
  * TODO: Reduce unnecessary calls to calculateTimeVariables using optional
  * parameters and caching.
@@ -58,7 +63,7 @@ import { Sensor } from './sensor';
 /**
  * Information about a space object.
  */
-interface SatelliteObjectParams {
+export interface SatelliteObjectParams {
   name?: string;
   rcs?: number;
   tle1: TleLine1;
@@ -259,13 +264,8 @@ export class Satellite {
     const { gmst } = Satellite.calculateTimeVariables(date, this.satrec);
     const eci = this.getEci(date).position;
     const ecf = Transforms.eci2ecf(eci, gmst);
-    const rae = Transforms.ecf2rae(sensor, ecf);
 
-    return {
-      az: (rae.az * RAD2DEG) as Degrees,
-      el: (rae.el * RAD2DEG) as Degrees,
-      rng: rae.rng,
-    };
+    return Transforms.ecf2rae(sensor, ecf);
   }
 
   /**

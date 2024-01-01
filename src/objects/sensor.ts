@@ -5,25 +5,30 @@
  *
  * @file The Sensor class is used for creating ground based observers.
  *
- * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2023 Theodore Kruczek
+ * @license MIT License
+ * @Copyright (c) 2020-2024 Theodore Kruczek
  *
- * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
- * terms of the GNU Affero General License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later version.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Orbital Object ToolKit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Affero General License for more details.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
- * You should have received a copy of the GNU Affero General License along with
- * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
-import { tau } from '@src/operations/constants';
 import { Degrees, Kilometers, RaeVec3, SpaceObjectType } from '../types/types';
 
-import { RAD2DEG } from '../utils/constants';
 import { BaseObject } from './base-object';
 import { Satellite } from './Satellite';
 
@@ -112,10 +117,6 @@ export class Sensor extends BaseObject {
       const curTime = new Date(startTime + timeOffset * 1000);
       const rae = this.getRae(sat, curTime);
 
-      // Radians to Degrees
-      const azDeg = <Degrees>((rae.az * 360) / tau);
-      const elDeg = <Degrees>((rae.el * 360) / tau);
-
       const isInView = this.isRaeInFov(rae);
 
       if (timeOffset === 0) {
@@ -133,8 +134,8 @@ export class Sensor extends BaseObject {
         const pass = <Lookangles>{
           type,
           time: curTime,
-          az: azDeg,
-          el: elDeg,
+          az: rae.az,
+          el: rae.el,
           rng: rae.rng,
         };
 
@@ -153,12 +154,12 @@ export class Sensor extends BaseObject {
     return msnPlanPasses;
   }
 
-  getRae(sat: Satellite, date: Date = this.time): RaeVec3 {
+  getRae(sat: Satellite, date: Date = this.time): RaeVec3<Kilometers, Degrees> {
     return sat.raeOpt(this, date);
   }
 
-  isRaeInFov(rae: RaeVec3): boolean {
-    if (rae.el * RAD2DEG < this.minEl || rae.el * RAD2DEG > this.maxEl) {
+  isRaeInFov(rae: RaeVec3<Kilometers, Degrees>): boolean {
+    if (rae.el < this.minEl || rae.el > this.maxEl) {
       return false;
     }
 
@@ -166,13 +167,13 @@ export class Sensor extends BaseObject {
       return false;
     }
 
-    if (this.minAz * RAD2DEG > this.maxAz) {
+    if (this.minAz > this.maxAz) {
       // North Facing Sensors
-      if (rae.az * RAD2DEG < this.minAz && rae.az * RAD2DEG > this.maxAz) {
+      if (rae.az < this.minAz && rae.az > this.maxAz) {
         return false;
       }
       // Normal Facing Sensors
-    } else if (rae.az * RAD2DEG < this.minAz || rae.az * RAD2DEG > this.maxAz) {
+    } else if (rae.az < this.minAz || rae.az > this.maxAz) {
       return false;
     }
 

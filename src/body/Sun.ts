@@ -1,10 +1,9 @@
 import { AzEl, Degrees, Kilometers, Meters, Radians, SunTime } from '@src/ootk';
 import { EpochUTC } from '@src/time/EpochUTC';
-import { RaDec } from '@src/types/types';
-import { astronomicalUnit, deg2rad, speedOfLight, tau } from '../operations/constants';
-import { angularDiameter, AngularDiameterMethod } from '../operations/functions';
+import { AngularDiameterMethod, RaDec } from '@src/types/types';
 import { Vector3D } from '../operations/Vector3D';
-import { DEG2RAD, MS_PER_DAY } from '../utils/constants';
+import { astronomicalUnit, deg2rad, DEG2RAD, MS_PER_DAY, speedOfLight, tau } from '../utils/constants';
+import { angularDiameter } from '../utils/functions';
 import { Celestial } from './Celestial';
 import { Earth } from './Earth';
 
