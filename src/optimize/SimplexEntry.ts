@@ -1,4 +1,4 @@
-import { Vector } from '../operations/Vector';
+import { Vector } from 'ootk-core';
 
 /**
  * Optimization cost function that takes in parameter array [xs] and returns

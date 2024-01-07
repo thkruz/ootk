@@ -1,11 +1,6 @@
-import { BaseObjectParams, Degrees, DetailedSensorParams, Milliseconds, Radians, SensorParams } from '../types/types';
-import { Sensor } from './Sensor';
-
-export enum ZoomValue {
-  LEO = 0.45,
-  GEO = 0.82,
-  MAX = 1,
-}
+import { BaseObjectParams, Degrees, Milliseconds, Radians, Sensor, SensorParams } from 'ootk-core';
+import { ZoomValue } from 'src/types/types';
+import { DetailedSensorParams } from '../types/types';
 
 export class DetailedSensor extends Sensor {
   country?: string;

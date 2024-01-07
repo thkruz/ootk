@@ -1,6 +1,4 @@
-import { Earth } from '../body/Earth';
-import { J2000 } from '../coordinate/J2000';
-import { Vector3D } from '../operations/Vector3D';
+import { Earth, J2000, Vector3D } from 'ootk-core';
 import { Force } from './Force';
 
 // / Simple central-body gravity model.

@@ -1,9 +1,4 @@
-import { Radians } from 'src/ootk';
-import { Earth } from '../body/Earth';
-import { J2000 } from '../coordinate/J2000';
-import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
-import { DEG2RAD, halfPi } from '../utils/constants';
+import { DEG2RAD, Earth, EpochUTC, halfPi, J2000, Radians, Vector3D } from 'ootk-core';
 import { ForceModel } from './../force/ForceModel';
 import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
 

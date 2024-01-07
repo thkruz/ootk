@@ -1,7 +1,4 @@
-import { wrapAngle } from '../utils/functions';
-import { Matrix } from './Matrix';
-import { Vector } from './Vector';
-import { Vector3D } from './Vector3D';
+import { Matrix, Vector, Vector3D, wrapAngle } from 'ootk-core';
 
 export class Quaternion {
   x: number;

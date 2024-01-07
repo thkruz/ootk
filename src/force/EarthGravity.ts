@@ -1,11 +1,7 @@
+import { DataHandler, Earth, ITRF, J2000, Vector3D } from 'ootk-core';
 /* eslint-disable class-methods-use-this */
 // / Complex Earth gravity model, accounting for EGM-96 zonal, sectoral, and
 
-import { Earth } from '../body/Earth';
-import { ITRF } from '../coordinate/ITRF';
-import { J2000 } from '../coordinate/J2000';
-import { DataHandler } from '../data/DataHandler';
-import { Vector3D } from '../operations/Vector3D';
 import { Force } from './Force';
 
 // / tesseral geopotential perturbations.

@@ -4,8 +4,7 @@
  * @since  1.2.0
  */
 
-import { Sat } from '../../lib/ootk';
-import { RAD2DEG } from '../../lib/utils/constants';
+import { RAD2DEG, Satellite } from 'ootk-core';
 
 const dateObj = new Date(1661400000000);
 
@@ -14,7 +13,7 @@ const tle2 = '2 25544  51.6415 161.8339 0005168  35.9781  54.7009 15.50067047350
 
 describe('Basic Satellite functionality', () => {
   it('should create a new Sat object', () => {
-    const sat = new Sat({ name: 'Test', tle1, tle2 });
+    const sat = new Satellite({ name: 'Test', tle1, tle2 });
 
     expect(sat).toBeDefined();
     expect(sat.inclination).toBe(51.6415);
@@ -23,7 +22,7 @@ describe('Basic Satellite functionality', () => {
   });
 
   it('should allow chaining', () => {
-    const eci = new Sat({ name: 'Test', tle1, tle2 }).propagateTo(dateObj).getEci().position;
+    const eci = new Satellite({ name: 'Test', tle1, tle2 }).propagateTo(dateObj).getEci().position;
 
     expect(eci.x).toBeCloseTo(6512.640035319078);
     expect(eci.y).toBeCloseTo(-1545.524934684146);
@@ -31,7 +30,7 @@ describe('Basic Satellite functionality', () => {
   });
 
   it('should allow getting eci coordinates', () => {
-    const sat = new Sat({ name: 'Test', tle1, tle2 });
+    const sat = new Satellite({ name: 'Test', tle1, tle2 });
 
     const eci = sat.getEci(dateObj).position;
 
@@ -41,7 +40,7 @@ describe('Basic Satellite functionality', () => {
   });
 
   it('should allow getting ecf coordinates', () => {
-    const sat = new Sat({ name: 'Test', tle1, tle2 });
+    const sat = new Satellite({ name: 'Test', tle1, tle2 });
 
     const eci = sat.getEcf(dateObj);
 
@@ -51,7 +50,7 @@ describe('Basic Satellite functionality', () => {
   });
 
   it('should allow getting lla coordinates', () => {
-    const sat = new Sat({ name: 'Test', tle1, tle2 });
+    const sat = new Satellite({ name: 'Test', tle1, tle2 });
 
     const eci = sat.lla(dateObj);
 
@@ -61,7 +60,7 @@ describe('Basic Satellite functionality', () => {
   });
 
   it('should be able to get the orbital period', () => {
-    const sat = new Sat({ name: 'Test', tle1, tle2 });
+    const sat = new Satellite({ name: 'Test', tle1, tle2 });
 
     expect(sat.period).toBeCloseTo(92.89920734635164);
   });

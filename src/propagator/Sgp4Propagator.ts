@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable class-methods-use-this */
-import { J2000 } from '../coordinate/J2000';
-import { TLE } from '../coordinate/TLE';
+import { EpochUTC, J2000, TLE } from 'ootk-core';
 import { Thrust } from '../force/Thrust';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
-import { EpochUTC } from '../time/EpochUTC';
 import { Propagator } from './Propagator';
 
 // / SGP4 propagator.

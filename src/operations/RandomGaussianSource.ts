@@ -1,6 +1,5 @@
+import { Vector, Vector3D } from 'ootk-core';
 import { BoxMuller } from './BoxMuller';
-import { Vector } from './Vector';
-import { Vector3D } from './Vector3D';
 
 export class RandomGaussianSource {
   private _boxMuller: BoxMuller;

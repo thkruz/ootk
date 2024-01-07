@@ -1,7 +1,4 @@
-import { Sun } from '../body/Sun';
-import { J2000 } from '../coordinate/J2000';
-import { Vector3D } from '../operations/Vector3D';
-import { Moon } from './../body/Moon';
+import { J2000, Moon, Sun, Vector3D } from 'ootk-core';
 import { Force } from './Force';
 
 // / Third-body gravity model.

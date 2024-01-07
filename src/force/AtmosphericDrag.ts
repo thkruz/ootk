@@ -1,10 +1,4 @@
-import { Earth } from '../body/Earth';
-import { ITRF } from '../coordinate/ITRF';
-import { J2000 } from '../coordinate/J2000';
-import { DataHandler } from '../data/DataHandler';
-import { Vector3D } from '../operations/Vector3D';
-import { DEG2RAD } from '../utils/constants';
-import { Sun } from './../body/Sun';
+import { DataHandler, DEG2RAD, Earth, ITRF, J2000, Sun, Vector3D } from 'ootk-core';
 import { Force } from './Force';
 
 /**

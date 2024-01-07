@@ -1,5 +1,4 @@
-import { EpochUTC } from '../time/EpochUTC';
-import { EpochWindow } from '../time/EpochWindow';
+import { EpochUTC, EpochWindow } from 'ootk-core';
 
 // / Interpolator base class.
 export abstract class Interpolator {

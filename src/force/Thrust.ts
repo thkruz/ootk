@@ -1,7 +1,4 @@
-import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
-import { J2000 } from './../coordinate/J2000';
-import { RIC } from './../coordinate/RIC';
+import { EpochUTC, J2000, RIC, Vector3D } from 'ootk-core';
 import { Force } from './Force';
 
 // / Thrust force model.

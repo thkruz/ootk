@@ -1,7 +1,4 @@
-import { Earth } from '../body/Earth';
-import { J2000 } from '../coordinate/J2000';
-import { Vector } from '../operations/Vector';
-import { Vector3D } from '../operations/Vector3D';
+import { Earth, J2000, Vector, Vector3D } from 'ootk-core';
 import { AtmosphericDrag } from './AtmosphericDrag';
 import { EarthGravity } from './EarthGravity';
 import { Force } from './Force';

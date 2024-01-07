@@ -1,8 +1,5 @@
-export { BaseObject } from './BaseObject';
+export { BaseObject, Satellite, Sensor, Star } from 'ootk-core';
 export { DetailedSatellite } from './DetailedSatellite';
 export { DetailedSensor } from './DetailedSensor';
 export { LandObject } from './LandObject';
 export { Marker } from './Marker';
-export { Satellite } from './Satellite';
-export { Sensor } from './Sensor';
-export { Star } from './Star';

@@ -1,6 +1,4 @@
-import { DEG2RAD, RAD2DEG } from '../utils/constants';
-import { Matrix } from './Matrix';
-import { Vector3D } from './Vector3D';
+import { DEG2RAD, Matrix, RAD2DEG, Vector3D } from 'ootk-core';
 
 // / Class containing Euler angles.
 export class EulerAngles {

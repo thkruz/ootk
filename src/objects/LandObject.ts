@@ -1,6 +1,5 @@
+import { BaseObject, BaseObjectParams, Degrees, Kilometers } from 'ootk-core';
 /* eslint-disable class-methods-use-this */
-import { BaseObjectParams, Degrees, Kilometers } from '../types/types';
-import { BaseObject } from './BaseObject';
 
 export interface LandObjectParams {
   id: number;

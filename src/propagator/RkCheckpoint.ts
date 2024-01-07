@@ -1,4 +1,4 @@
-import { J2000 } from '../coordinate/J2000';
+import { J2000 } from 'ootk-core';
 
 // / Runge-Kutta adaptive state checkpoint.
 export class RkCheckpoint {

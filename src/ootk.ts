@@ -28,14 +28,8 @@
  * SOFTWARE.
  */
 
-export * from './body';
+export * from 'ootk-core';
 export * from './coordinate';
 export * from './objects';
 export * from './operations/operations';
-export { Sgp4 } from './sgp4/sgp4';
-export * from './time/time';
-export { Tle } from './tle/tle';
-export * from './transforms';
 export * from './types/types';
-export * from './utils/constants';
-export { Utils } from './utils/utils';

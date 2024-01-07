@@ -1,17 +1,9 @@
-import { J2000 } from '../coordinate/J2000';
-import { RIC } from '../coordinate/RIC';
-import { Matrix } from '../operations/Matrix';
+import { array2d, DEG2RAD, EpochUTC, J2000, Matrix, RAE, RIC, Vector, Vector3D } from 'ootk-core';
 import { RandomGaussianSource } from '../operations/RandomGaussianSource';
-import { Vector } from '../operations/Vector';
-import { Vector3D } from '../operations/Vector3D';
 import { Propagator } from '../propagator/Propagator';
-import { EpochUTC } from '../time/EpochUTC';
-import { DEG2RAD } from '../utils/constants';
-import { array2d } from '../utils/functions';
 import { Observation } from './Observation';
 import { normalizeAngle, observationDerivative, observationNoiseFromSigmas } from './ObservationUtils';
 import { PropagatorPairs } from './PropagatorPairs';
-import { RAE } from './RAE';
 
 // / Radar observation data.
 export class ObservationRadar extends Observation {

@@ -1,4 +1,4 @@
-import { Vector3D } from '../operations/Vector3D';
+import { Vector3D } from 'ootk-core';
 
 // / Container for cubic spline data.
 export class CubicSpline {

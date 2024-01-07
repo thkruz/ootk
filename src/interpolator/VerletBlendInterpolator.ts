@@ -1,9 +1,4 @@
-import { Earth } from '../body/Earth';
-import { J2000 } from '../coordinate/J2000';
-import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
-import { EpochWindow } from '../time/EpochWindow';
-import { copySign } from '../utils/functions';
+import { copySign, Earth, EpochUTC, EpochWindow, J2000, Vector3D } from 'ootk-core';
 import { CubicSplineInterpolator } from './CubicSplineInterpolator';
 import { LagrangeInterpolator } from './LagrangeInterpolator';
 import { StateInterpolator } from './StateInterpolator';

@@ -1,5 +1,4 @@
-import { Matrix } from '../operations/Matrix';
-import { Vector } from '../operations/Vector';
+import { Matrix, Vector } from 'ootk-core';
 
 /** Covariance Frame */
 export enum CovarianceFrame {

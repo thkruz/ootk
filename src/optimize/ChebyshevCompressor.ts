@@ -1,6 +1,5 @@
+import { EpochUTC, Vector3D } from 'ootk-core';
 import { StateInterpolator } from '../interpolator/StateInterpolator';
-import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
 import { ChebyshevCoefficients } from './../interpolator/ChebyshevCoefficients';
 import { ChebyshevInterpolator } from './../interpolator/ChebyshevInterpolator';
 

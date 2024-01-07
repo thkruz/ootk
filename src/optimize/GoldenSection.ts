@@ -1,4 +1,4 @@
-import { DifferentiableFunction } from '../types/types';
+import { DifferentiableFunction } from 'ootk-core';
 
 // / Golden Section bounded single value optimizer.
 export class GoldenSection {

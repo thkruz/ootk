@@ -1,5 +1,4 @@
-import { PositionVelocity } from '../coordinate/StateVector';
-import { Vector3D } from '../operations/Vector3D';
+import { PositionVelocity, Vector3D } from 'ootk-core';
 
 // / Chebyshev compressed ephemeris coefficients.
 export class ChebyshevCoefficients {

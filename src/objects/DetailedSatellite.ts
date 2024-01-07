@@ -29,17 +29,17 @@
  */
 
 import {
-  DetailedSatelliteParams,
   EciVec3,
   Kilometers,
   LaunchDetails,
   OperationsDetails,
   OptionsParams,
+  Satellite,
   SatelliteParams,
   SpaceCraftDetails,
-} from '../types/types';
-import { Vector3D } from './../operations/Vector3D';
-import { Satellite } from './Satellite';
+  Vector3D,
+} from 'ootk-core';
+import { DetailedSatelliteParams } from '../types/types';
 
 /**
  * Represents a detailed satellite object with launch, spacecraft, and operations details.

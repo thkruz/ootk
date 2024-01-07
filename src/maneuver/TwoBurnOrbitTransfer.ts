@@ -1,6 +1,5 @@
-import { Earth } from '../body/Earth';
+import { Earth, EpochUTC } from 'ootk-core';
 import { Thrust } from '../force/Thrust';
-import { EpochUTC } from '../time/EpochUTC';
 
 // / Container for a two-burn orbit transfer.
 export class TwoBurnOrbitTransfer {

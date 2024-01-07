@@ -1,7 +1,6 @@
-import { J2000 } from '../coordinate/J2000';
+import { EpochUTC, J2000 } from 'ootk-core';
 import { Thrust } from '../force/Thrust';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
-import { EpochUTC } from '../time/EpochUTC';
 import { GoldenSection } from './../optimize/GoldenSection';
 
 // Propagator base class.

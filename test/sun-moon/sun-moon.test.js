@@ -4,9 +4,7 @@
  * @since  1.3.0
  */
 
-import { Celestial } from '../../lib/body/Celestial';
-import { Sun } from '../../lib/body/Sun';
-import { Utils } from '../../lib/ootk';
+import { Celestial, Sun, Utils } from 'ootk-core';
 
 const { MoonMath } = Utils;
 // Use number of milliseconds since epoch instead of local year, month, day, etc for consistency across machines

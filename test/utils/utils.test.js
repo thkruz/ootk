@@ -3,8 +3,7 @@
  * @since  1.0.0-alpha3
  */
 
-import { Utils } from '@lib/ootk'; // eslint-disable-line
-import { getDayOfYear } from '@lib/utils/functions';
+import { getDayOfYear, Utils } from 'ootk-core';
 
 const numDigits = 8;
 

@@ -1,4 +1,4 @@
-import { J2000 } from '../coordinate/J2000';
+import { J2000 } from 'ootk-core';
 import { StateCovariance } from './../covariance/StateCovariance';
 
 // / Batch least squares orbit determination result.

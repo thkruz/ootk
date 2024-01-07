@@ -1,11 +1,6 @@
-import { Earth } from '../body/Earth';
-import { EpochUTC } from '../time/EpochUTC';
+import { Earth, EpochUTC, J2000, Matrix, RelativeState, Vector3D } from 'ootk-core';
 import { Thrust } from './../force/Thrust';
 import { Waypoint } from './../maneuver/Waypoint';
-import { Matrix } from './../operations/Matrix';
-import { Vector3D } from './../operations/Vector3D';
-import { J2000 } from './J2000';
-import { RelativeState } from './RelativeState';
 // / Hill Modified Equidistant Cyllindrical _(EQCM)_ coordinates.
 export class Hill {
   private _semimajorAxis: number;

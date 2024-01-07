@@ -1,7 +1,4 @@
-import { Earth } from '../body/Earth';
-import { J2000 } from '../coordinate/J2000';
-import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
+import { Earth, EpochUTC, J2000, Vector3D } from 'ootk-core';
 
 // / Lambert two-position and time initial orbit determination.
 export class LambertIOD {

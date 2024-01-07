@@ -1,15 +1,8 @@
 /* eslint-disable class-methods-use-this */
-import { J2000 } from '../coordinate/J2000';
-import { RelativeState } from '../coordinate/RelativeState';
-import { RIC } from '../coordinate/RIC';
+import { Epoch, EpochUTC, J2000, Matrix, RelativeState, RIC, Vector, Vector3D } from 'ootk-core';
 import { ForceModel } from '../force/ForceModel';
 import { Thrust } from '../force/Thrust';
-import { Matrix } from '../operations/Matrix';
-import { Vector } from '../operations/Vector';
-import { Vector3D } from '../operations/Vector3D';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
-import { Epoch } from '../time/Epoch';
-import { EpochUTC } from '../time/EpochUTC';
 import { CovarianceFrame, StateCovariance } from './StateCovariance';
 
 // / Sigma point covariance sample.

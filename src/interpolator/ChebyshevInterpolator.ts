@@ -1,6 +1,4 @@
-import { EpochUTC } from '../time/EpochUTC';
-import { EpochWindow } from '../time/EpochWindow';
-import { J2000 } from './../coordinate/J2000';
+import { EpochUTC, EpochWindow, J2000 } from 'ootk-core';
 import { ChebyshevCoefficients } from './ChebyshevCoefficients';
 import { StateInterpolator } from './StateInterpolator';
 

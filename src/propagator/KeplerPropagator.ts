@@ -1,8 +1,6 @@
-import { ClassicalElements } from '../coordinate/ClassicalElements';
-import { J2000 } from '../coordinate/J2000';
+import { ClassicalElements, EpochUTC, J2000 } from 'ootk-core';
 import { Thrust } from '../force/Thrust';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
-import { EpochUTC } from '../time/EpochUTC';
 import { Propagator } from './Propagator';
 
 // / Kepler analytical two-body propagator.

@@ -1,4 +1,4 @@
-import { EpochUTC } from '../time/EpochUTC';
+import { EpochUTC } from 'ootk-core';
 
 // / Exponential data smoothing methods.
 export class ExponentialSmoothing {

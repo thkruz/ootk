@@ -4,7 +4,7 @@
  * @since  1.2.0
  */
 
-import { Degrees, Kilometers, Sat, Sensor, SpaceObjectType, TleLine1, TleLine2 } from '../../src/ootk';
+import { Degrees, Kilometers, Satellite, Sensor, SpaceObjectType, TleLine1, TleLine2 } from '../../src/ootk';
 
 const dateObj = new Date(1661400000000);
 
@@ -12,7 +12,7 @@ const tle1 = '1 25544U 98067A   22203.46960946  .00003068  00000+0  61583-4 0  9
 const tle2 = '2 25544  51.6415 161.8339 0005168  35.9781  54.7009 15.50067047350657' as TleLine2;
 
 describe('Basic Sensor functionality', () => {
-  const sat = new Sat({ name: 'Test', tle1, tle2 });
+  const sat = new Satellite({ name: 'Test', tle1, tle2 });
 
   it('should be able to get rae coordinates', () => {
     const sensor = new Sensor({

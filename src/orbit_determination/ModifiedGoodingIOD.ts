@@ -1,10 +1,6 @@
-import { Earth } from '../body/Earth';
-import { J2000 } from '../coordinate/J2000';
+import { Earth, EpochUTC, J2000, RadecTopocentric, Vector3D } from 'ootk-core';
 import { ForceModel } from '../force/ForceModel';
-import { RadecTopocentric } from '../observation/RadecTopocentric';
-import { Vector3D } from '../operations/Vector3D';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
-import { EpochUTC } from '../time/EpochUTC';
 import { ObservationOptical } from './../observation/ObservationOptical';
 import { DownhillSimplex } from './../optimize/DownhillSimplex';
 import { CostFunction } from './../optimize/SimplexEntry';

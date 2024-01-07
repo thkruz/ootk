@@ -1,6 +1,4 @@
-import { J2000 } from '../coordinate/J2000';
-import { EpochUTC } from '../time/EpochUTC';
-import { EpochWindow } from '../time/EpochWindow';
+import { EpochUTC, EpochWindow, J2000 } from 'ootk-core';
 import { CubicSpline } from './CubicSpline';
 import { StateInterpolator } from './StateInterpolator';
 

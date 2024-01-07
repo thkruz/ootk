@@ -1,7 +1,4 @@
-import { Sun } from '../body/Sun';
-import { J2000 } from '../coordinate/J2000';
-import { Vector3D } from '../operations/Vector3D';
-import { astronomicalUnit } from '../utils/constants';
+import { astronomicalUnit, J2000, Sun, Vector3D } from 'ootk-core';
 import { Force } from './Force';
 
 // / Solar radiation pressure model.

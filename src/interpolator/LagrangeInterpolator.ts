@@ -1,7 +1,4 @@
-import { J2000 } from '../coordinate/J2000';
-import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
-import { EpochWindow } from '../time/EpochWindow';
+import { EpochUTC, EpochWindow, J2000, Vector3D } from 'ootk-core';
 import { StateInterpolator } from './StateInterpolator';
 
 export class LagrangeInterpolator extends StateInterpolator {

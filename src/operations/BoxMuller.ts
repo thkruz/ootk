@@ -1,6 +1,4 @@
-import { TAU } from '../utils/constants';
-import { Random } from './Random';
-import { Vector } from './Vector';
+import { Random, TAU, Vector } from 'ootk-core';
 
 // / Box-Muller random Gaussian number generator.
 export class BoxMuller {

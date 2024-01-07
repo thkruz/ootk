@@ -1,9 +1,6 @@
-import { Earth } from '../body/Earth';
-import { J2000 } from '../coordinate/J2000';
+import { Earth, J2000, TAU, Vector3D } from 'ootk-core';
 import { ForceModel } from '../force/ForceModel';
-import { Vector3D } from '../operations/Vector3D';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
-import { TAU } from '../utils/constants';
 import { ObservationOptical } from './../observation/ObservationOptical';
 import { GibbsIOD } from './GibbsIOD';
 import { LambertIOD } from './LambertIOD';

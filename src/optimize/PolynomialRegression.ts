@@ -1,6 +1,6 @@
 /* eslint-disable require-jsdoc */
 /* eslint-disable func-style */
-import { evalPoly } from '../utils/functions';
+import { evalPoly } from 'ootk-core';
 import { DownhillSimplex } from './DownhillSimplex';
 import { PolynomicalRegressionResult } from './PolynomicalRegressionResult';
 // / Polynomial regression optimizer.

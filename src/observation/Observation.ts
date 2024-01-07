@@ -1,11 +1,7 @@
+import { EpochUTC, J2000, Matrix, Vector, Vector3D } from 'ootk-core';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable class-methods-use-this */
-import { Matrix } from '../operations/Matrix';
-import { Vector } from '../operations/Vector';
-import { Vector3D } from '../operations/Vector3D';
 import { Propagator } from '../propagator/Propagator';
-import { EpochUTC } from '../time/EpochUTC';
-import { J2000 } from './../coordinate/J2000';
 import { RandomGaussianSource } from './../operations/RandomGaussianSource';
 import { PropagatorPairs } from './PropagatorPairs';
 
