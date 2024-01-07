@@ -1,4 +1,5 @@
 import { Sensor } from '../objects';
+import { ZoomValue } from '../objects/DetailedSensor';
 
 /**
  * Represents a distinct type.
@@ -546,9 +547,6 @@ export enum SpaceObjectType {
   ROCKET_BODY = 2,
   DEBRIS = 3,
   SPECIAL = 4,
-  RADAR_MEASUREMENT = 5,
-  RADAR_TRACK = 6,
-  RADAR_OBJECT = 7,
   BALLISTIC_MISSILE = 8,
   STAR = 9,
   INTERGOVERNMENTAL_ORGANIZATION = 10,
@@ -572,7 +570,8 @@ export enum SpaceObjectType {
   ENGINE_MANUFACTURER = 28,
   NOTIONAL = 29,
   FRAGMENT = 30,
-  MAX_SPACE_OBJECT_TYPE = 31,
+  SHORT_TERM_FENCE = 31,
+  MAX_SPACE_OBJECT_TYPE = 32,
 }
 
 /**
@@ -688,3 +687,140 @@ export type JacobianFunction = (xs: Float64Array) => Float64Array;
  */
 
 export type DifferentiableFunction = (x: number) => number;
+export interface DetailedSatelliteParams {
+  id: number;
+  active?: boolean;
+  configuration?: string;
+  country?: string;
+  dryMass?: string;
+  equipment?: string;
+  launchDate?: string;
+  launchMass?: string;
+  launchSite?: string;
+  launchVehicle?: string;
+  lifetime?: string | number;
+  maneuver?: string;
+  manufacturer?: string;
+  mission?: string;
+  motor?: string;
+  owner?: string;
+  bus?: string;
+  payload?: string;
+  power?: string;
+  purpose?: string;
+  length?: string;
+  diameter?: string;
+  shape?: string;
+  span?: string;
+  user?: string;
+  vmag?: number;
+  rcs?: number;
+  source?: string;
+  altId?: string;
+  altName?: string;
+}
+/**
+ * TODO: Reduce unnecessary calls to calculateTimeVariables using optional
+ * parameters and caching.
+ */
+/**
+ * Information about a space object.
+ */
+export interface SatelliteParams {
+  name?: string;
+  rcs?: number;
+  tle1: TleLine1;
+  tle2: TleLine2;
+  type?: SpaceObjectType;
+  vmag?: number;
+  sccNum?: string;
+  intlDes?: string;
+  position?: EciVec3;
+  time?: Date;
+}
+export interface OptionsParams {
+  notes: string;
+}
+export interface BaseObjectParams {
+  id?: number;
+  name?: string;
+  type?: SpaceObjectType;
+  position?: EciVec3;
+  velocity?: EciVec3;
+  time?: Date;
+  active?: boolean;
+}
+export interface StarObjectParams {
+  ra: Radians;
+  dec: Radians;
+  bf?: string;
+  h?: string;
+  name?: string;
+  pname?: string;
+  vmag?: number;
+}
+export interface SensorParams {
+  alt: Kilometers;
+  lat: Degrees;
+  lon: Degrees;
+  maxAz: Degrees;
+  maxAz2?: Degrees;
+  maxEl: Degrees;
+  maxEl2?: Degrees;
+  maxRng: Kilometers;
+  maxRng2?: Kilometers;
+  minAz: Degrees;
+  minAz2?: Degrees;
+  minEl: Degrees;
+  minEl2?: Degrees;
+  minRng: Kilometers;
+  minRng2?: Kilometers;
+  name?: string;
+  type?: SpaceObjectType;
+}
+export enum PassType {
+  OUT_OF_VIEW = -1,
+  ENTER = 0,
+  IN_VIEW = 1,
+  EXIT = 2,
+}
+
+export type Lookangle = {
+  type: PassType;
+  time: Date;
+  az: Degrees;
+  el: Degrees;
+  rng: Kilometers;
+  maxElPass?: Degrees;
+};
+export interface DetailedSensorParams {
+  /** The country that owns the sensor */
+  country?: string;
+  /** 3 Letter Designation */
+  shortName?: string;
+  /** For radars, this is the width of the beam */
+  beamwidth?: Degrees;
+  changeObjectInterval?: Milliseconds;
+  linkAehf?: boolean;
+  linkGalileo?: boolean;
+  linkIridium?: boolean;
+  linkStarlink?: boolean;
+  linkWgs?: boolean;
+  static?: boolean;
+  sensorId?: number;
+  url?: string;
+  /** Does this sensor use a volumetric search pattern? */
+  volume?: boolean;
+  /** How far away should we zoom when selecting this sensor? */
+  zoom: ZoomValue;
+  /** For radar sensors, what frequency does this sensor operate in? */
+  band?: string;
+  /** This is the name of the object in the array */
+  objName?: string;
+  /** This is the name of the object in the UI */
+  uiName?: string;
+  /** This is the specific system (ex. AN/FPS-132) */
+  system?: string;
+  /** This is who operates the sensor */
+  operator?: string;
+}

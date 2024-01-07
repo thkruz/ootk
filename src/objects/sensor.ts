@@ -1,51 +1,25 @@
-import { Degrees, Kilometers, LlaVec3, Radians, RaeVec3, SpaceObjectType } from '../types/types';
+import {
+  Degrees,
+  Kilometers,
+  LlaVec3,
+  Lookangle,
+  PassType,
+  Radians,
+  RaeVec3,
+  SensorParams,
+  SpaceObjectType,
+} from '../types/types';
 import { DEG2RAD } from '../utils/constants';
 
-import { BaseObject } from './base-object';
+import { BaseObject } from './BaseObject';
 import { Satellite } from './Satellite';
-
-interface SensorParams {
-  alt: Kilometers;
-  lat: Degrees;
-  lon: Degrees;
-  maxAz: Degrees;
-  maxAz2?: Degrees;
-  maxEl: Degrees;
-  maxEl2?: Degrees;
-  maxRng: Kilometers;
-  maxRng2?: Kilometers;
-  minAz: Degrees;
-  minAz2?: Degrees;
-  minEl: Degrees;
-  minEl2?: Degrees;
-  minRng: Kilometers;
-  minRng2?: Kilometers;
-  name?: string;
-  type?: SpaceObjectType;
-}
-
-export enum PassType {
-  OUT_OF_VIEW = -1,
-  ENTER = 0,
-  IN_VIEW = 1,
-  EXIT = 2,
-}
-
-type Lookangles = {
-  type: PassType;
-  time: Date;
-  az: Degrees;
-  el: Degrees;
-  rng: Kilometers;
-  maxElPass?: Degrees;
-};
 
 export class Sensor extends BaseObject {
   name: string;
   type: SpaceObjectType;
-  alt: Kilometers;
   lat: Degrees;
   lon: Degrees;
+  alt: Kilometers;
   minRng: Kilometers;
   minAz: Degrees;
   minEl: Degrees;
@@ -82,6 +56,7 @@ export class Sensor extends BaseObject {
         case SpaceObjectType.PHASED_ARRAY_RADAR:
         case SpaceObjectType.OBSERVER:
         case SpaceObjectType.BISTATIC_RADIO_TELESCOPE:
+        case SpaceObjectType.SHORT_TERM_FENCE:
           break;
         default:
           throw new Error('Invalid sensor type');
@@ -96,10 +71,14 @@ export class Sensor extends BaseObject {
     });
   }
 
+  isSensor(): boolean {
+    return true;
+  }
+
   calculatePasses(planningInterval: number, sat: Satellite, date: Date = this.time) {
     let isInViewLast = false;
     let maxElThisPass = <Degrees>0;
-    const msnPlanPasses: Lookangles[] = [];
+    const msnPlanPasses: Lookangle[] = [];
     const startTime = date.getTime();
 
     for (let timeOffset = 0; timeOffset < planningInterval; timeOffset++) {
@@ -120,7 +99,7 @@ export class Sensor extends BaseObject {
       maxElThisPass = <Degrees>Math.max(maxElThisPass, rae.el);
 
       if (type === PassType.ENTER || type === PassType.EXIT) {
-        const pass = <Lookangles>{
+        const pass = <Lookangle>{
           type,
           time: curTime,
           az: rae.az,
@@ -212,8 +191,8 @@ export class Sensor extends BaseObject {
   private validateFov(info: SensorParams) {
     this.validateParameter(info.maxAz, 0, 360, 'Invalid maximum azimuth - must be between 0 and 360');
     this.validateParameter(info.minAz, 0, 360, 'Invalid maximum azimuth - must be between 0 and 360');
-    this.validateParameter(info.maxEl, 0, 180, 'Invalid maximum elevation - must be between 0 and 180');
-    this.validateParameter(info.minEl, 0, 90, 'Invalid minimum elevation - must be between 0 and 90');
+    this.validateParameter(info.maxEl, -15, 180, 'Invalid maximum elevation - must be between 0 and 180');
+    this.validateParameter(info.minEl, -15, 90, 'Invalid minimum elevation - must be between 0 and 90');
     this.validateParameter(info.maxRng, 0, null, 'Invalid maximum range - must be greater than 0');
     this.validateParameter(info.minRng, 0, null, 'Invalid minimum range - must be greater than 0');
   }
@@ -221,8 +200,8 @@ export class Sensor extends BaseObject {
   private validateFov2(info: SensorParams) {
     this.validateParameter(info.maxAz2, 0, 360, 'Invalid maximum azimuth2 - must be between 0 and 360');
     this.validateParameter(info.minAz2, 0, 360, 'Invalid maximum azimuth2 - must be between 0 and 360');
-    this.validateParameter(info.maxEl2, 0, 180, 'Invalid maximum elevation2 - must be between 0 and 180');
-    this.validateParameter(info.minEl2, 0, 90, 'Invalid minimum elevation2 - must be between 0 and 90');
+    this.validateParameter(info.maxEl2, -15, 180, 'Invalid maximum elevation2 - must be between 0 and 180');
+    this.validateParameter(info.minEl2, -15, 90, 'Invalid minimum elevation2 - must be between 0 and 90');
     this.validateParameter(info.maxRng2, 0, null, 'Invalid maximum range2 - must be greater than 0');
     this.validateParameter(info.minRng2, 0, null, 'Invalid minimum range2 - must be greater than 0');
   }

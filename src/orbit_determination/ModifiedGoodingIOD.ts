@@ -19,6 +19,11 @@ type SolveOptions = {
   printIter?: boolean;
 };
 
+/**
+ * Gooding angles-only initial orbit determination.
+ *
+ * Used for orbit determination from multiple optical observations.
+ */
 export class ModifiedGoodingIOD {
   private _observations: ObservationOptical[];
   private _mu: number;

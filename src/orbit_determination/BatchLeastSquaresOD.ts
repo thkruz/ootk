@@ -13,16 +13,18 @@ import { KeplerPropagator } from './../propagator/KeplerPropagator';
 import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
 import { BatchLeastSquaresResult } from './BatchLeastSquaresResult';
 
-// / Batch least squares orbit determination.
+/**
+ * Batch least squares orbit determination.
+ */
 export class BatchLeastSquaresOD {
   // / Propagator pair cache, for generating observation Jacobians.
-  private _propPairs: PropagatorPairs;
+  private propPairs_: PropagatorPairs;
   // / Nominal state propagator.
-  private _propagator: Propagator;
+  private propagator_: Propagator;
   // / State estimate during solve.
-  private _nominal: J2000;
+  private nominal_: J2000;
   // / Solve start epoch.
-  private _start: EpochUTC;
+  private start_: EpochUTC;
 
   /**
    * Create a new [BatchLeastSquaresOD] object from a list of [Observation]
@@ -30,46 +32,46 @@ export class BatchLeastSquaresOD {
    * spacecraft [forceModel].
    */
   constructor(
-    private _observations: Observation[],
-    private _apriori: J2000,
-    private _forceModel?: ForceModel,
-    private _posStep: number = 1e-5,
-    private _velStep: number = 1e-5,
-    private _fastDerivatives: boolean = false,
+    private observations_: Observation[],
+    private apriori_: J2000,
+    private forceModel_?: ForceModel,
+    private posStep_: number = 1e-5,
+    private velStep_: number = 1e-5,
+    private fastDerivatives_: boolean = false,
   ) {
-    this._observations.sort((a, b) => a.epoch.posix - b.epoch.posix);
-    this._start = this._observations[0].epoch;
-    this._propPairs = new PropagatorPairs(this._posStep, this._velStep);
-    this._forceModel ??= new ForceModel().setGravity();
-    this._propagator = new RungeKutta89Propagator(this._apriori, this._forceModel);
-    this._nominal = this._propagator.propagate(this._start);
+    this.observations_.sort((a, b) => a.epoch.posix - b.epoch.posix);
+    this.start_ = this.observations_[0].epoch;
+    this.propPairs_ = new PropagatorPairs(this.posStep_, this.velStep_);
+    this.forceModel_ ??= new ForceModel().setGravity();
+    this.propagator_ = new RungeKutta89Propagator(this.apriori_, this.forceModel_);
+    this.nominal_ = this.propagator_.propagate(this.start_);
   }
 
-  private _buildPropagator(x0: Float64Array, simple: boolean): Propagator {
-    const state = new J2000(this._nominal.epoch, new Vector3D(x0[0], x0[1], x0[2]), new Vector3D(x0[3], x0[4], x0[5]));
+  private buildPropagator_(x0: Float64Array, simple: boolean): Propagator {
+    const state = new J2000(this.nominal_.epoch, new Vector3D(x0[0], x0[1], x0[2]), new Vector3D(x0[3], x0[4], x0[5]));
 
     if (simple) {
       return new KeplerPropagator(state.toClassicalElements());
     }
 
-    return new RungeKutta89Propagator(state, this._forceModel);
+    return new RungeKutta89Propagator(state, this.forceModel_);
   }
 
-  private static _stateToX0(state: J2000): Float64Array {
+  private static stateToX0_(state: J2000): Float64Array {
     return concat(state.position.toArray(), state.velocity.toArray());
   }
 
-  private _setPropagatorPairs(x0: Float64Array): void {
-    const pl = this._buildPropagator(x0, this._fastDerivatives);
+  private setPropagatorPairs_(x0: Float64Array): void {
+    const pl = this.buildPropagator_(x0, this.fastDerivatives_);
 
     for (let i = 0; i < 6; i++) {
-      const step = this._propPairs.step(i);
+      const step = this.propPairs_.step(i);
       const xh = x0.slice();
 
       xh[i] += step;
-      const ph = this._buildPropagator(xh, this._fastDerivatives);
+      const ph = this.buildPropagator_(xh, this.fastDerivatives_);
 
-      this._propPairs.set(i, ph, pl);
+      this.propPairs_.set(i, ph, pl);
     }
   }
 
@@ -87,7 +89,7 @@ export class BatchLeastSquaresOD {
     printIter?: boolean;
   } = {}): BatchLeastSquaresResult {
     let breakFlag = false;
-    const xNom = BatchLeastSquaresOD._stateToX0(this._nominal);
+    const xNom = BatchLeastSquaresOD.stateToX0_(this.nominal_);
     let weightedRms = Infinity;
     const atwaMatInit = Matrix.zero(6, 6);
     const atwbMatInit = Matrix.zero(6, 1);
@@ -97,16 +99,16 @@ export class BatchLeastSquaresOD {
       atwaMat = atwaMatInit;
       let atwbMat = atwbMatInit;
 
-      this._propagator = this._buildPropagator(xNom, false);
-      this._setPropagatorPairs(xNom);
+      this.propagator_ = this.buildPropagator_(xNom, false);
+      this.setPropagatorPairs_(xNom);
       let rmsTotal = 0.0;
       let measCount = 0;
 
-      for (const ob of this._observations) {
+      for (const ob of this.observations_) {
         const noise = ob.noise;
-        const aMat = ob.jacobian(this._propPairs);
+        const aMat = ob.jacobian(this.propPairs_);
         const aMatTN = aMat.transpose().multiply(noise);
-        const bMat = ob.residual(this._propagator);
+        const bMat = ob.residual(this.propagator_);
 
         atwaMat = atwaMat.add(aMatTN.multiply(aMat));
         atwbMat = atwbMat.add(aMatTN.multiply(bMat));
@@ -136,7 +138,7 @@ export class BatchLeastSquaresOD {
     const covariance = new StateCovariance(p, CovarianceFrame.ECI);
 
     return new BatchLeastSquaresResult(
-      this._buildPropagator(xNom, false).propagate(this._start),
+      this.buildPropagator_(xNom, false).propagate(this.start_),
       covariance,
       weightedRms,
     );

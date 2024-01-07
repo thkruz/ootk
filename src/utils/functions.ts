@@ -2,7 +2,13 @@
 /* eslint-disable func-style */
 import { Matrix } from '../operations/Matrix';
 import { Vector } from '../operations/Vector';
-import { AngularDiameterMethod, AngularDistanceMethod, DifferentiableFunction, JacobianFunction } from '../types/types';
+import {
+  AngularDiameterMethod,
+  AngularDistanceMethod,
+  DifferentiableFunction,
+  JacobianFunction,
+  Radians,
+} from '../types/types';
 
 /**
  * Calculates the factorial of a given number.
@@ -465,7 +471,7 @@ export function newtonM(ecc: number, m: number): { e0: number; nu: number } {
  * @param nu - The true anomaly.
  * @returns An object containing the calculated eccentric anomaly (e0) and mean anomaly (m).
  */
-export function newtonNu(ecc: number, nu: number): { e0: number; m: number } {
+export function newtonNu(ecc: number, nu: number): { e0: number; m: Radians } {
   const small = 1e-8;
   let e0 = 0.0;
   let m = 0.0;
@@ -488,7 +494,7 @@ export function newtonNu(ecc: number, nu: number): { e0: number; m: number } {
     e0 -= Math.floor(e0 / (2 * Math.PI)) * (2 * Math.PI);
   }
 
-  return { e0, m };
+  return { e0, m: m as Radians };
 }
 
 /**

@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { Earth } from '../body/Earth';
-import { ClassicalElements } from './ClassicalElements';
+import type { ClassicalElements } from './ClassicalElements';
 import { J2000 } from './J2000';
 import { StateVector } from './StateVector';
 

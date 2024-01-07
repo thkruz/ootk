@@ -47,6 +47,11 @@ type GetPositionOnLoS2Params = {
   posigrade: boolean;
 };
 
+/**
+ * Gooding angles-only initial orbit determination.
+ *
+ * Used for orbit determination from three optical observations.
+ */
 export class GoodingIOD {
   private readonly _mu: number;
   private readonly _o1: ObservationOptical;

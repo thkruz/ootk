@@ -24,7 +24,7 @@ export class LambertIOD {
     return h.dot(transN) >= 0;
   }
 
-  private static _timeOfFlight(
+  private static timeOfFlight_(
     x: number,
     longway: number,
     mrev: number,
@@ -95,8 +95,8 @@ export class LambertIOD {
       x1 = Math.tan((in1 * Math.PI) / 2);
       x2 = Math.tan((in2 * Math.PI) / 2);
     }
-    const tof1 = LambertIOD._timeOfFlight(in1, longway, m, minSma, speri, chord);
-    const tof2 = LambertIOD._timeOfFlight(in2, longway, m, minSma, speri, chord);
+    const tof1 = LambertIOD.timeOfFlight_(in1, longway, m, minSma, speri, chord);
+    const tof2 = LambertIOD.timeOfFlight_(in2, longway, m, minSma, speri, chord);
 
     let y1: number;
     let y2: number;
@@ -124,7 +124,7 @@ export class LambertIOD {
         xt = (Math.atan(xnew) * 2.0) / Math.PI;
       }
 
-      const tof = LambertIOD._timeOfFlight(xt, longway, m, minSma, speri, chord);
+      const tof = LambertIOD.timeOfFlight_(xt, longway, m, minSma, speri, chord);
 
       let ynew: number;
 

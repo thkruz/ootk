@@ -21,24 +21,23 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EciVec3, Kilometers, SpaceObjectType } from '../types/types';
-
-interface ObjectInfo {
-  name?: string;
-  type?: SpaceObjectType;
-  position?: EciVec3;
-  time?: Date;
-}
+import { BaseObjectParams, EciVec3, Kilometers, SpaceObjectType } from '../types/types';
 
 export class BaseObject {
+  id: number; // Unique ID
   name: string;
   type: SpaceObjectType;
   position: EciVec3; // Where is the object
+  totalVelocity: number; // How fast is the object moving
+  velocity: EciVec3; // How fast is the object moving
   time: Date; // When is the object
+  active = true; // Is the object active
 
-  constructor(info: ObjectInfo) {
+  constructor(info: BaseObjectParams) {
     this.type = info.type || SpaceObjectType.UNKNOWN;
     this.name = info.name || 'Unknown';
+    this.id = info.id;
+    this.active = info.active;
 
     this.position = info.position || {
       x: <Kilometers>0,
@@ -46,7 +45,91 @@ export class BaseObject {
       z: <Kilometers>0,
     }; // Default to the center of the earth until position is calculated
 
+    this.velocity = info.velocity || {
+      x: <Kilometers>0,
+      y: <Kilometers>0,
+      z: <Kilometers>0,
+    }; // Default to 0 velocity until velocity is calculated
+
     this.time = info.time || new Date();
+  }
+
+  /**
+   * Checks if the object is a satellite.
+   * @returns {boolean} True if the object is a satellite, false otherwise.
+   */
+  isSatellite(): boolean {
+    return false;
+  }
+
+  /**
+   * Checks if the object is a land object.
+   * @returns {boolean} True if the object is a land object, false otherwise.
+   */
+  isLandObject(): boolean {
+    switch (this.type) {
+      case SpaceObjectType.INTERGOVERNMENTAL_ORGANIZATION:
+      case SpaceObjectType.SUBORBITAL_PAYLOAD_OPERATOR:
+      case SpaceObjectType.PAYLOAD_OWNER:
+      case SpaceObjectType.METEOROLOGICAL_ROCKET_LAUNCH_AGENCY_OR_MANUFACTURER:
+      case SpaceObjectType.PAYLOAD_MANUFACTURER:
+      case SpaceObjectType.LAUNCH_VEHICLE_MANUFACTURER:
+      case SpaceObjectType.ENGINE_MANUFACTURER:
+      case SpaceObjectType.LAUNCH_AGENCY:
+      case SpaceObjectType.LAUNCH_SITE:
+      case SpaceObjectType.LAUNCH_POSITION:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Returns whether the object is a sensor.
+   * @returns {boolean} True if the object is a sensor, false otherwise.
+   */
+  isSensor(): boolean {
+    return false;
+  }
+
+  /**
+   * Checks if the object is a marker.
+   * @returns {boolean} True if the object is a marker, false otherwise.
+   */
+  isMarker(): boolean {
+    return false;
+  }
+
+  /**
+   * Returns whether the object's position is static.
+   * @returns {boolean} True if the object is static, false otherwise.
+   */
+  isStatic(): boolean {
+    return true;
+  }
+
+  isPayload(): boolean {
+    return this.type === SpaceObjectType.PAYLOAD;
+  }
+
+  isRocketBody(): boolean {
+    return this.type === SpaceObjectType.ROCKET_BODY;
+  }
+
+  isDebris(): boolean {
+    return this.type === SpaceObjectType.DEBRIS;
+  }
+
+  isStar(): boolean {
+    return this.type === SpaceObjectType.STAR;
+  }
+
+  isMissile(): boolean {
+    return this.type === SpaceObjectType.BALLISTIC_MISSILE;
+  }
+
+  isNotional(): boolean {
+    return this.type === SpaceObjectType.NOTIONAL;
   }
 
   getTypeString(): string {
@@ -56,9 +139,6 @@ export class BaseObject {
       [SpaceObjectType.ROCKET_BODY]: 'Rocket Body',
       [SpaceObjectType.DEBRIS]: 'Debris',
       [SpaceObjectType.SPECIAL]: 'Special',
-      [SpaceObjectType.RADAR_MEASUREMENT]: 'Radar Measurement',
-      [SpaceObjectType.RADAR_TRACK]: 'Radar Track',
-      [SpaceObjectType.RADAR_OBJECT]: 'Radar Object',
       [SpaceObjectType.BALLISTIC_MISSILE]: 'Ballistic Missile',
       [SpaceObjectType.STAR]: 'Star',
       [SpaceObjectType.INTERGOVERNMENTAL_ORGANIZATION]: 'Intergovernmental Organization',

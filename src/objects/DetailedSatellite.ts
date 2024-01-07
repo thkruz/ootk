@@ -28,13 +28,24 @@
  * SOFTWARE.
  */
 
-import { LaunchDetails, OperationsDetails, SpaceCraftDetails } from '../types/types';
-import { OptionsParams, Satellite, SatelliteObjectParams } from './Satellite';
+import {
+  DetailedSatelliteParams,
+  EciVec3,
+  Kilometers,
+  LaunchDetails,
+  OperationsDetails,
+  OptionsParams,
+  SatelliteParams,
+  SpaceCraftDetails,
+} from '../types/types';
+import { Vector3D } from './../operations/Vector3D';
+import { Satellite } from './Satellite';
 
 /**
  * Represents a detailed satellite object with launch, spacecraft, and operations details.
  */
-export class DetailedSat extends Satellite {
+export class DetailedSatellite extends Satellite {
+  /** A global index - this is NOT the sccNum */
   configuration: string;
   country: string;
   dryMass: string;
@@ -47,29 +58,41 @@ export class DetailedSat extends Satellite {
   maneuver: string;
   manufacturer: string;
   mission: string;
+  bus: string;
   motor: string;
   owner: string;
   payload: string;
   power: string;
   purpose: string;
+  length: string;
+  diameter: string;
   shape: string;
   span: string;
   user: string;
+  source: string;
+  vmag: number;
+  rcs: number;
+  totalVelocity: number;
+  velocity: EciVec3<Kilometers>;
+  semiMajorAxis: number;
+  semiMinorAxis: number;
+  altId: string;
+  altName: string;
 
   constructor(
-    info: SatelliteObjectParams,
-    options: OptionsParams,
-    details: {
-      launchDetails: LaunchDetails;
-      spaceCraftDetails: SpaceCraftDetails;
-      operationsDetails: OperationsDetails;
-    },
+    info: DetailedSatelliteParams & SatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails,
+    options?: OptionsParams,
   ) {
     super(info, options);
 
-    this.setLaunchDetails(details.launchDetails);
-    this.setSpaceCraftDetails(details.spaceCraftDetails);
-    this.setOperationsDetails(details.operationsDetails);
+    this.active ??= true;
+    this.setLaunchDetails(info);
+    this.setSpaceCraftDetails(info);
+    this.setOperationsDetails(info);
+
+    Object.keys(info).forEach((key) => {
+      this[key] = info[key];
+    });
   }
 
   /**
@@ -117,6 +140,22 @@ export class DetailedSat extends Satellite {
       equipment: this.equipment,
       dryMass: this.dryMass,
     };
+  }
+
+  /**
+   * Propagates the satellite position to the given date using the SGP4 model.
+   *
+   * This method changes the position and time properties of the satellite object.
+   */
+  propagateTo(date: Date): this {
+    const pv = this.getEci(date);
+
+    this.position = pv.position;
+    this.velocity = pv.velocity;
+    this.totalVelocity = new Vector3D(pv.velocity.x, pv.velocity.y, pv.velocity.z).magnitude() as Kilometers;
+    this.time = date;
+
+    return this;
   }
 
   /**

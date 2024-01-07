@@ -37,6 +37,42 @@ export class Epoch implements Comparable {
     return new Date(this.posix * 1000);
   }
 
+  toEpochYearAndDay(): { epochYr: string; epochDay: string } {
+    const currentDateObj = this.toDateTime();
+    const epochYear = currentDateObj.getUTCFullYear().toString().slice(2, 4);
+    const epochDay = this.getDayOfYear_(currentDateObj);
+    const timeOfDay = (currentDateObj.getUTCHours() * 60 + currentDateObj.getUTCMinutes()) / 1440;
+    const epochDayStr = (epochDay + timeOfDay).toFixed(8).padStart(12, '0');
+
+    return {
+      epochYr: epochYear,
+      epochDay: epochDayStr,
+    };
+  }
+
+  private getDayOfYear_(date: Date): number {
+    const dayCount = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+    const mn = date.getUTCMonth();
+    const dn = date.getUTCDate();
+    let dayOfYear = dayCount[mn] + dn;
+
+    if (mn > 1 && this.isLeapYear_(date)) {
+      dayOfYear++;
+    }
+
+    return dayOfYear;
+  }
+
+  private isLeapYear_(dateIn: Date) {
+    const year = dateIn.getUTCFullYear();
+
+    if ((year & 3) !== 0) {
+      return false;
+    }
+
+    return year % 100 !== 0 || year % 400 === 0;
+  }
+
   // / Convert to Julian date.
   toJulianDate(): number {
     return this.posix / secondsPerDay + 2440587.5;

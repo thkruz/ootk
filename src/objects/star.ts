@@ -30,39 +30,27 @@ import {
   Radians,
   RaeVec3,
   SpaceObjectType,
+  StarObjectParams,
 } from '../types/types';
 import { MILLISECONDS_TO_DAYS } from '../utils/constants';
 
-import { Celestial, Utils } from '../ootk';
+import { Celestial } from '../body';
 import { Sgp4 } from '../sgp4/sgp4';
 import { ecf2eci, rae2ecf } from '../transforms/transforms';
-import { SpaceObject } from './space-object';
-interface ObjectInfo {
-  bf?: string;
-  dec: Radians;
-  h?: string;
-  name?: string;
-  pname?: string;
-  ra: Radians;
-  type?: SpaceObjectType;
-  vmag?: number;
-}
+import { Utils } from '../utils/utils';
+import { BaseObject } from './BaseObject';
 
-export class Star extends SpaceObject {
-  bf: string;
+export class Star extends BaseObject {
+  ra: Radians;
   dec: Radians;
+  bf: string;
   h: string;
   pname: string;
-  ra: Radians;
+  vmag: number;
 
-  constructor(info: ObjectInfo) {
-    if (info.type && info.type !== SpaceObjectType.STAR) {
-      throw new Error('Invalid object type');
-    } else {
-      info.type = SpaceObjectType.STAR;
-    }
-
+  constructor(info: StarObjectParams) {
     super(info);
+    this.type = SpaceObjectType.STAR;
 
     this.ra = info.ra;
     this.dec = info.dec;

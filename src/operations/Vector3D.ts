@@ -16,7 +16,7 @@ export class Vector3D<T extends number = number> {
   }
 
   // / Origin vector.
-  static origin = new Vector3D(0, 0, 0);
+  static origin = new Vector3D(0, 0, 0) as Vector3D<number>;
 
   // / X-axis unit vector.
   static xAxis = new Vector3D(1, 0, 0);

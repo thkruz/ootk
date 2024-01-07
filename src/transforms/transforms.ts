@@ -213,7 +213,7 @@ export function lla2ecf<D extends number>(lla: LlaVec3<Radians, D>): EcfVec3<D> 
  * @param gmst The Greenwich Mean Sidereal Time in seconds.
  * @returns The ECI coordinates in meters.
  */
-export function lla2eci(lla: LlaVec3<Radians, Kilometers>, gmst: number): EciVec3<Kilometers> {
+export function lla2eci(lla: LlaVec3<Radians, Kilometers>, gmst: GreenwichMeanSiderealTime): EciVec3<Kilometers> {
   const { lat, lon, alt } = lla;
 
   const cosLat = Math.cos(lat);
@@ -471,6 +471,9 @@ export function calcGmst(date: Date): { gmst: GreenwichMeanSiderealTime; j: numb
   return { gmst, j };
 }
 
+// Create a cache for eci2rae
+const eci2raeCache = new Map<string, RaeVec3<Kilometers, Degrees>>();
+
 /**
  * Converts ECI coordinates to RAE (Right Ascension, Azimuth, Elevation) coordinates.
  * @param {Date} now - Current date and time.
@@ -478,13 +481,17 @@ export function calcGmst(date: Date): { gmst: GreenwichMeanSiderealTime; j: numb
  * @param {SensorObject} sensor - Sensor object containing observer's geodetic coordinates.
  * @returns {Object} Object containing azimuth, elevation and range in degrees and kilometers respectively.
  */
-export function eci2rae(
-  now: Date,
-  eci: EciVec3<Kilometers>,
-  sensor: Sensor,
-): { az: Degrees; el: Degrees; rng: Kilometers } {
+export function eci2rae(now: Date, eci: EciVec3<Kilometers>, sensor: Sensor): RaeVec3<Kilometers, Degrees> {
   now = new Date(now);
   const { gmst } = calcGmst(now);
+
+  // Check cache
+  const key = `${gmst},${eci.x},${eci.y},${eci.z},${sensor.lat},${sensor.lon},${sensor.alt}`;
+  const cached = eci2raeCache.get(key);
+
+  if (cached) {
+    return cached;
+  }
 
   const positionEcf = eci2ecf(eci, gmst);
   const lla = {
@@ -493,5 +500,14 @@ export function eci2rae(
     alt: sensor.alt,
   };
 
-  return ecf2rae(lla, positionEcf);
+  const rae = ecf2rae(lla, positionEcf);
+
+  // Add to cache
+  eci2raeCache.set(key, rae);
+  // Ensure eci2raeCache isnt too big
+  if (eci2raeCache.size > 1000) {
+    eci2raeCache.delete(eci2raeCache.keys().next().value);
+  }
+
+  return rae;
 }

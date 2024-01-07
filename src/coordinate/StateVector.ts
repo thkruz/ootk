@@ -1,6 +1,6 @@
 import { Earth } from '../body/Earth';
-import { Vector3D } from '../operations/Vector3D';
-import { EpochUTC } from '../time/EpochUTC';
+import type { Vector3D } from '../operations/Vector3D';
+import type { EpochUTC } from '../time/EpochUTC';
 import { TAU } from '../utils/constants';
 import { ClassicalElements } from './ClassicalElements';
 

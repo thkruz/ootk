@@ -35,9 +35,11 @@ import {
   GreenwichMeanSiderealTime,
   Kilometers,
   LlaVec3,
+  OptionsParams,
   PosVel,
   Radians,
   RaeVec3,
+  SatelliteParams,
   SatelliteRecord,
   SpaceObjectType,
   TleLine1,
@@ -45,42 +47,30 @@ import {
 } from '../types/types';
 import { DEG2RAD, MILLISECONDS_TO_DAYS, MINUTES_PER_DAY, RAD2DEG } from '../utils/constants';
 
+import { FormatTle } from '../coordinate/FormatTle';
 import { Geodetic } from '../coordinate/Geodetic';
 import { ITRF } from '../coordinate/ITRF';
 import { J2000 } from '../coordinate/J2000';
+import { RIC } from '../coordinate/RIC';
 import { RAE } from '../observation/RAE';
-import { ecf2rae, eci2ecf, eci2lla, Sensor, Utils } from '../ootk';
 import { Vector3D } from '../operations/Vector3D';
 import { Sgp4 } from '../sgp4/sgp4';
 import { EpochUTC } from '../time/EpochUTC';
 import { Tle } from '../tle/tle';
+import { ecf2rae, eci2ecf, eci2lla } from '../transforms';
+import { Utils } from '../utils/utils';
+import { BaseObject } from './BaseObject';
+import { Sensor } from './Sensor';
+
 /**
  * TODO: Reduce unnecessary calls to calculateTimeVariables using optional
  * parameters and caching.
  */
 
 /**
- * Information about a space object.
- */
-export interface SatelliteObjectParams {
-  name?: string;
-  rcs?: number;
-  tle1: TleLine1;
-  tle2: TleLine2;
-  type?: SpaceObjectType;
-  vmag?: number;
-  position?: EciVec3;
-  time?: Date;
-}
-
-export interface OptionsParams {
-  notes: string;
-}
-
-/**
  * Represents a satellite object with orbital information and methods for calculating its position and other properties.
  */
-export class Satellite {
+export class Satellite extends BaseObject {
   name: string;
   type: SpaceObjectType;
   position: EciVec3; // Where is the object
@@ -102,14 +92,33 @@ export class Satellite {
   perigee: number;
   period: number;
   raan: number;
-  satNum: number;
   satrec: SatelliteRecord;
+  /**
+   * The satellite catalog number as listed in the TLE.
+   */
+  sccNum: string;
+  /**
+   * The 5 digit alpha-numeric satellite catalog number.
+   */
+  sccNum5: string;
+  /**
+   * The 6 digit numeric satellite catalog number.
+   */
+  sccNum6: string;
+  tle1: TleLine1;
+  tle2: TleLine2;
 
-  constructor(info: SatelliteObjectParams, options?: OptionsParams) {
+  constructor(info: SatelliteParams, options?: OptionsParams) {
+    super(info);
+
     const tleData = Tle.parseTle(info.tle1, info.tle2);
 
-    this.satNum = tleData.satNum;
-    this.intlDes = tleData.intlDes;
+    this.tle1 = info.tle1;
+    this.tle2 = info.tle2;
+
+    this.sccNum = info.sccNum || tleData.satNum.toString();
+    this.sccNum5 = FormatTle.convert6DigitToA5(this.sccNum);
+    this.sccNum6 = FormatTle.convertA5to6Digit(this.sccNum5);
     this.epochYear = tleData.epochYear;
     this.epochDay = tleData.epochDay;
     this.meanMoDev1 = tleData.meanMoDev1;
@@ -129,6 +138,14 @@ export class Satellite {
     this.options = options || {
       notes: '',
     };
+  }
+
+  isSatellite(): boolean {
+    return true;
+  }
+
+  isStatic(): boolean {
+    return false;
   }
 
   /**
@@ -239,7 +256,7 @@ export class Satellite {
   /**
    * Calculates LLA position at a given time.
    */
-  lla(date: Date = this.time): LlaVec3 {
+  lla(date: Date = this.time): LlaVec3<Degrees, Kilometers> {
     const { gmst } = Satellite.calculateTimeVariables(date, this.satrec);
     const pos = this.getEci(date).position;
 
@@ -252,6 +269,10 @@ export class Satellite {
 
   getITRF(date: Date = this.time): ITRF {
     return this.getJ2000(date).toITRF();
+  }
+
+  getRIC(reference: Satellite, date: Date = this.time): RIC {
+    return RIC.fromJ2000(this.getJ2000(date), reference.getJ2000(date));
   }
 
   /**
@@ -288,14 +309,9 @@ export class Satellite {
    * This method changes the position and time properties of the satellite object.
    */
   propagateTo(date: Date): this {
-    const { m } = Satellite.calculateTimeVariables(date, this.satrec);
-    const eci = (Sgp4.propagate(this.satrec, m).position as EciVec3) || {
-      x: <Kilometers>0,
-      y: <Kilometers>0,
-      z: <Kilometers>0,
-    };
+    const pv = this.getEci(date);
 
-    this.position = eci;
+    this.position = pv.position as EciVec3;
     this.time = date;
 
     return this;

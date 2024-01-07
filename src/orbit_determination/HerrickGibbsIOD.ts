@@ -7,7 +7,7 @@ import { EpochUTC } from '../time/EpochUTC';
  * Herrik-Gibbs 3-position initial orbit determination.
  *
  * Possibly better than regular Gibbs IOD for closely spaced position
- * vectors _(less than 5°)_.
+ * vectors (less than 5°).
  */
 export class HerrickGibbsIOD {
   /**

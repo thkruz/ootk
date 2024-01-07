@@ -28,11 +28,9 @@
  * SOFTWARE.
  */
 
-export { Celestial } from './body/Celestial';
-export { Earth } from './body/Earth';
-export { Moon } from './body/Moon';
-export { Sun } from './body/Sun';
-export * from './objects/index';
+export * from './body';
+export * from './coordinate';
+export * from './objects';
 export * from './operations/operations';
 export { Sgp4 } from './sgp4/sgp4';
 export * from './time/time';

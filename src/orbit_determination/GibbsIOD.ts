@@ -1,3 +1,4 @@
+import { Radians } from 'src/ootk';
 import { Earth } from '../body/Earth';
 import { J2000 } from '../coordinate/J2000';
 import { Vector3D } from '../operations/Vector3D';
@@ -6,18 +7,16 @@ import { DEG2RAD, halfPi } from '../utils/constants';
 import { ForceModel } from './../force/ForceModel';
 import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
 
-// / Gibbs 3-position inital orbit determination.
+/**
+ * Gibbs 3-position inital orbit determination.
+ */
 export class GibbsIOD {
-  /**
-   * Create a new [GibbsIOD] object, with an optional gravitational
-   * parameter [mu].
-   */
   constructor(public mu: number = Earth.mu) {
     // Nothing to do here.
   }
 
-  // / Abort solve if position plane exceeds this value.
-  private static readonly _coplanarThreshold: number = 5.0 * DEG2RAD;
+  /** Abort solve if position plane exceeds this value. */
+  private static readonly coplanarThreshold_: Radians = (5.0 * DEG2RAD) as Radians;
 
   /**
    * Attempt to create a state estimate from three inertial position vectors.
@@ -28,7 +27,7 @@ export class GibbsIOD {
     const num = r1.normalize().dot(r2.normalize().cross(r3.normalize()));
     const alpha = halfPi - Math.acos(num);
 
-    if (Math.abs(alpha) > GibbsIOD._coplanarThreshold) {
+    if (Math.abs(alpha) > GibbsIOD.coplanarThreshold_) {
       throw new Error('Orbits are not coplanar.');
     }
 
