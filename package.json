@@ -1,7 +1,7 @@
 {
   "name": "ootk",
-  "version": "4.0.0",
-  "description": "Orbital Object Toolkit including SGP4 Propagator and Coordinate Transforms",
+  "version": "3.0.0",
+  "description": "Orbital Object Toolkit including Multiple Propagators, Initial Orbit Determination, and Maneuver Calculations.",
   "scripts": {
     "build": "node ./scripts/cleanup.mjs && ttsc -p tsconfig.build.json",
     "lcov": "node ./scripts/openLcov.mjs",
@@ -30,7 +30,7 @@
     "satellite"
   ],
   "author": "Theodore Kruczek <theodore.kruczek@gmail.com> (https://github.com/ootk/)",
-  "license": "MIT",
+  "license": "APGL-3.0",
   "bugs": {
     "url": "https://github.com/thkruz/ootk/issues"
   },
@@ -61,11 +61,6 @@
     "webpack-cli": "^4.10.0"
   },
   "homepage": "https://github.com/thkruz/ootk",
-  "directories": {
-    "lib": "lib",
-    "src": "src",
-    "test": "test"
-  },
   "dependencies": {
     "ttypescript": "^1.5.15",
     "typescript-transform-paths": "^3.4.6"
