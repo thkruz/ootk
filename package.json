@@ -1,6 +1,6 @@
 {
   "name": "ootk",
-  "version": "3.0.0",
+  "version": "4.0.0-0",
   "description": "Orbital Object Toolkit including Multiple Propagators, Initial Orbit Determination, and Maneuver Calculations.",
   "scripts": {
     "build": "node ./scripts/cleanup.mjs && ttsc -p tsconfig.build.json",
