@@ -1,6 +1,6 @@
 /**
  * @author @thkruz Theodore Kruczek
- * @description Orbital Object ToolKit (OOTK) is a collection of tools for working
+ * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  *
  * @license AGPL-3.0-or-later
@@ -24,5 +24,5 @@
 export * from 'ootk-core';
 export * from './coordinate';
 export * from './objects';
-export * from './operations/operations';
+export * from './operations';
 export * from './types/types';
