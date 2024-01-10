@@ -1,9 +1,19 @@
 /* eslint-disable no-console */
-import { Satellite } from '@src/objects/Satellite';
-import { calcGmst, ecf2eci, eci2lla, eci2rae } from '@src/transforms/transforms';
-import { DEG2RAD } from '@src/utils/constants';
-import { Sensor } from '../src/objects';
-import { Degrees, Kilometers, SpaceObjectType, TleLine1, TleLine2, Transforms } from '../src/ootk';
+import {
+  calcGmst,
+  DEG2RAD,
+  Degrees,
+  ecf2eci,
+  ecf2rae,
+  eci2lla,
+  eci2rae,
+  Kilometers,
+  SensorParams,
+  SpaceObjectType,
+  TleLine1,
+  TleLine2,
+} from 'ootk-core';
+import { Satellite, Sensor } from '../src/objects';
 
 const capeCodRadar = new Sensor({
   lat: <Degrees>41.754785,
@@ -23,7 +33,7 @@ const testSensor = new Sensor({
   lat: <Degrees>41,
   lon: <Degrees>-71,
   alt: <Kilometers>1,
-});
+} as SensorParams);
 
 const sat = new Satellite({
   tle1: '1 00005U 58002B   23361.70345217  .00000401  00000-0  53694-3 0 99999' as TleLine1,
@@ -39,7 +49,7 @@ const ecf = {
 };
 // const ecf2 = { x: 982.8336640053099, y: -6779.137352354403, z: 3813.7284924837254 } as EcfVec3<Kilometers>;
 
-const rae = Transforms.ecf2rae(testSensor, ecf);
+const rae = ecf2rae(testSensor.getLlaRad(), ecf);
 
 const { gmst } = calcGmst(date);
 const rae2 = eci2rae(date, ecf2eci(ecf, gmst), testSensor);

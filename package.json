@@ -56,13 +56,14 @@
     "prettier-plugin-organize-imports": "^3.2.3",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "ttypescript": "^1.5.15",
     "typescript": "^4.9.5",
+    "typescript-transform-paths": "^3.4.6",
     "webpack": "^5.11.1",
     "webpack-cli": "^4.10.0"
   },
   "homepage": "https://github.com/thkruz/ootk",
   "dependencies": {
-    "ttypescript": "^1.5.15",
-    "typescript-transform-paths": "^3.4.6"
+    "ootk-core": "^1.0.0-0"
   }
 }
