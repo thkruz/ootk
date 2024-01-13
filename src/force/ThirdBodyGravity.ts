@@ -27,7 +27,7 @@ export class ThirdBodyGravity implements Force {
   }
 
   private static _moonGravity(state: J2000): Vector3D {
-    const rMoon = Moon.position(state.epoch);
+    const rMoon = Moon.eci(state.epoch);
     const aNum = rMoon.subtract(state.position);
     const aDen = aNum.magnitude() ** 3;
     const bNum = rMoon;

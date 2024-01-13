@@ -4,9 +4,9 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./lib" /* Redirect output structure to the directory. */,
+    "outDir": "./commonjs" /* Redirect output structure to the directory. */,
     "target": "ES2022",
-    "module": "ESNext",
+    "module": "CommonJS",
     "rootDir": "./src" /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */,
     "plugins": [{ "transform": "typescript-transform-paths" }],
     "declaration": true,

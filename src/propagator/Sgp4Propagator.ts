@@ -18,7 +18,7 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable class-methods-use-this */
-import { EpochUTC, J2000, TLE } from 'ootk-core';
+import { EpochUTC, J2000, Tle } from 'ootk-core';
 import { Thrust } from '../force/Thrust';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
 import { Propagator } from './Propagator';
@@ -26,7 +26,7 @@ import { Propagator } from './Propagator';
 // / SGP4 propagator.
 export class Sgp4Propagator extends Propagator {
   // / Create a new [Sgp4Propagator] object from a [TLE].
-  constructor(private tle: TLE) {
+  constructor(private tle: Tle) {
     super();
     this._cacheState = tle.state.toJ2000();
   }

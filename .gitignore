@@ -2,6 +2,7 @@
 .vscode
 coverage
 lib
+commonjs
 node_modules
 *.log
 

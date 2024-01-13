@@ -20,7 +20,6 @@ import { BaseObject, BaseObjectParams, Degrees, Kilometers } from 'ootk-core';
 /* eslint-disable class-methods-use-this */
 
 export interface LandObjectParams {
-  id: number;
   lat: Degrees;
   lon: Degrees;
   alt: Kilometers;
@@ -29,7 +28,6 @@ export interface LandObjectParams {
 }
 
 export class LandObject extends BaseObject {
-  id: number;
   lat: Degrees;
   lon: Degrees;
   alt: Kilometers;

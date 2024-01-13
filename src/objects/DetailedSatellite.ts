@@ -17,7 +17,6 @@
  */
 
 import {
-  EciVec3,
   Kilometers,
   LaunchDetails,
   OperationsDetails,
@@ -60,10 +59,6 @@ export class DetailedSatellite extends Satellite {
   source: string;
   vmag: number;
   rcs: number;
-  totalVelocity: number;
-  velocity: EciVec3<Kilometers>;
-  semiMajorAxis: number;
-  semiMinorAxis: number;
   altId: string;
   altName: string;
 
@@ -136,7 +131,7 @@ export class DetailedSatellite extends Satellite {
    * This method changes the position and time properties of the satellite object.
    */
   propagateTo(date: Date): this {
-    const pv = this.getEci(date);
+    const pv = this.eci(date);
 
     this.position = pv.position;
     this.velocity = pv.velocity;
