@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DifferentiableFunction } from 'src/types/types';
+import { DifferentiableFunction } from '../main';
 
 // / Golden Section bounded single value optimizer.
 export class GoldenSection {
