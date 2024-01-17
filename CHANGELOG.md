@@ -3,7 +3,13 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [4.0.0-3](https://github.com/thkruz/ootk/compare/v4.0.0-2...4.0.0-3)
+#### [4.0.0-4](https://github.com/thkruz/ootk/compare/v4.0.0-3...4.0.0-4)
+
+- fix: :adhesive_bandage: fix import statements [`e923dde`](https://github.com/thkruz/ootk/commit/e923ddefe856711c8216e006dc7463827960900e)
+
+#### [v4.0.0-3](https://github.com/thkruz/ootk/compare/v4.0.0-2...v4.0.0-3)
+
+> 17 January 2024 
 
 - fix: :bug: fix Vimpel TLEs [`6092a4b`](https://github.com/thkruz/ootk/commit/6092a4b411c1092ee75ed6c34eee499cfa3cefef)
 - fix: :bug: fix enum [`009342f`](https://github.com/thkruz/ootk/commit/009342f15e9f03de98e477c3c7ce1ef7534caa2d)
