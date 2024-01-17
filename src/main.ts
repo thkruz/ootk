@@ -21,12 +21,11 @@
  */
 
 export * from 'ootk-core';
+export * from './enums';
+export * from './types/types';
+export * from './interfaces';
 export * from './coordinate';
 export * from './objects';
 export * from './operations';
 export * from './transforms';
-export * from './interfaces';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-export * from './types/types';
 export * from './utils';

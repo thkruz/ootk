@@ -16,13 +16,17 @@
  */
 
 import {
+  FormatTle,
   LaunchDetails,
   OperationsDetails,
   OptionsParams,
   Satellite,
   SpaceCraftDetails,
+  TleLine1,
+  TleLine2,
 } from 'ootk-core';
 import { DetailedSatelliteParams } from '../types/types';
+import { CatalogSource } from 'src/enums/CatalogSource';
 
 /**
  * Represents a detailed satellite object with launch, spacecraft, and operations details.
@@ -61,6 +65,10 @@ export class DetailedSatellite extends Satellite {
     info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails,
     options?: OptionsParams,
   ) {
+    if (info.source === CatalogSource.VIMPEL) {
+      info = DetailedSatellite.setSccNumTo0_(info);
+    }
+
     super(info, options);
 
     this.active ??= true;
@@ -74,6 +82,21 @@ export class DetailedSatellite extends Satellite {
     this.altName = info.altName ?? '';
     this.initOperationDetails_(info);
     this.initLaunchDetails_(info);
+  }
+
+  private static setSccNumTo0_(info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails) {
+    info.tle1 = FormatTle.setCharAt(info.tle1, 2, '0') as TleLine1;
+    info.tle1 = FormatTle.setCharAt(info.tle1, 3, '0') as TleLine1;
+    info.tle1 = FormatTle.setCharAt(info.tle1, 4, '0') as TleLine1;
+    info.tle1 = FormatTle.setCharAt(info.tle1, 5, '0') as TleLine1;
+    info.tle1 = FormatTle.setCharAt(info.tle1, 6, '0') as TleLine1;
+    info.tle2 = FormatTle.setCharAt(info.tle2, 2, '0') as TleLine2;
+    info.tle2 = FormatTle.setCharAt(info.tle2, 3, '0') as TleLine2;
+    info.tle2 = FormatTle.setCharAt(info.tle2, 4, '0') as TleLine2;
+    info.tle2 = FormatTle.setCharAt(info.tle2, 5, '0') as TleLine2;
+    info.tle2 = FormatTle.setCharAt(info.tle2, 6, '0') as TleLine2;
+
+    return info;
   }
 
   private initSpaceCraftDetails_(
