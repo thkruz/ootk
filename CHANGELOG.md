@@ -3,7 +3,14 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [4.0.0-2](https://github.com/thkruz/ootk/compare/v4.0.0-1...4.0.0-2)
+#### [4.0.0-3](https://github.com/thkruz/ootk/compare/v4.0.0-2...4.0.0-3)
+
+- fix: :bug: fix Vimpel TLEs [`6092a4b`](https://github.com/thkruz/ootk/commit/6092a4b411c1092ee75ed6c34eee499cfa3cefef)
+- fix: :bug: fix enum [`009342f`](https://github.com/thkruz/ootk/commit/009342f15e9f03de98e477c3c7ce1ef7534caa2d)
+
+#### [v4.0.0-2](https://github.com/thkruz/ootk/compare/v4.0.0-1...v4.0.0-2)
+
+> 17 January 2024 
 
 - refactor: :recycle: move derivative from ootk-core [`9a9b50d`](https://github.com/thkruz/ootk/commit/9a9b50d4402b24398d920ae4ef0a76a7d19edabf)
 - build: :arrow_up: bump ootk-core [`efc4aa0`](https://github.com/thkruz/ootk/commit/efc4aa0caf7182afd9fbba7e29a50a8defd16ebe)
