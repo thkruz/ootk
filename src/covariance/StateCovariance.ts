@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -31,6 +30,9 @@ export class StateCovariance {
   /**
    * Create a new [StateCovariance] object given its covariance [matrix] and
    * [CovarianceFrame].
+   * @param matrix The covariance matrix.
+   * @param frame The covariance frame.
+   * @returns A new [StateCovariance] object.
    */
   constructor(public matrix: Matrix, public frame: CovarianceFrame) {
     // Nothing to do here.
@@ -42,7 +44,7 @@ export class StateCovariance {
     const output = Matrix.zero(n, n);
 
     for (let i = 0; i < n; i++) {
-      output[i][i] = Math.max(sigmas[i] * sigmas[i], 1e-32);
+      output.elements[i][i] = Math.max(sigmas[i] * sigmas[i], 1e-32);
     }
 
     return new StateCovariance(output, frame);
@@ -50,7 +52,6 @@ export class StateCovariance {
 
   /**
    * Calculates the standard deviations (sigmas) of each element in the covariance matrix.
-   *
    * @returns A vector containing the standard deviations of each element in the covariance matrix.
    */
   sigmas(): Vector {
@@ -58,7 +59,7 @@ export class StateCovariance {
     const result = new Float64Array(c);
 
     for (let i = 0; i < c; i++) {
-      const variance = this.matrix[i][i];
+      const variance = this.matrix.elements[i][i];
 
       result[i] = Math.sqrt(variance);
     }

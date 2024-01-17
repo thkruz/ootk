@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DataHandler, Earth, ITRF, J2000, Vector3D } from 'ootk-core';
+import { DataHandler, Earth, ITRF, J2000, Kilometers, KilometersPerSecond, Vector3D } from 'ootk-core';
 /* eslint-disable class-methods-use-this */
 // / Complex Earth gravity model, accounting for EGM-96 zonal, sectoral, and
 
@@ -137,13 +136,13 @@ export class EarthGravity implements Force {
     }
 
     const lambda = sumGm + ep * sumH;
-    const g = new Vector3D(
-      -muor2 * (lambda * xor - sumJ),
-      -muor2 * (lambda * yor - sumK),
-      -muor2 * (lambda * zor - sumH),
+    const g = new Vector3D<Kilometers>(
+      -muor2 * (lambda * xor - sumJ) as Kilometers,
+      -muor2 * (lambda * yor - sumK) as Kilometers,
+      -muor2 * (lambda * zor - sumH) as Kilometers,
     );
 
-    return new ITRF(state.epoch, g, Vector3D.origin).toJ2000().position;
+    return new ITRF(state.epoch, g, Vector3D.origin as Vector3D<KilometersPerSecond>).toJ2000().position;
   }
 
   acceleration(state: J2000): Vector3D {

@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,18 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DataHandler, DEG2RAD, Earth, ITRF, J2000, Sun, Vector3D } from 'ootk-core';
+import {
+  DataHandler,
+  DEG2RAD,
+  Earth,
+  ITRF,
+  J2000,
+  Kilometers,
+  KilometersPerSecond,
+  Radians,
+  Sun,
+  Vector3D,
+} from 'ootk-core';
 import { Force } from './Force';
 
 /**
@@ -37,14 +47,18 @@ export class AtmosphericDrag implements Force {
   }
 
   private static _getHPDensity(state: ITRF, n: number): number {
-    const hpa = DataHandler.getInstance().getHpAtmosphere(state.getHeight());
+    const hpa = DataHandler.getInstance().getHpAtmosphere(state.height);
 
     if (hpa === null) {
       return 0.0;
     }
     const sunPos = Sun.positionApparent(state.epoch);
-    const sunVec = new J2000(state.epoch, sunPos, Vector3D.origin).toITRF().position.normalize();
-    const bulVec = sunVec.rotZ(-30.0 * DEG2RAD);
+    const sunVec = new J2000(
+      state.epoch,
+      sunPos,
+      Vector3D.origin as Vector3D<KilometersPerSecond>,
+    ).toITRF().position.normalize();
+    const bulVec = sunVec.rotZ(-30.0 * DEG2RAD as Radians);
     const cosPsi = bulVec.normalize().dot(state.position.normalize());
     const c2Psi2 = 0.5 * (1.0 + cosPsi);
     const cPsi2 = Math.sqrt(c2Psi2);
@@ -70,8 +84,15 @@ export class AtmosphericDrag implements Force {
     if (density === 0) {
       return Vector3D.origin;
     }
-    const rotation = new ITRF(state.epoch, Earth.rotation, Vector3D.origin).toJ2000().position;
-    const vRel = state.velocity.subtract(rotation.cross(state.position)).scale(1000.0);
+    const rotation = new ITRF(
+      state.epoch,
+      // TODO: #26 This is a bit of a hack to get Radians/Second to work with StateVector class
+      Earth.rotation as unknown as Vector3D<Kilometers>,
+      Vector3D.origin as Vector3D<KilometersPerSecond>,
+    ).toJ2000().position;
+    // TODO: #26 This is a bit of a hack to get Radians/Second to work with StateVector class
+    const vRel = state.velocity.subtract(rotation.cross(state.position) as unknown as Vector3D<KilometersPerSecond>)
+      .scale(1000.0 as KilometersPerSecond);
     const vm = vRel.magnitude();
     const fScale = -0.5 * density * ((this.dragCoeff * this.area) / this.mass) * vm;
 

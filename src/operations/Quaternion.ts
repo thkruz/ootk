@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Matrix, Vector, Vector3D, wrapAngle } from 'ootk-core';
+import { Matrix, Radians, RadiansPerSecond, Vector, Vector3D, wrapAngle } from 'ootk-core';
 
 export class Quaternion {
   x: number;
@@ -160,16 +159,16 @@ export class Quaternion {
     return new Vector3D(this.x, this.y, this.z);
   }
 
-  angle(q: Quaternion): number {
+  angle(q: Quaternion): Radians {
     const c = this.multiply(q.conjugate()).normalize();
 
-    return 2 * Math.atan2(c.toVector3D().magnitude(), c.w);
+    return 2 * Math.atan2(c.toVector3D().magnitude(), c.w) as Radians;
   }
 
-  geodesicAngle(q: Quaternion): number {
+  geodesicAngle(q: Quaternion): Radians {
     const p = this.dot(q);
 
-    return wrapAngle(Math.acos(2 * p * p - 1.0));
+    return wrapAngle(Math.acos(2 * p * p - 1.0) as Radians);
   }
 
   distance(q: Quaternion): number {
@@ -208,15 +207,15 @@ export class Quaternion {
     return forward.angle(transform);
   }
 
-  kinematics(angularVelocity: Vector3D): Quaternion {
-    const wPrime = new Vector([0, angularVelocity[0], angularVelocity[1], angularVelocity[2]]);
+  kinematics(angularVelocity: Vector3D<RadiansPerSecond>): Quaternion {
+    const wPrime = new Vector([0, angularVelocity.x, angularVelocity.y, angularVelocity.z]);
     const qMat = new Matrix([
       [this.x, this.w, -this.z, this.y],
       [this.y, this.z, this.w, -this.x],
       [this.z, -this.y, this.x, this.w],
       [this.w, -this.x, -this.y, -this.z],
     ]);
-    const result = qMat.multiplyVector(wPrime).scale(0.5);
+    const result = qMat.multiplyVector(wPrime).scale(0.5).elements;
 
     return new Quaternion(result[0], result[1], result[2], result[3]);
   }

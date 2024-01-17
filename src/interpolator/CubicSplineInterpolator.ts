@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, EpochWindow, J2000 } from 'ootk-core';
+import { EpochUTC, EpochWindow, J2000, Kilometers, KilometersPerSecond, Vector3D } from 'ootk-core';
 import { CubicSpline } from './CubicSpline';
 import { StateInterpolator } from './StateInterpolator';
 
@@ -56,7 +55,7 @@ export class CubicSplineInterpolator extends StateInterpolator {
     return (64 * 14 * this._splines.length) / 8;
   }
 
-  private _matchSpline(posix: number): CubicSpline {
+  private matchSpline_(posix: number): CubicSpline {
     let left = 0;
     let right = this._splines.length;
 
@@ -78,7 +77,9 @@ export class CubicSplineInterpolator extends StateInterpolator {
       return null;
     }
     const posix = epoch.posix;
-    const splineVecs = this._matchSpline(posix).interpolate(posix);
+    const splineVecs = this
+      .matchSpline_(posix)
+      .interpolate(posix) as [Vector3D<Kilometers>, Vector3D<KilometersPerSecond>];
 
     return new J2000(epoch, splineVecs[0], splineVecs[1]);
   }

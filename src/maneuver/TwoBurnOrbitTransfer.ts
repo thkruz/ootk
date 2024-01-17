@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth, EpochUTC } from 'ootk-core';
+import { Earth, EpochUTC, MetersPerSecond, Seconds, SecondsPerMeterPerSecond } from 'ootk-core';
 import { Thrust } from '../force/Thrust';
 
 // / Container for a two-burn orbit transfer.
@@ -27,14 +26,13 @@ export class TwoBurnOrbitTransfer {
     public vFinal: number,
     public vTransA: number,
     public vTransB: number,
-    public tTrans: number,
+    public tTrans: Seconds,
   ) {
     // Nothing to do here.
   }
 
   /**
    * Calculates the parameters for a Hohmann transfer orbit between two circular orbits.
-   *
    * @param rInit The initial radius of the orbit. (km)
    * @param rFinal The final radius of the orbit. (km)
    * @returns An instance of TwoBurnOrbitTransfer containing the calculated parameters.
@@ -44,7 +42,7 @@ export class TwoBurnOrbitTransfer {
     const vFinal = Math.sqrt(Earth.mu / rFinal);
     const vTransA = vInit * (Math.sqrt((2.0 * rFinal) / (rInit + rFinal)) - 1.0);
     const vTransB = vFinal * (1.0 - Math.sqrt((2 * rInit) / (rInit + rFinal)));
-    const tTrans = Math.PI * Math.sqrt((rInit + rFinal) ** 3 / (8.0 * Earth.mu));
+    const tTrans = Math.PI * Math.sqrt((rInit + rFinal) ** 3 / (8.0 * Earth.mu)) as Seconds;
 
     return new TwoBurnOrbitTransfer(vInit, vFinal, vTransA, vTransB, tTrans);
   }
@@ -60,9 +58,21 @@ export class TwoBurnOrbitTransfer {
    * @param durationRate The duration rate of the maneuver (s/m/s).
    * @returns An array containing the two thrust objects representing the maneuvers.
    */
-  toManeuvers(epoch: EpochUTC, durationRate = 0.0): [Thrust, Thrust] {
-    const mA = new Thrust(epoch, 0.0, this.vTransA * 1000.0, 0.0, durationRate);
-    const mB = new Thrust(epoch.roll(this.tTrans), 0.0, this.vTransB * 1000.0, 0.0, durationRate);
+  toManeuvers(epoch: EpochUTC, durationRate = 0.0 as SecondsPerMeterPerSecond): [Thrust, Thrust] {
+    const mA = new Thrust(
+      epoch,
+      0.0 as MetersPerSecond,
+      this.vTransA * 1000.0 as MetersPerSecond,
+      0.0 as MetersPerSecond,
+      durationRate,
+    );
+    const mB = new Thrust(
+      epoch.roll(this.tTrans),
+      0.0 as MetersPerSecond,
+      this.vTransB * 1000.0 as MetersPerSecond,
+      0.0 as MetersPerSecond,
+      durationRate,
+    );
 
     return [mA, mB];
   }

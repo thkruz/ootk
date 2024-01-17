@@ -1,24 +1,22 @@
+# Directories
 .github
 .vscode
 coverage
 examples
 node_modules
 scripts
-src/*
 test
 
 # Files
-.editorconfig
+.auto-changelog
 .eslintignore
-.eslintrc
+.eslintrc.json
 .gitattributes
 .gitignore
 .npmignore
-.prettierrc
-babel.config.js
-codecov.yml
-jest.config.js
+babel.config.cjs
+changelog.hbs
+jest.config.ts
 package-lock.json
-sandbox.html
 tsconfig.*
 

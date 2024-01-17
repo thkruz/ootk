@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -17,14 +16,11 @@
  */
 
 import {
-  Kilometers,
   LaunchDetails,
   OperationsDetails,
   OptionsParams,
   Satellite,
-  SatelliteParams,
   SpaceCraftDetails,
-  Vector3D,
 } from 'ootk-core';
 import { DetailedSatelliteParams } from '../types/types';
 
@@ -32,50 +28,86 @@ import { DetailedSatelliteParams } from '../types/types';
  * Represents a detailed satellite object with launch, spacecraft, and operations details.
  */
 export class DetailedSatellite extends Satellite {
-  /** A global index - this is NOT the sccNum */
-  configuration: string;
-  country: string;
-  dryMass: string;
-  equipment: string;
-  launchDate: string;
-  launchMass: string;
-  launchSite: string;
-  launchVehicle: string;
-  lifetime: string | number;
-  maneuver: string;
-  manufacturer: string;
-  mission: string;
-  bus: string;
-  motor: string;
-  owner: string;
-  payload: string;
-  power: string;
-  purpose: string;
-  length: string;
-  diameter: string;
-  shape: string;
-  span: string;
-  user: string;
-  source: string;
+  configuration: string = '';
+  country: string = '';
+  dryMass: string = '';
+  equipment: string = '';
+  launchDate: string = '';
+  launchMass: string = '';
+  launchSite: string = '';
+  launchVehicle: string = '';
+  lifetime: string | number = '';
+  maneuver: string = '';
+  manufacturer: string = '';
+  mission: string = '';
+  bus: string = '';
+  motor: string = '';
+  owner: string = '';
+  payload: string = '';
+  power: string = '';
+  purpose: string = '';
+  length: string = '';
+  diameter: string = '';
+  shape: string = '';
+  span: string = '';
+  user: string = '';
+  source: string = '';
   vmag: number;
   rcs: number;
-  altId: string;
-  altName: string;
+  altId: string = '';
+  altName: string = '';
 
   constructor(
-    info: DetailedSatelliteParams & SatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails,
+    info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails,
     options?: OptionsParams,
   ) {
     super(info, options);
 
     this.active ??= true;
-    this.setLaunchDetails(info);
-    this.setSpaceCraftDetails(info);
-    this.setOperationsDetails(info);
+    this.initSpaceCraftDetails_(info);
+    this.length = info.length ?? '';
+    this.diameter = info.diameter ?? '';
+    this.source = info.source ?? '';
+    this.vmag = info.vmag ?? 0;
+    this.rcs = info.rcs ?? 0;
+    this.altId = info.altId ?? '';
+    this.altName = info.altName ?? '';
+    this.initOperationDetails_(info);
+    this.initLaunchDetails_(info);
+  }
 
-    Object.keys(info).forEach((key) => {
-      this[key] = info[key];
-    });
+  private initSpaceCraftDetails_(
+    info: DetailedSatelliteParams &
+          LaunchDetails & OperationsDetails &
+          SpaceCraftDetails,
+  ) {
+    this.lifetime = info.lifetime ?? '';
+    this.maneuver = info.maneuver ?? '';
+    this.manufacturer = info.manufacturer ?? '';
+    this.motor = info.motor ?? '';
+    this.power = info.power ?? '';
+    this.payload = info.payload ?? '';
+    this.purpose = info.purpose ?? '';
+    this.shape = info.shape ?? '';
+    this.span = info.span ?? '';
+    this.bus = info.bus ?? '';
+    this.configuration = info.configuration ?? '';
+    this.equipment = info.equipment ?? '';
+    this.dryMass = info.dryMass ?? '';
+  }
+
+  private initOperationDetails_(info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails) {
+    this.mission = info.mission ?? '';
+    this.user = info.user ?? '';
+    this.owner = info.owner ?? '';
+    this.country = info.country ?? '';
+  }
+
+  private initLaunchDetails_(info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails) {
+    this.launchDate = info.launchDate ?? '';
+    this.launchMass = info.launchMass ?? '';
+    this.launchSite = info.launchSite ?? '';
+    this.launchVehicle = info.launchVehicle ?? '';
   }
 
   /**
@@ -106,7 +138,7 @@ export class DetailedSatellite extends Satellite {
 
   /**
    * Returns the space craft details.
-   * @returns {SpaceCraftDetails} The space craft details.
+   * @returns The space craft details.
    */
   getSpaceCraftDetails(): SpaceCraftDetails {
     return {
@@ -123,76 +155,5 @@ export class DetailedSatellite extends Satellite {
       equipment: this.equipment,
       dryMass: this.dryMass,
     };
-  }
-
-  /**
-   * Propagates the satellite position to the given date using the SGP4 model.
-   *
-   * This method changes the position and time properties of the satellite object.
-   */
-  propagateTo(date: Date): this {
-    const pv = this.eci(date);
-
-    this.position = pv.position;
-    this.velocity = pv.velocity;
-    this.totalVelocity = new Vector3D(pv.velocity.x, pv.velocity.y, pv.velocity.z).magnitude() as Kilometers;
-    this.time = date;
-
-    return this;
-  }
-
-  /**
-   * Sets the launch details of the satellite.
-   * @param details - The launch details to set.
-   */
-  setLaunchDetails(details: LaunchDetails): void {
-    const keys = ['launchDate', 'launchMass', 'launchSite', 'launchVehicle'];
-
-    keys.forEach((key) => {
-      if (details[key]) {
-        this[key] = details[key];
-      }
-    });
-  }
-
-  /**
-   * Sets the operations details for the satellite.
-   * @param details - The operations details to set.
-   */
-  setOperationsDetails(details: OperationsDetails): void {
-    const keys = ['user', 'mission', 'owner', 'country'];
-
-    keys.forEach((key) => {
-      if (details[key]) {
-        this[key] = details[key];
-      }
-    });
-  }
-
-  /**
-   * Sets the details of a spacecraft.
-   * @param details - The details of the spacecraft to set.
-   */
-  setSpaceCraftDetails(details: SpaceCraftDetails): void {
-    const keys = [
-      'lifetime',
-      'maneuver',
-      'manufacturer',
-      'motor',
-      'power',
-      'payload',
-      'purpose',
-      'shape',
-      'span',
-      'configuration',
-      'equipment',
-      'dryMass',
-    ];
-
-    keys.forEach((key) => {
-      if (details[key]) {
-        this[key] = details[key];
-      }
-    });
   }
 }

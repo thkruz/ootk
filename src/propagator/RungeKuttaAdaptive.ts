@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, J2000, Vector } from 'ootk-core';
+import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, Vector, Vector3D } from 'ootk-core';
 import { ForceModel } from '../force/ForceModel';
 import { Thrust } from '../force/Thrust';
 import { VerletBlendInterpolator } from './../interpolator/VerletBlendInterpolator';
@@ -29,15 +28,18 @@ export abstract class RungeKuttaAdaptive extends Propagator {
   /**
    * Create a new [RungeKuttaAdaptive] object from an initial state vector
    * along with an optional [ForceModel] and [tolerance].
+   * @param initState_ Initial state vector.
+   * @param forceModel_ Numerical integration force model.
+   * @param tolerance_ Minimum allowable local error tolerance.
    */
   constructor(
-    private _initState: J2000,
-    private _forceModel: ForceModel = new ForceModel().setGravity(),
-    private _tolerance: number = 1e-9,
+    private initState_: J2000,
+    private forceModel_: ForceModel = new ForceModel().setGravity(),
+    private tolerance_: number = 1e-9,
   ) {
     super();
-    this._cacheState = this._initState;
-    this._tolerance = Math.max(RungeKuttaAdaptive._minTolerance, Math.abs(_tolerance));
+    this._cacheState = this.initState_;
+    this.tolerance_ = Math.max(RungeKuttaAdaptive._minTolerance, Math.abs(tolerance_));
   }
 
   // / Initial state vector.
@@ -71,52 +73,70 @@ export abstract class RungeKuttaAdaptive extends Propagator {
   }
 
   reset(): void {
-    this._cacheState = this._initState;
+    this._cacheState = this.initState_;
     this._stepSize = 60.0;
   }
 
   // / Set numerical integration force model.
   setForceModel(forceModel: ForceModel): void {
-    this._forceModel = forceModel;
+    this.forceModel_ = forceModel;
   }
 
-  private _kfn(epoch: EpochUTC, rv: Vector, hArg: number, kArg: Vector, step: number): Vector {
-    const t = epoch.roll(hArg * step);
+  private kfn_(
+    epoch: EpochUTC,
+    rv: Vector<Kilometers|KilometersPerSecond>,
+    hArg: Seconds,
+    kArg: Vector<Kilometers>,
+    step: Seconds,
+  ): Vector {
+    const t = epoch.roll(hArg * step as Seconds);
     const rvNew = rv.add(kArg);
-    const sample = new J2000(t, rvNew.toVector3D(0), rvNew.toVector3D(3));
+    const sample = new J2000(
+      t,
+      rvNew.toVector3D(0) as Vector3D<Kilometers>,
+      rvNew.toVector3D(3) as Vector3D<KilometersPerSecond>,
+    );
 
-    return this._forceModel.derivative(sample).scale(step);
+    return this.forceModel_.derivative(sample).scale(step);
   }
 
-  private _integrate(state: J2000, step: number): RkResult {
+  private integrate_(state: J2000, step: Seconds): RkResult {
     const k: Vector[] = new Array(this.a.length).fill(Vector.origin3);
-    const y = state.position.join(state.velocity);
+    const y = state.position.join(state.velocity) as Vector<Kilometers>;
 
     for (let i = 0; i < this.a.length; i++) {
-      let kArg = Vector.origin6 as Vector<number>;
+      let kArg = Vector.origin6 as Vector<Kilometers>;
 
       if (i !== 0) {
         for (let j = 0; j < i; j++) {
-          kArg = kArg.add(k[j].scale(this.b[i][j]));
+          kArg = kArg.add(k[j].scale(this.b[i][j])) as Vector<Kilometers>;
         }
       }
-      k[i] = this._kfn(state.epoch, y, this.a[i], kArg, step);
+      k[i] = this.kfn_(state.epoch, y, this.a[i] as Seconds, kArg, step);
     }
     let y1 = y;
     let y2 = y;
 
     for (let i = 0; i < k.length; i++) {
-      y1 = y1.add(k[i].scale(this.ch[i]));
-      y2 = y2.add(k[i].scale(this.c[i]));
+      y1 = y1.add(k[i].scale(this.ch[i])) as Vector<Kilometers>;
+      y2 = y2.add(k[i].scale(this.c[i])) as Vector<Kilometers>;
     }
     const teVal = y1.distance(y2);
-    let hNew = 0.9 * step * (this._tolerance / teVal) ** (1.0 / this.order);
+    let hNew = 0.9 * step * (this.tolerance_ / teVal) ** (1.0 / this.order);
     const hOld = Math.abs(step);
 
     hNew = Math.max(0.2 * hOld, Math.min(5.0 * hOld, hNew));
     hNew = Math.max(1e-5, Math.min(1000.0, hNew));
 
-    return new RkResult(new J2000(state.epoch.roll(step), y1.toVector3D(0), y1.toVector3D(3)), teVal, hNew);
+    return new RkResult(
+      new J2000(
+        state.epoch.roll(step),
+        y1.toVector3D(0) as Vector3D<Kilometers>,
+        y1.toVector3D(3) as Vector3D<KilometersPerSecond>,
+      ),
+      teVal,
+      hNew,
+    );
   }
 
   propagate(epoch: EpochUTC): J2000 {
@@ -124,11 +144,11 @@ export abstract class RungeKuttaAdaptive extends Propagator {
 
     while (delta !== 0) {
       const direction = delta >= 0 ? 1 : -1;
-      const dt = Math.min(Math.abs(delta), this._stepSize) * direction;
-      const result = this._integrate(this._cacheState, dt);
+      const dt = Math.min(Math.abs(delta), this._stepSize) * direction as Seconds;
+      const result = this.integrate_(this._cacheState, dt);
 
       this._stepSize = result.newStep;
-      if (result.error > this._tolerance) {
+      if (result.error > this.tolerance_) {
         continue;
       }
       this._cacheState = result.state;
@@ -138,7 +158,7 @@ export abstract class RungeKuttaAdaptive extends Propagator {
     return this._cacheState;
   }
 
-  maneuver(maneuver: Thrust, interval = 60.0): J2000[] {
+  maneuver(maneuver: Thrust, interval = 60.0 as Seconds): J2000[] {
     if (maneuver.isImpulsive) {
       this._cacheState = maneuver.apply(this.propagate(maneuver.center));
 
@@ -146,21 +166,26 @@ export abstract class RungeKuttaAdaptive extends Propagator {
     }
     let tState = this.propagate(maneuver.start);
 
-    this._forceModel.loadManeuver(maneuver);
+    this.forceModel_.loadManeuver(maneuver);
     const ephemeris: J2000[] = [tState];
 
     while (tState.epoch < maneuver.stop) {
-      const step = Math.min(maneuver.stop.difference(tState.epoch), interval);
+      const step = Math.min(maneuver.stop.difference(tState.epoch), interval) as Seconds;
 
       tState = this.propagate(tState.epoch.roll(step));
       ephemeris.push(tState);
     }
-    this._forceModel.clearManeuver();
+    this.forceModel_.clearManeuver();
 
     return ephemeris;
   }
 
-  ephemerisManeuver(start: EpochUTC, finish: EpochUTC, maneuvers: Thrust[], interval = 60.0): VerletBlendInterpolator {
+  ephemerisManeuver(
+    start: EpochUTC,
+    finish: EpochUTC,
+    maneuvers: Thrust[],
+    interval = 60.0 as Seconds,
+  ): VerletBlendInterpolator {
     const tMvr = maneuvers.filter((mvr) => mvr.start >= start || mvr.stop <= finish);
     const ephemeris: J2000[] = [];
 
@@ -169,7 +194,7 @@ export abstract class RungeKuttaAdaptive extends Propagator {
     }
     for (const mvr of tMvr) {
       while (this._cacheState.epoch < mvr.start) {
-        const step = Math.min(mvr.start.difference(this._cacheState.epoch), interval);
+        const step = Math.min(mvr.start.difference(this._cacheState.epoch), interval) as Seconds;
 
         this.propagate(this._cacheState.epoch.roll(step));
         if (this._cacheState.epoch.posix !== mvr.start.posix) {
@@ -179,7 +204,7 @@ export abstract class RungeKuttaAdaptive extends Propagator {
       ephemeris.push(...this.maneuver(mvr, interval));
     }
     while (this._cacheState.epoch.posix < finish.posix) {
-      const step = Math.min(finish.difference(this._cacheState.epoch), interval);
+      const step = Math.min(finish.difference(this._cacheState.epoch), interval) as Seconds;
 
       this.propagate(this._cacheState.epoch.roll(step));
       ephemeris.push(this._cacheState);

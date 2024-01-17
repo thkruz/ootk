@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth, EpochUTC, J2000, RadecTopocentric, Vector3D } from 'ootk-core';
+import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, RadecTopocentric, Vector3D } from 'ootk-core';
 import { ForceModel } from '../force/ForceModel';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
 import { ObservationOptical } from './../observation/ObservationOptical';
@@ -39,39 +38,43 @@ type SolveOptions = {
  * Used for orbit determination from multiple optical observations.
  */
 export class ModifiedGoodingIOD {
-  private _observations: ObservationOptical[];
-  private _mu: number;
+  private observations_: ObservationOptical[];
+  private mu_: number;
 
   constructor(observations: ObservationOptical[], mu: number = Earth.mu) {
-    this._observations = observations;
-    this._mu = mu;
+    this.observations_ = observations;
+    this.mu_ = mu;
   }
 
-  private _createInitial(r0: number, rN: number, nRev: number, direction: boolean): J2000 {
+  private createInitial_(r0: Kilometers, rN: Kilometers, nRev: number, direction: boolean): J2000 {
     const iod = new GoodingIOD(
-      this._observations[0],
-      this._observations[Math.floor(this._observations.length / 2)],
-      this._observations[this._observations.length - 1],
-      this._mu,
+      this.observations_[0],
+      this.observations_[Math.floor(this.observations_.length / 2)],
+      this.observations_[this.observations_.length - 1],
+      this.mu_,
     );
 
     return iod.solve(r0, rN, nRev, direction);
   }
 
   private _createErrorFunction(aprioriEpoch: EpochUTC): CostFunction {
-    const forceModel = new ForceModel().setGravity(this._mu);
+    const forceModel = new ForceModel().setGravity(this.mu_);
     const scoreFn = (x: Float64Array): number => {
-      const position = new Vector3D(x[0], x[1], x[2]);
-      const velocity = new Vector3D(x[3], x[4], x[5]);
+      const position = new Vector3D(x[0] as Kilometers, x[1] as Kilometers, x[2] as Kilometers);
+      const velocity = new Vector3D(
+        x[3] as KilometersPerSecond,
+        x[4] as KilometersPerSecond,
+        x[5] as KilometersPerSecond,
+      );
       const state = new J2000(aprioriEpoch, position, velocity);
       const propagator = new RungeKutta89Propagator(state, forceModel);
       let total = 0;
 
-      for (const oC of this._observations) {
+      for (const oC of this.observations_) {
         const sC = propagator.propagate(oC.epoch);
         const pC = oC.site;
         const expected = oC.observation.lineOfSight();
-        const actual = RadecTopocentric.fromStateVectors(sC, pC).lineOfSight();
+        const actual = RadecTopocentric.fromStateVector(sC, pC).lineOfSight();
         const error = expected.angle(actual);
 
         total += error;
@@ -84,8 +87,8 @@ export class ModifiedGoodingIOD {
   }
 
   solve(
-    r0: number,
-    rN: number,
+    r0: Kilometers,
+    rN: Kilometers,
     {
       nRev = 0,
       direction = true,
@@ -95,10 +98,10 @@ export class ModifiedGoodingIOD {
       printIter = false,
     }: SolveOptions,
   ): J2000 {
-    if (this._observations.length < 3) {
+    if (this.observations_.length < 3) {
       throw new Error('At least 3 observations required for Gooding IOD.');
     }
-    const init = this._createInitial(r0, rN, nRev, direction);
+    const init = this.createInitial_(r0, rN, nRev, direction);
     const guess = Float64Array.from([...init.position.toArray(), ...init.velocity.toArray()]);
     const solveFn = this._createErrorFunction(init.epoch);
     const simplex = [
@@ -119,8 +122,12 @@ export class ModifiedGoodingIOD {
 
     return new J2000(
       init.epoch,
-      new Vector3D(result[0], result[1], result[2]),
-      new Vector3D(result[3], result[4], result[5]),
+      new Vector3D(result[0] as Kilometers, result[1] as Kilometers, result[2] as Kilometers),
+      new Vector3D(
+        result[3] as KilometersPerSecond,
+        result[4] as KilometersPerSecond,
+        result[5] as KilometersPerSecond,
+      ),
     );
   }
 }

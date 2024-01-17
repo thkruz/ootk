@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, EpochWindow } from 'ootk-core';
+import { EpochUTC, EpochWindow, Seconds } from 'ootk-core';
 
 // / Interpolator base class.
 export abstract class Interpolator {
@@ -46,8 +45,8 @@ export abstract class Interpolator {
     const y2 = interpolator.window().end;
 
     if (x1 <= y2 && y1 <= x2) {
-      const e1 = new EpochUTC(Math.max(x1.posix, y1.posix));
-      const e2 = new EpochUTC(Math.min(x2.posix, y2.posix));
+      const e1 = new EpochUTC(Math.max(x1.posix, y1.posix) as Seconds);
+      const e2 = new EpochUTC(Math.min(x2.posix, y2.posix) as Seconds);
 
       return new EpochWindow(e1, e2);
     }

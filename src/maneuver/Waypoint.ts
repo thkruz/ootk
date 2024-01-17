@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,16 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, J2000, RIC, Vector3D } from 'ootk-core';
+import {
+  EpochUTC,
+  J2000,
+  Kilometers,
+  KilometersPerSecond,
+  MetersPerSecond,
+  RIC,
+  SecondsPerMeterPerSecond,
+  Vector3D,
+} from 'ootk-core';
 import { Thrust } from '../force/Thrust';
 import { StateInterpolator } from '../interpolator/StateInterpolator';
 import { ForceModel } from './../force/ForceModel';
@@ -27,10 +35,10 @@ import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
 // / Relative waypoint targeting.
 export class Waypoint {
   epoch: EpochUTC;
-  relativePosition: Vector3D;
+  relativePosition: Vector3D<Kilometers>;
 
   // / Create a new [Waypoint] object.
-  constructor(epoch: EpochUTC, relativePosition: Vector3D) {
+  constructor(epoch: EpochUTC, relativePosition: Vector3D<Kilometers>) {
     this.epoch = epoch;
     this.relativePosition = relativePosition;
   }
@@ -40,6 +48,13 @@ export class Waypoint {
    * target [waypoint] given an initial [state], [forceModel],
    * [target] interpolator, and speculative relative maneuver
    * [components] _(m/s)_.
+   * @param waypoint The waypoint to target.
+   * @param maneuver The maneuver to perturb.
+   * @param state The initial state of the interceptor.
+   * @param forceModel The force model to use for propagation.
+   * @param target The target interpolator.
+   * @param components The speculative maneuver components.
+   * @returns The perturbed error in the maneuver.
    */
   static _error(
     waypoint: Waypoint,
@@ -47,13 +62,13 @@ export class Waypoint {
     state: J2000,
     forceModel: ForceModel,
     target: StateInterpolator,
-    components: Float64Array,
+    components: Float64Array, // MetersPerSecond
   ): number {
     const testManeuver = new Thrust(
       maneuver.center,
-      components[0],
-      components[1],
-      components[2],
+      components[0] as MetersPerSecond,
+      components[1] as MetersPerSecond,
+      components[2] as MetersPerSecond,
       maneuver.durationRate,
     );
     const propagator = new RungeKutta89Propagator(state, forceModel);
@@ -77,6 +92,12 @@ export class Waypoint {
    * The score function takes an array of speculative radial, intrack, and
    * crosstrack components _(m/s)_ and returns the propagated error from the
    * desired waypoint target.
+   * @param waypoint The waypoint to target.
+   * @param maneuver The maneuver to perturb.
+   * @param state The initial state of the interceptor.
+   * @param forceModel The force model to use for propagation.
+   * @param target The target interpolator.
+   * @returns A score function for refining maneuvers.
    */
   static _refineManeuverScore(
     waypoint: Waypoint,
@@ -101,6 +122,19 @@ export class Waypoint {
    * - `refine`: refine maneuvers to account for perturbations if `true`
    * - `maxIter`: maximum refinement iterations per maneuver
    * - `printIter`: print debug information on each refinement iteration
+   * @param interceptor The interceptor state.
+   * @param pivot The epoch of the first burn.
+   * @param waypoints The waypoints to target.
+   * @param target The target interpolator.
+   * @param preManeuvers The maneuvers to execute before the pivot burn.
+   * @param postManeuvers The maneuvers to execute after the last pivot burn.
+   * @param root0 The optional arguments.
+   * @param root0.durationRate The thruster duration rate.
+   * @param root0.forceModel The interceptor force model.
+   * @param root0.refine Whether to refine maneuvers to account for perturbations.
+   * @param root0.maxIter The maximum refinement iterations per maneuver.
+   * @param root0.printIter Whether to print debug information on each refinement iteration.
+   * @returns An array of maneuvers.
    */
   static toManeuvers(
     interceptor: J2000,
@@ -139,7 +173,7 @@ export class Waypoint {
     let waypointManeuvers: Thrust[] = [];
 
     for (const wp of waypoints) {
-      const targetWp = new RIC(wp.relativePosition, Vector3D.origin);
+      const targetWp = new RIC(wp.relativePosition, Vector3D.origin as Vector3D<KilometersPerSecond>);
       const targetState = target.interpolate(wp.epoch);
 
       if (targetState === null) {
@@ -147,7 +181,7 @@ export class Waypoint {
       }
       const wpState = targetWp.toJ2000(targetState);
       const tof = wp.epoch.difference(state.epoch);
-      const revs = Math.floor(tof / state.period());
+      const revs = Math.floor(tof / state.period);
       const shortPath = LambertIOD.useShortPath(state, targetState);
       const lambert = new LambertIOD();
       const components = lambert.estimate(state.position, wpState.position, state.epoch, wp.epoch, {
@@ -158,8 +192,14 @@ export class Waypoint {
       if (components === null) {
         throw new Error('Lambert solve result is null.');
       }
-      const componentsRel = RIC.fromJ2000(components, state).velocity.scale(1e3);
-      const maneuver = new Thrust(state.epoch, componentsRel.x, componentsRel.y, componentsRel.z, durationRate);
+      const componentsRel = RIC.fromJ2000(components, state).velocity.scale(1e3) as Vector3D<MetersPerSecond>;
+      const maneuver = new Thrust(
+        state.epoch,
+        componentsRel.x,
+        componentsRel.y,
+        componentsRel.z,
+        durationRate as SecondsPerMeterPerSecond,
+      );
       const tempProp = new RungeKutta89Propagator(state, forceModel);
 
       tempProp.maneuver(maneuver);
@@ -211,9 +251,9 @@ export class Waypoint {
         fTolerance: 1e-6,
         printIter,
       });
-      const tR = results[0];
-      const tI = results[1];
-      const tC = results[2];
+      const tR = results[0] as MetersPerSecond;
+      const tI = results[1] as MetersPerSecond;
+      const tC = results[2] as MetersPerSecond;
       const newManeuver = new Thrust(maneuver.center, tR, tI, tC, maneuver.durationRate);
 
       output.push(newManeuver);

@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, J2000 } from 'ootk-core';
+import { EpochUTC, J2000, Seconds } from 'ootk-core';
 import { Thrust } from '../force/Thrust';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
 import { GoldenSection } from './../optimize/GoldenSection';
@@ -31,7 +30,7 @@ export abstract class Propagator {
    * [start] and [stop] propagation period, with an optional
    * ephemeris [interval].
    */
-  ephemeris(start: EpochUTC, stop: EpochUTC, interval = 60.0): VerletBlendInterpolator {
+  ephemeris(start: EpochUTC, stop: EpochUTC, interval = 60.0 as Seconds): VerletBlendInterpolator {
     const output: J2000[] = [this.propagate(start)];
     let tempEpoch = start;
 
@@ -71,7 +70,7 @@ export abstract class Propagator {
    *
    * If the maneuver is impulsive, the list will only contain a single state.
    */
-  maneuver(maneuver: Thrust, interval = 60.0): J2000[] {
+  maneuver(maneuver: Thrust, interval = 60.0 as Seconds): J2000[] {
     const output: J2000[] = [];
     const tempEpoch = maneuver.start;
     const stop = maneuver.stop;
@@ -91,7 +90,12 @@ export abstract class Propagator {
    * Generate a [VerletBlendInterpolator] containing maneuver ephemeris over
    * the [start] and [finish] interval, with an optional ephemeris [interval].
    */
-  ephemerisManeuver(start: EpochUTC, finish: EpochUTC, maneuvers: Thrust[], interval = 60.0): VerletBlendInterpolator {
+  ephemerisManeuver(
+    start: EpochUTC,
+    finish: EpochUTC,
+    maneuvers: Thrust[],
+    interval = 60.0 as Seconds,
+  ): VerletBlendInterpolator {
     const output: J2000[] = [];
     const tempEpoch = start;
 
@@ -109,8 +113,8 @@ export abstract class Propagator {
 
   // Return the epoch of the ascending node after the [start] epoch.
   ascendingNodeEpoch(start: EpochUTC): EpochUTC {
-    const period = this.state.period();
-    const step = period / 8;
+    const period = this.state.period / 60 as Seconds;
+    const step = period / 8 as Seconds;
     let current = start;
     const stop = current.roll(period);
 
@@ -126,23 +130,23 @@ export abstract class Propagator {
       previous = this.state.position.z;
     }
     const t = GoldenSection.search(
-      (x: number) => {
-        this.propagate(new EpochUTC(x));
+      (x) => {
+        this.propagate(new EpochUTC(x as Seconds));
 
-        return Math.abs(this.state.position.z);
+        return Math.abs(this.state.position.z) as Seconds;
       },
       current.posix - step,
       current.posix,
       { tolerance: 1e-3 },
-    );
+    ) as Seconds;
 
     return new EpochUTC(t);
   }
 
   // Return the epoch of the descending node after the [start] epoch.
   descendingNodeEpoch(start: EpochUTC): EpochUTC {
-    const period = this.state.period();
-    const step = period / 8;
+    const period = this.state.period / 60 as Seconds;
+    const step = period / 8 as Seconds;
     let current = start;
     const stop = current.roll(period);
 
@@ -159,14 +163,14 @@ export abstract class Propagator {
     }
     const t = GoldenSection.search(
       (x: number) => {
-        this.propagate(new EpochUTC(x));
+        this.propagate(new EpochUTC(x as Seconds));
 
         return Math.abs(this.state.position.z);
       },
       current.posix - step,
       current.posix,
       { tolerance: 1e-3 },
-    );
+    ) as Seconds;
 
     return new EpochUTC(t);
   }
@@ -174,8 +178,8 @@ export abstract class Propagator {
   // Return the epoch of apogee after the [start] epoch.
   apogeeEpoch(start: EpochUTC): EpochUTC {
     const slice = 8;
-    const period = this.state.period();
-    const step = period / slice;
+    const period = this.state.period / 60 as Seconds;
+    const step = period / slice as Seconds;
     let current = start;
 
     this.propagate(current);
@@ -187,14 +191,14 @@ export abstract class Propagator {
       const t = new EpochUTC(
         GoldenSection.search(
           (x: number) => {
-            this.propagate(new EpochUTC(x));
+            this.propagate(new EpochUTC(x as Seconds));
 
             return this.state.position.magnitude();
           },
           current.posix - step,
           current.posix,
           { tolerance: 1e-3, solveMax: true },
-        ),
+        ) as Seconds,
       );
 
       this.propagate(t);
@@ -212,8 +216,8 @@ export abstract class Propagator {
   // Return the epoch of perigee after the [start] epoch.
   perigeeEpoch(start: EpochUTC): EpochUTC {
     const slice = 8;
-    const period = this.state.period();
-    const step = period / slice;
+    const period = this.state.period / 60 as Seconds;
+    const step = period / slice as Seconds;
     let current = start;
 
     this.propagate(current);
@@ -225,14 +229,14 @@ export abstract class Propagator {
       const t = new EpochUTC(
         GoldenSection.search(
           (x: number) => {
-            this.propagate(new EpochUTC(x));
+            this.propagate(new EpochUTC(x as Seconds));
 
             return this.state.position.magnitude();
           },
           current.posix - step,
           current.posix,
           { tolerance: 1e-3, solveMax: false },
-        ),
+        ) as Seconds,
       );
 
       this.propagate(t);

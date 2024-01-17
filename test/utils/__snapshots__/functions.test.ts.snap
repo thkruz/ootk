@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should be calculate jacobian 1`] = `
+Matrix {
+  "columns": 3,
+  "elements": Array [
+    Array [
+      1.000000000006551,
+      0,
+      0,
+    ],
+  ],
+  "rows": 1,
+}
+`;

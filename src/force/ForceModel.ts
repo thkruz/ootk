@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -32,7 +31,7 @@ export class ForceModel {
   private _thirdBodyGravity?: Force;
   private _solarRadiationPressure?: Force;
   private _atmosphericDrag?: Force;
-  private _maneuverThrust?: Force;
+  private _maneuverThrust: Force | null = null;
 
   setGravity(mu: number = Earth.mu): this {
     this._centralGravity = new Gravity(mu);

@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { concat, EpochUTC, J2000, Matrix, Vector, Vector3D } from 'ootk-core';
+import { concat, EpochUTC, J2000, Kilometers, KilometersPerSecond, Matrix, Vector, Vector3D } from 'ootk-core';
 import { Observation } from '../observation/Observation';
 import { PropagatorPairs } from '../observation/PropagatorPairs';
 import { Propagator } from '../propagator/Propagator';
@@ -43,6 +42,13 @@ export class BatchLeastSquaresOD {
    * Create a new [BatchLeastSquaresOD] object from a list of [Observation]
    * objects, an [apriori] state estimate, and an optional
    * spacecraft [forceModel].
+   * @param observations_ List of observations.
+   * @param apriori_ Apriori state estimate.
+   * @param forceModel_ Spacecraft force model.
+   * @param posStep_ Position step size.
+   * @param velStep_ Velocity step size.
+   * @param fastDerivatives_ Use fast derivatives.
+   * @returns [BatchLeastSquaresOD] object.
    */
   constructor(
     private observations_: Observation[],
@@ -61,7 +67,11 @@ export class BatchLeastSquaresOD {
   }
 
   private buildPropagator_(x0: Float64Array, simple: boolean): Propagator {
-    const state = new J2000(this.nominal_.epoch, new Vector3D(x0[0], x0[1], x0[2]), new Vector3D(x0[3], x0[4], x0[5]));
+    const state = new J2000(
+      this.nominal_.epoch,
+      new Vector3D(x0[0] as Kilometers, x0[1] as Kilometers, x0[2] as Kilometers),
+      new Vector3D(x0[3] as KilometersPerSecond, x0[4] as KilometersPerSecond, x0[5] as KilometersPerSecond),
+    );
 
     if (simple) {
       return new KeplerPropagator(state.toClassicalElements());
@@ -91,6 +101,11 @@ export class BatchLeastSquaresOD {
   /**
    * Attempt to solve a state estimate with the given root-mean-squared delta
    * [tolerance].
+   * @param root0 Root initial guess.
+   * @param root0.tolerance Root-mean-squared delta tolerance.
+   * @param root0.maxIter Maximum number of iterations.
+   * @param root0.printIter Print iterations.
+   * @returns [BatchLeastSquaresResult] object.
    */
   solve({
     tolerance = 1e-3,
@@ -125,7 +140,7 @@ export class BatchLeastSquaresOD {
 
         atwaMat = atwaMat.add(aMatTN.multiply(aMat));
         atwbMat = atwbMat.add(aMatTN.multiply(bMat));
-        rmsTotal += bMat.transpose().multiply(noise).multiply(bMat)[0][0];
+        rmsTotal += bMat.transpose().multiply(noise).multiply(bMat).elements[0][0];
         measCount += noise.rows;
       }
       const newWeightedRms = Math.sqrt(rmsTotal / measCount);
@@ -141,7 +156,7 @@ export class BatchLeastSquaresOD {
       const dX = atwaMat.inverse().multiply(atwbMat);
 
       for (let i = 0; i < 6; i++) {
-        xNom[i] += dX[i][0];
+        xNom[i] += dX.elements[i][0];
       }
       if (breakFlag) {
         break;

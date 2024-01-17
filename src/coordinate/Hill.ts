@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,77 +15,100 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth, EpochUTC, J2000, Matrix, RelativeState, Vector3D } from 'ootk-core';
+import {
+  Earth,
+  EpochUTC,
+  J2000,
+  Kilometers,
+  KilometersPerSecond,
+  Matrix,
+  MetersPerSecond,
+  RadiansPerSecond,
+  RelativeState,
+  Seconds,
+  Vector3D,
+} from 'ootk-core';
 import { Thrust } from './../force/Thrust';
 import { Waypoint } from './../maneuver/Waypoint';
+
 // / Hill Modified Equidistant Cyllindrical _(EQCM)_ coordinates.
 export class Hill {
-  private _semimajorAxis: number;
-  private _meanMotion: number;
+  private semimajorAxis_: Kilometers;
+  private meanMotion_: RadiansPerSecond;
 
-  constructor(public epoch: EpochUTC, public position: Vector3D, public velocity: Vector3D, semimajorAxis: number) {
-    this._semimajorAxis = semimajorAxis;
-    this._meanMotion = Earth.smaToMeanMotion(this._semimajorAxis);
+  constructor(
+    public epoch: EpochUTC,
+    public position: Vector3D<Kilometers>,
+    public velocity: Vector3D<KilometersPerSecond>,
+    semimajorAxis: Kilometers,
+  ) {
+    this.semimajorAxis_ = semimajorAxis;
+    this.meanMotion_ = Earth.smaToMeanMotion(this.semimajorAxis_);
   }
 
   static fromState(
     origin: J2000,
-    radialPosition: number,
-    intrackPosition: number,
-    nodeVelocity: number,
-    nodeOffsetTime: number,
+    radialPosition: Kilometers,
+    intrackPosition: Kilometers,
+    nodeVelocity: KilometersPerSecond,
+    nodeOffsetTime: Seconds,
   ): Hill {
-    const a = origin.semimajorAxis();
+    const a = origin.semimajorAxis;
     const n = Earth.smaToMeanMotion(a);
-    const yDot = -3.0 * radialPosition * n * 0.5;
-    const z = (nodeVelocity / n) * Math.sin(n * -nodeOffsetTime);
-    const zDot = nodeVelocity * Math.cos(n * -nodeOffsetTime);
+    const yDot = -3.0 * radialPosition * n * 0.5 as KilometersPerSecond;
+    const z = (nodeVelocity / n) * Math.sin(n * -nodeOffsetTime) as Kilometers;
+    const zDot = nodeVelocity * Math.cos(n * -nodeOffsetTime) as KilometersPerSecond;
     const r = new Vector3D(radialPosition, intrackPosition, z);
-    const v = new Vector3D(0.0, yDot, zDot);
+    const v = new Vector3D(0.0 as KilometersPerSecond, yDot, zDot);
 
     return new Hill(origin.epoch, r, v, a);
   }
 
   static fromNmc(
     origin: J2000,
-    majorAxisRange: number,
-    nodeVelocity: number,
-    nodeOffsetTime: number,
+    majorAxisRange: Kilometers,
+    nodeVelocity: KilometersPerSecond,
+    nodeOffsetTime: Seconds,
     translation = 0.0,
   ): Hill {
-    const a = origin.semimajorAxis();
+    const a = origin.semimajorAxis;
     const n = Earth.smaToMeanMotion(a);
-    const xDot = majorAxisRange * n * 0.5;
-    const z = (nodeVelocity / n) * Math.sin(n * -nodeOffsetTime);
-    const zDot = nodeVelocity * Math.cos(n * -nodeOffsetTime);
-    const r = new Vector3D(0.0, majorAxisRange + translation, z);
-    const v = new Vector3D(xDot, 0.0, zDot);
+    const xDot = majorAxisRange * n * 0.5 as KilometersPerSecond;
+    const z = (nodeVelocity / n) * Math.sin(n * -nodeOffsetTime) as Kilometers;
+    const zDot = nodeVelocity * Math.cos(n * -nodeOffsetTime) as KilometersPerSecond;
+    const r = new Vector3D(0.0 as Kilometers, majorAxisRange + translation as Kilometers, z);
+    const v = new Vector3D(xDot, 0.0 as KilometersPerSecond, zDot);
 
     return new Hill(origin.epoch, r, v, a);
   }
 
-  static fromPerch(origin: J2000, perchRange: number, nodeVelocity: number, nodeOffsetTime: number): Hill {
-    const a = origin.semimajorAxis();
+  static fromPerch(
+    origin: J2000,
+    perchRange: Kilometers,
+    nodeVelocity: KilometersPerSecond,
+    nodeOffsetTime: Seconds,
+  ): Hill {
+    const a = origin.semimajorAxis;
     const n = Earth.smaToMeanMotion(a);
-    const z = (nodeVelocity / n) * Math.sin(n * -nodeOffsetTime);
-    const zDot = nodeVelocity * Math.cos(n * -nodeOffsetTime);
-    const r = new Vector3D(0.0, perchRange, z);
-    const v = new Vector3D(0.0, 0.0, zDot);
+    const z = (nodeVelocity / n) * Math.sin(n * -nodeOffsetTime) as Kilometers;
+    const zDot = nodeVelocity * Math.cos(n * -nodeOffsetTime) as KilometersPerSecond;
+    const r = new Vector3D(0.0 as Kilometers, perchRange, z);
+    const v = new Vector3D(0.0 as KilometersPerSecond, 0.0 as KilometersPerSecond, zDot);
 
     return new Hill(origin.epoch, r, v, a);
   }
 
-  get semimajorAxis(): number {
-    return this._semimajorAxis;
+  get semimajorAxis(): Kilometers {
+    return this.semimajorAxis_;
   }
 
-  set semimajorAxis(sma: number) {
-    this._semimajorAxis = sma;
-    this._meanMotion = Earth.smaToMeanMotion(this._semimajorAxis);
+  set semimajorAxis(sma: Kilometers) {
+    this.semimajorAxis_ = sma;
+    this.meanMotion_ = Earth.smaToMeanMotion(this.semimajorAxis_);
   }
 
-  get meanMotion(): number {
-    return this._meanMotion;
+  get meanMotion(): RadiansPerSecond {
+    return this.meanMotion_;
   }
 
   toJ2000Matrix(origin: J2000, transform: Matrix): J2000 {
@@ -113,7 +135,7 @@ export class Hill {
     const phidotint = this.velocity.z / magrtgt;
     const vintsez = new Vector3D(-magrint * phidotint, magrint * lambdadotint * cosphiint, rdotint);
     const vintrsw = rotRswSez.transpose().multiplyVector3D(vintsez);
-    const vinteci = transform.transpose().multiplyVector3D(vintrsw);
+    const vinteci = transform.transpose().multiplyVector3D(vintrsw) as Vector3D<KilometersPerSecond>;
 
     const rintrsw = new Vector3D(
       cosphiint * magrint * coslambdaint,
@@ -121,7 +143,7 @@ export class Hill {
       sinphiint * magrint,
     );
 
-    const rinteci = transform.transpose().multiplyVector3D(rintrsw);
+    const rinteci = transform.transpose().multiplyVector3D(rintrsw) as Vector3D<Kilometers>;
 
     return new J2000(origin.epoch, rinteci, vinteci);
   }
@@ -145,26 +167,26 @@ export class Hill {
     ]);
   }
 
-  transition(t: number): Hill {
-    const sysMat = Hill.transitionMatrix(t, this._meanMotion);
-    const output = sysMat.multiplyVector(this.position.join(this.velocity));
+  transition(t: Seconds): Hill {
+    const sysMat = Hill.transitionMatrix(t, this.meanMotion_);
+    const res = sysMat.multiplyVector(this.position.join(this.velocity)).elements;
 
     return new Hill(
       this.epoch.roll(t),
-      new Vector3D(output[0], output[1], output[2]),
-      new Vector3D(output[3], output[4], output[5]),
-      this._semimajorAxis,
+      new Vector3D(res[0] as Kilometers, res[1] as Kilometers, res[2] as Kilometers),
+      new Vector3D(res[3] as KilometersPerSecond, res[4] as KilometersPerSecond, res[5] as KilometersPerSecond),
+      this.semimajorAxis_,
     );
   }
 
-  transitionWithMatrix(stm: Matrix, t: number): Hill {
-    const output = stm.multiplyVector(this.position.join(this.velocity));
+  transitionWithMatrix(stm: Matrix, t: Seconds): Hill {
+    const res = stm.multiplyVector(this.position.join(this.velocity)).elements;
 
     return new Hill(
       this.epoch.roll(t),
-      new Vector3D(output[0], output[1], output[2]),
-      new Vector3D(output[3], output[4], output[5]),
-      this._semimajorAxis,
+      new Vector3D(res[0] as Kilometers, res[1] as Kilometers, res[2] as Kilometers),
+      new Vector3D(res[3] as KilometersPerSecond, res[4] as KilometersPerSecond, res[5] as KilometersPerSecond),
+      this.semimajorAxis_,
     );
   }
 
@@ -179,10 +201,10 @@ export class Hill {
   maneuver(maneuver: Thrust): Hill {
     const state = this.propagate(maneuver.center);
 
-    return new Hill(state.epoch, state.position, state.velocity.add(maneuver.deltaV), state._semimajorAxis);
+    return new Hill(state.epoch, state.position, state.velocity.add(maneuver.deltaV), state.semimajorAxis_);
   }
 
-  ephemeris(start: EpochUTC, stop: EpochUTC, step = 60.0): Hill[] {
+  ephemeris(start: EpochUTC, stop: EpochUTC, step = 60.0 as Seconds): Hill[] {
     const output: Hill[] = [];
     let current = start;
 
@@ -194,20 +216,20 @@ export class Hill {
     return output;
   }
 
-  get period(): number {
-    return (2 * Math.PI) / this._meanMotion;
+  get period(): Seconds {
+    return (2 * Math.PI) / this.meanMotion_ as Seconds;
   }
 
   nextRadialTangent(): Hill {
     const x = this.position.x;
     const xDot = this.velocity.x;
     const yDot = this.velocity.y;
-    let t = Math.atan(-xDot / (3.0 * this._meanMotion * x + 2.0 * yDot)) / this._meanMotion;
+    let t = Math.atan(-xDot / (3.0 * this.meanMotion_ * x + 2.0 * yDot)) / this.meanMotion_ as Seconds;
 
     if (t <= 0) {
-      t += 0.5 * this.period;
+      t = t + 0.5 * this.period as Seconds;
     } else if (isNaN(t)) {
-      t = 0.5 * this.period;
+      t = 0.5 * this.period as Seconds;
     }
 
     return this.propagate(this.epoch.roll(t));
@@ -216,25 +238,38 @@ export class Hill {
   solveManeuver(waypoint: Waypoint, ignoreCrosstrack = false): Thrust {
     const t = waypoint.epoch.difference(this.epoch);
     const w = waypoint.relativePosition;
-    const sysMat = Hill.transitionMatrix(t, this._meanMotion);
+    const sysMat = Hill.transitionMatrix(t, this.meanMotion_);
     const posEquationMat = new Matrix([
-      [sysMat[0][0], sysMat[0][1], sysMat[0][2]],
-      [sysMat[1][0], sysMat[1][1], sysMat[1][2]],
-      [sysMat[2][0], sysMat[2][1], sysMat[2][2]],
+      [sysMat.elements[0][0], sysMat.elements[0][1], sysMat.elements[0][2]],
+      [sysMat.elements[1][0], sysMat.elements[1][1], sysMat.elements[1][2]],
+      [sysMat.elements[2][0], sysMat.elements[2][1], sysMat.elements[2][2]],
     ]);
-    const solnVector = w.subtract(posEquationMat.multiplyVector3D(this.position));
+    const solnVector = w
+      .subtract(posEquationMat.multiplyVector3D(this.position)) as unknown as Vector3D<KilometersPerSecond>;
     const velEquationMat = new Matrix([
-      [sysMat[0][3], sysMat[0][4], sysMat[0][5]],
-      [sysMat[1][3], sysMat[1][4], sysMat[1][5]],
-      [sysMat[2][3], sysMat[2][4], sysMat[2][5]],
+      [sysMat.elements[0][3], sysMat.elements[0][4], sysMat.elements[0][5]],
+      [sysMat.elements[1][3], sysMat.elements[1][4], sysMat.elements[1][5]],
+      [sysMat.elements[2][3], sysMat.elements[2][4], sysMat.elements[2][5]],
     ]);
-    let result = velEquationMat.inverse().multiplyVector3D(solnVector).subtract(this.velocity);
+    let result = velEquationMat
+      .inverse()
+      .multiplyVector3D(solnVector)
+      .subtract(this.velocity);
 
     if (ignoreCrosstrack) {
-      result = new Vector3D(result.x * 1000, result.y * 1000, 0);
+      result = new Vector3D(
+        result.x,
+        result.y,
+        0 as KilometersPerSecond,
+      );
     }
 
-    return new Thrust(this.epoch, result[0] * 1000, result[1] * 1000, result[2] * 1000);
+    return new Thrust(
+      this.epoch,
+      result.x * 1000 as MetersPerSecond,
+      result.y * 1000 as MetersPerSecond,
+      result.z * 1000 as MetersPerSecond,
+    );
   }
 
   maneuverSequence(
@@ -243,13 +278,14 @@ export class Hill {
     preManeuvers: Thrust[] = [],
     postManeuvers: Thrust[] = [],
   ): Thrust[] {
-    let state = new Hill(this.epoch, this.position, this.velocity, this._semimajorAxis);
+    let state = new Hill(this.epoch, this.position, this.velocity, this.semimajorAxis_);
 
     preManeuvers = preManeuvers.slice();
     postManeuvers = postManeuvers.slice();
     let output = preManeuvers;
 
-    output.sort((a, b) => a.center.compareTo(b.center));
+    // Note difference was once compareTo
+    output.sort((a, b) => a.center.difference(b.center));
     output = output.filter((mvr) => mvr.center >= this.epoch && mvr.center >= pivot);
     for (const mvr of output) {
       state = state.maneuver(mvr);
@@ -268,14 +304,13 @@ export class Hill {
 
   maneuverOrigin(maneuver: Thrust): Hill {
     const state = this.propagate(maneuver.center);
-    const vInit = Math.sqrt(Earth.mu / this._semimajorAxis);
+    const vInit = Math.sqrt(Earth.mu / this.semimajorAxis_);
     const vFinal = vInit - maneuver.intrack * 1e-3;
-    const aFinal = Earth.mu / (vFinal * vFinal);
+    const aFinal = Earth.mu / (vFinal * vFinal) as Kilometers;
 
     return new Hill(state.epoch, state.position, state.velocity.subtract(maneuver.deltaV), aFinal);
   }
 
-  // eslint-disable-next-line class-methods-use-this
   get name(): string {
     return 'Hill';
   }

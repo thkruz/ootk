@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,29 +15,28 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PositionVelocity, Vector3D } from 'ootk-core';
+import { Kilometers, KilometersPerSecond, PositionVelocity, Seconds, Vector3D } from 'ootk-core';
 
 // / Chebyshev compressed ephemeris coefficients.
 export class ChebyshevCoefficients {
-  _cxd: Float64Array;
-  _cyd: Float64Array;
-  _czd: Float64Array;
+  cxd_: Float64Array;
+  cyd_: Float64Array;
+  czd_: Float64Array;
   // / Create a new [ChebyshevCoefficients] object.
   constructor(
-    public a: number,
-    public b: number,
-    private _cx: Float64Array,
-    private _cy: Float64Array,
-    private _cz: Float64Array,
+    public a: Seconds,
+    public b: Seconds,
+    private cx_: Float64Array,
+    private cy_: Float64Array,
+    private cz_: Float64Array,
   ) {
-    this._cxd = ChebyshevCoefficients._derivative(a, b, _cx);
-    this._cyd = ChebyshevCoefficients._derivative(a, b, _cy);
-    this._czd = ChebyshevCoefficients._derivative(a, b, _cz);
+    this.cxd_ = ChebyshevCoefficients._derivative(a, b, cx_);
+    this.cyd_ = ChebyshevCoefficients._derivative(a, b, cy_);
+    this.czd_ = ChebyshevCoefficients._derivative(a, b, cz_);
   }
 
   /**
    * Calculates the derivative of a polynomial represented by Chebyshev coefficients.
-   *
    * @param a - The lower bound of the polynomial's domain.
    * @param b - The upper bound of the polynomial's domain.
    * @param c - The Chebyshev coefficients of the polynomial.
@@ -62,12 +60,11 @@ export class ChebyshevCoefficients {
 
   // / Return the size _(bytes)_ of this coefficient set's cached data.
   get sizeBytes(): number {
-    return (64 * 2 + 64 * 3 * this._cx.length) / 8;
+    return (64 * 2 + 64 * 3 * this.cx_.length) / 8;
   }
 
   /**
    * Evaluates the Chebyshev polynomial represented by the given coefficients at the specified value.
-   *
    * @param c - The coefficients of the Chebyshev polynomial.
    * @param t - The value at which to evaluate the polynomial _(POSIX seconds)_.
    * @returns The result of evaluating the polynomial at the specified value.
@@ -92,13 +89,20 @@ export class ChebyshevCoefficients {
 
   /**
    * Interpolates the position and velocity at a given time (km, km/s).
-   *
    * @param t - The time value to interpolate at _(POSIX seconds)_.
    * @returns An object containing the interpolated position and velocity.
    */
   interpolate(t: number): PositionVelocity {
-    const pos = new Vector3D(this.evaluate(this._cx, t), this.evaluate(this._cy, t), this.evaluate(this._cz, t));
-    const vel = new Vector3D(this.evaluate(this._cxd, t), this.evaluate(this._cyd, t), this.evaluate(this._czd, t));
+    const pos = new Vector3D(
+      this.evaluate(this.cx_, t) as Kilometers,
+      this.evaluate(this.cy_, t) as Kilometers,
+      this.evaluate(this.cz_, t) as Kilometers,
+    );
+    const vel = new Vector3D(
+      this.evaluate(this.cxd_, t) as KilometersPerSecond,
+      this.evaluate(this.cyd_, t) as KilometersPerSecond,
+      this.evaluate(this.czd_, t) as KilometersPerSecond,
+    );
 
     return { position: pos, velocity: vel };
   }

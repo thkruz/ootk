@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -19,7 +18,7 @@
 import { BaseObject, BaseObjectParams, Degrees, Kilometers } from 'ootk-core';
 /* eslint-disable class-methods-use-this */
 
-export interface LandObjectParams {
+export interface LandObjectParams extends BaseObjectParams {
   lat: Degrees;
   lon: Degrees;
   alt: Kilometers;
@@ -34,10 +33,11 @@ export class LandObject extends BaseObject {
   country?: string;
   Code?: string;
 
-  constructor(info: LandObjectParams & BaseObjectParams) {
+  constructor(info: LandObjectParams) {
     super(info);
-
-    Object.assign(this, info);
+    this.lat = info.lat;
+    this.lon = info.lon;
+    this.alt = info.alt;
   }
 
   isLandObject() {

@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DEG2RAD, Earth, EpochUTC, halfPi, J2000, Radians, Vector3D } from 'ootk-core';
+import { DEG2RAD, Earth, EpochUTC, halfPi, J2000, Kilometers, KilometersPerSecond, Radians, Vector3D } from 'ootk-core';
 import { ForceModel } from './../force/ForceModel';
 import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
 
@@ -35,8 +34,20 @@ export class GibbsIOD {
    * Attempt to create a state estimate from three inertial position vectors.
    *
    * Throws an error if the positions are not coplanar.
+   * @param r1 Position vector 1.
+   * @param r2 Position vector 2.
+   * @param r3 Position vector 3.
+   * @param t2 Time of position 2.
+   * @param t3 Time of position 3.
+   * @returns State estimate at time t2.
    */
-  solve(r1: Vector3D, r2: Vector3D, r3: Vector3D, t2: EpochUTC, t3: EpochUTC): J2000 {
+  solve(
+    r1: Vector3D<Kilometers>,
+    r2: Vector3D<Kilometers>,
+    r3: Vector3D<Kilometers>,
+    t2: EpochUTC,
+    t3: EpochUTC,
+  ): J2000 {
     const num = r1.normalize().dot(r2.normalize().cross(r3.normalize()));
     const alpha = halfPi - Math.acos(num);
 
@@ -56,8 +67,8 @@ export class GibbsIOD {
     const nm = n.magnitude();
     const dm = d.magnitude();
 
-    const vm = Math.sqrt(this.mu / (nm * dm));
-    const vlEci = b.scale(vm / r2m).add(s.scale(vm));
+    const vm = Math.sqrt(this.mu / (nm * dm)) as KilometersPerSecond;
+    const vlEci = b.scale((vm / r2m) as KilometersPerSecond).add(s.scale(vm));
 
     const pv = new J2000(t2, r2, vlEci);
 

@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -17,7 +16,18 @@
  */
 
 /* eslint-disable class-methods-use-this */
-import { Epoch, EpochUTC, J2000, Matrix, RelativeState, RIC, Vector, Vector3D } from 'ootk-core';
+import {
+  Epoch,
+  EpochUTC,
+  J2000,
+  Kilometers,
+  KilometersPerSecond,
+  Matrix,
+  RelativeState,
+  RIC,
+  Vector,
+  Vector3D,
+} from 'ootk-core';
 import { ForceModel } from '../force/ForceModel';
 import { Thrust } from '../force/Thrust';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
@@ -27,23 +37,23 @@ import { CovarianceFrame, StateCovariance } from './StateCovariance';
 export class CovarianceSample {
   private _origin: RungeKutta89Propagator;
   private _samples: RungeKutta89Propagator[] = [];
-  private _pts: Matrix = Matrix.zero(6, 12);
+  private matrix_ = Matrix.zero(6, 12);
 
   /**
    * Create a new [CovarianceSample] object from an inertial state, covariance
    * and optional force models for the origin state and samples.
    *
    * Two-body physics will be used if a force model is not provided.
-   * @param state
-   * @param covariance
-   * @param originForceModel
-   * @param sampleForceModel
+   * @param state The origin state.
+   * @param covariance The covariance.
+   * @param originForceModel The force model for the origin state.
+   * @param sampleForceModel The force model for the samples.
    */
   constructor(state: J2000, covariance: StateCovariance, originForceModel?: ForceModel, sampleForceModel?: ForceModel) {
     originForceModel ??= new ForceModel().setGravity();
     sampleForceModel ??= new ForceModel().setGravity();
     this._origin = new RungeKutta89Propagator(state, originForceModel);
-    const s = covariance.matrix.cholesky();
+    const s = covariance.matrix.cholesky().elements;
     const sqrt6 = Math.sqrt(6.0);
 
     for (let i = 0; i < 6; i++) {
@@ -53,7 +63,7 @@ export class CovarianceSample {
     }
 
     // 6 x 12 matrix
-    const sigmapts = Matrix.zero(6, 12);
+    const sigmapts = Matrix.zero(6, 12).elements;
 
     for (let i = 0; i < 6; i++) {
       const jj = (i - 1) * 2 + 2;
@@ -68,8 +78,16 @@ export class CovarianceSample {
     }
 
     for (let i = 0; i < 12; i++) {
-      const sampleR = new Vector3D(sigmapts[0][i], sigmapts[1][i], sigmapts[2][i]);
-      const sampleV = new Vector3D(sigmapts[3][i], sigmapts[4][i], sigmapts[5][i]);
+      const sampleR = new Vector3D(
+        sigmapts[0][i] as Kilometers,
+        sigmapts[1][i] as Kilometers,
+        sigmapts[2][i] as Kilometers,
+      );
+      const sampleV = new Vector3D(
+        sigmapts[3][i] as KilometersPerSecond,
+        sigmapts[4][i] as KilometersPerSecond,
+        sigmapts[5][i] as KilometersPerSecond,
+      );
 
       if (covariance.frame === CovarianceFrame.ECI) {
         const sample = new J2000(state.epoch, state.position.add(sampleR), state.velocity.add(sampleV));
@@ -94,9 +112,10 @@ export class CovarianceSample {
   }
 
   // / Rebuild covariance from sigma points.
-  private _rebuildCovariance(pts: Matrix): Matrix {
+  private _rebuildCovariance(matrix: Matrix): Matrix {
+    const pts = matrix.elements;
     const c = 1.0 / 12.0;
-    const yu = new Vector([0, 0, 0, 0, 0, 0]);
+    const yu = new Vector([0, 0, 0, 0, 0, 0]).elements;
     const y = Matrix.zero(6, 12);
 
     for (let i = 0; i < 12; i++) {
@@ -111,7 +130,7 @@ export class CovarianceSample {
 
     for (let i = 0; i < 12; i++) {
       for (let j = 0; j < 6; j++) {
-        y[j][i] = pts[j][i] - yu[j];
+        y.elements[j][i] = pts[j][i] - yu[j];
       }
     }
 
@@ -142,14 +161,14 @@ export class CovarianceSample {
     for (let i = 0; i < 12; i++) {
       const state = this._samples[i].state;
 
-      this._pts[0][i] = state.position[0];
-      this._pts[1][i] = state.position[1];
-      this._pts[2][i] = state.position[2];
-      this._pts[3][i] = state.velocity[0];
-      this._pts[4][i] = state.velocity[1];
-      this._pts[5][i] = state.velocity[2];
+      this.matrix_.elements[0][i] = state.position.x;
+      this.matrix_.elements[1][i] = state.position.y;
+      this.matrix_.elements[2][i] = state.position.z;
+      this.matrix_.elements[3][i] = state.velocity.x;
+      this.matrix_.elements[4][i] = state.velocity.y;
+      this.matrix_.elements[5][i] = state.velocity.z;
     }
-    const matrix = this._rebuildCovariance(this._pts);
+    const matrix = this._rebuildCovariance(this.matrix_);
 
     return new StateCovariance(matrix, CovarianceFrame.ECI);
   }
@@ -161,14 +180,14 @@ export class CovarianceSample {
     for (let i = 0; i < 12; i++) {
       const state = RIC.fromJ2000Matrix(this._samples[i].state, this._origin.state, rot);
 
-      this._pts[0][i] = state.position[0];
-      this._pts[1][i] = state.position[1];
-      this._pts[2][i] = state.position[2];
-      this._pts[3][i] = state.velocity[0];
-      this._pts[4][i] = state.velocity[1];
-      this._pts[5][i] = state.velocity[2];
+      this.matrix_.elements[0][i] = state.position.x;
+      this.matrix_.elements[1][i] = state.position.y;
+      this.matrix_.elements[2][i] = state.position.z;
+      this.matrix_.elements[3][i] = state.velocity.x;
+      this.matrix_.elements[4][i] = state.velocity.y;
+      this.matrix_.elements[5][i] = state.velocity.z;
     }
-    const matrix = this._rebuildCovariance(this._pts);
+    const matrix = this._rebuildCovariance(this.matrix_);
 
     return new StateCovariance(matrix, CovarianceFrame.RIC);
   }

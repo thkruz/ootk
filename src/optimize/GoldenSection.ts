@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DifferentiableFunction } from 'ootk-core';
+import { DifferentiableFunction } from 'src/types/types';
 
 // / Golden Section bounded single value optimizer.
 export class GoldenSection {
@@ -32,6 +31,13 @@ export class GoldenSection {
    *
    * Takes [lower] and [upper] input search bounds, and an optional
    * search [tolerance].
+   * @param f Function to optimize
+   * @param lower Lower bound
+   * @param upper Upper bound
+   * @param root0 Root0
+   * @param root0.tolerance Root0.tolerance
+   * @param root0.solveMax Root0.solveMax
+   * @returns The optimal input value.
    */
   static search(
     f: DifferentiableFunction,

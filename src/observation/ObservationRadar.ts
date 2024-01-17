@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,20 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { array2d, DEG2RAD, EpochUTC, J2000, Matrix, RAE, RIC, Vector, Vector3D } from 'ootk-core';
+import {
+  array2d,
+  DEG2RAD,
+  EpochUTC,
+  J2000,
+  Kilometers,
+  KilometersPerSecond,
+  Matrix,
+  Radians,
+  RAE,
+  RIC,
+  Vector,
+  Vector3D,
+} from 'ootk-core';
 import { RandomGaussianSource } from '../operations/RandomGaussianSource';
 import { Propagator } from '../propagator/Propagator';
 import { Observation } from './Observation';
@@ -31,7 +43,8 @@ export class ObservationRadar extends Observation {
   }
 
   // / Default noise matrix.
-  private static defaultNoise: Matrix = ObservationRadar.noiseFromSigmas(0.32, 0.015 * DEG2RAD, 0.015 * DEG2RAD);
+  private static defaultNoise: Matrix =
+    ObservationRadar.noiseFromSigmas(0.32 as Kilometers, 0.015 * DEG2RAD as Radians, 0.015 * DEG2RAD as Radians);
 
   get epoch(): EpochUTC {
     return this.observation.epoch;
@@ -46,29 +59,29 @@ export class ObservationRadar extends Observation {
   }
 
   toVector(): Vector {
-    return Vector.fromList([this.observation.range, this.observation.azimuth, this.observation.elevation]);
+    return Vector.fromList([this.observation.rng, this.observation.azRad, this.observation.elRad]);
   }
 
   clos(propagator: Propagator): number {
     const ri = propagator.propagate(this.epoch).position.subtract(this.site.position);
 
-    return Math.abs(this.observation.range - ri.magnitude());
+    return Math.abs(this.observation.rng - ri.magnitude());
   }
 
   ricDiff(propagator: Propagator): Vector3D {
     const r0 = propagator.propagate(this.epoch);
-    const r1 = RAE.fromStateVectors(r0, this.site);
-    const r2 = this.observation.position(this.site, r1.azimuth, r1.elevation);
+    const r1 = RAE.fromStateVector(r0, this.site);
+    const r2 = this.observation.position(this.site, r1.azRad, r1.elRad);
 
-    return RIC.fromJ2000(new J2000(this.epoch, r2, Vector3D.origin), r0).position;
+    return RIC.fromJ2000(new J2000(this.epoch, r2, Vector3D.origin as Vector3D<KilometersPerSecond>), r0).position;
   }
 
   sample(random: RandomGaussianSource, sigma = 1.0): Observation {
-    const result = this.sampleVector(random, sigma);
+    const result = this.sampleVector(random, sigma).elements;
 
     return new ObservationRadar(
       this.site,
-      new RAE(this.observation.epoch, result[0], result[1], result[2]),
+      new RAE(this.observation.epoch, result[0] as Kilometers, result[1] as Radians, result[2] as Radians),
       this.noise,
     );
   }
@@ -81,12 +94,12 @@ export class ObservationRadar extends Observation {
       const [high, low] = propPairs.get(i);
       const sl = low.propagate(this.epoch);
       const sh = high.propagate(this.epoch);
-      const ol = RAE.fromStateVectors(sl, this.site);
-      const oh = RAE.fromStateVectors(sh, this.site);
+      const ol = RAE.fromStateVector(sl, this.site);
+      const oh = RAE.fromStateVector(sh, this.site);
 
-      result[0][i] = observationDerivative(oh.range, ol.range, step);
-      result[1][i] = observationDerivative(oh.azimuth, ol.azimuth, step, true);
-      result[2][i] = observationDerivative(oh.elevation, ol.elevation, step, true);
+      result[0][i] = observationDerivative(oh.rng, ol.rng, step);
+      result[1][i] = observationDerivative(oh.azRad, ol.azRad, step, true);
+      result[2][i] = observationDerivative(oh.elRad, ol.elRad, step, true);
     }
 
     return new Matrix(result);
@@ -95,11 +108,11 @@ export class ObservationRadar extends Observation {
   residual(propagator: Propagator): Matrix {
     const result = array2d(3, 1, 0.0);
     const state = propagator.propagate(this.epoch);
-    const razel = RAE.fromStateVectors(state, this.site);
+    const razel = RAE.fromStateVector(state, this.site);
 
-    result[0][0] = this.observation.range - razel.range;
-    result[1][0] = normalizeAngle(this.observation.azimuth, razel.azimuth);
-    result[2][0] = normalizeAngle(this.observation.elevation, razel.elevation);
+    result[0][0] = this.observation.rng - razel.rng;
+    result[1][0] = normalizeAngle(this.observation.azRad, razel.azRad);
+    result[2][0] = normalizeAngle(this.observation.elRad, razel.elRad);
 
     return new Matrix(result);
   }
@@ -107,8 +120,12 @@ export class ObservationRadar extends Observation {
   /**
    * Create a noise matrix from the range, azimuth, and elevation standard
    * deviations _(kilometers/radians)_.
+   * @param rngSigma - The range standard deviation _(kilometers)_.
+   * @param azSigma - The azimuth standard deviation _(radians)_.
+   * @param elSigma - The elevation standard deviation _(radians)_.
+   * @returns The noise matrix.
    */
-  static noiseFromSigmas(rngSigma: number, azSigma: number, elSigma: number): Matrix {
+  static noiseFromSigmas(rngSigma: Kilometers, azSigma: Radians, elSigma: Radians): Matrix {
     return observationNoiseFromSigmas([rngSigma, azSigma, elSigma]);
   }
 }

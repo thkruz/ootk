@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should convert valid RAE coordinates to RAE Off Boresight 1`] = `
+Object {
+  "az": 0,
+  "el": 0,
+}
+`;
+
+exports[`should convert valid azimuth and elevation to unit vector 1`] = `0`;
+
+exports[`should convert valid azimuth and elevation to unit vector 2`] = `0`;
+
+exports[`should convert valid unit vector to azimuth and elevation 1`] = `0`;
+
+exports[`should convert valid unit vector to azimuth and elevation 2`] = `0`;

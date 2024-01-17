@@ -5,13 +5,13 @@
     "node": true,
     "jest": true
   },
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:jsdoc/recommended-typescript-error"],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 12,
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint"],
+  "plugins": ["@typescript-eslint", "jsdoc"],
   "rules": {
     "accessor-pairs": "error",
     "array-bracket-newline": "error",
@@ -108,7 +108,7 @@
     "no-extra-label": "error",
     "no-extra-parens": "off",
     "no-floating-decimal": "error",
-    "no-implicit-coercion": "error",
+    "no-implicit-coercion": "off",
     "no-implicit-globals": "error",
     "no-implied-eval": "error",
     "no-inline-comments": "off",
@@ -163,7 +163,7 @@
     "no-template-curly-in-string": "error",
     "no-ternary": "off",
     "no-throw-literal": "error",
-    "no-trailing-spaces": "error",
+    "no-trailing-spaces": ["error", { "ignoreComments": true }],
     "no-undef-init": "error",
     "no-undefined": "error",
     "no-underscore-dangle": "off",
@@ -182,7 +182,7 @@
     "no-useless-return": "error",
     "no-var": "error",
     "no-void": "error",
-    "no-warning-comments": "error",
+    "no-warning-comments": "warn",
     "no-whitespace-before-property": "error",
     "nonblock-statement-body-position": "error",
     "object-curly-newline": "error",

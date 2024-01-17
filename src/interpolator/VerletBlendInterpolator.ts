@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,17 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { copySign, Earth, EpochUTC, EpochWindow, J2000, Vector3D } from 'ootk-core';
+import {
+  copySign,
+  Earth,
+  EpochUTC,
+  EpochWindow,
+  J2000,
+  Kilometers,
+  KilometersPerSecond,
+  Seconds,
+  Vector3D,
+} from 'ootk-core';
 import { CubicSplineInterpolator } from './CubicSplineInterpolator';
 import { LagrangeInterpolator } from './LagrangeInterpolator';
 import { StateInterpolator } from './StateInterpolator';
@@ -43,11 +52,11 @@ export class VerletBlendInterpolator extends StateInterpolator {
     return new EpochWindow(this.ephemeris[0].epoch, this.ephemeris[this.ephemeris.length - 1].epoch);
   }
 
-  private static _getClosest(target: number, s1: J2000, s2: J2000): J2000 {
+  private static getClosest_(target: number, s1: J2000, s2: J2000): J2000 {
     return target - s1.epoch.posix >= s2.epoch.posix - target ? s2 : s1;
   }
 
-  private _matchState(epoch: EpochUTC): J2000 {
+  private matchState_(epoch: EpochUTC): J2000 {
     const target = epoch.posix;
 
     if (target <= this.ephemeris[0].epoch.posix) {
@@ -68,12 +77,12 @@ export class VerletBlendInterpolator extends StateInterpolator {
       }
       if (target < this.ephemeris[mid].epoch.posix) {
         if (mid > 0 && target > this.ephemeris[mid - 1].epoch.posix) {
-          return VerletBlendInterpolator._getClosest(target, this.ephemeris[mid - 1], this.ephemeris[mid]);
+          return VerletBlendInterpolator.getClosest_(target, this.ephemeris[mid - 1], this.ephemeris[mid]);
         }
         j = mid;
       } else {
         if (mid < this.ephemeris.length - 1 && target < this.ephemeris[mid + 1].epoch.posix) {
-          return VerletBlendInterpolator._getClosest(target, this.ephemeris[mid], this.ephemeris[mid + 1]);
+          return VerletBlendInterpolator.getClosest_(target, this.ephemeris[mid], this.ephemeris[mid + 1]);
         }
         i = mid + 1;
       }
@@ -88,13 +97,16 @@ export class VerletBlendInterpolator extends StateInterpolator {
     return position.scale(-Earth.mu / (r * r * r));
   }
 
-  private static _integrate(state: J2000, step: number): J2000 {
+  private static integrate_(state: J2000, step: Seconds): J2000 {
     const x0 = state.position;
-    const a0 = VerletBlendInterpolator._gravity(x0);
+    const a0 = VerletBlendInterpolator._gravity(x0) as Vector3D<KilometersPerSecond>;
     const v0 = state.velocity;
-    const x1 = x0.add(v0.scale(step)).add(a0.scale(0.5 * step * step));
-    const a1 = VerletBlendInterpolator._gravity(x1);
-    const v1 = v0.add(a0.add(a1).scale(0.5 * step));
+    const x1 = x0
+      .add(v0.scale(step) as unknown as Vector3D<Kilometers>)
+      .add(a0.scale(0.5 * step * step) as unknown as Vector3D<Kilometers>);
+    const a1 = VerletBlendInterpolator._gravity(x1) as Vector3D<KilometersPerSecond>;
+    const v1 = v0
+      .add(a0.add(a1).scale(0.5 * step) as Vector3D<KilometersPerSecond>);
 
     return new J2000(state.epoch.roll(step), x1, v1);
   }
@@ -103,14 +115,14 @@ export class VerletBlendInterpolator extends StateInterpolator {
     if (!this.inWindow(epoch)) {
       return null;
     }
-    let state = this._matchState(epoch);
+    let state = this.matchState_(epoch);
 
     while (state.epoch.posix !== epoch.posix) {
       const delta = epoch.posix - state.epoch.posix;
       const stepMag = Math.min(5.0, Math.abs(delta));
-      const stepSize = copySign(stepMag, delta);
+      const stepSize = copySign(stepMag, delta) as Seconds;
 
-      state = VerletBlendInterpolator._integrate(state, stepSize);
+      state = VerletBlendInterpolator.integrate_(state, stepSize);
     }
 
     return state;
@@ -121,7 +133,7 @@ export class VerletBlendInterpolator extends StateInterpolator {
       return null;
     }
 
-    return this._matchState(epoch);
+    return this.matchState_(epoch);
   }
 
   toCubicSpline(): CubicSplineInterpolator {

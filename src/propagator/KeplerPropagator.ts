@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ClassicalElements, EpochUTC, J2000 } from 'ootk-core';
+import { ClassicalElements, EpochUTC, J2000, Seconds } from 'ootk-core';
 import { Thrust } from '../force/Thrust';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
 import { Propagator } from './Propagator';
@@ -68,7 +67,7 @@ export class KeplerPropagator extends Propagator {
     }
     for (const mvr of tMvr) {
       while (this._cacheState.epoch < mvr.center) {
-        const step = Math.min(mvr.center.difference(this._cacheState.epoch), interval);
+        const step = Math.min(mvr.center.difference(this._cacheState.epoch), interval) as Seconds;
 
         this.propagate(this._cacheState.epoch.roll(step));
         if (this._cacheState.epoch.posix !== mvr.center.posix) {
@@ -78,7 +77,7 @@ export class KeplerPropagator extends Propagator {
       ephemeris.push(...this.maneuver(mvr, interval));
     }
     while (this._cacheState.epoch < finish) {
-      const step = Math.min(finish.difference(this._cacheState.epoch), interval);
+      const step = Math.min(finish.difference(this._cacheState.epoch), interval) as Seconds;
 
       this.propagate(this._cacheState.epoch.roll(step));
       ephemeris.push(this._cacheState);

@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,19 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { array2d, DEG2RAD, EpochUTC, J2000, Matrix, RadecTopocentric, RIC, Vector, Vector3D } from 'ootk-core';
+import {
+  array2d,
+  DEG2RAD,
+  EpochUTC,
+  J2000,
+  KilometersPerSecond,
+  Matrix,
+  RadecTopocentric,
+  Radians,
+  RIC,
+  Vector,
+  Vector3D,
+} from 'ootk-core';
 import { RandomGaussianSource } from '../operations/RandomGaussianSource';
 import { Propagator } from '../propagator/Propagator';
 import { Observation } from './Observation';
@@ -48,7 +59,10 @@ export class ObservationOptical extends Observation {
    * Default noise matrix _(right-ascension, declination)_.
    * Based on the Maui Optical Site noise model.
    */
-  static defaultNoise: Matrix = ObservationOptical.noiseFromSigmas(0.0037 * DEG2RAD, 0.003 * DEG2RAD);
+  static defaultNoise: Matrix = ObservationOptical.noiseFromSigmas(
+    0.0037 * DEG2RAD as Radians,
+    0.003 * DEG2RAD as Radians,
+  );
 
   get epoch(): EpochUTC {
     return this.observation.epoch;
@@ -78,13 +92,17 @@ export class ObservationOptical extends Observation {
     const r1 = propagator.propagate(this.epoch);
     const r2 = this.observation.position(this.site, r1.position.distance(r0.position));
 
-    return RIC.fromJ2000(new J2000(this.epoch, r2, Vector3D.origin), r1).position;
+    return RIC.fromJ2000(new J2000(this.epoch, r2, Vector3D.origin as Vector3D<KilometersPerSecond>), r1).position;
   }
 
   sample(random: RandomGaussianSource, sigma = 1.0): Observation {
-    const result = this.sampleVector(random, sigma);
+    const resultEl = this.sampleVector(random, sigma).elements as Radians[];
 
-    return new ObservationOptical(this.site, new RadecTopocentric(this.epoch, result[0], result[1]), this.noise);
+    return new ObservationOptical(
+      this.site,
+      new RadecTopocentric(this.epoch, resultEl[0], resultEl[1]),
+      this.noise,
+    );
   }
 
   jacobian(propPairs: PropagatorPairs): Matrix {
@@ -95,8 +113,8 @@ export class ObservationOptical extends Observation {
       const [high, low] = propPairs.get(i);
       const sl = low.propagate(this.epoch);
       const sh = high.propagate(this.epoch);
-      const ol = RadecTopocentric.fromStateVectors(sl, this.site);
-      const oh = RadecTopocentric.fromStateVectors(sh, this.site);
+      const ol = RadecTopocentric.fromStateVector(sl, this.site);
+      const oh = RadecTopocentric.fromStateVector(sh, this.site);
 
       result[0][i] = observationDerivative(oh.rightAscension, ol.rightAscension, step, true);
       result[1][i] = observationDerivative(oh.declination, ol.declination, step, true);
@@ -108,7 +126,7 @@ export class ObservationOptical extends Observation {
   residual(propagator: Propagator): Matrix {
     const result = array2d(2, 1, 0.0);
     const state = propagator.propagate(this.epoch);
-    const radec = RadecTopocentric.fromStateVectors(state, this.site);
+    const radec = RadecTopocentric.fromStateVector(state, this.site);
 
     result[0][0] = normalizeAngle(this.observation.rightAscension, radec.rightAscension);
     result[1][0] = normalizeAngle(this.observation.declination, radec.declination);
@@ -117,10 +135,12 @@ export class ObservationOptical extends Observation {
   }
 
   /**
-   * Create a noise matrix from right ascension and declination standard
-   * deviantions _(radians)_.
+   * Create a noise matrix from right ascension and declination standard deviantions.
+   * @param raSigma Right ascension standard deviation
+   * @param decSigma Declination standard deviation
+   * @returns Noise matrix
    */
-  static noiseFromSigmas(raSigma: number, decSigma: number): Matrix {
+  static noiseFromSigmas(raSigma: Radians, decSigma: Radians): Matrix {
     return observationNoiseFromSigmas([raSigma, decSigma]);
   }
 }

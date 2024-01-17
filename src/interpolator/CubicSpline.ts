@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,16 +15,16 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Vector3D } from 'ootk-core';
+import { Kilometers, KilometersPerSecond, Seconds, Vector3D } from 'ootk-core';
 
 // / Container for cubic spline data.
 export class CubicSpline {
   // / Create a new [CubicSpline] object.
   constructor(
-    public t0: number,
+    public t0: Seconds,
     public p0: Vector3D,
     public m0: Vector3D,
-    public t1: number,
+    public t1: Seconds,
     public p1: Vector3D,
     public m1: Vector3D,
   ) {
@@ -33,7 +32,7 @@ export class CubicSpline {
   }
 
   // / Interpolate position at the provided time [t] _(POSIX seconds)_.
-  private _position(t: number): Vector3D {
+  private position_(t: Seconds): Vector3D<Kilometers> {
     const t2 = t * t;
     const t3 = t2 * t;
     const r0 = this.p0.scale(2 * t3 - 3 * t2 + 1);
@@ -41,11 +40,11 @@ export class CubicSpline {
     const r1 = this.p1.scale(-2 * t3 + 3 * t2);
     const v1 = this.m1.scale((t3 - t2) * (this.t1 - this.t0));
 
-    return r0.add(v0).add(r1).add(v1);
+    return r0.add(v0).add(r1).add(v1) as Vector3D<Kilometers>;
   }
 
   // / Interpolate velocity at the provided time [t] _(POSIX seconds)_.
-  private _velocity(t: number): Vector3D {
+  private velocity_(t: Seconds): Vector3D<KilometersPerSecond> {
     const t2 = t * t;
     const r0 = this.p0.scale(6 * t2 - 6 * t);
     const v0 = this.m0.scale((3 * t2 - 4 * t + 1) * (this.t1 - this.t0));
@@ -56,7 +55,7 @@ export class CubicSpline {
       .add(v0)
       .add(r1)
       .add(v1)
-      .scale(1 / (this.t1 - this.t0));
+      .scale(1 / (this.t1 - this.t0)) as Vector3D<KilometersPerSecond>;
   }
 
   /**
@@ -65,9 +64,9 @@ export class CubicSpline {
    * @param t The time value to interpolate at _(POSIX seconds)_.
    * @returns An array containing the interpolated position and velocity as Vector3D objects.
    */
-  interpolate(t: number): Vector3D[] {
-    const n = (t - this.t0) / (this.t1 - this.t0);
+  interpolate(t: Seconds): Vector3D[] {
+    const n = (t - this.t0) / (this.t1 - this.t0) as Seconds;
 
-    return [this._position(n), this._velocity(n)];
+    return [this.position_(n), this.velocity_(n)];
   }
 }

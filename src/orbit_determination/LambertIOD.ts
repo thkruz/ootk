@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,14 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth, EpochUTC, J2000, Vector3D } from 'ootk-core';
+import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, Radians, Vector3D } from 'ootk-core';
 
 // / Lambert two-position and time initial orbit determination.
 export class LambertIOD {
-  /**
-   * Create a new [LambertIOD] object with optional
-   * gravitational parameter [mu].
-   */
   constructor(public mu: number = Earth.mu) {
     // Nothing to do here.
   }
@@ -31,6 +26,9 @@ export class LambertIOD {
   /**
    * Try to guess the short path argument given an [interceptor] and
    * [target] state.
+   * @param interceptor Interceptor
+   * @param target Target
+   * @returns True if the short path should be used, false otherwise.
    */
   static useShortPath(interceptor: J2000, target: J2000): boolean {
     const transN = interceptor.position.cross(target.position);
@@ -69,6 +67,13 @@ export class LambertIOD {
    * Attempt to solve output velocity [v1] _(km/s)_ given radii [r1] and
    * [r2] _(canonical)_, sweep angle [dth] _(rad)_, time of flight [tau]
    * _(canonical)_, and number of revolutions _(mRev)_.
+   * @param r1 Radius 1
+   * @param r2 Radius 2
+   * @param dth Sweep angle
+   * @param tau Time of flight
+   * @param mRev Number of revolutions
+   * @param v1 Output velocity
+   * @returns True if successful, false otherwise.
    */
   static solve(r1: number, r2: number, dth: number, tau: number, mRev: number, v1: Float64Array): boolean {
     const leftBranch = dth < Math.PI;
@@ -204,10 +209,18 @@ export class LambertIOD {
   /**
    * Estimate a state vector for inertial position [p1] _(km)_ given the
    * two epoch and positions.
+   * @param p1 Position vector 1
+   * @param p2 Position vector 2
+   * @param t1 Epoch 1
+   * @param t2 Epoch 2
+   * @param root0 Optional parameters
+   * @param root0.posigrade If true, use the positive root (default: true)
+   * @param root0.nRev Number of revolutions (default: 0)
+   * @returns A [J2000] object with the estimated state vector.
    */
   estimate(
-    p1: Vector3D,
-    p2: Vector3D,
+    p1: Vector3D<Kilometers>,
+    p2: Vector3D<Kilometers>,
     t1: EpochUTC,
     t2: EpochUTC,
     { posigrade = true, nRev = 0 }: { posigrade?: boolean; nRev?: number } = {},
@@ -223,7 +236,7 @@ export class LambertIOD {
     let dth = p1.angle(p2);
 
     if (!posigrade) {
-      dth = 2 * Math.PI - dth;
+      dth = 2 * Math.PI - dth as Radians;
     }
 
     const vDep = new Float64Array(2);
@@ -235,9 +248,9 @@ export class LambertIOD {
       let rt = pt.magnitude();
 
       if (!posigrade) {
-        rt = -rt;
+        rt = -rt as Kilometers;
       }
-      const vel1 = p1.scale((v * vDep[0]) / r1).add(pt.scale((v * vDep[1]) / rt));
+      const vel1 = p1.scale((v * vDep[0]) / r1).add(pt.scale((v * vDep[1]) / rt)) as Vector3D<KilometersPerSecond>;
 
       return new J2000(t1, p1, vel1);
     }

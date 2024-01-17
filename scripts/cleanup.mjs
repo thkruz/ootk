@@ -1,9 +1,9 @@
-import rimraf from 'rimraf';
+/* eslint-disable no-console */
+import { rmSync } from 'fs';
 
-// eslint-disable-next-line no-console
-console.log('Removing ./lib...');
+console.log('Removing ./dist...');
 try {
-  rimraf.sync('./lib');
+  rmSync('./dist', { recursive: true });
 } catch (error) {
   // Intentionally left blank
 }

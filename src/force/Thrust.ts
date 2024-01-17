@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,47 +15,64 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, J2000, RIC, Vector3D } from 'ootk-core';
+import {
+  EpochUTC,
+  J2000,
+  Kilometers,
+  KilometersPerSecond,
+  MetersPerSecond,
+  RIC,
+  Seconds,
+  SecondsPerMeterPerSecond,
+  Vector3D,
+} from 'ootk-core';
 import { Force } from './Force';
 
 // / Thrust force model.
 export class Thrust implements Force {
   constructor(
     public center: EpochUTC,
-    public radial: number,
-    public intrack: number,
-    public crosstrack: number,
-    public durationRate: number = 0.0,
+    public radial: MetersPerSecond,
+    public intrack: MetersPerSecond,
+    public crosstrack: MetersPerSecond,
+    public durationRate = 0.0 as SecondsPerMeterPerSecond,
   ) {
-    this.deltaV = new Vector3D(radial * 1e-3, intrack * 1e-3, crosstrack * 1e-3);
+    this.deltaV = new Vector3D<KilometersPerSecond>(
+      radial * 1e-3 as KilometersPerSecond,
+      intrack * 1e-3 as KilometersPerSecond,
+      crosstrack * 1e-3 as KilometersPerSecond,
+    );
   }
 
-  deltaV: Vector3D;
+  deltaV: Vector3D<KilometersPerSecond>;
 
-  get magnitude(): number {
-    return this.deltaV.magnitude() * 1000.0;
+  get magnitude(): MetersPerSecond {
+    return this.deltaV.magnitude() * 1000.0 as MetersPerSecond;
   }
 
-  get duration(): number {
-    return this.magnitude * this.durationRate;
+  get duration(): Seconds {
+    return this.magnitude * this.durationRate as Seconds;
   }
 
   get start(): EpochUTC {
-    return this.center.roll(-0.5 * this.duration);
+    return this.center.roll(-0.5 * this.duration as Seconds);
   }
 
   get stop(): EpochUTC {
-    return this.center.roll(0.5 * this.duration);
+    return this.center.roll(0.5 * this.duration as Seconds);
   }
 
   acceleration(state: J2000): Vector3D {
-    const relative = new RIC(Vector3D.origin, this.deltaV.scale(1.0 / this.duration));
+    const relative = new RIC(
+      Vector3D.origin as Vector3D<Kilometers>,
+      this.deltaV.scale(1.0 / this.duration as KilometersPerSecond),
+    );
 
     return relative.toJ2000(state).velocity.subtract(state.velocity);
   }
 
   apply(state: J2000): J2000 {
-    const relative = new RIC(Vector3D.origin, this.deltaV);
+    const relative = new RIC(Vector3D.origin as Vector3D<Kilometers>, this.deltaV);
 
     return relative.toJ2000(state);
   }

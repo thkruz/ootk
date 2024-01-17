@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Degrees, Milliseconds } from 'ootk-core';
+import { Degrees, Kilometers, Milliseconds, SatelliteParams, Vec3 } from 'ootk-core';
 
 export enum ZoomValue {
   LEO = 0.45,
@@ -24,7 +23,7 @@ export enum ZoomValue {
   MAX = 1,
 }
 
-export interface DetailedSatelliteParams {
+export interface DetailedSatelliteParams extends SatelliteParams {
   id: number;
   active?: boolean;
   configuration?: string;
@@ -88,3 +87,49 @@ export interface DetailedSensorParams {
   /** This is who operates the sensor */
   operator?: string;
 }
+/**
+ * The RUV coordinate system is a spherical coordinate system with the origin at
+ * the radar. The RUV coordinate system is defined with respect to the radar
+ * boresight. The R-axis points outward along the boresight with the origin at
+ * the radar. The U-axis is in the horizontal plane and points to the right of
+ * the boresight. The V-axis is in the vertical plane and points down from the
+ * boresight.
+ * @template DistanceUnit The unit of measure used for the altitude dimension.
+ * This is typically a type representing a distance, such as kilometers or
+ * meters. The default is Kilometers.
+ * @template AngleUnit The unit of measure used for the latitude and longitude
+ * dimensions. This is typically a type representing an angle, such as degrees
+ * or radians. The default is Radians.
+ */
+
+export type RuvVec3<DistanceUnit = Kilometers> = {
+  rng: DistanceUnit;
+  u: number;
+  v: number;
+};
+/**
+ * Phased Array Radar Face Cartesian Coordinates The cartesian coordinates (XRF,
+ * YRF ZRF) are defined with respect to the phased array radar face. The radar
+ * face lies in the XRF-YRF plane, with the XRF-axis horizontal and the YRF-axis
+ * pointing upward. The ZRF-axis points outward along the normal to the array
+ * face.
+ *
+ * The orientation of the phased array face is defined by the azimuth and the
+ * elevation of the phased array boresight (i.e., the phased array Z-axis).
+ */
+
+export type RfVec3<Units = Kilometers> = Vec3<Units>;
+
+/**
+ * Represents a function that calculates the Jacobian matrix.
+ * @param xs - The input values as a Float64Array. @returns The Jacobian matrix
+ * as a Float64Array.
+ */
+export type JacobianFunction = (xs: Float64Array) => Float64Array;
+
+/**
+ * Represents a differentiable function.
+ * @param x The input value. @returns The output value.
+ */
+
+export type DifferentiableFunction = (x: number) => number;

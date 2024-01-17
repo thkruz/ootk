@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, Vector3D } from 'ootk-core';
+import { EpochUTC, Seconds, Vector3D } from 'ootk-core';
 import { StateInterpolator } from '../interpolator/StateInterpolator';
 import { ChebyshevCoefficients } from './../interpolator/ChebyshevCoefficients';
 import { ChebyshevInterpolator } from './../interpolator/ChebyshevInterpolator';
@@ -41,7 +40,8 @@ export class ChebyshevCompressor {
 
     for (let i = 0; i < n; i++) {
       const x = ChebyshevCompressor._cosPi((i + h) / n);
-      const state = this._interpolator.interpolate(new EpochUTC(x * (h * (b - a)) + h * (b + a)))!;
+      const seconds = x * (h * (b - a)) + h * (b + a) as Seconds;
+      const state = this._interpolator.interpolate(new EpochUTC(seconds))!;
       const fx = state.position.x;
       const fy = state.position.y;
       const fz = state.position.z;
@@ -55,7 +55,7 @@ export class ChebyshevCompressor {
     return new Vector3D(sumX * (2 / n), sumY * (2 / n), sumZ * (2 / n));
   }
 
-  private _fitWindow(coeffs: number, a: number, b: number): ChebyshevCoefficients {
+  private _fitWindow(coeffs: number, a: Seconds, b: Seconds): ChebyshevCoefficients {
     const cx = new Float64Array();
     const cy = new Float64Array();
     const cz = new Float64Array();
@@ -74,15 +74,17 @@ export class ChebyshevCompressor {
   /**
    * Compress this object's interpolater, using the provided coefficients
    * per revolution [cpr].
+   * @param cpr Coefficients per revolution.
+   * @returns A new [ChebyshevInterpolator] object.
    */
   compress(cpr = 21): ChebyshevInterpolator {
     const { start, end } = this._interpolator.window();
-    const period = this._interpolator.interpolate(start)!.period();
+    const period = this._interpolator.interpolate(start)!.period;
     const coefficients: ChebyshevCoefficients[] = [];
     let current = start;
 
     while (current < end) {
-      const step = Math.min(period, end.posix - current.posix);
+      const step = Math.min(period, end.posix - current.posix) as Seconds;
       const segment = current.roll(step);
 
       coefficients.push(this._fitWindow(cpr, current.posix, segment.posix));

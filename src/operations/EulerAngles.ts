@@ -1,8 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
- * @Copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -16,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DEG2RAD, Matrix, RAD2DEG, Vector3D } from 'ootk-core';
+import { DEG2RAD, Degrees, Matrix, RAD2DEG, Radians, Vector3D } from 'ootk-core';
 
 // / Class containing Euler angles.
 export class EulerAngles {
@@ -30,84 +29,122 @@ export class EulerAngles {
   yaw: number;
 
   /**
-   * Create a new [EulerAngles] object from [roll], [pitch], and [yaw]
-   * angles _(rad)_.
+   * Create a new EulerAngles object from roll, pitch, and yaw angles in radians.
+   * @param roll Roll angle in radians.
+   * @param pitch Pitch angle in radians.
+   * @param yaw Yaw angle in radians.
    */
-  constructor(roll: number, pitch: number, yaw: number) {
+  constructor(roll: Radians, pitch: Radians, yaw: Radians) {
     this.roll = roll;
     this.pitch = pitch;
     this.yaw = yaw;
   }
 
   /**
-   * Create a new [EulerAngles] object from [roll], [pitch], and [yaw]
-   * angles _(deg)_.
+   * Create a new EulerAngles object from roll, pitch, and yaw angles.
+   * @param rollDeg Roll angle in degrees.
+   * @param pitchDeg Pitch angle in degrees.
+   * @param yawDeg Yaw angle in degrees.
+   * @returns EulerAngles object.
    */
-  static fromDegrees(rollDeg: number, pitchDeg: number, yawDeg: number): EulerAngles {
-    const roll = rollDeg * DEG2RAD;
-    const pitch = pitchDeg * DEG2RAD;
-    const yaw = yawDeg * DEG2RAD;
+  static fromDegrees(rollDeg: Degrees, pitchDeg: Degrees, yawDeg: Degrees): EulerAngles {
+    const roll = rollDeg * DEG2RAD as Radians;
+    const pitch = pitchDeg * DEG2RAD as Radians;
+    const yaw = yawDeg * DEG2RAD as Radians;
 
     return new EulerAngles(roll, pitch, yaw);
   }
 
   /**
-   * Create a new [EulerAngles] object from 3-2-1 ordered direction cosine
-   * matrix [c].
+   * Create a new EulerAngles object from 3-2-1 ordered direction cosine matrix c.
+   * @param c 3-2-1 ordered direction cosine matrix.
+   * @returns EulerAngles object.
    */
   static fromDcm321(c: Matrix): EulerAngles {
-    const roll = Math.atan(c[1][2] / c[2][2]);
-    const pitch = -Math.asin(c[0][2]);
-    const yaw = Math.atan(c[0][1] / c[0][0]);
+    const roll = Math.atan(c.elements[1][2] / c.elements[2][2]) as Radians;
+    const pitch = -Math.asin(c.elements[0][2]) as Radians;
+    const yaw = Math.atan(c.elements[0][1] / c.elements[0][0]) as Radians;
 
     return new EulerAngles(roll, pitch, yaw);
   }
 
-  // / Roll component _(deg)_.
-  get rollDegrees(): number {
-    return this.roll * RAD2DEG;
+  /**
+   * Gets the roll angle in degrees.
+   * @returns The roll angle in degrees.
+   */
+  get rollDegrees(): Degrees {
+    return this.roll * RAD2DEG as Degrees;
   }
 
-  // / Pitch component _(deg)_.
-  get pitchDegrees(): number {
-    return this.pitch * RAD2DEG;
+  /**
+   * Gets the pitch angle in degrees.
+   * @returns The pitch angle in degrees.
+   */
+  get pitchDegrees(): Degrees {
+    return this.pitch * RAD2DEG as Degrees;
   }
 
-  // / Yaw component _(deg)_.
-  get yawDegrees(): number {
-    return this.yaw * RAD2DEG;
+  /**
+   * Gets the yaw angle in degrees.
+   * @returns The yaw angle in degrees.
+   */
+  get yawDegrees(): Degrees {
+    return this.yaw * RAD2DEG as Degrees;
   }
 
-  // / Roll component alias _(rad)_.
-  get phi(): number {
-    return this.roll;
+  /**
+   * Gets the roll angle in radians.
+   * @returns The roll angle in radians.
+   */
+  get phi(): Radians {
+    return this.roll as Radians;
   }
 
-  // / Pitch component alias _(rad)_.
-  get theta(): number {
-    return this.pitch;
+  /**
+   * Gets the pitch angle in radians.
+   * @returns The pitch angle in radians.
+   */
+  get theta(): Radians {
+    return this.pitch as Radians;
   }
 
-  // / Yaw component alias _(rad)_.
-  get psi(): number {
-    return this.yaw;
+  /**
+   * Gets the yaw angle in radians.
+   * @returns The yaw angle in radians.
+   */
+  get psi(): Radians {
+    return this.yaw as Radians;
   }
 
-  // / Roll component alias _(deg)_.
-  get phiDegrees(): number {
-    return this.phi * RAD2DEG;
+  /**
+   * Gets the roll component in degrees.
+   * @returns The roll component in degrees.
+   */
+  get phiDegrees(): Degrees {
+    return this.phi * RAD2DEG as Degrees;
   }
 
-  // / Pitch component alias _(deg)_.
-  get thetaDegrees(): number {
-    return this.theta * RAD2DEG;
+  /**
+   * Gets the pitch component in degrees.
+   * @returns The pitch component in degrees.
+   */
+  get thetaDegrees(): Degrees {
+    return this.theta * RAD2DEG as Degrees;
   }
 
-  // / Yaw component alias _(deg)_.
-  get psiDegrees(): number {
-    return this.psi * RAD2DEG;
+  /**
+   * Gets the yaw component in degrees.
+   * @returns The yaw component in degrees.
+   */
+  get psiDegrees(): Degrees {
+    return this.psi * RAD2DEG as Degrees;
   }
 
+  /**
+   * Returns a string representation of the Euler angles.
+   * @param precision The number of decimal places to include in the string representation. Default is 6.
+   * @returns A string representation of the Euler angles.
+   */
   toString(precision = 6): string {
     const rollStr = this.rollDegrees.toFixed(precision);
     const pitchStr = this.pitchDegrees.toFixed(precision);
@@ -116,7 +153,10 @@ export class EulerAngles {
     return `Euler(roll: ${rollStr}°, pitch: ${pitchStr}°, yaw: ${yawStr}°)`;
   }
 
-  // / Convert this to a 3-2-1 ordered direction cosine [Matrix].
+  /**
+   * Calculates the Direction Cosine Matrix (DCM) using the 3-2-1 Euler angles convention.
+   * @returns The calculated DCM as a Matrix object.
+   */
   dcm321(): Matrix {
     const sPhi = Math.sin(this.phi);
     const cPhi = Math.cos(this.phi);
@@ -132,7 +172,11 @@ export class EulerAngles {
     ]);
   }
 
-  // / Perform a 3-2-1 ordered rotation on provided vector [v].
+  /**
+   * Rotates a 3D vector using a 3-2-1 Euler angle sequence.
+   * @param v The vector to rotate.
+   * @returns The rotated vector.
+   */
   rotateVector321(v: Vector3D): Vector3D {
     return this.dcm321().multiplyVector3D(v);
   }
