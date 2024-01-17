@@ -1,5 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`should be calculate derivative 1`] = `[Function]`;
+
 exports[`should be calculate jacobian 1`] = `
 Matrix {
   "columns": 3,
