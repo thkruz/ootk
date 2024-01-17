@@ -1,1 +1,1 @@
-export type { CatalogSource } from './CatalogSource';
+export { CatalogSource } from './CatalogSource';
