@@ -1,6 +1,5 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
  * @copyright (c) 2020-2024 Theodore Kruczek
  *
@@ -32,6 +31,9 @@ export class BoxMuller {
   /**
    * Create a new [BoxMuller] object with mean [mu], standard deviation
    * [sigma], and [seed] number.
+   * @param mu Mean value.
+   * @param sigma Standard deviation.
+   * @param seed Random seed.
    */
   constructor(mu: number, sigma: number, seed = 0) {
     this.mu = mu;
@@ -54,6 +56,7 @@ export class BoxMuller {
   /**
    * Generate a gaussian number, with mean [mu] and standard
    * deviation [sigma].
+   * @returns A gaussian number.
    */
   nextGauss(): number {
     if (this._index > 1) {
@@ -69,6 +72,8 @@ export class BoxMuller {
   /**
    * Generate a [Vector] of gaussian numbers, with mean [mu] and standard
    * deviation [sigma].
+   * @param n Number of gaussian numbers to generate.
+   * @returns A [Vector] of gaussian numbers.
    */
   gaussVector(n: number): Vector {
     const result = new Float64Array(n);

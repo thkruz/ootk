@@ -1,6 +1,5 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
  * @copyright (c) 2020-2024 Theodore Kruczek
  *
@@ -37,6 +36,8 @@ export class PropagatorPairs {
 
   /**
    * Get the step size at the provided index.
+   * @param index The index.
+   * @returns The step size.
    */
   step(index: number): number {
     return index < 3 ? this._posStep : this._velStep;

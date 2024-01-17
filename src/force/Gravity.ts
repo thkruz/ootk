@@ -1,6 +1,5 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
  * @copyright (c) 2020-2024 Theodore Kruczek
  *
@@ -34,7 +33,6 @@ export class Gravity implements Force {
 
   /**
    * Calculates the gravitational force in spherical coordinates.
-   *
    * @param state The J2000 state containing the position and velocity vectors.
    * @returns The gravitational force vector in spherical coordinates.
    */
@@ -46,7 +44,6 @@ export class Gravity implements Force {
 
   /**
    * Calculates the acceleration due to gravity at a given state.
-   *
    * @param state The J2000 state at which to calculate the acceleration.
    * @returns The acceleration vector.
    */

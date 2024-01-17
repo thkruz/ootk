@@ -1,6 +1,5 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
  * @copyright (c) 2020-2024 Theodore Kruczek
  *
@@ -22,6 +21,10 @@ export class PolynomicalRegressionResult {
    * Create a new [PolynomicalRegressionResult] object, containing the
    * polynomial [coefficients], root-sum-squared error [rss], and Bayes
    * information criterea [bic].
+   * @param coefficients  The polynomial coefficients.
+   * @param rss The root-sum-squared error.
+   * @param bic The Bayes information criterea.
+   * @returns The optimal input value.
    */
   constructor(public coefficients: Float64Array, public rss: number, public bic: number) {
     // Nothing to do here.

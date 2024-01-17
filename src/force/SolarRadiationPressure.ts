@@ -1,6 +1,5 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
  * @copyright (c) 2020-2024 Theodore Kruczek
  *

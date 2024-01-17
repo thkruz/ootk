@@ -1,6 +1,5 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
  * @copyright (c) 2020-2024 Theodore Kruczek
  *
@@ -26,9 +25,8 @@ import { Interpolator } from './Interpolator';
 export abstract class StateInterpolator extends Interpolator {
   /**
    * Interpolates the state at the given epoch.
-   *
    * @param epoch The epoch in UTC format.
-   * @returns The interpolated state at the given epoch, or null if interpolation is not possible.
+   * @throws If the interpolator has not been initialized.
    */
   interpolate(epoch: EpochUTC): J2000 | null {
     throw new Error('Not implemented.');

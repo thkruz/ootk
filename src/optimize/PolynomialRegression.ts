@@ -1,6 +1,5 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
  * @copyright (c) 2020-2024 Theodore Kruczek
  *
@@ -34,6 +33,12 @@ export class PolynomialRegression {
   /**
    * Optimize polynomial coefficients to fit data series [xs] and [ys] for the
    * provided polynomial [order].
+   * @param xs x values
+   * @param ys y values
+   * @param order Polynomial order
+   * @param root0 Root0
+   * @param root0.printIter Root0.printIter
+   * @returns The optimal input value.
    */
   static solve(
     xs: Float64Array,
@@ -43,6 +48,11 @@ export class PolynomialRegression {
   ): PolynomicalRegressionResult {
     const simplex = DownhillSimplex.generateSimplex(Float64Array.from(Array(order + 1).fill(1.0)));
 
+    /**
+     * Sum of squared errors.
+     * @param coeffs Polynomial coefficients
+     * @returns Sum of squared errors
+     */
     function f(coeffs: Float64Array): number {
       let sse = 0.0;
 
@@ -72,6 +82,13 @@ export class PolynomialRegression {
    * Optimize polynomial coefficients to fit data series [xs] and [ys], and
    * attempt to find an optimal order within the [minOrder] and
    * [maxOrder] bounds.
+   * @param xs x values
+   * @param ys y values
+   * @param minOrder Minimum polynomial order
+   * @param maxOrder Maximum polynomial order
+   * @param root0 Root0
+   * @param root0.printIter Root0.printIter
+   * @returns The optimal input value.
    */
   static solveOrder(
     xs: Float64Array,

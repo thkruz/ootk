@@ -1,6 +1,5 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
  * @copyright (c) 2020-2024 Theodore Kruczek
  *
@@ -24,6 +23,9 @@ export class BatchLeastSquaresResult {
   /**
    * Create a new [BatchLeastSquaresResult] object, containing the solved
    * [state], [covariance], and root-mean-squared error [rms].
+   * @param state The solved state.
+   * @param covariance The solved covariance.
+   * @param rms The root-mean-squared error.
    */
   constructor(public state: J2000, public covariance: StateCovariance, public rms: number) {
     // Nothing to do here.

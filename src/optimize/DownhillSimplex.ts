@@ -1,6 +1,5 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
  * @copyright (c) 2020-2024 Theodore Kruczek
  *
@@ -27,6 +26,9 @@ export class DownhillSimplex {
   /**
    * Compute the centroid from a list of [SimplexEntry] objects, using cost
    * function [f].
+   * @param f Cost function
+   * @param xss Simplex entries
+   * @returns The centroid.
    */
   private static _centroid(f: CostFunction, xss: SimplexEntry[]): SimplexEntry {
     const n = xss[0].points.length;
@@ -58,6 +60,9 @@ export class DownhillSimplex {
   /**
    * Generate a new simplex from initial guess [x0], and an optional
    * simplex [step] value.
+   * @param x0 Initial guess
+   * @param step Simplex step
+   * @returns The simplex.
    */
   static generateSimplex(x0: Float64Array, step = 0.01): Float64Array[] {
     const output: Float64Array[] = [x0.slice(0)];
@@ -82,6 +87,15 @@ export class DownhillSimplex {
    * - `maxIter`: maximum number of optimization iterations
    * - `adaptive`: use adaptive coefficients if possible
    * - `printIter`: print a debug statement after each iteration
+   * @param f Cost function
+   * @param xs Initial simplex
+   * @param root0 Root0
+   * @param root0.xTolerance Root0.xTolerance
+   * @param root0.fTolerance Root0.fTolerance
+   * @param root0.maxIter Root0.maxIter
+   * @param root0.adaptive Root0.adaptive
+   * @param root0.printIter Root0.printIter
+   * @returns The optimal input value.
    */
   static solveSimplex(
     f: CostFunction,

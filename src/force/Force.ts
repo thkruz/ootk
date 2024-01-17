@@ -1,6 +1,5 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
  * @copyright (c) 2020-2024 Theodore Kruczek
  *
@@ -25,6 +24,8 @@ export abstract class Force {
   /**
    * Calculate the acceleration due to the perturbing force on a given
    * state vector.
+   * @param state The state vector.
+   * @throws If the force cannot be calculated.
    */
   acceleration(state: J2000): Vector3D {
     throw Error('Not implemented');

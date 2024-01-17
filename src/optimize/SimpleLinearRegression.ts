@@ -1,6 +1,5 @@
 /**
  * @author @thkruz Theodore Kruczek
- *
  * @license AGPL-3.0-or-later
  * @copyright (c) 2020-2024 Theodore Kruczek
  *
@@ -21,6 +20,8 @@ export class SimpleLinearRegression {
   /**
    * Create a new [SimpleLinearRegression] object from lists of x and y
    * values.
+   * @param xs x values
+   * @param ys y values
    */
   constructor(public xs: number[], public ys: number[]) {
     this.update();
@@ -106,6 +107,8 @@ export class SimpleLinearRegression {
   /**
    * Create a new [SimpleLinearRegression] object with outliers above the
    * provided standard deviation [sigma] value removed.
+   * @param sigma standard deviation
+   * @returns new [SimpleLinearRegression] object
    */
   filterOutliers(sigma = 1.0): SimpleLinearRegression {
     const limit = this.error * sigma;
