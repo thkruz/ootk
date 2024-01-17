@@ -26,7 +26,7 @@ import {
   TleLine2,
 } from 'ootk-core';
 import { DetailedSatelliteParams } from '../types/types';
-import { CatalogSource } from 'src/enums/CatalogSource';
+import { CatalogSource } from '../main';
 
 /**
  * Represents a detailed satellite object with launch, spacecraft, and operations details.
