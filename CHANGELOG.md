@@ -3,7 +3,15 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [4.0.0-1](https://github.com/thkruz/ootk/compare/v4.0.0-0...4.0.0-1)
+#### [4.0.0-2](https://github.com/thkruz/ootk/compare/v4.0.0-1...4.0.0-2)
+
+- refactor: :recycle: move derivative from ootk-core [`9a9b50d`](https://github.com/thkruz/ootk/commit/9a9b50d4402b24398d920ae4ef0a76a7d19edabf)
+- build: :arrow_up: bump ootk-core [`efc4aa0`](https://github.com/thkruz/ootk/commit/efc4aa0caf7182afd9fbba7e29a50a8defd16ebe)
+- test: :white_check_mark: update snapshots [`ca95ad6`](https://github.com/thkruz/ootk/commit/ca95ad65be2de3f818390585a7bc1749ca7bf918)
+
+#### [v4.0.0-1](https://github.com/thkruz/ootk/compare/v4.0.0-0...v4.0.0-1)
+
+> 17 January 2024 
 
 - feat: :sparkles: integrate ootk-core v1.0.7 [`101eeb6`](https://github.com/thkruz/ootk/commit/101eeb6a21008ce198832818154fa0442691e4ad)
 - refactor: :recycle: refactor to match latest ootk-core [`ae37922`](https://github.com/thkruz/ootk/commit/ae3792283571c69ff0d6406188d0c7219215c56f)
