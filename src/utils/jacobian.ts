@@ -11,7 +11,7 @@ import { JacobianFunction } from '../types/types';
  * @param step The step size for numerical differentiation (default: 1e-5).
  * @returns The Jacobian matrix.
  */
-export function jacobian(f: JacobianFunction, m: number, x0: Float64Array, step = 0.00001): Matrix {
+export const jacobian = (f: JacobianFunction, m: number, x0: Float64Array, step = 0.00001): Matrix => {
   const n = x0.length;
   const j = array2d(m, n, 0);
   const h = 0.5 * step;
@@ -35,4 +35,4 @@ export function jacobian(f: JacobianFunction, m: number, x0: Float64Array, step 
   }
 
   return new Matrix(j);
-}
+};
