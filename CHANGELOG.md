@@ -3,7 +3,13 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [4.0.0-4](https://github.com/thkruz/ootk/compare/v4.0.0-3...4.0.0-4)
+#### [4.0.0-5](https://github.com/thkruz/ootk/compare/v4.0.0-4...4.0.0-5)
+
+- build: :arrow_up: bump ootk-core [`d19fd5b`](https://github.com/thkruz/ootk/commit/d19fd5b80b7b223a91c56a64b9564350cd9a90d0)
+
+#### [v4.0.0-4](https://github.com/thkruz/ootk/compare/v4.0.0-3...v4.0.0-4)
+
+> 17 January 2024 
 
 - fix: :adhesive_bandage: fix import statements [`e923dde`](https://github.com/thkruz/ootk/commit/e923ddefe856711c8216e006dc7463827960900e)
 
