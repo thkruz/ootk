@@ -3,7 +3,13 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [4.0.0-7](https://github.com/thkruz/ootk/compare/v4.0.0-6...4.0.0-7)
+#### [4.0.0-8](https://github.com/thkruz/ootk/compare/v4.0.0-7...4.0.0-8)
+
+- fix: :bug: make vmag and rcs nullable [`0750c9a`](https://github.com/thkruz/ootk/commit/0750c9aebee45bf0cba773b7d09ad91b3d29dbd7)
+
+#### [v4.0.0-7](https://github.com/thkruz/ootk/compare/v4.0.0-6...v4.0.0-7)
+
+> 21 January 2024 
 
 - build: :arrow_up: bump ootk-core [`188513f`](https://github.com/thkruz/ootk/commit/188513fabd9a1f621547769b9624c0dfcddee59d)
 
