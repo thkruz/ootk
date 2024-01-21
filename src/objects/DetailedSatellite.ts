@@ -56,8 +56,8 @@ export class DetailedSatellite extends Satellite {
   span: string = '';
   user: string = '';
   source: string = '';
-  vmag: number;
-  rcs: number;
+  vmag?: number|null;
+  rcs?: number|null;
   altId: string = '';
   altName: string = '';
 
@@ -76,8 +76,8 @@ export class DetailedSatellite extends Satellite {
     this.length = info.length ?? '';
     this.diameter = info.diameter ?? '';
     this.source = info.source ?? '';
-    this.vmag = info.vmag ?? 0;
-    this.rcs = info.rcs ?? 0;
+    this.vmag = info.vmag ?? null;
+    this.rcs = info.rcs ?? null;
     this.altId = info.altId ?? '';
     this.altName = info.altName ?? '';
     this.initOperationDetails_(info);
