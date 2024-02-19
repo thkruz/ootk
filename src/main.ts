@@ -27,5 +27,7 @@ export * from './interfaces';
 export * from './coordinate';
 export * from './objects';
 export * from './operations';
+export * from './force';
+export * from './propagator';
 export * from './transforms';
 export * from './utils';

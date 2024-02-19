@@ -24,7 +24,10 @@
 import { Degrees, SensorParams } from 'ootk-core';
 
 export interface RfSensorParams extends SensorParams {
-  coneHalfAngle: Degrees;
   boresightAz: Degrees;
   boresightEl: Degrees;
+  /** For radars, this is the width of the beam */
+  beamwidth: Degrees;
+  /** For radar sensors, what frequency does this sensor operate in? */
+  freqBand?: string;
 }

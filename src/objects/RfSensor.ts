@@ -25,9 +25,10 @@ import { DEG2RAD, Degrees, RAD2DEG, Radians, Sensor, SpaceObjectType } from 'oot
 import { azel2uv, uv2azel, RfSensorParams } from '../main';
 
 export class RfSensor extends Sensor {
-  coneHalfAngle: Degrees;
   boresightAz: Degrees;
   boresightEl: Degrees;
+  freqBand?: string;
+  beamwidth: Degrees;
 
   constructor(info: RfSensorParams) {
     super(info);
@@ -41,9 +42,10 @@ export class RfSensor extends Sensor {
         throw new Error('Invalid sensor type');
     }
 
-    this.coneHalfAngle = info.coneHalfAngle;
     this.boresightAz = info.boresightAz;
     this.boresightEl = info.boresightEl;
+    this.beamwidth = info.beamwidth;
+    this.freqBand = info.freqBand;
   }
 
   uvFromAzEl(az: Degrees, el: Degrees) {
@@ -52,11 +54,11 @@ export class RfSensor extends Sensor {
     const azDiff = (azRad - this.boresightAzRad) as Radians;
     const elDiff = (elRad - this.boresightElRad) as Radians;
 
-    return azel2uv(azDiff, elDiff, this.coneHalfAngleRad);
+    return azel2uv(azDiff, elDiff, this.beamwidthRad);
   }
 
   azElFromUV(u: number, v: number) {
-    const { az, el } = uv2azel(u, v, this.coneHalfAngleRad);
+    const { az, el } = uv2azel(u, v, this.beamwidthRad);
 
     return {
       az: ((az + this.boresightAz) * RAD2DEG) as Degrees,
@@ -72,7 +74,7 @@ export class RfSensor extends Sensor {
     return (this.boresightEl * DEG2RAD) as Radians;
   }
 
-  get coneHalfAngleRad() {
-    return (this.coneHalfAngle * DEG2RAD) as Radians;
+  get beamwidthRad() {
+    return (this.beamwidth * DEG2RAD) as Radians;
   }
 }

@@ -64,7 +64,7 @@ export function rae2raeOffBoresight(
  */
 export function rae2ruv(rae: RaeVec3, sensor: RfSensor, maxSensorAz: Degrees): RuvVec3 {
   const { az, el } = rae2raeOffBoresight(rae, sensor, maxSensorAz);
-  const { u, v } = azel2uv(az, el, sensor.coneHalfAngleRad);
+  const { u, v } = azel2uv(az, el, sensor.beamwidthRad);
 
   return { rng: rae.rng, u, v };
 }

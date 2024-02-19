@@ -15,54 +15,43 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { BaseObjectParams, Degrees, Milliseconds, Radians, Sensor, SensorParams } from 'ootk-core';
+import { BaseObjectParams, Milliseconds, Sensor, SensorParams } from 'ootk-core';
 import { DetailedSensorParams, ZoomValue } from '../types/types';
+import { CommLink } from '../enums/CommLink';
 
 export class DetailedSensor extends Sensor {
-  country?: string;
-  latRad: Radians;
-  lonRad: Radians;
-  shortName?: string;
-  beamwidth?: Degrees;
-  changeObjectInterval?: Milliseconds;
-  linkAehf?: boolean;
-  linkGalileo?: boolean;
-  linkIridium?: boolean;
-  linkStarlink?: boolean;
-  linkWgs?: boolean;
-  static?: boolean;
   sensorId?: number;
-  url?: string;
-  volume?: boolean;
-  zoom: ZoomValue;
-  band?: string;
   objName?: string;
+  shortName?: string;
   uiName?: string;
+  country?: string;
+  dwellTime?: Milliseconds;
+  commLinks: CommLink[];
+  /** Is this sensor volumetric? */
+  isVolumetric?: boolean;
+  /** The ideal zoom to see the sensor's full FOV */
+  zoom: ZoomValue | number;
   system?: string;
   operator?: string;
+  url?: string;
 
   constructor(info: DetailedSensorParams & SensorParams & BaseObjectParams) {
     super(info);
+    this.commLinks = info.commLinks ?? [];
     this.country = info.country;
-    this.latRad = (info.lat * (Math.PI / 180)) as Radians;
-    this.lonRad = (info.lon * (Math.PI / 180)) as Radians;
-    this.shortName = info.shortName;
-    this.beamwidth = info.beamwidth;
-    this.changeObjectInterval = info.changeObjectInterval;
-    this.linkAehf = info.linkAehf;
-    this.linkGalileo = info.linkGalileo;
-    this.linkIridium = info.linkIridium;
-    this.linkStarlink = info.linkStarlink;
-    this.linkWgs = info.linkWgs;
-    this.static = info.static;
-    this.sensorId = info.sensorId;
-    this.url = info.url;
-    this.volume = info.volume;
-    this.zoom = info.zoom;
-    this.band = info.band;
+    this.dwellTime = info.changeObjectInterval;
+    this.isVolumetric = info.volume;
     this.objName = info.objName;
-    this.uiName = info.uiName;
-    this.system = info.system;
     this.operator = info.operator;
+    this.sensorId = info.sensorId;
+    this.shortName = info.shortName;
+    this.system = info.system;
+    this.uiName = info.uiName;
+    this.url = info.url;
+    this.zoom = info.zoom;
+  }
+
+  isStatic(): boolean {
+    return true;
   }
 }

@@ -15,7 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Degrees, Kilometers, Milliseconds, SatelliteParams, Vec3 } from 'ootk-core';
+import { Kilometers, Milliseconds, SatelliteParams, Vec3 } from 'ootk-core';
+import { CommLink } from '../main';
 
 export enum ZoomValue {
   LEO = 0.45,
@@ -61,14 +62,8 @@ export interface DetailedSensorParams {
   country?: string;
   /** 3 Letter Designation */
   shortName?: string;
-  /** For radars, this is the width of the beam */
-  beamwidth?: Degrees;
   changeObjectInterval?: Milliseconds;
-  linkAehf?: boolean;
-  linkGalileo?: boolean;
-  linkIridium?: boolean;
-  linkStarlink?: boolean;
-  linkWgs?: boolean;
+  commLinks?: CommLink[];
   static?: boolean;
   sensorId?: number;
   url?: string;
@@ -76,8 +71,6 @@ export interface DetailedSensorParams {
   volume?: boolean;
   /** How far away should we zoom when selecting this sensor? */
   zoom: ZoomValue;
-  /** For radar sensors, what frequency does this sensor operate in? */
-  band?: string;
   /** This is the name of the object in the array */
   objName?: string;
   /** This is the name of the object in the UI */
