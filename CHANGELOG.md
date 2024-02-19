@@ -3,7 +3,22 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [4.0.0-8](https://github.com/thkruz/ootk/compare/v4.0.0-7...4.0.0-8)
+#### [4.0.0-9](https://github.com/thkruz/ootk/compare/v5.0.0-0...4.0.0-9)
+
+#### [v5.0.0-0](https://github.com/thkruz/ootk/compare/v4.0.0-8...v5.0.0-0)
+
+> 19 February 2024 
+
+- feat: :sparkles: add forces and propagators [`177c88b`](https://github.com/thkruz/ootk/commit/177c88b308760c08e592d409f106cbfe2b0b98ac)
+- docs: :memo: update documentation [`754e2e1`](https://github.com/thkruz/ootk/commit/754e2e183fdb6930a0192b0452137f99f420fd6d)
+- feat: :sparkles: add detailedsatellite cloning [`63aeb77`](https://github.com/thkruz/ootk/commit/63aeb77d3d24071a1d66e5396b27e8c89fe34198)
+- build: :arrow_up: bump ootk-core [`62f40d2`](https://github.com/thkruz/ootk/commit/62f40d2e8fd629b7dfc55b2c40e52e40cf2069aa)
+- build: :arrow_up: bump ootk-core [`8d15b97`](https://github.com/thkruz/ootk/commit/8d15b972d7a9dd49a6c2e2773509ac23735da476)
+- chore: :technologist: remove prettier recommendation [`def01c6`](https://github.com/thkruz/ootk/commit/def01c647b3a09c799b1c2b47c766afed4368ab3)
+
+#### [v4.0.0-8](https://github.com/thkruz/ootk/compare/v4.0.0-7...v4.0.0-8)
+
+> 21 January 2024 
 
 - fix: :bug: make vmag and rcs nullable [`0750c9a`](https://github.com/thkruz/ootk/commit/0750c9aebee45bf0cba773b7d09ad91b3d29dbd7)
 
