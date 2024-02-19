@@ -29,13 +29,13 @@ import { BatchLeastSquaresResult } from './BatchLeastSquaresResult';
  * Batch least squares orbit determination.
  */
 export class BatchLeastSquaresOD {
-  // / Propagator pair cache, for generating observation Jacobians.
+  /** Propagator pair cache, for generating observation Jacobians. */
   private propPairs_: PropagatorPairs;
-  // / Nominal state propagator.
+  /**  Nominal state propagator. */
   private propagator_: Propagator;
-  // / State estimate during solve.
+  /**  State estimate during solve. */
   private nominal_: J2000;
-  // / Solve start epoch.
+  /**  Solve start epoch. */
   private start_: EpochUTC;
 
   /**

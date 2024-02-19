@@ -21,12 +21,37 @@ import { DataHandler, Earth, ITRF, J2000, Kilometers, KilometersPerSecond, Vecto
 
 import { Force } from './Force';
 
-// / tesseral geopotential perturbations.
+/**
+ * designed to model the Earth's gravitational field, which is not uniformly distributed due to variations in mass
+ * distribution within the Earth and the Earth's shape (it's not a perfect sphere). To accurately model this complex
+ * field, the gravity model is expanded into a series of spherical harmonics, characterized by their degree and order.
+ *
+ * This `degree` parameter is related to the spatial resolution of the gravity model. A higher degree corresponds to a
+ * finer resolution, capable of representing smaller-scale variations in the gravity field. The degree essentially
+ * denotes how many times the gravitational potential function varies over the surface of the Earth.
+ *
+ * For each degree, there can be multiple orders ranging from 0 up to the degree. The `order` accounts for the
+ * longitudinal variation in the gravity field. Each order within a degree captures different characteristics of the
+ * gravity anomalies.
+ *
+ * `Degree 0` corresponds to the overall, mean gravitational force of the Earth (considered as a point mass).
+ *
+ * `Degree 1` terms are related to the Earth's center of mass but are usually not used because the center of mass is
+ * defined as the origin of the coordinate system.
+ *
+ * `Degree 2` and higher capture the deviations from this spherical symmetry, such as the flattening at the poles and
+ * bulging at the equator (degree 2), and other anomalies at finer scales as the degree increases.
+ */
 export class EarthGravity implements Force {
   degree: number;
   order: number;
   _asphericalFlag: boolean;
 
+  /**
+   * Creates a new instance of the EarthGravity class.
+   * @param degree The degree of the Earth's gravity field. Must be between 0 and 36.
+   * @param order The order of the Earth's gravity field. Must be between 0 and 36.
+   */
   constructor(degree: number, order: number) {
     this.degree = Math.min(Math.max(degree, 0), 36);
     this.order = Math.min(Math.max(order, 0), 36);

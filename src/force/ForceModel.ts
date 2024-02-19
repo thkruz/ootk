@@ -51,6 +51,14 @@ export class ForceModel {
     this._solarRadiationPressure = new SolarRadiationPressure(mass, area, coeff);
   }
 
+  /**
+   * Sets the atmospheric drag for the force model.
+   * @deprecated This is still a work in progress!
+   * @param mass - The mass of the object.
+   * @param area - The cross-sectional area of the object.
+   * @param coeff - The drag coefficient. Default value is 2.2.
+   * @param cosine - The cosine of the angle between the object's velocity vector and the drag force vector.
+   */
   setAtmosphericDrag(mass: number, area: number, coeff = 2.2, cosine = 4): void {
     this._atmosphericDrag = new AtmosphericDrag(mass, area, coeff, cosine);
   }
