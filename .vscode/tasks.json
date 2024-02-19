@@ -62,7 +62,6 @@
   ],
   "extensions": {
     "recommendations": [
-      "prettier.prettier-vscode",
       "dbaeumer.vscode-eslint",
       "steoates.autoimport",
       "vivaxy.vscode-conventional-commits",
