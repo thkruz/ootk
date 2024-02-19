@@ -50,8 +50,8 @@ export interface DetailedSatelliteParams extends SatelliteParams {
   shape?: string;
   span?: string;
   user?: string;
-  vmag?: number;
-  rcs?: number;
+  vmag?: number | null;
+  rcs?: number | null;
   source?: string;
   altId?: string;
   altName?: string;

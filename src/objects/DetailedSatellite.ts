@@ -56,8 +56,8 @@ export class DetailedSatellite extends Satellite {
   span: string = '';
   user: string = '';
   source: string = '';
-  vmag?: number|null;
-  rcs?: number|null;
+  vmag: number|null;
+  rcs: number|null;
   altId: string = '';
   altName: string = '';
 
@@ -178,5 +178,9 @@ export class DetailedSatellite extends Satellite {
       equipment: this.equipment,
       dryMass: this.dryMass,
     };
+  }
+
+  clone(): DetailedSatellite {
+    return new DetailedSatellite(this);
   }
 }
