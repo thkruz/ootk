@@ -35,12 +35,14 @@ export function azel2uv(az: Radians, el: Radians, coneHalfAngle: Radians): { u: 
  * Determine azimuth and elevation off of boresight based on sensor orientation and RAE.
  * @param rae Range, Azimuth, Elevation
  * @param sensor Radar sensor object
+ * @param face Face number of the sensor
  * @param maxSensorAz Maximum sensor azimuth
  * @returns Azimuth and Elevation off of boresight
  */
 export function rae2raeOffBoresight(
   rae: RaeVec3,
   sensor: RfSensor,
+  face: number,
   maxSensorAz: Degrees,
 ): { az: Radians; el: Radians } {
   let az = (rae.az * DEG2RAD) as Radians;
@@ -49,8 +51,8 @@ export function rae2raeOffBoresight(
   // Correct azimuth for sensor orientation.
   az = az > maxSensorAz * DEG2RAD ? ((az - TAU) as Radians) : az;
 
-  az = (az - sensor.boresightAz) as Radians;
-  el = (el - sensor.boresightEl) as Radians;
+  az = (az - sensor.boresightAz[face]) as Radians;
+  el = (el - sensor.boresightEl[face]) as Radians;
 
   return { az, el };
 }
@@ -59,11 +61,12 @@ export function rae2raeOffBoresight(
  * Converts Range Az El to Range U V.
  * @param rae Range, Azimuth, Elevation
  * @param sensor Radar sensor object
+ * @param face Face number of the sensor
  * @param maxSensorAz Maximum sensor azimuth
  * @returns Range, U, V
  */
-export function rae2ruv(rae: RaeVec3, sensor: RfSensor, maxSensorAz: Degrees): RuvVec3 {
-  const { az, el } = rae2raeOffBoresight(rae, sensor, maxSensorAz);
+export function rae2ruv(rae: RaeVec3, sensor: RfSensor, face: number, maxSensorAz: Degrees): RuvVec3 {
+  const { az, el } = rae2raeOffBoresight(rae, sensor, face, maxSensorAz);
   const { u, v } = azel2uv(az, el, sensor.beamwidthRad);
 
   return { rng: rae.rng, u, v };
