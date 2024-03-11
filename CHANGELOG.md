@@ -3,9 +3,13 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [4.0.0-9](https://github.com/thkruz/ootk/compare/v5.0.0-0...4.0.0-9)
+#### [4.0.0-10](https://github.com/thkruz/ootk/compare/v5.0.0-0...4.0.0-10)
 
-#### [v5.0.0-0](https://github.com/thkruz/ootk/compare/v4.0.0-8...v5.0.0-0)
+- refactor: :recycle: make rfSensor an extension of DetailedSensor [`add7613`](https://github.com/thkruz/ootk/commit/add7613c9cea3ddf56b5da0accef36b8b866b144)
+
+#### [v5.0.0-0](https://github.com/thkruz/ootk/compare/v4.0.0-9...v5.0.0-0)
+
+#### [v4.0.0-9](https://github.com/thkruz/ootk/compare/v4.0.0-8...v4.0.0-9)
 
 > 19 February 2024 
 
