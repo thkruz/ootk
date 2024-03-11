@@ -1,6 +1,6 @@
 /**
  * @author Theodore Kruczek.
- * @license MIT
+ * @license AGPL-3.0-or-later
  * @copyright (c) 2022-2024 Theodore Kruczek Permission is
  * hereby granted, free of charge, to any person obtaining a copy of this
  * software and associated documentation files (the "Software"), to deal in the
@@ -25,10 +25,12 @@ import { Degrees } from 'ootk-core';
 import { DetailedSensorParams } from '../types/types';
 
 export interface RfSensorParams extends DetailedSensorParams {
-  boresightAz: Degrees;
-  boresightEl: Degrees;
-  /** For radars, this is the width of the beam */
+  /** The azimuth angles at boresight of the sensor */
+  boresightAz: Degrees[];
+  /** The elevation angles at boresight of the sensor */
+  boresightEl: Degrees[];
+  /** The width of the beam */
   beamwidth: Degrees;
-  /** For radar sensors, what frequency does this sensor operate in? */
+  /** The frequency this sensor operate in */
   freqBand?: string;
 }
