@@ -3,13 +3,21 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [4.0.0-11](https://github.com/thkruz/ootk/compare/v5.0.0-0...4.0.0-11)
+#### [4.0.0-12](https://github.com/thkruz/ootk/compare/v5.0.0-0...4.0.0-12)
 
 - refactor: :recycle: update RfSensor to allow multiple faces [`179b486`](https://github.com/thkruz/ootk/commit/179b486bbbd9355569414f9ca7ca82aaa374ca93)
 - refactor: :recycle: make rfSensor an extension of DetailedSensor [`add7613`](https://github.com/thkruz/ootk/commit/add7613c9cea3ddf56b5da0accef36b8b866b144)
+- refactor: :recycle: move freqBand from RfSensor to DetailedSensor [`185cc50`](https://github.com/thkruz/ootk/commit/185cc506482c0e0224ff0392e6bb1bad599d54ec)
 - refactor: :recycle: update transforms to allow multiple faces [`53c8877`](https://github.com/thkruz/ootk/commit/53c887730d389b06f18889d4f2170a1e4ac82993)
 
-#### [v5.0.0-0](https://github.com/thkruz/ootk/compare/v4.0.0-10...v5.0.0-0)
+#### [v5.0.0-0](https://github.com/thkruz/ootk/compare/v4.0.0-11...v5.0.0-0)
+
+#### [v4.0.0-11](https://github.com/thkruz/ootk/compare/v4.0.0-10...v4.0.0-11)
+
+> 11 March 2024 
+
+- refactor: :recycle: update RfSensor to allow multiple faces [`179b486`](https://github.com/thkruz/ootk/commit/179b486bbbd9355569414f9ca7ca82aaa374ca93)
+- refactor: :recycle: update transforms to allow multiple faces [`53c8877`](https://github.com/thkruz/ootk/commit/53c887730d389b06f18889d4f2170a1e4ac82993)
 
 #### [v4.0.0-10](https://github.com/thkruz/ootk/compare/v4.0.0-9...v4.0.0-10)
 
