@@ -31,12 +31,12 @@ it('should convert valid RAE coordinates to RAE Off Boresight', () => {
     maxEl: 0 as Degrees,
     minRng: 0 as Kilometers,
     maxRng: 0 as Kilometers,
-    boresightAz: 0 as Degrees,
-    boresightEl: 0 as Degrees,
-    coneHalfAngle: 0 as Degrees,
+    boresightAz: [0 as Degrees],
+    boresightEl: [0 as Degrees],
+    beamwidth: 0 as Degrees,
   });
 
-  const raeOffBoresightCoordinates = rae2raeOffBoresight(rae, senor, 10 as Degrees);
+  const raeOffBoresightCoordinates = rae2raeOffBoresight(rae, senor, 0, 10 as Degrees);
 
   expect(raeOffBoresightCoordinates).toMatchSnapshot();
 });

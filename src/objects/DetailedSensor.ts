@@ -26,11 +26,12 @@ export class DetailedSensor extends Sensor {
   uiName?: string;
   country?: string;
   dwellTime?: Milliseconds;
+  freqBand?: string;
   commLinks: CommLink[];
   /** Is this sensor volumetric? */
   isVolumetric?: boolean;
   /** The ideal zoom to see the sensor's full FOV */
-  zoom: ZoomValue | number;
+  zoom?: ZoomValue | number;
   system?: string;
   operator?: string;
   url?: string;
@@ -40,6 +41,7 @@ export class DetailedSensor extends Sensor {
     this.commLinks = info.commLinks ?? [];
     this.country = info.country;
     this.dwellTime = info.changeObjectInterval;
+    this.freqBand = info.freqBand;
     this.isVolumetric = info.volume;
     this.objName = info.objName;
     this.operator = info.operator;

@@ -64,13 +64,14 @@ export interface DetailedSensorParams extends SensorParams {
   shortName?: string;
   changeObjectInterval?: Milliseconds;
   commLinks?: CommLink[];
+  freqBand?: string;
   static?: boolean;
   sensorId?: number;
   url?: string;
   /** Does this sensor use a volumetric search pattern? */
   volume?: boolean;
   /** How far away should we zoom when selecting this sensor? */
-  zoom: ZoomValue;
+  zoom?: ZoomValue;
   /** This is the name of the object in the array */
   objName?: string;
   /** This is the name of the object in the UI */

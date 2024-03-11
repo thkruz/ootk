@@ -29,7 +29,6 @@ export class RfSensor extends DetailedSensor {
   boresightAz: Degrees[];
   boresightEl: Degrees[];
   faces: number;
-  freqBand?: string;
   beamwidth: Degrees;
 
   constructor(info: RfSensorParams) {
@@ -51,7 +50,6 @@ export class RfSensor extends DetailedSensor {
     }
     this.faces = info.boresightAz.length;
     this.beamwidth = info.beamwidth;
-    this.freqBand = info.freqBand;
   }
 
   /**
