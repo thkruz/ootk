@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { BaseObjectParams, Milliseconds, Sensor, SensorParams } from 'ootk-core';
+import { Milliseconds, Sensor } from 'ootk-core';
 import { DetailedSensorParams, ZoomValue } from '../types/types';
 import { CommLink } from '../enums/CommLink';
 
@@ -35,7 +35,7 @@ export class DetailedSensor extends Sensor {
   operator?: string;
   url?: string;
 
-  constructor(info: DetailedSensorParams & SensorParams & BaseObjectParams) {
+  constructor(info: DetailedSensorParams) {
     super(info);
     this.commLinks = info.commLinks ?? [];
     this.country = info.country;

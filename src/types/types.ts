@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Kilometers, Milliseconds, SatelliteParams, Vec3 } from 'ootk-core';
+import { Kilometers, Milliseconds, SatelliteParams, SensorParams, Vec3 } from 'ootk-core';
 import { CommLink } from '../main';
 
 export enum ZoomValue {
@@ -57,7 +57,7 @@ export interface DetailedSatelliteParams extends SatelliteParams {
   altName?: string;
 }
 
-export interface DetailedSensorParams {
+export interface DetailedSensorParams extends SensorParams {
   /** The country that owns the sensor */
   country?: string;
   /** 3 Letter Designation */

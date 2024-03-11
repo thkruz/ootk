@@ -21,9 +21,10 @@
  * SOFTWARE.
  */
 
-import { Degrees, SensorParams } from 'ootk-core';
+import { Degrees } from 'ootk-core';
+import { DetailedSensorParams } from '../types/types';
 
-export interface RfSensorParams extends SensorParams {
+export interface RfSensorParams extends DetailedSensorParams {
   boresightAz: Degrees;
   boresightEl: Degrees;
   /** For radars, this is the width of the beam */

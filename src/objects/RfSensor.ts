@@ -21,10 +21,11 @@
  * SOFTWARE.
  */
 
-import { DEG2RAD, Degrees, RAD2DEG, Radians, Sensor, SpaceObjectType } from 'ootk-core';
+import { DEG2RAD, Degrees, RAD2DEG, Radians, SpaceObjectType } from 'ootk-core';
 import { azel2uv, uv2azel, RfSensorParams } from '../main';
+import { DetailedSensor } from './DetailedSensor';
 
-export class RfSensor extends Sensor {
+export class RfSensor extends DetailedSensor {
   boresightAz: Degrees;
   boresightEl: Degrees;
   freqBand?: string;
