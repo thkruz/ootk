@@ -21,13 +21,13 @@
  */
 
 export * from 'ootk-core';
-export * from './enums';
+export * from './enums/index';
 export * from './types/types';
-export * from './interfaces';
-export * from './coordinate';
-export * from './objects';
-export * from './operations';
-export * from './force';
-export * from './propagator';
-export * from './transforms';
-export * from './utils';
+export * from './interfaces/index';
+export * from './coordinate/index';
+export * from './objects/index';
+export * from './operations/index';
+export * from './force/index';
+export * from './propagator/index';
+export * from './transforms/index';
+export * from './utils/index';
