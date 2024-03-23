@@ -20,7 +20,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from 'ootk-core';
+export * from 'ootk-core/src/main';
 export * from './enums/index';
 export * from './types/types';
 export * from './interfaces/index';
