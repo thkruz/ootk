@@ -16,7 +16,7 @@
  */
 
 import { astronomicalUnit, J2000, Sun, Vector3D } from 'ootk-core';
-import { Force } from './Force';
+import { Force } from './Force.js';
 
 // / Solar radiation pressure model.
 export class SolarRadiationPressure extends Force {

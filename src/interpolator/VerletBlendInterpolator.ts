@@ -26,9 +26,9 @@ import {
   Seconds,
   Vector3D,
 } from 'ootk-core';
-import { CubicSplineInterpolator } from './CubicSplineInterpolator';
-import { LagrangeInterpolator } from './LagrangeInterpolator';
-import { StateInterpolator } from './StateInterpolator';
+import { CubicSplineInterpolator } from './CubicSplineInterpolator.js';
+import { LagrangeInterpolator } from './LagrangeInterpolator.js';
+import { StateInterpolator } from './StateInterpolator.js';
 
 /**
  * Two-body Velocity Verlet Blend interpolator.

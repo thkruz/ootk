@@ -16,9 +16,9 @@
  */
 
 import { EpochUTC, J2000, Matrix, Vector, Vector3D } from 'ootk-core';
-import { Propagator } from '../propagator/Propagator';
-import { RandomGaussianSource } from './../operations/RandomGaussianSource';
-import { PropagatorPairs } from './PropagatorPairs';
+import { Propagator } from '../propagator/Propagator.js';
+import { RandomGaussianSource } from './../operations/RandomGaussianSource.js';
+import { PropagatorPairs } from './PropagatorPairs.js';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /**

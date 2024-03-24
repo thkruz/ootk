@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DifferentiableFunction } from '../main';
+import { DifferentiableFunction } from '../main.js';
 
 // / Golden Section bounded single value optimizer.
 export class GoldenSection {

@@ -16,7 +16,7 @@
  */
 
 import { J2000 } from 'ootk-core';
-import { StateCovariance } from './../covariance/StateCovariance';
+import { StateCovariance } from './../covariance/StateCovariance.js';
 
 // / Batch least squares orbit determination result.
 export class BatchLeastSquaresResult {

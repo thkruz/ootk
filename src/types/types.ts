@@ -16,7 +16,7 @@
  */
 
 import { Kilometers, Milliseconds, SatelliteParams, SensorParams, Vec3 } from 'ootk-core';
-import { CommLink } from '../main';
+import { CommLink } from '../main.js';
 
 export enum ZoomValue {
   LEO = 0.45,

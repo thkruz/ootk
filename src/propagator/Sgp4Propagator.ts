@@ -18,9 +18,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable class-methods-use-this */
 import { EpochUTC, J2000, Tle } from 'ootk-core';
-import { Thrust } from '../force/Thrust';
-import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
-import { Propagator } from './Propagator';
+import { Thrust } from '../force/Thrust.js';
+import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
+import { Propagator } from './Propagator.js';
 
 /**
  * Sgp4Propagator is a propagator that uses the SGP4 model to propagate the state of an object.

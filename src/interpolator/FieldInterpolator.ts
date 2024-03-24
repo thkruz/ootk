@@ -18,7 +18,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable class-methods-use-this */
 
-import { Interpolator } from './Interpolator';
+import { Interpolator } from './Interpolator.js';
 
 // / Base class for arbitrary field interpolators.
 export abstract class FieldInterpolator extends Interpolator {

@@ -16,14 +16,14 @@
  */
 
 import { concat, EpochUTC, J2000, Kilometers, KilometersPerSecond, Matrix, Vector, Vector3D } from 'ootk-core';
-import { Observation } from '../observation/Observation';
-import { PropagatorPairs } from '../observation/PropagatorPairs';
-import { Propagator } from '../propagator/Propagator';
-import { CovarianceFrame, StateCovariance } from './../covariance/StateCovariance';
-import { ForceModel } from './../force/ForceModel';
-import { KeplerPropagator } from './../propagator/KeplerPropagator';
-import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
-import { BatchLeastSquaresResult } from './BatchLeastSquaresResult';
+import { Observation } from '../observation/Observation.js';
+import { PropagatorPairs } from '../observation/PropagatorPairs.js';
+import { Propagator } from '../propagator/Propagator.js';
+import { CovarianceFrame, StateCovariance } from './../covariance/StateCovariance.js';
+import { ForceModel } from './../force/ForceModel.js';
+import { KeplerPropagator } from './../propagator/KeplerPropagator.js';
+import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator.js';
+import { BatchLeastSquaresResult } from './BatchLeastSquaresResult.js';
 
 /**
  * Batch least squares orbit determination.

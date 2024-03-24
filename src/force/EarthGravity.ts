@@ -19,7 +19,7 @@ import { DataHandler, Earth, ITRF, J2000, Kilometers, KilometersPerSecond, Vecto
 /* eslint-disable class-methods-use-this */
 // / Complex Earth gravity model, accounting for EGM-96 zonal, sectoral, and
 
-import { Force } from './Force';
+import { Force } from './Force.js';
 
 /**
  * designed to model the Earth's gravitational field, which is not uniformly distributed due to variations in mass

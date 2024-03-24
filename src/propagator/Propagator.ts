@@ -16,9 +16,9 @@
  */
 
 import { EpochUTC, J2000, Seconds } from 'ootk-core';
-import { Thrust } from '../force/Thrust';
-import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
-import { GoldenSection } from './../optimize/GoldenSection';
+import { Thrust } from '../force/Thrust.js';
+import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
+import { GoldenSection } from './../optimize/GoldenSection.js';
 
 // Propagator base class.
 export abstract class Propagator {

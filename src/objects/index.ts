@@ -1,5 +1,5 @@
-export { DetailedSatellite } from './DetailedSatellite';
-export { DetailedSensor } from './DetailedSensor';
-export { LandObject } from './LandObject';
-export { Marker } from './Marker';
-export { RfSensor } from './RfSensor';
+export { DetailedSatellite } from './DetailedSatellite.js';
+export { DetailedSensor } from './DetailedSensor.js';
+export { LandObject } from './LandObject.js';
+export { Marker } from './Marker.js';
+export { RfSensor } from './RfSensor.js';

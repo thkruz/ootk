@@ -16,7 +16,7 @@
  */
 
 import { J2000, Moon, Sun, Vector3D } from 'ootk-core';
-import { Force } from './Force';
+import { Force } from './Force.js';
 
 // / Third-body gravity model.
 export class ThirdBodyGravity implements Force {

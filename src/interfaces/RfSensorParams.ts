@@ -22,7 +22,7 @@
  */
 
 import { Degrees } from 'ootk-core';
-import { DetailedSensorParams } from '../types/types';
+import { DetailedSensorParams } from '../types/types.js';
 
 export interface RfSensorParams extends DetailedSensorParams {
   /** The azimuth angles at boresight of the sensor */

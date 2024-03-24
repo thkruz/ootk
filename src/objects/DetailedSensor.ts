@@ -16,8 +16,8 @@
  */
 
 import { Milliseconds, Sensor } from 'ootk-core';
-import { DetailedSensorParams, ZoomValue } from '../types/types';
-import { CommLink } from '../enums/CommLink';
+import { DetailedSensorParams, ZoomValue } from '../types/types.js';
+import { CommLink } from '../enums/CommLink.js';
 
 export class DetailedSensor extends Sensor {
   sensorId?: number;

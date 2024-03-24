@@ -16,11 +16,11 @@
  */
 
 import { Earth, J2000, Kilometers, KilometersPerSecond, Seconds, TAU, Vector3D } from 'ootk-core';
-import { ForceModel } from '../force/ForceModel';
-import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
-import { ObservationOptical } from './../observation/ObservationOptical';
-import { GibbsIOD } from './GibbsIOD';
-import { LambertIOD } from './LambertIOD';
+import { ForceModel } from '../force/ForceModel.js';
+import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator.js';
+import { ObservationOptical } from './../observation/ObservationOptical.js';
+import { GibbsIOD } from './GibbsIOD.js';
+import { LambertIOD } from './LambertIOD.js';
 
 type SolveRangeProblemParams = {
   rho1init: Kilometers;

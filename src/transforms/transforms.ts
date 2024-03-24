@@ -1,5 +1,5 @@
 import { DEG2RAD, Degrees, EnuVec3, RAD2DEG, Radians, RaeVec3, TAU } from 'ootk-core';
-import { RfVec3, RuvVec3, RfSensor } from '../main';
+import { RfVec3, RuvVec3, RfSensor } from '../main.js';
 
 /**
  * Converts Azimuth and Elevation to U and V.

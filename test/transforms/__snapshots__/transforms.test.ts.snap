@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`should convert valid RAE coordinates to RAE Off Boresight 1`] = `
-Object {
+{
   "az": 0,
   "el": 0,
 }

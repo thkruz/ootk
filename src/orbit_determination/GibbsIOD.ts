@@ -16,8 +16,8 @@
  */
 
 import { DEG2RAD, Earth, EpochUTC, halfPi, J2000, Kilometers, KilometersPerSecond, Radians, Vector3D } from 'ootk-core';
-import { ForceModel } from './../force/ForceModel';
-import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
+import { ForceModel } from './../force/ForceModel.js';
+import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator.js';
 
 /**
  * Gibbs 3-position inital orbit determination.

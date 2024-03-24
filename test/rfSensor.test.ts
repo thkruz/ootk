@@ -1,6 +1,6 @@
 import { Degrees, Kilometers, Milliseconds, SpaceObjectType } from 'ootk-core';
-import { CommLink, ZoomValue } from '../src/main';
-import { RfSensor } from '../src/objects/RfSensor';
+import { CommLink, ZoomValue } from '../src/main.js';
+import { RfSensor } from '../src/objects/RfSensor.js';
 
 describe('RfSensor', () => {
   it('should create a new RfSensor', () => {

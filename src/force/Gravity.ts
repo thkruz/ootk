@@ -16,7 +16,7 @@
  */
 
 import { Earth, J2000, Vector3D } from 'ootk-core';
-import { Force } from './Force';
+import { Force } from './Force.js';
 
 // / Simple central-body gravity model.
 export class Gravity implements Force {

@@ -20,14 +20,14 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from 'ootk-core/src/main';
-export * from './enums/index';
-export * from './types/types';
-export * from './interfaces/index';
-export * from './coordinate/index';
-export * from './objects/index';
-export * from './operations/index';
-export * from './force/index';
-export * from './propagator/index';
-export * from './transforms/index';
-export * from './utils/index';
+export * from 'ootk-core';
+export * from './enums/index.js';
+export * from './types/types.js';
+export * from './interfaces/index.js';
+export * from './coordinate/index.js';
+export * from './objects/index.js';
+export * from './operations/index.js';
+export * from './force/index.js';
+export * from './propagator/index.js';
+export * from './transforms/index.js';
+export * from './utils/index.js';

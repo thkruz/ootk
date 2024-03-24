@@ -16,8 +16,8 @@
  */
 
 import { EpochUTC, EpochWindow, J2000 } from 'ootk-core';
-import { ChebyshevCoefficients } from './ChebyshevCoefficients';
-import { StateInterpolator } from './StateInterpolator';
+import { ChebyshevCoefficients } from './ChebyshevCoefficients.js';
+import { StateInterpolator } from './StateInterpolator.js';
 
 /**
  * Compressed Chebyshev ephemeris interpolator.

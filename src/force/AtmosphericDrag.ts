@@ -27,7 +27,7 @@ import {
   Sun,
   Vector3D,
 } from 'ootk-core';
-import { Force } from './Force';
+import { Force } from './Force.js';
 
 /**
  * Harris-Priester atmospheric drag force model.

@@ -28,10 +28,10 @@ import {
   Vector,
   Vector3D,
 } from 'ootk-core';
-import { ForceModel } from '../force/ForceModel';
-import { Thrust } from '../force/Thrust';
-import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
-import { CovarianceFrame, StateCovariance } from './StateCovariance';
+import { ForceModel } from '../force/ForceModel.js';
+import { Thrust } from '../force/Thrust.js';
+import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator.js';
+import { CovarianceFrame, StateCovariance } from './StateCovariance.js';
 
 // / Sigma point covariance sample.
 export class CovarianceSample {

@@ -16,12 +16,12 @@
  */
 
 import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, Vector, Vector3D } from 'ootk-core';
-import { ForceModel } from '../force/ForceModel';
-import { Thrust } from '../force/Thrust';
-import { VerletBlendInterpolator } from './../interpolator/VerletBlendInterpolator';
-import { Propagator } from './Propagator';
-import { RkCheckpoint } from './RkCheckpoint';
-import { RkResult } from './RkResult';
+import { ForceModel } from '../force/ForceModel.js';
+import { Thrust } from '../force/Thrust.js';
+import { VerletBlendInterpolator } from './../interpolator/VerletBlendInterpolator.js';
+import { Propagator } from './Propagator.js';
+import { RkCheckpoint } from './RkCheckpoint.js';
+import { RkResult } from './RkResult.js';
 
 // / Adaptive Runge-Kutta propagator base class.
 export abstract class RungeKuttaAdaptive extends Propagator {

@@ -16,8 +16,8 @@
  */
 
 import { EpochUTC, EpochWindow, J2000, Kilometers, KilometersPerSecond, Vector3D } from 'ootk-core';
-import { CubicSpline } from './CubicSpline';
-import { StateInterpolator } from './StateInterpolator';
+import { CubicSpline } from './CubicSpline.js';
+import { StateInterpolator } from './StateInterpolator.js';
 
 /**
  * Cubic spline ephemeris interpolator.

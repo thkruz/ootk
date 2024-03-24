@@ -18,8 +18,8 @@
 /* eslint-disable require-jsdoc */
 /* eslint-disable func-style */
 import { evalPoly } from 'ootk-core';
-import { DownhillSimplex } from './DownhillSimplex';
-import { PolynomicalRegressionResult } from './PolynomicalRegressionResult';
+import { DownhillSimplex } from './DownhillSimplex.js';
+import { PolynomicalRegressionResult } from './PolynomicalRegressionResult.js';
 // / Polynomial regression optimizer.
 export class PolynomialRegression {
   private constructor() {

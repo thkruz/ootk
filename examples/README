@@ -1,4 +1,4 @@
-Run the examples using ts-node.
+Run the examples using tsx.
 
 Example:
-npx ts-node .\examples\julian.ts -p ./examples/tsconfig.json
+npx tsx .\examples\julian.ts -p ./examples/tsconfig.json

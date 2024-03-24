@@ -1,1 +1,1 @@
-export type { RfSensorParams } from './RfSensorParams';
+export type { RfSensorParams } from './RfSensorParams.js';

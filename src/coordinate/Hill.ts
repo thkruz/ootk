@@ -28,8 +28,8 @@ import {
   Seconds,
   Vector3D,
 } from 'ootk-core';
-import { Thrust } from './../force/Thrust';
-import { Waypoint } from './../maneuver/Waypoint';
+import { Thrust } from './../force/Thrust.js';
+import { Waypoint } from './../maneuver/Waypoint.js';
 
 // / Hill Modified Equidistant Cyllindrical _(EQCM)_ coordinates.
 export class Hill {

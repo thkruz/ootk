@@ -16,9 +16,9 @@
  */
 
 import { ClassicalElements, EpochUTC, J2000, Seconds } from 'ootk-core';
-import { Thrust } from '../force/Thrust';
-import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
-import { Propagator } from './Propagator';
+import { Thrust } from '../force/Thrust.js';
+import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
+import { Propagator } from './Propagator.js';
 
 // / Kepler analytical two-body propagator.
 export class KeplerPropagator extends Propagator {

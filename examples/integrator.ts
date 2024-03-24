@@ -1,4 +1,4 @@
-import { RungeKutta4Propagator, RungeKutta89Propagator, ForceModel } from '../src/main';
+import { RungeKutta4Propagator, RungeKutta89Propagator, ForceModel } from '../src/main.js';
 import { EpochUTC, Satellite, TleLine1, TleLine2 } from 'ootk-core';
 
 const start = new Date(2024, 0, 28, 0, 0, 0, 0);

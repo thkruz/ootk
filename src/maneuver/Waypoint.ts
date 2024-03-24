@@ -25,12 +25,12 @@ import {
   SecondsPerMeterPerSecond,
   Vector3D,
 } from 'ootk-core';
-import { Thrust } from '../force/Thrust';
-import { StateInterpolator } from '../interpolator/StateInterpolator';
-import { ForceModel } from './../force/ForceModel';
-import { DownhillSimplex } from './../optimize/DownhillSimplex';
-import { LambertIOD } from './../orbit_determination/LambertIOD';
-import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
+import { Thrust } from '../force/Thrust.js';
+import { StateInterpolator } from '../interpolator/StateInterpolator.js';
+import { ForceModel } from './../force/ForceModel.js';
+import { DownhillSimplex } from './../optimize/DownhillSimplex.js';
+import { LambertIOD } from './../orbit_determination/LambertIOD.js';
+import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator.js';
 
 // / Relative waypoint targeting.
 export class Waypoint {

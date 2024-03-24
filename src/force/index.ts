@@ -1,1 +1,1 @@
-export { ForceModel } from './ForceModel';
+export { ForceModel } from './ForceModel.js';

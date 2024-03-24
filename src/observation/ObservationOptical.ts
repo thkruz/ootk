@@ -28,11 +28,11 @@ import {
   Vector,
   Vector3D,
 } from 'ootk-core';
-import { RandomGaussianSource } from '../operations/RandomGaussianSource';
-import { Propagator } from '../propagator/Propagator';
-import { Observation } from './Observation';
-import { normalizeAngle, observationDerivative, observationNoiseFromSigmas } from './ObservationUtils';
-import { PropagatorPairs } from './PropagatorPairs';
+import { RandomGaussianSource } from '../operations/RandomGaussianSource.js';
+import { Propagator } from '../propagator/Propagator.js';
+import { Observation } from './Observation.js';
+import { normalizeAngle, observationDerivative, observationNoiseFromSigmas } from './ObservationUtils.js';
+import { PropagatorPairs } from './PropagatorPairs.js';
 
 // / Optical observation data.
 export class ObservationOptical extends Observation {

@@ -16,10 +16,10 @@
  */
 
 import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, Vector, Vector3D } from 'ootk-core';
-import { ForceModel } from '../force/ForceModel';
-import { Thrust } from '../force/Thrust';
-import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
-import { Propagator } from './Propagator';
+import { ForceModel } from '../force/ForceModel.js';
+import { Thrust } from '../force/Thrust.js';
+import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
+import { Propagator } from './Propagator.js';
 
 // / Runge-Kutta 4 fixed numerical propagator.
 export class RungeKutta4Propagator extends Propagator {

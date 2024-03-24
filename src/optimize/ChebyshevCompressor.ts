@@ -16,9 +16,9 @@
  */
 
 import { EpochUTC, Seconds, Vector3D } from 'ootk-core';
-import { StateInterpolator } from '../interpolator/StateInterpolator';
-import { ChebyshevCoefficients } from './../interpolator/ChebyshevCoefficients';
-import { ChebyshevInterpolator } from './../interpolator/ChebyshevInterpolator';
+import { StateInterpolator } from '../interpolator/StateInterpolator.js';
+import { ChebyshevCoefficients } from './../interpolator/ChebyshevCoefficients.js';
+import { ChebyshevInterpolator } from './../interpolator/ChebyshevInterpolator.js';
 
 // / Ephemeris compressor.
 export class ChebyshevCompressor {

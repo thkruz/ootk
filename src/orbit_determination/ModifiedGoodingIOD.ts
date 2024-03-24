@@ -16,12 +16,12 @@
  */
 
 import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, RadecTopocentric, Vector3D } from 'ootk-core';
-import { ForceModel } from '../force/ForceModel';
-import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
-import { ObservationOptical } from './../observation/ObservationOptical';
-import { DownhillSimplex } from './../optimize/DownhillSimplex';
-import { CostFunction } from './../optimize/SimplexEntry';
-import { GoodingIOD } from './GoodingIOD';
+import { ForceModel } from '../force/ForceModel.js';
+import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator.js';
+import { ObservationOptical } from './../observation/ObservationOptical.js';
+import { DownhillSimplex } from './../optimize/DownhillSimplex.js';
+import { CostFunction } from './../optimize/SimplexEntry.js';
+import { GoodingIOD } from './GoodingIOD.js';
 
 type SolveOptions = {
   nRev?: number;

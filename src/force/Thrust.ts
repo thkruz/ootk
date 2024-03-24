@@ -26,7 +26,7 @@ import {
   SecondsPerMeterPerSecond,
   Vector3D,
 } from 'ootk-core';
-import { Force } from './Force';
+import { Force } from './Force.js';
 
 // / Thrust force model.
 export class Thrust implements Force {

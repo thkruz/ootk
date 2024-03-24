@@ -1,1 +1,1 @@
-export { Hill } from './Hill';
+export { Hill } from './Hill.js';

@@ -16,7 +16,7 @@
  */
 
 import { EpochUTC, EpochWindow, J2000, Kilometers, KilometersPerSecond, Seconds, Vector3D } from 'ootk-core';
-import { StateInterpolator } from './StateInterpolator';
+import { StateInterpolator } from './StateInterpolator.js';
 
 export class LagrangeInterpolator extends StateInterpolator {
   private t_: Float64Array;

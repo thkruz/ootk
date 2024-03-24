@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Propagator } from '../propagator/Propagator';
+import { Propagator } from '../propagator/Propagator.js';
 
 export class PropagatorPairs {
   constructor(private _posStep: number, private _velStep: number) {

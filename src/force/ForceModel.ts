@@ -16,13 +16,13 @@
  */
 
 import { Earth, J2000, Vector, Vector3D } from 'ootk-core';
-import { AtmosphericDrag } from './AtmosphericDrag';
-import { EarthGravity } from './EarthGravity';
-import { Force } from './Force';
-import { Gravity } from './Gravity';
-import { SolarRadiationPressure } from './SolarRadiationPressure';
-import { ThirdBodyGravity } from './ThirdBodyGravity';
-import { Thrust } from './Thrust';
+import { AtmosphericDrag } from './AtmosphericDrag.js';
+import { EarthGravity } from './EarthGravity.js';
+import { Force } from './Force.js';
+import { Gravity } from './Gravity.js';
+import { SolarRadiationPressure } from './SolarRadiationPressure.js';
+import { ThirdBodyGravity } from './ThirdBodyGravity.js';
+import { Thrust } from './Thrust.js';
 
 // / Force model for spacecraft propagation.
 

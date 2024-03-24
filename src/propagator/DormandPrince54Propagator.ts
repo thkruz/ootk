@@ -16,7 +16,7 @@
  */
 
 /* eslint-disable class-methods-use-this */
-import { RungeKuttaAdaptive } from './RungeKuttaAdaptive';
+import { RungeKuttaAdaptive } from './RungeKuttaAdaptive.js';
 
 export class DormandPrince54Propagator extends RungeKuttaAdaptive {
   private _a: Float64Array = Float64Array.from([0.0, 1.0 / 5.0, 3.0 / 10.0, 4.0 / 5.0, 8.0 / 9.0, 1.0, 1.0]);

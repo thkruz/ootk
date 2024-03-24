@@ -1,4 +1,4 @@
-import { derivative, jacobian } from '../../src/main';
+import { derivative, jacobian } from '../../src/main.js';
 
 // jacobian
 it('should be calculate jacobian', () => {

@@ -3,9 +3,10 @@
     "enable": true
   },
   "compilerOptions": {
-    "target": "ES2021",
-    "module": "es6",
-    "lib": ["esnext"],
+    "lib": ["ES2023"],
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "declaration": true,
     "baseUrl": ".",
     "allowJs": true,
@@ -16,7 +17,8 @@
     "newLine": "LF",
     "skipLibCheck": true,
     "types": ["jest", "node"],
-    "moduleResolution": "Node",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
   }
 }

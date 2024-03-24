@@ -19,7 +19,7 @@ import { EpochUTC, J2000 } from 'ootk-core';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable class-methods-use-this */
 
-import { Interpolator } from './Interpolator';
+import { Interpolator } from './Interpolator.js';
 
 // / Base class for state vector interpolators.
 export abstract class StateInterpolator extends Interpolator {

@@ -16,7 +16,7 @@
  */
 
 import { Earth, EpochUTC, MetersPerSecond, Seconds, SecondsPerMeterPerSecond } from 'ootk-core';
-import { Thrust } from '../force/Thrust';
+import { Thrust } from '../force/Thrust.js';
 
 // / Container for a two-burn orbit transfer.
 export class TwoBurnOrbitTransfer {

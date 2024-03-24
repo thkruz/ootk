@@ -1,16 +1,14 @@
 /**
  * This is the tsconfig extension that only applies to ES Modules.
  */
-{
+ {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "target": "ES2022",
-    "module": "ESNext",
     "rootDir": "./src",
     "declaration": true,
     "isolatedModules": true,
-    "strict": true
+    "strict": true,
   },
   "include": ["./src/**/*.ts"],
   "filesGlob": ["./src/**/*.ts"]

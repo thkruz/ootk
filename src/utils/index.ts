@@ -1,2 +1,2 @@
-export * from './jacobian';
-export * from './functions';
+export * from './jacobian.js';
+export * from './functions.js';

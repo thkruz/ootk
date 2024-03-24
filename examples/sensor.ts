@@ -8,13 +8,15 @@ import {
   eci2lla,
   eci2rae,
   Kilometers,
+  Satellite,
+  Sensor,
   SensorParams,
   SpaceObjectType,
   TleLine1,
   TleLine2,
 } from 'ootk-core';
-import { Satellite, Sensor } from '../src/objects';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const capeCodRadar = new Sensor({
   lat: <Degrees>41.754785,
   lon: <Degrees>-70.539151,
@@ -49,7 +51,7 @@ const ecf = {
 };
 // const ecf2 = { x: 982.8336640053099, y: -6779.137352354403, z: 3813.7284924837254 } as EcfVec3<Kilometers>;
 
-const rae = ecf2rae(testSensor.getLlaRad(), ecf);
+const rae = ecf2rae(testSensor.lla(), ecf);
 
 const { gmst } = calcGmst(date);
 const rae2 = eci2rae(date, ecf2eci(ecf, gmst), testSensor);
@@ -65,5 +67,5 @@ console.log({
 
 // sat.propagateTo(date);
 
-console.log(sat.raeOpt(testSensor, date));
-console.log(sat.getJ2000(date).toITRF().toGeodetic());
+console.log(sat.rae(testSensor, date));
+console.log(sat.toJ2000(date).toITRF().toGeodetic());

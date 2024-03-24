@@ -1,4 +1,4 @@
-import { DifferentiableFunction } from '../main';
+import { DifferentiableFunction } from '../main.js';
 
 /**
  * Calculates the derivative of a differentiable function.
