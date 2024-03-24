@@ -3,7 +3,7 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [4.0.0-15](https://github.com/thkruz/ootk/compare/v5.0.0-0...4.0.0-15)
+#### [4.0.0-16](https://github.com/thkruz/ootk/compare/v5.0.0-0...4.0.0-16)
 
 - feat: :sparkles: Add node support [`7d28c3f`](https://github.com/thkruz/ootk/commit/7d28c3f5de0e3e9d2dd13bbf5cdfd5527f6126a8)
 - refactor: :recycle: update RfSensor to allow multiple faces [`179b486`](https://github.com/thkruz/ootk/commit/179b486bbbd9355569414f9ca7ca82aaa374ca93)
@@ -12,9 +12,16 @@ messages, it details updates like bug fixes and new features, providing a clear 
 - refactor: :recycle: move freqBand from RfSensor to DetailedSensor [`185cc50`](https://github.com/thkruz/ootk/commit/185cc506482c0e0224ff0392e6bb1bad599d54ec)
 - refactor: :recycle: update transforms to allow multiple faces [`53c8877`](https://github.com/thkruz/ootk/commit/53c887730d389b06f18889d4f2170a1e4ac82993)
 - feat: :sparkles: add new catalog sources [`9dd4160`](https://github.com/thkruz/ootk/commit/9dd41607da91e4daffd8456f795239e945493a2d)
+- build: :arrow_up: bump ootk-core [`f5152ed`](https://github.com/thkruz/ootk/commit/f5152ed69c98f92e354240dfe36589fad81e1fa6)
 - fix: :bug: fix issue with vite [`9b540f9`](https://github.com/thkruz/ootk/commit/9b540f9231076ce8670eb2230321b592d0696b99)
 
-#### [v5.0.0-0](https://github.com/thkruz/ootk/compare/v4.0.0-14...v5.0.0-0)
+#### [v5.0.0-0](https://github.com/thkruz/ootk/compare/v4.0.0-15...v5.0.0-0)
+
+#### [v4.0.0-15](https://github.com/thkruz/ootk/compare/v4.0.0-14...v4.0.0-15)
+
+> 24 March 2024 
+
+- feat: :sparkles: Add node support [`7d28c3f`](https://github.com/thkruz/ootk/commit/7d28c3f5de0e3e9d2dd13bbf5cdfd5527f6126a8)
 
 #### [v4.0.0-14](https://github.com/thkruz/ootk/compare/v4.0.0-13...v4.0.0-14)
 
