@@ -4,10 +4,11 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "noEmit": true
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "strict": true
   },
   "include": ["./src/**/*.ts", "./test/**/*.ts"],
   "filesGlob": ["./src/**/*.ts", "./test/**/*.ts"],
-  "ignorePatterns": ["./src/sgp4/asc/**/*.ts"],
-  "exclude": ["./src/sgp4/asc/assembly/index.ts"]
 }

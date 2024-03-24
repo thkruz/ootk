@@ -1,4 +1,5 @@
-export { DetailedSat } from './detailed-sat';
-export { Sat } from './sat';
-export { Sensor } from './sensor';
-export { Star } from './star';
+export { DetailedSatellite } from './DetailedSatellite.js';
+export { DetailedSensor } from './DetailedSensor.js';
+export { LandObject } from './LandObject.js';
+export { Marker } from './Marker.js';
+export { RfSensor } from './RfSensor.js';

@@ -3,19 +3,12 @@
     "enable": true
   },
   "compilerOptions": {
-    "target": "es5",
-    "module": "es6",
-    "lib": ["esnext"],
+    "lib": ["ES2023"],
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "declaration": true,
-    // "noImplicitAny": true,
-    // "removeComments": true,
     "baseUrl": ".",
-    "paths": {
-      "@lib/*": ["lib/*"],
-      "@dist/*": ["dist/*"],
-      "@src/*": ["src/*"],
-      "@test/*": ["test/*"]
-    },
     "allowJs": true,
     "experimentalDecorators": true,
     "rootDir": ".",
@@ -23,9 +16,9 @@
     "listFiles": true,
     "newLine": "LF",
     "skipLibCheck": true,
-    // "noEmitOnError": true,
     "types": ["jest", "node"],
-    "moduleResolution": "Node",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
   }
 }

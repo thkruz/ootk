@@ -3,78 +3,75 @@ name: CI
 on: [pull_request]
 
 jobs:
-  build:
+  compliance:
+    name: NPM Audit Report
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Load cached modules
-        uses: actions/cache@v2
+      # Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      # Audit Package.json
+      - name: NPM Audit Action
+        uses: oke-py/npm-audit-action@main
         with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Load Node.js latest
-        uses: actions/setup-node@v2-beta
-        with:
-          node-version: '17.x'
-
-      - name: Install all dependencies
-        run: npm install
-
-      - name: Compile TypeScript and build UMD files
-        run: npm run build
-
+          github_token: ${{ secrets.GITHUB_TOKEN }}
   lint:
-    name: lint
+    needs: compliance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.1
+
+      - uses: actions/setup-node@v4.0.1
+        with:
+          node-version: '20.x'
+
+      - run: npm ci --ignore-scripts
+
+      - run: npm run lint
+  build:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.1
+
+      - uses: actions/setup-node@v4.0.1
+        with:
+          node-version: '20.x'
+
+      - uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            **/lib
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - run: npm ci --ignore-scripts
+
+      - run: npm run build
+  test:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4.1.1
 
-      - name: Use Node.js latest
-        uses: actions/setup-node@v2-beta
+      - uses: actions/setup-node@v4.0.1
         with:
-          node-version: '17.x'
+          node-version: '20.x'
 
-      - name: Get cached modules
-        uses: actions/cache@v2
-        with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Run ESLint
-        run: npm run lint
-
-  test-coverage:
-    name: test-coverage
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Use Node.js latest
-        uses: actions/setup-node@v2-beta
-        with:
-          node-version: '17.x'
-
-      - name: Get cached modules
-        uses: actions/cache@v2
+      - uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
         with:
           path: |
-            **/node_modules
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
+            **/lib
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      - name: Compile TypeScript and build UMD files
-        run: npm run build
+      - run: npm ci --ignore-scripts
 
-      - name: Build coverage
-        run: npm run test:coverage
-
-      - name: Run codecov
-        run: node ./node_modules/.bin/codecov
+      - name: Test
+        run: npm run test
