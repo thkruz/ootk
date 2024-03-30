@@ -21,6 +21,7 @@ const jestConfig = {
   coverageReporters: ['lcov', 'html', 'text'],
   coveragePathIgnorePatterns: ['/node_modules/', '/dist/', '/lib/', '/commonjs/', '/test/', '/scripts/', '/coverage/'],
   globalSetup: '<rootDir>/test/lib/globalSetup.js',
+  transformIgnorePatterns: ['node_modules/(?!(ootk-core))'],
 };
 
 export default jestConfig;

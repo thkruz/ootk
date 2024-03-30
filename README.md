@@ -39,7 +39,7 @@ npm i ootk
 ### Loading the Library
 
 ```js
-import { Sgp4 } as Ootk from 'ootk';
+import { Sgp4, Satellite } from 'ootk';
 ...
 const satrec = Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 ```
@@ -49,8 +49,8 @@ const satrec = Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 ### Propagating a TLE
 
 ```js
-const satrec = Ootk.Sgp4.createSatrec(line1, line2);
-const state = Ootk.Sgp4.propagate(satrec, time);
+const satrec = Sgp4.createSatrec(line1, line2);
+const state = Sgp4.propagate(satrec, time);
 console.log(state.position); // [x, y, z]
 console.log(state.velocity); // [vx, vy, vz]
 ```
@@ -58,7 +58,7 @@ console.log(state.velocity); // [vx, vy, vz]
 ### Creating a Satellite
 
 ```js
-const sat = new Ootk.Sat({ name: 'Test', tle1, tle2 });
+const sat = new Satellite({ name: 'Test', tle1, tle2 });
 console.log(sat.intlDes); // International Designator
 console.log(sat.epochYear); // Epoch Year
 console.log(sat.epochDay); // Epoch Day
