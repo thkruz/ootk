@@ -1,0 +1,76 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build",
+      "command": "npm run build",
+      "type": "shell",
+      "args": [],
+      "isBackground": true,
+      "problemMatcher": [],
+      "icon": {
+        "id": "symbol-method",
+        "color": "terminal.ansiBlue"
+      }
+    },
+    {
+      "label": "Clean Dist Folder",
+      "command": "npm run clean",
+      "type": "shell",
+      "args": [],
+      "isBackground": true,
+      "problemMatcher": [],
+      "icon": {
+        "id": "trash",
+        "color": "terminal.ansiYellow"
+      }
+    },
+    {
+      "label": "Test for Coverage",
+      "command": "npm run test:coverage",
+      "type": "shell",
+      "args": [],
+      "isBackground": true,
+      "problemMatcher": [],
+      "icon": {
+        "id": "go-to-file",
+        "color": "terminal.ansiGreen"
+      }
+    },
+    {
+      "label": "Open Coverage in Brave",
+      "type": "process",
+      "command": "",
+      "windows": {
+        "command": "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe",
+        "args": ["${workspaceFolder}/coverage/lcov-report/index.html"]
+      },
+      "icon": {
+        "id": "browser",
+        "color": "terminal.ansiCyan"
+      },
+      "presentation": {
+        "echo": false,
+        "reveal": "never",
+        "focus": false,
+        "panel": "new",
+        "showReuseMessage": false,
+        "clear": true,
+        "close": true
+      }
+    }
+  ],
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "steoates.autoimport",
+      "vivaxy.vscode-conventional-commits",
+      "usernamehw.errorlens",
+      "usernamehw.remove-empty-lines",
+      "aljazsim.tsco"
+    ]
+  },
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib"
+  }
+}

@@ -1,16 +1,22 @@
+# Directories
 .github
 .vscode
 coverage
+examples
 node_modules
 scripts
-src/*
 test
-.babelrc
+
+# Files
+.auto-changelog
 .eslintignore
-.eslintrc
+.eslintrc.json
 .gitattributes
 .gitignore
 .npmignore
+babel.config.cjs
+changelog.hbs
+jest.config.ts
 package-lock.json
-tsconfig.json
+tsconfig.*
 

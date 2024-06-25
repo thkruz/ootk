@@ -1,14 +1,15 @@
 /**
- * This is the tsconfig extension that only applies to webpack.
+ * This is the tsconfig extension that only applies to ES Modules.
  */
-{
+ {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./lib" /* Redirect output structure to the directory. */,
-    "rootDir": "./src" /* Specify the root directory of input files. Use to control the output directory structure with --outDir. */
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
+    "isolatedModules": true,
+    "strict": true,
   },
   "include": ["./src/**/*.ts"],
-  "filesGlob": ["./src/**/*.ts"],
-  "ignorePatterns": ["./src/sgp4/asc/**/*.ts"],
-  "exclude": ["./src/sgp4/asc/assembly/index.ts"]
+  "filesGlob": ["./src/**/*.ts"]
 }

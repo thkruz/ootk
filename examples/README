@@ -1,0 +1,4 @@
+Run the examples using tsx.
+
+Example:
+npx tsx .\examples\julian.ts -p ./examples/tsconfig.json

@@ -1,10 +1,19 @@
 # ootk
 
-[![build](https://img.shields.io/github/workflow/status/thkruz/ootk/CI?style=flat-square)](https://github.com/thkruz/ootk/actions?query=workflow%3ACI) ![Size](https://img.shields.io/github/languages/code-size/thkruz/ootk?style=flat-square) [![Release](https://img.shields.io/github/v/release/thkruz/ootk?style=flat-square)](https://www.npmjs.com/package/ootk) [![Issues](https://img.shields.io/github/issues/thkruz/ootk?style=flat-square)](https://github.com/thkruz/ootk/issues) [![Coverage](https://img.shields.io/codecov/c/github/thkruz/ootk?style=flat-square)](https://codecov.io/gh/thkruz/ootk) [![License](https://img.shields.io/github/license/thkruz/ootk?style=flat-square)](LICENSE.MD)
+[![build](https://img.shields.io/github/workflow/status/thkruz/ootk/CI?style=flat-square)](https://github.com/thkruz/ootk/actions?query=workflow%3ACI)
+![Size](https://img.shields.io/github/languages/code-size/thkruz/ootk?style=flat-square)
+[![Release](https://img.shields.io/github/v/release/thkruz/ootk?style=flat-square)](https://www.npmjs.com/package/ootk)
+[![Issues](https://img.shields.io/github/issues/thkruz/ootk?style=flat-square)](https://github.com/thkruz/ootk/issues)
+[![Coverage](https://img.shields.io/codecov/c/github/thkruz/ootk?style=flat-square)](https://codecov.io/gh/thkruz/ootk)
+[![License](https://img.shields.io/github/license/thkruz/ootk?style=flat-square)](LICENSE.MD)
 
 > An Orbital Object Toolkit in Your Web Browser
 
-**ootk** is a modular collection of small libraries for doing math related to orbital objects written in TypeScript. ootk was developed to simplify the math and let you focus on using the results.
+**ootk** is a collection libraries for doing math related to orbital objects written in TypeScript. **ootk** was
+developed to simplify the math and let you focus on using the results.
+
+Most of the functionality was originally written for [KeepTrack](https://github.com/thkruz/keeptrack.space) and then
+later refactored into this library for others to use.
 
 ## :blue_book: Table of Contents
 
@@ -27,45 +36,21 @@ Install the library with [NPM](https://www.npmjs.com/):
 npm i ootk
 ```
 
-## :satellite: Usage
-
 ### Loading the Library
 
-#### Common.js ([Node.js](https://nodejs.org))
-
 ```js
-let Ootk = require('ootk.js');
+import { Sgp4, Satellite } from 'ootk';
 ...
-const satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
+const satrec = Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
 ```
 
-#### ES ([Babel.js](https://babeljs.io/))
-
-```js
-import * as Ootk from 'ootk.es.js';
-...
-const satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
-```
-
-#### Script tag
-
-Include `dist/ootk.js` as a script in your html:
-
-```html
-<script src="path/to/dist/ootk.js"></script>
-```
-
-`Ootk` object will be available in global scope:
-
-```js
-var satrec = Ootk.Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
-```
+## :satellite: Usage
 
 ### Propagating a TLE
 
 ```js
-const satrec = Ootk.Sgp4.createSatrec(line1, line2);
-const state = Ootk.Sgp4.propagate(satrec, time);
+const satrec = Sgp4.createSatrec(line1, line2);
+const state = Sgp4.propagate(satrec, time);
 console.log(state.position); // [x, y, z]
 console.log(state.velocity); // [vx, vy, vz]
 ```
@@ -73,7 +58,7 @@ console.log(state.velocity); // [vx, vy, vz]
 ### Creating a Satellite
 
 ```js
-const sat = new Ootk.Sat({ name: 'Test', tle1, tle2 });
+const sat = new Satellite({ name: 'Test', tle1, tle2 });
 console.log(sat.intlDes); // International Designator
 console.log(sat.epochYear); // Epoch Year
 console.log(sat.epochDay); // Epoch Day
@@ -107,8 +92,6 @@ sensor.getRae(sat, time); // Get position in range, aziimuth, elevation relative
 
 ## :desktop_computer: Building
 
-The source code is organized as Common.js modules and uses [ES6 syntax](http://es6-features.org/). To build the library:
-
 1. Install [Node.js](https://nodejs.org/) and [Node Package Manager](https://www.npmjs.com/);
 
 2. Install all required packages with NPM by running the following command from repository's root directory:
@@ -136,7 +119,8 @@ The source code is organized as Common.js modules and uses [ES6 syntax](http://e
 
 This repo follows [Gitflow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow).
 
-Before starting a work on new [pull request](https://github.com/thkruz/ootk/compare), please, checkout your feature or bugfix branch from `develop` branch:
+Before starting a work on new [pull request](https://github.com/thkruz/ootk/compare), please, checkout your feature or
+bugfix branch from `develop` branch:
 
 ```bash
 git checkout develop
@@ -159,15 +143,18 @@ npm run lint
 
 ## :man_scientist: Contributors
 
-This whole project is an example of standing on the shoulder's of giants. None of it would have been possible without the previous work of the following:
+This whole project is an example of standing on the shoulder's of giants. None of it would have been possible without
+the previous work of the following:
 
-- [ezze (Dmitriy Pushkov)](https://github.com/ezze)
-- [davidcalhoun (David Calhoun)](https://github.com/davidcalhoun)
-- [shashwatak (Shashwat Kandadai)](https://github.com/shashwatak)
-- [brandon-rhodes (Brandon Rhodes)](https://github.com/brandon-rhodes)
-- [mourner (Volodymyr Agafonkin)](https://github.com/mourner)
-- [Hypnos (Robert Gester)](https://github.com/Hypnos3)
+- [@ezze (Dmitriy Pushkov)](https://github.com/ezze)
+- [@david-rc-dayton (David RC Dayton)](https://github.com/david-rc-dayton)
+- [@davidcalhoun (David Calhoun)](https://github.com/davidcalhoun)
+- [@shashwatak (Shashwat Kandadai)](https://github.com/shashwatak)
+- [@brandon-rhodes (Brandon Rhodes)](https://github.com/brandon-rhodes)
+- [@mourner (Volodymyr Agafonkin)](https://github.com/mourner)
+- [@Hypnos (Robert Gester)](https://github.com/Hypnos3)
 
 ## :balance_scale: License
 
-Due to the expanding scope of this project, I have placed the code under the [AGPL License](LICENSE.md) in order to ensure that good ideas can be shared and that the code is open for everyone to use.
+I have placed the code under the [AGPL License](LICENSE.md) in order to ensure that good ideas can be shared and that
+the code is open for everyone to use. [Learn more here](https://www.gnu.org/philosophy/philosophy.html).
