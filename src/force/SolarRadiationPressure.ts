@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { astronomicalUnit, J2000, Sun, Vector3D } from 'ootk-core';
+import { astronomicalUnit, J2000, Sun, Vector3D } from '../main.js';
 import { Force } from './Force.js';
 
 // / Solar radiation pressure model.

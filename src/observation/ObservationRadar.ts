@@ -15,25 +15,14 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  array2d,
-  DEG2RAD,
-  EpochUTC,
-  J2000,
-  Kilometers,
-  KilometersPerSecond,
-  Matrix,
-  Radians,
-  RAE,
-  RIC,
-  Vector,
-  Vector3D,
-} from 'ootk-core';
+
+import { DEG2RAD, EpochUTC, J2000, Kilometers, KilometersPerSecond, Matrix, RIC, Radians, Vector, Vector3D, array2d } from '../main.js';
 import { RandomGaussianSource } from '../operations/RandomGaussianSource.js';
 import { Propagator } from '../propagator/Propagator.js';
 import { Observation } from './Observation.js';
 import { normalizeAngle, observationDerivative, observationNoiseFromSigmas } from './ObservationUtils.js';
 import { PropagatorPairs } from './PropagatorPairs.js';
+import { RAE } from './RAE.js';
 
 // / Radar observation data.
 export class ObservationRadar extends Observation {

@@ -15,21 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  Earth,
-  EpochUTC,
-  J2000,
-  Kilometers,
-  KilometersPerSecond,
-  Matrix,
-  MetersPerSecond,
-  RadiansPerSecond,
-  RelativeState,
-  Seconds,
-  Vector3D,
-} from 'ootk-core';
-import { Thrust } from './../force/Thrust.js';
-import { Waypoint } from './../maneuver/Waypoint.js';
+import { Waypoint } from 'src/maneuver/Waypoint.js';
+import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, Matrix, MetersPerSecond, RadiansPerSecond, RelativeState, Seconds, Thrust, Vector3D } from '../main.js';
 
 // / Hill Modified Equidistant Cyllindrical _(EQCM)_ coordinates.
 export class Hill {

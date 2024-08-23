@@ -1,5 +1,4 @@
-import { array2d, Matrix, Vector } from 'ootk-core';
-import { JacobianFunction } from '../types/types.js';
+import { array2d, JacobianFunction, Matrix, Vector } from '../main.js';
 
 // TODO: #11 Expand documentation of Jacobian function.
 

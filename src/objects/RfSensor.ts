@@ -21,8 +21,7 @@
  * SOFTWARE.
  */
 
-import { DEG2RAD, Degrees, RAD2DEG, Radians, SpaceObjectType } from 'ootk-core';
-import { azel2uv, uv2azel, RfSensorParams } from '../main.js';
+import { azel2uv, DEG2RAD, Degrees, RAD2DEG, Radians, RfSensorParams, SpaceObjectType, uv2azel } from '../main.js';
 import { DetailedSensor } from './DetailedSensor.js';
 
 export class RfSensor extends DetailedSensor {

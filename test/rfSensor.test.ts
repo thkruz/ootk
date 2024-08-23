@@ -1,5 +1,4 @@
-import { Degrees, Kilometers, Milliseconds, SpaceObjectType } from 'ootk-core';
-import { CommLink, ZoomValue } from '../src/main.js';
+import { CommLink, Degrees, Kilometers, Milliseconds, SpaceObjectType, ZoomValue } from '../src/main.js';
 import { RfSensor } from '../src/objects/RfSensor.js';
 
 describe('RfSensor', () => {

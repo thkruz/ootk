@@ -16,20 +16,10 @@
  */
 
 /* eslint-disable class-methods-use-this */
-import {
-  Epoch,
-  EpochUTC,
-  J2000,
-  Kilometers,
-  KilometersPerSecond,
-  Matrix,
-  RelativeState,
-  RIC,
-  Vector,
-  Vector3D,
-} from 'ootk-core';
+
 import { ForceModel } from '../force/ForceModel.js';
 import { Thrust } from '../force/Thrust.js';
+import { Epoch, EpochUTC, J2000, Kilometers, KilometersPerSecond, Matrix, RelativeState, RIC, Vector, Vector3D } from '../main.js';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator.js';
 import { CovarianceFrame, StateCovariance } from './StateCovariance.js';
 

@@ -15,9 +15,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Milliseconds, Sensor } from 'ootk-core';
-import { DetailedSensorParams, ZoomValue } from '../types/types.js';
 import { CommLink } from '../enums/CommLink.js';
+import { DetailedSensorParams, Milliseconds, ZoomValue } from '../types/types.js';
+import { DetailedSatellite } from './DetailedSatellite.js';
+import { LandObject } from './LandObject.js';
+import { Sensor } from './Sensor.js';
 
 export class DetailedSensor extends Sensor {
   sensorId?: number;
@@ -35,6 +37,7 @@ export class DetailedSensor extends Sensor {
   system?: string;
   operator?: string;
   url?: string;
+  parent: LandObject | DetailedSatellite | null = null;
 
   constructor(info: DetailedSensorParams) {
     super(info);

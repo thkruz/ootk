@@ -15,8 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { BaseObject, BaseObjectParams, Degrees, Kilometers } from 'ootk-core';
-/* eslint-disable class-methods-use-this */
+import { BaseObject, BaseObjectParams, Degrees, DetailedSensor, Kilometers } from '../main.js';
 
 export interface LandObjectParams extends BaseObjectParams {
   lat: Degrees;
@@ -32,12 +31,31 @@ export class LandObject extends BaseObject {
   alt: Kilometers;
   country?: string;
   Code?: string;
+  sensors: DetailedSensor[] = [];
 
   constructor(info: LandObjectParams) {
     super(info);
     this.lat = info.lat;
     this.lon = info.lon;
     this.alt = info.alt;
+  }
+
+  attachSensor(sensor: DetailedSensor) {
+    if (this.sensors.includes(sensor)) {
+      return;
+    }
+
+    if (sensor.parent) {
+      sensor.parent.dettachSensor(sensor);
+    }
+
+    this.sensors.push(sensor);
+    sensor.parent = this;
+  }
+
+  dettachSensor(sensor: DetailedSensor) {
+    this.sensors = this.sensors.filter((s) => s !== sensor);
+    sensor.parent = null;
   }
 
   isLandObject() {

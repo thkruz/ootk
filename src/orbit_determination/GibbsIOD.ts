@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DEG2RAD, Earth, EpochUTC, halfPi, J2000, Kilometers, KilometersPerSecond, Radians, Vector3D } from 'ootk-core';
+import { DEG2RAD, Earth, EpochUTC, halfPi, J2000, Kilometers, KilometersPerSecond, Radians, Vector3D } from '../main.js';
 import { ForceModel } from './../force/ForceModel.js';
 import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator.js';
 

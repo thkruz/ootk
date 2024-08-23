@@ -15,8 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Vector, Vector3D } from 'ootk-core';
 import { BoxMuller } from './BoxMuller.js';
+import { Vector } from './Vector.js';
+import { Vector3D } from './Vector3D.js';
 
 export class RandomGaussianSource {
   private _boxMuller: BoxMuller;

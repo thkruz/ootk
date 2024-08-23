@@ -15,17 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  EpochUTC,
-  J2000,
-  Kilometers,
-  KilometersPerSecond,
-  MetersPerSecond,
-  RIC,
-  Seconds,
-  SecondsPerMeterPerSecond,
-  Vector3D,
-} from 'ootk-core';
+import { EpochUTC, J2000, Kilometers, KilometersPerSecond, MetersPerSecond, RIC, Seconds, SecondsPerMeterPerSecond, Vector3D } from '../main.js';
 import { Force } from './Force.js';
 
 // / Thrust force model.

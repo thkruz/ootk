@@ -15,22 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  EpochUTC,
-  J2000,
-  Kilometers,
-  KilometersPerSecond,
-  MetersPerSecond,
-  RIC,
-  SecondsPerMeterPerSecond,
-  Vector3D,
-} from 'ootk-core';
-import { Thrust } from '../force/Thrust.js';
-import { StateInterpolator } from '../interpolator/StateInterpolator.js';
-import { ForceModel } from './../force/ForceModel.js';
-import { DownhillSimplex } from './../optimize/DownhillSimplex.js';
-import { LambertIOD } from './../orbit_determination/LambertIOD.js';
-import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator.js';
+import { DownhillSimplex, EpochUTC, ForceModel, J2000, Kilometers, KilometersPerSecond, LambertIOD, MetersPerSecond, RIC, RungeKutta89Propagator, SecondsPerMeterPerSecond, StateInterpolator, Thrust, Vector3D } from '../main.js';
 
 // / Relative waypoint targeting.
 export class Waypoint {

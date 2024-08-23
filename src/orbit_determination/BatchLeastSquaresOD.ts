@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { concat, EpochUTC, J2000, Kilometers, KilometersPerSecond, Matrix, Vector, Vector3D } from 'ootk-core';
+import { concat, EpochUTC, J2000, Kilometers, KilometersPerSecond, Matrix, Vector, Vector3D } from '../main.js';
 import { Observation } from '../observation/Observation.js';
 import { PropagatorPairs } from '../observation/PropagatorPairs.js';
 import { Propagator } from '../propagator/Propagator.js';

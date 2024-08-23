@@ -17,9 +17,9 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable class-methods-use-this */
-import { EpochUTC, J2000, Tle } from 'ootk-core';
 import { Thrust } from '../force/Thrust.js';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
+import { EpochUTC, J2000, Tle } from '../main.js';
 import { Propagator } from './Propagator.js';
 
 /**

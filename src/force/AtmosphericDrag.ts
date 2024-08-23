@@ -15,18 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  DataHandler,
-  DEG2RAD,
-  Earth,
-  ITRF,
-  J2000,
-  Kilometers,
-  KilometersPerSecond,
-  Radians,
-  Sun,
-  Vector3D,
-} from 'ootk-core';
+import { DataHandler, DEG2RAD, Earth, ITRF, J2000, Kilometers, KilometersPerSecond, Radians, Sun, Vector3D } from '../main.js';
 import { Force } from './Force.js';
 
 /**

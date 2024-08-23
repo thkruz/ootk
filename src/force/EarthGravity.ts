@@ -15,10 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DataHandler, Earth, ITRF, J2000, Kilometers, KilometersPerSecond, Vector3D } from 'ootk-core';
 /* eslint-disable class-methods-use-this */
 // / Complex Earth gravity model, accounting for EGM-96 zonal, sectoral, and
 
+import { DataHandler, Earth, ITRF, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../main.js';
 import { Force } from './Force.js';
 
 /**

@@ -1,5 +1,4 @@
-import { DEG2RAD, Degrees, Kilometers, Radians, SpaceObjectType } from 'ootk-core';
-import { RfSensor, azel2uv, rae2raeOffBoresight, uv2azel } from '../../src/main.js';
+import { DEG2RAD, Degrees, Kilometers, Radians, RfSensor, SpaceObjectType, azel2uv, rae2raeOffBoresight, uv2azel } from '../../src/main.js';
 
 // uv2azel
 it('should convert valid unit vector to azimuth and elevation', () => {

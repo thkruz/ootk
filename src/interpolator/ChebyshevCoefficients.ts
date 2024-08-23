@@ -15,7 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Kilometers, KilometersPerSecond, PositionVelocity, Seconds, Vector3D } from 'ootk-core';
+import { Kilometers, KilometersPerSecond, PositionVelocity, Seconds, Vector3D } from '../main.js';
+
 
 // / Chebyshev compressed ephemeris coefficients.
 export class ChebyshevCoefficients {

@@ -15,24 +15,13 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  array2d,
-  DEG2RAD,
-  EpochUTC,
-  J2000,
-  KilometersPerSecond,
-  Matrix,
-  RadecTopocentric,
-  Radians,
-  RIC,
-  Vector,
-  Vector3D,
-} from 'ootk-core';
+import { DEG2RAD, EpochUTC, J2000, KilometersPerSecond, Matrix, RIC, Radians, Vector, Vector3D, array2d } from '../main.js';
 import { RandomGaussianSource } from '../operations/RandomGaussianSource.js';
 import { Propagator } from '../propagator/Propagator.js';
 import { Observation } from './Observation.js';
 import { normalizeAngle, observationDerivative, observationNoiseFromSigmas } from './ObservationUtils.js';
 import { PropagatorPairs } from './PropagatorPairs.js';
+import { RadecTopocentric } from './RadecTopocentric.js';
 
 // / Optical observation data.
 export class ObservationOptical extends Observation {
@@ -59,7 +48,7 @@ export class ObservationOptical extends Observation {
    * Default noise matrix _(right-ascension, declination)_.
    * Based on the Maui Optical Site noise model.
    */
-  static defaultNoise: Matrix = ObservationOptical.noiseFromSigmas(
+  static readonly defaultNoise: Matrix = ObservationOptical.noiseFromSigmas(
     0.0037 * DEG2RAD as Radians,
     0.003 * DEG2RAD as Radians,
   );

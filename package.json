@@ -54,8 +54,5 @@
     "tsx": "^4.7.1",
     "typescript": "^5.4.3"
   },
-  "dependencies": {
-    "ootk-core": "^1.2.4"
-  },
   "homepage": "https://github.com/thkruz/ootk"
 }

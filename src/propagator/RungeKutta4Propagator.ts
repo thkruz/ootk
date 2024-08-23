@@ -15,10 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, Vector, Vector3D } from 'ootk-core';
 import { ForceModel } from '../force/ForceModel.js';
 import { Thrust } from '../force/Thrust.js';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
+import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, Vector, Vector3D } from '../main.js';
 import { Propagator } from './Propagator.js';
 
 // / Runge-Kutta 4 fixed numerical propagator.
