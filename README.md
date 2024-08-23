@@ -36,58 +36,72 @@ Install the library with [NPM](https://www.npmjs.com/):
 npm i ootk
 ```
 
-### Loading the Library
+### Example Usage
 
-```js
-import { Sgp4, Satellite } from 'ootk';
-...
-const satrec = Sgp4.createSatrec(line1, line2, 'wgs72', 'i');
-```
+```ts
+import { DetailedSatellite, DetailedSensor, Degrees, Kilometers, SpaceObjectType, TleLine1, TleLine2 } from "ootk";
 
-## :satellite: Usage
+// Using api.keeptrack.space API
+fetch('https://api.keeptrack.space/v1/sat/25544')
+  .then((res) => res.json())
+  .then((satData) => {
+    const satellite = new DetailedSatellite({
+      id: satData.id,
+      tle1: satData.tle1 as TleLine1,
+      tle2: satData.tle2 as TleLine2,
+    });
 
-### Propagating a TLE
+    // Get the satellite's position at the current time
+    const eci = satellite.eci();
 
-```js
-const satrec = Sgp4.createSatrec(line1, line2);
-const state = Sgp4.propagate(satrec, time);
-console.log(state.position); // [x, y, z]
-console.log(state.velocity); // [vx, vy, vz]
-```
+    // Log the satellite's position - y component only
+    console.log(eci.position.y);
 
-### Creating a Satellite
+    // Access other satellite properties
+    console.log(satellite.inclination); // inclination in degrees
+    console.log(satellite.eccentricity); // eccentricity
+    console.log(satellite.period); // period in minutes
 
-```js
-const sat = new Satellite({ name: 'Test', tle1, tle2 });
-console.log(sat.intlDes); // International Designator
-console.log(sat.epochYear); // Epoch Year
-console.log(sat.epochDay); // Epoch Day
-console.log(sat.meanMoDev1); // Mean Motion Deviation 1
-console.log(sat.meanMoDev2); // Mean Motion Deviation 2
-console.log(sat.bstar); // Bstar (Drag Coefficient)
-console.log(sat.inclination); // inclination in degrees
-console.log(sat.raan); // right ascension of the ascending node in degrees
-console.log(sat.eccentricity); // eccentricity
-console.log(sat.argOfPerigee); // argument of perigee in degrees
-console.log(sat.meanAnomaly); // mean anomaly in degrees
-console.log(sat.meanMotion); // mean motion in revolutions per day
-console.log(sat.period); // period in seconds
-console.log(sat.apogee); // apogee in kilometers
-console.log(sat.perigee); // perigee in kilometers
+    // Get LLA (Latitude, Longitude, Altitude)
+    const lla = satellite.lla();
 
-sat.propagate(time); // Propagate the satellite to the given time
-sat.getLla(); // Get the satellite's position in latitude, longitude, altitude at its current time
-sat.getEci(time); // Get the satellite's position in Earth-Centered Inertial coordinates at the given time without changing its state
-sat.getRae(sensor, time); // Get position in range, aziimuth, elevation relative to a sensor object at the given time without changing its state
-```
+    console.log(lla); // { lat: degrees, lon: degrees, alt: kilometers }
 
-### Creating a Sensor
+    const sensor = new DetailedSensor({
+      lat: 41.754785 as Degrees,
+      lon: -70.539151 as Degrees,
+      alt: 0.060966 as Kilometers,
+      minAz: 347 as Degrees,
+      maxAz: 227 as Degrees,
+      minEl: 3 as Degrees,
+      maxEl: 85 as Degrees,
+      minRng: 0 as Kilometers,
+      maxRng: 5556 as Kilometers,
+      name: 'Cape Cod',
+      type: SpaceObjectType.PHASED_ARRAY_RADAR,
+    });
 
-```js
-const sensor = new Ootk.Sensor({ name: 'Test', lat: lat, lon: lon, alt: alt });
-sensor.setTime(time); // Set the sensor's time to the given time
-sensor.getRae(sat); // Get satellite position in range, aziimuth, elevation at the sensor's current time
-sensor.getRae(sat, time); // Get position in range, aziimuth, elevation relative to a satellite object at the given time without changing its state
+    // Assuming we have a satellite object from the previous example
+    const rae = sensor.rae(satellite);
+
+    // Log the azimuth from sensor to satellite
+    console.log(rae.az);
+
+    // Check if a satellite is in the sensor's field of view right now
+    const isSatInFov = sensor.isSatInFov(satellite);
+
+    console.log(isSatInFov); // true or false
+
+    // Calculate passes for a satellite (in 30 second intervals)
+    const passes = sensor.calculatePasses(30, satellite);
+
+    console.log(passes); // Array of pass information
+
+    // Convert sensor position to J2000 coordinates
+    const j2000 = sensor.toJ2000();
+
+    console.log(j2000); // J2000 object with position and velocity
+  });
 ```
 
 ## :desktop_computer: Building
