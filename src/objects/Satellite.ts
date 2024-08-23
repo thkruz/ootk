@@ -1,34 +1,29 @@
 /**
- * @author Theodore Kruczek.
- * @license MIT
- * @copyright (c) 2022-2024 Theodore Kruczek Permission is
- * hereby granted, free of charge, to any person obtaining a copy of this
- * software and associated documentation files (the "Software"), to deal in the
- * Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do
- * so, subject to the following conditions:
+ * @author @thkruz Theodore Kruczek
+ * @license AGPL-3.0-or-later
+ * @copyright (c) 2020-2024 Theodore Kruczek
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * Orbital Object ToolKit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with
+ * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { ClassicalElements } from '../coordinate/index.js';
 import { Geodetic } from '../coordinate/Geodetic.js';
+import type { ClassicalElements } from '../coordinate/index.js';
 import { ITRF } from '../coordinate/ITRF.js';
 import { J2000 } from '../coordinate/J2000.js';
 import { RIC } from '../coordinate/RIC.js';
 import { Tle } from '../coordinate/Tle.js';
 import { OptionsParams } from '../interfaces/OptionsParams.js';
 import { SatelliteParams } from '../interfaces/SatelliteParams.js';
+import { TimeVariables } from '../interfaces/TimeVariables.js';
 import { RAE } from '../observation/RAE.js';
 import { Vector3D } from '../operations/Vector3D.js';
 import { Sgp4 } from '../sgp4/sgp4.js';
@@ -54,7 +49,6 @@ import { DEG2RAD, MILLISECONDS_TO_DAYS, MINUTES_PER_DAY, RAD2DEG } from '../util
 import { dopplerFactor } from './../utils/functions.js';
 import { BaseObject } from './BaseObject.js';
 import { GroundObject } from './GroundObject.js';
-import { TimeVariables } from '../interfaces/TimeVariables.js';
 
 /**
  * Represents a satellite object with orbital information and methods for
