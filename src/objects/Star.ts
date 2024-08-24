@@ -32,9 +32,14 @@ import {
   SpaceObjectType,
   StarObjectParams,
 } from '../main.js';
-import { BaseObject } from './BaseObject.js';
+import { BaseObject } from './base/BaseObject.js';
 
 export class Star extends BaseObject {
+  static readonly earthCenterLla = {
+    lat: 0 as Degrees,
+    lon: 0 as Degrees,
+    alt: 0 as Kilometers,
+  } as unknown as BaseObject;
   ra: Radians;
   dec: Radians;
   bf: string;
@@ -55,18 +60,54 @@ export class Star extends BaseObject {
     this.vmag = info.vmag;
   }
 
-  eci(lla: LlaVec3 = { lat: <Degrees>180, lon: <Degrees>0, alt: <Kilometers>0 }, date: Date = new Date()): EciVec3 {
-    const rae = this.rae(lla, date);
+  eci(date: Date = new Date()): EciVec3 {
+    const rae = this.rae(Star.earthCenterLla, date);
     const { gmst } = Star.calculateTimeVariables_(date);
 
     // Arbitrary distance to enable using ECI coordinates
     return ecf2eci(rae2ecf(rae, { lat: <Degrees>0, lon: <Degrees>0, alt: <Kilometers>0 }), gmst);
   }
 
-  rae(
-    lla: LlaVec3<Degrees, Kilometers> = { lat: <Degrees>180, lon: <Degrees>0, alt: <Kilometers>0 },
+  ecf(date: Date = new Date()): EciVec3 {
+    return ecf2eci(rae2ecf(this.rae(Star.earthCenterLla, date), Star.earthCenterLla.lla(date)), 0);
+  }
+
+  /**
+   * @deprecated Lla is not currently supported for stars
+   * @param date The date to calculate the LLA at
+   * @returns The LLA of the star
+   */
+  lla(date: Date = new Date()): LlaVec3 {
+    return Star.earthCenterLla.lla(date);
+  }
+
+  rae(baseObject: BaseObject, date: Date = new Date()): RaeVec3 {
+    const raeFrom = this.raeFrom(baseObject, date);
+
+    // Retrun the inverse azimuth and elevation to get the direction from the star to the object
+    let iAz = raeFrom.az + 180 as Degrees;
+    let iEl = raeFrom.el + 180 as Degrees;
+
+    if (iAz >= 360) {
+      iAz = iAz - 360 as Degrees;
+    }
+
+    if (iEl >= 360) {
+      iEl = iEl - 360 as Degrees;
+    }
+
+    return {
+      az: iAz,
+      el: iEl,
+      rng: <Kilometers>250000,
+    };
+  }
+
+  raeFrom(
+    originObject: BaseObject,
     date: Date = new Date(),
   ): RaeVec3 {
+    const lla = originObject.lla();
     const starPos = Celestial.azEl(date, lla.lat, lla.lon, this.ra, this.dec);
 
     return { az: starPos.az, el: starPos.el, rng: <Kilometers>250000 };

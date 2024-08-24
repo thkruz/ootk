@@ -16,7 +16,7 @@
  */
 
 import { Earth } from '../body/Earth.js';
-import { AngularDistanceMethod, Degrees, GroundObject, Kilometers, KilometersPerSecond, Radians } from '../main.js';
+import { AngularDistanceMethod, Degrees, Kilometers, KilometersPerSecond, Radians } from '../main.js';
 import { Vector3D } from '../operations/Vector3D.js';
 import { EpochUTC } from '../time/EpochUTC.js';
 import { DEG2RAD, RAD2DEG } from '../utils/constants.js';
@@ -95,18 +95,6 @@ export class Geodetic {
    */
   get lonDeg(): number {
     return this.lon * RAD2DEG;
-  }
-
-  /**
-   * Converts the geodetic coordinates to a ground position.
-   * @returns The ground position object.
-   */
-  toGroundObject(): GroundObject {
-    return new GroundObject({
-      lat: this.latDeg as Degrees,
-      lon: this.lonDeg as Degrees,
-      alt: this.alt,
-    });
   }
 
   /**

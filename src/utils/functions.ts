@@ -2,7 +2,7 @@ import { DifferentiableFunction } from '../main.js';
 /* eslint-disable require-jsdoc */
 import { AngularDiameterMethod } from '../enums/AngularDiameterMethod.js';
 import { AngularDistanceMethod } from '../enums/AngularDistanceMethod.js';
-import { EcfVec3, Kilometers, Radians, SpaceObjectType } from '../types/types.js';
+import { EcfVec3, Kilometers, KilometersPerSecond, Radians, SpaceObjectType } from '../types/types.js';
 import { angularVelocityOfEarth, cKmPerSec } from './constants.js';
 
 /**
@@ -520,7 +520,7 @@ export const spaceObjType2Str = (spaceObjType: SpaceObjectType): string =>
 export const dopplerFactor = (
   location: EcfVec3<Kilometers>,
   position: EcfVec3<Kilometers>,
-  velocity: EcfVec3<Kilometers>,
+  velocity: EcfVec3<KilometersPerSecond>,
 ): number => {
   const range = <EcfVec3>{
     x: position.x - location.x,
@@ -528,7 +528,7 @@ export const dopplerFactor = (
     z: position.z - location.z,
   };
   const distance = Math.sqrt(range.x ** 2 + range.y ** 2 + range.z ** 2);
-  const rangeVel = <EcfVec3>{
+  const rangeVel = <EcfVec3<KilometersPerSecond>>{
     x: velocity.x + angularVelocityOfEarth * location.y,
     y: velocity.y - angularVelocityOfEarth * location.x,
     z: velocity.z,

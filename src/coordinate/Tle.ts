@@ -611,7 +611,7 @@ export class Tle {
     const lineNum = parseInt(tleLine.substring(Tle.lineNumber_.start, Tle.lineNumber_.stop));
 
     if (lineNum !== 1 && lineNum !== 2) {
-      throw new Error('Invalid line number');
+      throw new Error(`Invalid line number ${lineNum} in ${tleLine}`);
     }
 
     return lineNum;

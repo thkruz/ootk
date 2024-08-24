@@ -1,7 +1,7 @@
 /**
  * This is the tsconfig extension that only applies to ES Modules.
  */
- {
+{
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
@@ -10,6 +10,13 @@
     "isolatedModules": true,
     "strict": true,
   },
-  "include": ["./src/**/*.ts"],
-  "filesGlob": ["./src/**/*.ts"]
+  "include": [
+    "./src/**/*.ts"
+  ],
+  "exclude": [
+    "**/example.ts"
+  ],
+  "filesGlob": [
+    "./src/**/*.ts"
+  ]
 }

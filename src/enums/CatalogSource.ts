@@ -6,5 +6,6 @@ export enum CatalogSource {
   NUSPACE = 'NuSpace',
   VIMPEL = 'JSC Vimpel',
   TLE_TXT = 'TLE.txt',
-  EXTRA_JSON = 'extra.json'
+  EXTRA_JSON = 'extra.json',
+  SATNOGS = 'SatNOGS',
 }

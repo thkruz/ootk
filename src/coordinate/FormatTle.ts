@@ -44,7 +44,7 @@ export abstract class FormatTle {
     const intlStr = intl.padEnd(8, ' ');
 
     // M' and M'' are both set to 0 to put the object in a perfect stable orbit
-    let TLE1Ending = tleParams.sat ? tleParams.sat.tle1.substring(32, 71) : ' +.00000000 +00000+0 +00000-0 0  9990';
+    let TLE1Ending = tleParams.sat ? tleParams.sat.orbitData.tle1.substring(32, 71) : ' +.00000000 +00000+0 +00000-0 0  9990';
 
     // Add explicit positive/negative signs
     TLE1Ending = TLE1Ending[1] === ' ' ? FormatTle.setCharAt(TLE1Ending, 1, '+') : TLE1Ending;

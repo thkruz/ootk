@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { CommLink, PassType, Satellite, SatelliteParams, SensorParams, Vector3D } from '../main.js';
+import { PassType, Satellite, Vector3D } from '../main.js';
 
 /**
  * Represents a distinct type.
@@ -109,64 +109,6 @@ export enum ZoomValue {
   LEO = 0.45,
   GEO = 0.82,
   MAX = 1,
-}
-
-export interface DetailedSatelliteParams extends SatelliteParams {
-  id: number;
-  active?: boolean;
-  configuration?: string;
-  country?: string;
-  dryMass?: string;
-  equipment?: string;
-  launchDate?: string;
-  launchMass?: string;
-  launchSite?: string;
-  launchVehicle?: string;
-  lifetime?: string | number;
-  maneuver?: string;
-  manufacturer?: string;
-  mission?: string;
-  motor?: string;
-  owner?: string;
-  bus?: string;
-  payload?: string;
-  power?: string;
-  purpose?: string;
-  length?: string;
-  diameter?: string;
-  shape?: string;
-  span?: string;
-  user?: string;
-  vmag?: number | null;
-  rcs?: number | null;
-  source?: string;
-  altId?: string;
-  altName?: string;
-}
-
-export interface DetailedSensorParams extends SensorParams {
-  /** The country that owns the sensor */
-  country?: string;
-  /** 3 Letter Designation */
-  shortName?: string;
-  changeObjectInterval?: Milliseconds;
-  commLinks?: CommLink[];
-  freqBand?: string;
-  static?: boolean;
-  sensorId?: number;
-  url?: string;
-  /** Does this sensor use a volumetric search pattern? */
-  volume?: boolean;
-  /** How far away should we zoom when selecting this sensor? */
-  zoom?: ZoomValue;
-  /** This is the name of the object in the array */
-  objName?: string;
-  /** This is the name of the object in the UI */
-  uiName?: string;
-  /** This is the specific system (ex. AN/FPS-132) */
-  system?: string;
-  /** This is who operates the sensor */
-  operator?: string;
 }
 
 /**
@@ -528,9 +470,9 @@ export type StateVectorSgp4 = {
     | boolean;
 };
 
-export type PosVel<T> = {
+export type PosVel<T, T2> = {
   position: Vec3<T>;
-  velocity: Vec3<T>;
+  velocity: Vec3<T2>;
 };
 
 /**
@@ -685,6 +627,41 @@ export enum SpaceObjectType {
   MAX_SPACE_OBJECT_TYPE = 32,
 }
 
+export const getSpaceObjectTypeStringValue = (type: SpaceObjectType) => {
+  const typeToStringMap: {
+    [key in SpaceObjectType]?: string;
+  } = {
+    [SpaceObjectType.UNKNOWN]: 'Unknown',
+    [SpaceObjectType.PAYLOAD]: 'Payload',
+    [SpaceObjectType.ROCKET_BODY]: 'Rocket Body',
+    [SpaceObjectType.DEBRIS]: 'Debris',
+    [SpaceObjectType.SPECIAL]: 'Special',
+    [SpaceObjectType.BALLISTIC_MISSILE]: 'Ballistic Missile',
+    [SpaceObjectType.STAR]: 'Star',
+    [SpaceObjectType.INTERGOVERNMENTAL_ORGANIZATION]: 'Intergovernmental Organization',
+    [SpaceObjectType.SUBORBITAL_PAYLOAD_OPERATOR]: 'Suborbital Payload Operator',
+    [SpaceObjectType.PAYLOAD_OWNER]: 'Payload Owner',
+    [SpaceObjectType.METEOROLOGICAL_ROCKET_LAUNCH_AGENCY_OR_MANUFACTURER]: 'Meteorological Rocket Launch Agency or Manufacturer',
+    [SpaceObjectType.PAYLOAD_MANUFACTURER]: 'Payload Manufacturer',
+    [SpaceObjectType.LAUNCH_AGENCY]: 'Launch Agency',
+    [SpaceObjectType.LAUNCH_SITE]: 'Launch Site',
+    [SpaceObjectType.LAUNCH_POSITION]: 'Launch Position',
+    [SpaceObjectType.LAUNCH_FACILITY]: 'Launch Facility',
+    [SpaceObjectType.CONTROL_FACILITY]: 'Control Facility',
+    [SpaceObjectType.GROUND_SENSOR_STATION]: 'Ground Sensor Station',
+    [SpaceObjectType.OPTICAL]: 'Optical',
+    [SpaceObjectType.MECHANICAL]: 'Mechanical',
+    [SpaceObjectType.PHASED_ARRAY_RADAR]: 'Phased Array Radar',
+    [SpaceObjectType.OBSERVER]: 'Observer',
+    [SpaceObjectType.BISTATIC_RADIO_TELESCOPE]: 'Bistatic Radio Telescope',
+    [SpaceObjectType.COUNTRY]: 'Country',
+    [SpaceObjectType.LAUNCH_VEHICLE_MANUFACTURER]: 'Launch Vehicle Manufacturer',
+    [SpaceObjectType.ENGINE_MANUFACTURER]: 'Engine Manufacturer',
+  };
+
+  return typeToStringMap[type] ?? 'Unknown';
+};
+
 /**
  * Represents the Greenwich Mean Sidereal Time (GMST).
  *
@@ -733,36 +710,6 @@ export type SunTime = {
   solarNoon: Date;
   nadir: Date;
 } & { [key: string]: Date };
-
-export type LaunchDetails = {
-  launchDate?: string;
-  launchMass?: string;
-  launchSite?: string;
-  launchVehicle?: string;
-};
-
-export type SpaceCraftDetails = {
-  lifetime?: string | number;
-  maneuver?: string;
-  manufacturer?: string;
-  motor?: string;
-  power?: string;
-  payload?: string;
-  purpose?: string;
-  shape?: string;
-  span?: string;
-  bus?: string;
-  configuration?: string;
-  equipment?: string;
-  dryMass?: string;
-};
-
-export type OperationsDetails = {
-  user?: string;
-  mission?: string;
-  owner?: string;
-  country?: string;
-};
 
 export type Lookangle = {
   type: PassType;

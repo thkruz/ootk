@@ -20,7 +20,7 @@ import { SensorParams } from '../interfaces/SensorParams.js';
 import { calcGmst, EpochUTC, J2000, lla2eci, Vector3D } from '../main.js';
 import { Degrees, Kilometers, KilometersPerSecond, Lookangle, RaeVec3, SpaceObjectType } from '../types/types.js';
 import { GroundObject } from './GroundObject.js';
-import { Satellite } from './Satellite.js';
+import { Satellite } from './base/Satellite.js';
 
 export class Sensor extends GroundObject {
   minRng: Kilometers;
