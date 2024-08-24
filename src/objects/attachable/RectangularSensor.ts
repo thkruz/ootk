@@ -15,7 +15,7 @@ export class RectangularSensor extends Sensor {
     this.horizontalHalfAngle = params.horizontalHalfAngle;
   }
 
-  isInFieldOfView(rae: RaeVec3): boolean {
+  isRaeInFov(rae: RaeVec3): boolean {
     /*
      * if (rae.rng > this.rng) {
      *   return false;

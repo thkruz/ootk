@@ -1,4 +1,4 @@
-import { AttachableObject, BaseObject, Degrees, ecf2rae, Kilometers, LlaVec3, Orientation, RaeVec3, SensorMetaData } from '../../main.js';
+import { AttachableObject, BaseObject, Degrees, ecf2rae, Kilometers, LlaVec3, Orientation, Radians, RaeVec3, SensorMetaData } from '../../main.js';
 import { SatelliteObserver } from '../base/Satellite.js';
 import { AttachableObjectParams } from './AttachableObject.js';
 import { SensorMetaDataParams } from './SensorMetaData.js';
@@ -26,6 +26,10 @@ export abstract class Sensor extends AttachableObject implements SatelliteObserv
     this.metadata = new SensorMetaData(params);
   }
 
+  llaRad(date?: Date): LlaVec3<Radians, Kilometers> {
+    return this.parent?.llaRad(date) ?? { lat: 0 as Radians, lon: 0 as Radians, alt: 0 as Kilometers };
+  }
+
   lla(date?: Date): LlaVec3<Degrees, Kilometers> {
     return this.parent?.lla(date) ?? { lat: 0 as Degrees, lon: 0 as Degrees, alt: 0 as Kilometers };
   }
@@ -38,7 +42,7 @@ export abstract class Sensor extends AttachableObject implements SatelliteObserv
     return ecf2rae(this.lla(), targetObject.ecf(date), overallOrientation);
   }
 
-  abstract isInFieldOfView(rae: RaeVec3): boolean;
+  abstract isRaeInFov(rae: RaeVec3): boolean;
   abstract update(baseObject: BaseObject): void;
 
   toJSON(): string {

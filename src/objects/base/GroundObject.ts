@@ -27,9 +27,7 @@ import {
   llaRad2ecf,
   DEG2RAD,
   Degrees,
-  EcfVec3,
-  EciVec3,
-  Kilometers,
+  EcfVec3, Kilometers,
   KilometersPerSecond,
   LlaVec3,
   Radians,
@@ -37,6 +35,7 @@ import {
   Seconds, BaseObjectParams,
   BaseObject, Earth,
   ecf2rae,
+  PosVel,
 } from '../../main.js';
 
 export enum AltitudeReference {
@@ -131,16 +130,20 @@ export abstract class GroundObject extends BaseObject {
    * @param date The date for which to calculate the ECI position vector. Defaults to the current date.
    * @returns The ECI position vector of the ground object.
    */
-  eci(date: Date = new Date()): EciVec3 {
+  eci(date: Date = new Date()): PosVel<Kilometers, KilometersPerSecond> {
     const { gmst } = calcGmst(date);
+    const pos = lla2eci(this.toGeodetic(), gmst);
 
-    return lla2eci(this.toGeodetic(), gmst);
+    return {
+      position: pos,
+      velocity: new Vector3D(0, 0, 0) as Vector3D<KilometersPerSecond>,
+    };
   }
 
   toJ2000(date: Date = new Date()): J2000 {
     const epoch = new EpochUTC(date.getTime() / 1000 as Seconds);
     const eci = this.eci(date);
-    const pos = new Vector3D(eci.x, eci.y, eci.z);
+    const pos = new Vector3D(eci.position.x, eci.position.y, eci.position.z);
     const vel = new Vector3D(0, 0, 0) as Vector3D<KilometersPerSecond>;
 
     return new J2000(epoch, pos, vel);

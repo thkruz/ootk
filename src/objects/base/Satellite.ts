@@ -145,11 +145,11 @@ export class Satellite extends BaseObject {
     }
   }
 
-  az(observer: GroundObject, date: Date = new Date()): Degrees {
+  az(observer: BaseObject, date: Date = new Date()): Degrees {
     return (this.rae(observer, date).az * RAD2DEG) as Degrees;
   }
 
-  toRae(observer: GroundObject, date: Date = new Date()): RAE {
+  toRae(observer: BaseObject, date: Date = new Date()): RAE {
     const rae = this.rae(observer, date);
     const rae2 = this.rae(observer, new Date(date.getTime() + 1000));
     const epoch = new EpochUTC(date.getTime() / 1000 as Seconds);
@@ -189,7 +189,7 @@ export class Satellite extends BaseObject {
     return new J2000(epoch, pos, vel);
   }
 
-  el(observer: GroundObject, date: Date = new Date()): Degrees {
+  el(observer: BaseObject, date: Date = new Date()): Degrees {
     return (this.rae(observer, date).el * RAD2DEG) as Degrees;
   }
 
@@ -199,6 +199,16 @@ export class Satellite extends BaseObject {
     const lla = eci2lla(pos, gmst);
 
     return lla;
+  }
+
+  llaRad(date: Date = new Date()): LlaVec3<Radians, Kilometers> {
+    const lla = this.lla(date);
+
+    return {
+      lat: (lla.lat * DEG2RAD) as Radians,
+      lon: (lla.lon * DEG2RAD) as Radians,
+      alt: lla.alt,
+    };
   }
 
   toGeodetic(date: Date = new Date()): Geodetic {
@@ -225,7 +235,7 @@ export class Satellite extends BaseObject {
     return ecf2rae(observer.lla(), ecf);
   }
 
-  rng(observer: GroundObject, date: Date = new Date()): Kilometers {
+  rng(observer: BaseObject, date: Date = new Date()): Kilometers {
     return this.rae(observer, date).rng;
   }
 
@@ -238,7 +248,7 @@ export class Satellite extends BaseObject {
   dopplerFactor(observer: GroundObject, date?: Date): number {
     const position = this.eci(date);
 
-    return dopplerFactor(observer.eci(date), position.position, position.velocity);
+    return dopplerFactor(observer.eci(date).position, position.position, position.velocity);
   }
 
   clone(): Satellite {

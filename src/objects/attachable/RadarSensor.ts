@@ -30,7 +30,7 @@ export class RadarSensor extends Sensor {
     this.coneHalfAngle = params.coneHalfAngle;
   }
 
-  isInFieldOfView(rae: RaeVec3): boolean {
+  isRaeInFov(rae: RaeVec3): boolean {
     if (rae.el < this.minEl || rae.el > this.maxEl) {
       return false;
     }

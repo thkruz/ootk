@@ -69,7 +69,7 @@ const marker = new Marker({
 
 scenario.addObject(marker);
 
-const isInFov = facility.attachedObjects.some((sensor) => (sensor as RadarSensor).isInFieldOfView((sensor as RadarSensor).rae(marker)));
+const isInFov = facility.attachedObjects.some((sensor) => (sensor as RadarSensor).isRaeInFov((sensor as RadarSensor).rae(marker)));
 
 // eslint-disable-next-line no-console
 console.log(isInFov);

@@ -21,7 +21,7 @@ export class ComplexConicSensor extends Sensor implements AttachableObject {
     this.maxClockAngle = params.maxClockAngle;
   }
 
-  isInFieldOfView(rae: RaeVec3): boolean {
+  isRaeInFov(rae: RaeVec3): boolean {
     /*
      * if (rae.rng > this.rng) {
      *   return false;

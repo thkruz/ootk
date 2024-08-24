@@ -22,8 +22,8 @@ export class SensorCollection extends AttachableObject {
     this.sensors.forEach((sensor) => sensor.detach());
   }
 
-  isInFieldOfView(rae: RaeVec3): boolean {
-    return this.sensors.some((sensor) => sensor.isInFieldOfView(rae));
+  isRaeInFov(rae: RaeVec3): boolean {
+    return this.sensors.some((sensor) => sensor.isRaeInFov(rae));
   }
 
   addSensor(sensor: Sensor): void {

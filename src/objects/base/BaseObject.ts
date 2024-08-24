@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Degrees, EcfVec3, Kilometers, LlaVec3, Orientation, RaeVec3 } from 'src/main.js';
+import { Degrees, EcfVec3, Kilometers, KilometersPerSecond, LlaVec3, Orientation, PosVel, Radians, RaeVec3 } from 'src/main.js';
 import { AttachableObject } from '../attachable/AttachableObject.js';
 import { CommonBase, CommonBaseParams } from '../CommonBase.js';
 
@@ -42,8 +42,10 @@ export abstract class BaseObject extends CommonBase {
   }
 
   abstract lla(date?: Date): LlaVec3<Degrees, Kilometers>;
+  abstract llaRad(date?: Date): LlaVec3<Radians, Kilometers>;
   abstract rae(targetObject: BaseObject, date?: Date): RaeVec3;
   abstract ecf(date?: Date): EcfVec3<Kilometers>;
+  abstract eci(date?: Date): PosVel<Kilometers, KilometersPerSecond>;
 
   attachObject(object: AttachableObject): void {
     if (!this.attachedObjects.includes(object)) {

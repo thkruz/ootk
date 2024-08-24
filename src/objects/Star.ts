@@ -23,8 +23,10 @@ import {
   GreenwichMeanSiderealTime,
   jday,
   Kilometers,
+  KilometersPerSecond,
   LlaVec3,
   MILLISECONDS_TO_DAYS,
+  PosVel,
   Radians,
   rae2ecf,
   RaeVec3,
@@ -60,12 +62,17 @@ export class Star extends BaseObject {
     this.vmag = info.vmag;
   }
 
-  eci(date: Date = new Date()): EciVec3 {
+  eci(date: Date = new Date()): PosVel<Kilometers, KilometersPerSecond> {
     const rae = this.rae(Star.earthCenterLla, date);
     const { gmst } = Star.calculateTimeVariables_(date);
 
     // Arbitrary distance to enable using ECI coordinates
-    return ecf2eci(rae2ecf(rae, { lat: <Degrees>0, lon: <Degrees>0, alt: <Kilometers>0 }), gmst);
+    const pos = ecf2eci(rae2ecf(rae, { lat: <Degrees>0, lon: <Degrees>0, alt: <Kilometers>0 }), gmst);
+
+    return {
+      position: pos,
+      velocity: { x: 0 as KilometersPerSecond, y: 0 as KilometersPerSecond, z: 0 as KilometersPerSecond },
+    };
   }
 
   ecf(date: Date = new Date()): EciVec3 {
@@ -79,6 +86,10 @@ export class Star extends BaseObject {
    */
   lla(date: Date = new Date()): LlaVec3 {
     return Star.earthCenterLla.lla(date);
+  }
+
+  llaRad(date?: Date): LlaVec3<Radians, Kilometers> {
+    return this.lla(date) as unknown as LlaVec3<Radians, Kilometers>;
   }
 
   rae(baseObject: BaseObject, date: Date = new Date()): RaeVec3 {
