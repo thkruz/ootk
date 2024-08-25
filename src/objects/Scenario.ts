@@ -1,6 +1,6 @@
 import { CommonBase } from './CommonBase.js';
 import { Serializer } from './Serializer.js';
-import { BaseObject } from './base/BaseObject.js';
+import { BaseObjectAdv } from './base/BaseObject.js';
 
 export enum SurfaceAt {
   WGS84Ellipsoid,
@@ -39,7 +39,7 @@ export class Scenario extends CommonBase {
   isShowingOrbitMarkers: boolean;
   isShowingElsetNumber: boolean;
   surfaceAt: SurfaceAt;
-  objects: BaseObject[];
+  objects: BaseObjectAdv[];
 
   constructor(info: ScenarioParams) {
     super(info);
@@ -61,11 +61,11 @@ export class Scenario extends CommonBase {
     this.objects = [];
   }
 
-  addObject(object: BaseObject): void {
+  addObject(object: BaseObjectAdv): void {
     this.objects.push(object);
   }
 
-  removeObject(object: BaseObject): void {
+  removeObject(object: BaseObjectAdv): void {
     const index = this.objects.indexOf(object);
 
     if (index > -1) {
@@ -118,7 +118,7 @@ export class Scenario extends CommonBase {
     scenario.surfaceAt = data.surfaceAt;
 
     // Deserialize objects
-    scenario.objects = data.objects.map((obj: BaseObject) => Serializer.classFromJSON(JSON.stringify(obj)));
+    scenario.objects = data.objects.map((obj: BaseObjectAdv) => Serializer.classFromJSON(JSON.stringify(obj)));
 
     return scenario;
   }

@@ -14,7 +14,7 @@ import {
   RAD2DEG,
   Radians,
   RaeVec3,
-  Sensor,
+  SensorAdv,
   SezVec3,
   Sgp4,
   TAU,
@@ -537,13 +537,13 @@ export function calcGmst(date: Date): { gmst: GreenwichMeanSiderealTime; j: numb
  * @param observer - Sensor object containing observer's geodetic coordinates.
  * @returns Object containing azimuth, elevation and range in degrees and kilometers respectively.
  */
-export function eci2rae(now: Date, eci: EciVec3<Kilometers>, observer: Sensor|Facility): RaeVec3<Kilometers, Degrees> {
+export function eci2rae(now: Date, eci: EciVec3<Kilometers>, observer: SensorAdv|Facility): RaeVec3<Kilometers, Degrees> {
   now = new Date(now);
   const { gmst } = calcGmst(now);
 
   let lla: LlaVec3<Degrees, Kilometers>;
 
-  if (observer instanceof Sensor) {
+  if (observer instanceof SensorAdv) {
     lla = observer.parent?.lla(now) ?? { lat: 0, lon: 0, alt: 0 } as LlaVec3<Degrees, Kilometers>;
   } else {
     lla = observer.lla();
@@ -566,7 +566,7 @@ export function eci2rae(now: Date, eci: EciVec3<Kilometers>, observer: Sensor|Fa
 
   let orientation: Orientation;
 
-  if (observer instanceof Sensor) {
+  if (observer instanceof SensorAdv) {
     orientation = {
       azimuth: observer.orientation.azimuth + (observer.parent?.orientation.azimuth ?? 0) as Degrees,
       elevation: observer.orientation.elevation + (observer.parent?.orientation.elevation ?? 0) as Degrees,

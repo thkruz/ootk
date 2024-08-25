@@ -1,9 +1,9 @@
-import { SimpleConicSensor, ComplexConicSensor, RectangularSensor, Facility, Marker, Satellite } from '../main.js';
+import { SimpleConicSensor, ComplexConicSensor, RectangularSensor, Facility, MarkerAdv, SatelliteAdv } from '../main.js';
 
 export class Serializer {
   static readonly version = '1.0.0';
   static readonly attachableClasses = [SimpleConicSensor, ComplexConicSensor, RectangularSensor];
-  static readonly objectClasses = [Facility, Satellite, Marker];
+  static readonly objectClasses = [Facility, SatelliteAdv, MarkerAdv];
   static classFromJSON(attachedObject: string) {
     const className = attachedObject.split(' ')[0];
     const json = attachedObject.slice(className.length + 1);

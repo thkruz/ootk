@@ -1,10 +1,10 @@
-import { BaseObject, Degrees, RaeVec3, Sensor, SensorParams } from '../../main.js';
+import { BaseObjectAdv, Degrees, RaeVec3, SensorAdv, SensorParams } from '../../main.js';
 
 export interface SimpleConicSensorParams extends SensorParams {
   coneHalfAngle: Degrees;
 }
 
-export class SimpleConicSensor extends Sensor {
+export class SimpleConicSensor extends SensorAdv {
   coneHalfAngle: Degrees;
 
   constructor(params: SimpleConicSensorParams) {
@@ -27,7 +27,7 @@ export class SimpleConicSensor extends Sensor {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  update(baseObject: BaseObject, ...args: unknown[]): void {
+  update(baseObject: BaseObjectAdv, ...args: unknown[]): void {
   // Do nothing
   }
 

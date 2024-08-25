@@ -33,7 +33,7 @@ import {
   Radians,
   RaeVec3,
   Seconds, BaseObjectParams,
-  BaseObject, Earth,
+  BaseObjectAdv, Earth,
   ecf2rae,
   PosVel,
 } from '../../main.js';
@@ -50,7 +50,7 @@ export interface GroundObjectParams extends BaseObjectParams {
   altRef?: AltitudeReference;
 }
 
-export abstract class GroundObject extends BaseObject {
+export abstract class GroundObject extends BaseObjectAdv {
   private lat_: Degrees;
   private lon_: Degrees;
   /** Altitude in kilometers relative to mean sea level. */
@@ -99,11 +99,11 @@ export abstract class GroundObject extends BaseObject {
   }
 
   /**
-   * Calculates the relative azimuth, elevation, and range between this GroundObject and a secondary BaseObject.
-   * @param targetObject The secondary BaseObject.
+   * Calculates the relative azimuth, elevation, and range between this GroundObject and a secondary BaseObjectAdv.
+   * @param targetObject The secondary BaseObjectAdv.
    * @returns The relative azimuth, elevation, and range values in kilometers and degrees.
    */
-  rae(targetObject: BaseObject): RaeVec3<Kilometers, Degrees> {
+  rae(targetObject: BaseObjectAdv): RaeVec3<Kilometers, Degrees> {
     const rae = ecf2rae(this.lla(), targetObject.ecf(), this.orientation);
 
     return rae;

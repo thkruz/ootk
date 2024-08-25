@@ -25,7 +25,7 @@ export interface BaseObjectParams extends CommonBaseParams {
   attachedObjects?: AttachableObject[];
 }
 
-export abstract class BaseObject extends CommonBase {
+export abstract class BaseObjectAdv extends CommonBase {
   name: string;
   orientation: Orientation;
   attachedObjects: AttachableObject[];
@@ -43,7 +43,7 @@ export abstract class BaseObject extends CommonBase {
 
   abstract lla(date?: Date): LlaVec3<Degrees, Kilometers>;
   abstract llaRad(date?: Date): LlaVec3<Radians, Kilometers>;
-  abstract rae(targetObject: BaseObject, date?: Date): RaeVec3;
+  abstract rae(targetObject: BaseObjectAdv, date?: Date): RaeVec3;
   abstract ecf(date?: Date): EcfVec3<Kilometers>;
   abstract eci(date?: Date): PosVel<Kilometers, KilometersPerSecond>;
 

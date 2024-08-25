@@ -1,4 +1,4 @@
-import { azel2uv, BaseObject, DEG2RAD, Degrees, Kilometers, RAD2DEG, Radians, RaeVec3, Sensor, SensorParams, uv2azel } from '../../main.js';
+import { azel2uv, BaseObjectAdv, DEG2RAD, Degrees, Kilometers, RAD2DEG, Radians, RaeVec3, SensorAdv, SensorParams, uv2azel } from '../../main.js';
 
 export interface RadarSensorParams extends SensorParams {
   minRng: Kilometers;
@@ -10,7 +10,7 @@ export interface RadarSensorParams extends SensorParams {
   coneHalfAngle: Degrees;
 }
 
-export class RadarSensor extends Sensor {
+export class RadarSensor extends SensorAdv {
   minRng: Kilometers;
   minAz: Degrees;
   minEl: Degrees;
@@ -105,7 +105,7 @@ export class RadarSensor extends Sensor {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  update(baseObject: BaseObject, ...args: unknown[]): void {
+  update(baseObject: BaseObjectAdv, ...args: unknown[]): void {
     // Do nothing
   }
 

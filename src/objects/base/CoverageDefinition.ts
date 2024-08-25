@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Degrees, Kilometers, Marker } from '../../main.js';
+import { Degrees, Kilometers, MarkerAdv } from '../../main.js';
 
 export interface CoverageDefinitionParams {
   name: string;
@@ -33,7 +33,7 @@ export class CoverageDefinition {
   private minLon: Degrees;
   private maxLon: Degrees;
   private resolution: Kilometers;
-  private markers: Marker[];
+  private markers: MarkerAdv[];
 
   constructor(params: CoverageDefinitionParams) {
     this.name = params.name;
@@ -56,7 +56,7 @@ export class CoverageDefinition {
         const lat = this.minLat + (i * this.resolution) as Degrees;
         const lon = this.minLon + (j * this.resolution) as Degrees;
         const markerName = `${this.name}_${lat}_${lon}`;
-        const marker = new Marker({
+        const marker = new MarkerAdv({
           name: markerName,
           lat,
           lon,
@@ -68,7 +68,7 @@ export class CoverageDefinition {
     }
   }
 
-  getMarkers(): Marker[] {
+  getMarkers(): MarkerAdv[] {
     return this.markers;
   }
 
@@ -82,11 +82,11 @@ export class CoverageDefinition {
     this.generateMarkers();
   }
 
-  isAnyMarkerInView(isInViewFunction: (marker: Marker) => boolean): boolean {
+  isAnyMarkerInView(isInViewFunction: (marker: MarkerAdv) => boolean): boolean {
     return this.markers.some(isInViewFunction);
   }
 
-  getMarkersInView(isInViewFunction: (marker: Marker) => boolean): Marker[] {
+  getMarkersInView(isInViewFunction: (marker: MarkerAdv) => boolean): MarkerAdv[] {
     return this.markers.filter(isInViewFunction);
   }
 
@@ -114,7 +114,7 @@ export class CoverageDefinition {
       resolution: data.resolution,
     });
 
-    coverageDefinition.markers = data.markers.map((markerData) => Marker.fromJSON(JSON.stringify(markerData)));
+    coverageDefinition.markers = data.markers.map((markerData) => MarkerAdv.fromJSON(JSON.stringify(markerData)));
 
     return coverageDefinition;
   }

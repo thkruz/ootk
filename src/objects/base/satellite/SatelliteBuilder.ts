@@ -1,10 +1,10 @@
-import { LaunchInfo, OperationalInfo, Satellite, SpacecraftDetails, TleLine1, TleLine2 } from '../../../main.js';
+import { LaunchInfo, OperationalInfo, SatelliteAdv, SpacecraftDetails, TleLine1, TleLine2 } from '../../../main.js';
 
 export class SatelliteBuilder {
-  private satellite: Satellite;
+  private satellite: SatelliteAdv;
 
   constructor(params: { tle1: TleLine1; tle2: TleLine2 }) {
-    this.satellite = new Satellite({
+    this.satellite = new SatelliteAdv({
       tle1: params.tle1,
       tle2: params.tle2,
     });
@@ -46,7 +46,7 @@ export class SatelliteBuilder {
     return this;
   }
 
-  build(): Satellite {
+  build(): SatelliteAdv {
     // Perform validation
     if (!this.satellite.orbitData.tle1 || !this.satellite.orbitData.tle2) {
       throw new Error('TLE must be set');

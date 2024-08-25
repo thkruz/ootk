@@ -19,7 +19,7 @@ import { CommLink } from '../enums/CommLink.js';
 import { DetailedSensorParams, Milliseconds, ZoomValue } from '../types/types.js';
 import { DetailedSatellite } from './DetailedSatellite.js';
 import { LandObject } from './LandObject.js';
-import { Sensor } from './SensorOld.ts.wip';
+import { Sensor } from './Sensor.js';
 
 export class DetailedSensor extends Sensor {
   sensorId?: number;

@@ -20,8 +20,11 @@ import { SensorParams } from '../interfaces/SensorParams.js';
 import { calcGmst, EpochUTC, J2000, lla2eci, Vector3D } from '../main.js';
 import { Degrees, Kilometers, KilometersPerSecond, Lookangle, RaeVec3, SpaceObjectType } from '../types/types.js';
 import { GroundObject } from './GroundObject.js';
-import { Satellite } from './base/Satellite.js';
+import { Satellite } from './Satellite.js';
 
+/**
+ * @deprecated This class is deprecated and will be removed in a future release.
+ */
 export class Sensor extends GroundObject {
   minRng: Kilometers;
   minAz: Degrees;
@@ -86,13 +89,23 @@ export class Sensor extends GroundObject {
 
     for (let timeOffset = 0; timeOffset < planningInterval; timeOffset++) {
       const curTime = new Date(startTime + timeOffset * 1000);
-      const rae = this.rae(sat, curTime);
+      // const rae = this.rae(sat, curTime);
+      const rae = {
+        az: 0 as Degrees,
+        el: 0 as Degrees,
+        rng: 0 as Kilometers,
+      };
 
       const isInView = this.isRaeInFov(rae);
 
+      // Propagate Backwards to get the previous pass
       if (timeOffset === 0) {
-        // Propagate Backwards to get the previous pass
-        const oldRae = this.rae(sat, new Date(date.getTime() - 1 * 1000));
+        // const oldRae = this.rae(sat, new Date(date.getTime() - 1 * 1000));
+        const oldRae = {
+          az: 0 as Degrees,
+          el: 0 as Degrees,
+          rng: 0 as Kilometers,
+        };
 
         isInViewLast = this.isRaeInFov(oldRae);
       }
@@ -159,8 +172,10 @@ export class Sensor extends GroundObject {
    * @param date - The date to use for the calculation. Defaults to the current date.
    * @returns A boolean indicating whether the satellite is in the FOV.
    */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   isSatInFov(sat: Satellite, date: Date = new Date()): boolean {
-    return this.isRaeInFov(this.rae(sat, date));
+    // return this.isRaeInFov(this.rae(sat, date));
+    return false;
   }
 
   /**

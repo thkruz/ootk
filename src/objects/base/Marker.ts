@@ -17,7 +17,7 @@
 
 import { Degrees, Geodetic, GroundObject } from '../../main.js';
 
-export class Marker extends GroundObject {
+export class MarkerAdv extends GroundObject {
   /**
    * Creates a Facility object from a Geodetic position.
    * @param name The name of the Facility.
@@ -25,7 +25,7 @@ export class Marker extends GroundObject {
    * @returns A new Facility object.
    */
   static fromGeodetic(name: string, geodetic: Geodetic): GroundObject {
-    return new Marker({
+    return new MarkerAdv({
       name,
       lat: geodetic.latDeg as Degrees,
       lon: geodetic.lonDeg as Degrees,
@@ -38,7 +38,7 @@ export class Marker extends GroundObject {
     const data = JSON.parse(json);
 
 
-    return new Marker({
+    return new MarkerAdv({
       id: data.id,
       name: data.name,
       shortDescription: data.shortDescription,

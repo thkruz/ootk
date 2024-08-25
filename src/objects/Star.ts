@@ -34,14 +34,14 @@ import {
   SpaceObjectType,
   StarObjectParams,
 } from '../main.js';
-import { BaseObject } from './base/BaseObject.js';
+import { BaseObjectAdv } from './base/BaseObject.js';
 
-export class Star extends BaseObject {
+export class Star extends BaseObjectAdv {
   static readonly earthCenterLla = {
     lat: 0 as Degrees,
     lon: 0 as Degrees,
     alt: 0 as Kilometers,
-  } as unknown as BaseObject;
+  } as unknown as BaseObjectAdv;
   ra: Radians;
   dec: Radians;
   bf: string;
@@ -92,7 +92,7 @@ export class Star extends BaseObject {
     return this.lla(date) as unknown as LlaVec3<Radians, Kilometers>;
   }
 
-  rae(baseObject: BaseObject, date: Date = new Date()): RaeVec3 {
+  rae(baseObject: BaseObjectAdv, date: Date = new Date()): RaeVec3 {
     const raeFrom = this.raeFrom(baseObject, date);
 
     // Retrun the inverse azimuth and elevation to get the direction from the star to the object
@@ -115,7 +115,7 @@ export class Star extends BaseObject {
   }
 
   raeFrom(
-    originObject: BaseObject,
+    originObject: BaseObjectAdv,
     date: Date = new Date(),
   ): RaeVec3 {
     const lla = originObject.lla();

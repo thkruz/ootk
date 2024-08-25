@@ -1,6 +1,6 @@
 import { CommonBase, CommonBaseParams } from '../CommonBase.js';
-import { BaseObject } from '../base/BaseObject.js';
-import { SatelliteObserver } from '../base/Satellite.js';
+import { BaseObjectAdv } from '../base/BaseObject.js';
+import { SatelliteObserver } from '../base/SatelliteAdv.js';
 
 export interface AttachableObjectParams extends CommonBaseParams {
   name: string;
@@ -8,14 +8,14 @@ export interface AttachableObjectParams extends CommonBaseParams {
 
 export abstract class AttachableObject extends CommonBase implements SatelliteObserver {
   name: string;
-  parent: BaseObject | null = null;
+  parent: BaseObjectAdv | null = null;
 
   constructor(params: AttachableObjectParams) {
     super(params);
     this.name = params.name;
   }
 
-  attachTo(object: BaseObject): void {
+  attachTo(object: BaseObjectAdv): void {
     this.parent = object;
   }
 
@@ -23,7 +23,7 @@ export abstract class AttachableObject extends CommonBase implements SatelliteOb
     this.parent = null;
   }
 
-  abstract update(baseObject: BaseObject): void;
+  abstract update(baseObject: BaseObjectAdv): void;
 
   toJSON(): string {
     return JSON.stringify({

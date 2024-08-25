@@ -1,5 +1,5 @@
-import { AttachableObject, BaseObject, Degrees, ecf2rae, Kilometers, LlaVec3, Orientation, Radians, RaeVec3, SensorMetaData } from '../../main.js';
-import { SatelliteObserver } from '../base/Satellite.js';
+import { AttachableObject, BaseObjectAdv, Degrees, ecf2rae, Kilometers, LlaVec3, Orientation, Radians, RaeVec3, SensorMetaData } from '../../main.js';
+import { SatelliteObserver } from '../base/SatelliteAdv.js';
 import { AttachableObjectParams } from './AttachableObject.js';
 import { SensorMetaDataParams } from './SensorMetaData.js';
 
@@ -9,7 +9,7 @@ export interface SensorParams extends AttachableObjectParams, SensorMetaDataPara
   opacity?: number;
 }
 
-export abstract class Sensor extends AttachableObject implements SatelliteObserver {
+export abstract class SensorAdv extends AttachableObject implements SatelliteObserver {
   orientation: Orientation;
   color: string;
   opacity: number;
@@ -33,7 +33,7 @@ export abstract class Sensor extends AttachableObject implements SatelliteObserv
   lla(date?: Date): LlaVec3<Degrees, Kilometers> {
     return this.parent?.lla(date) ?? { lat: 0 as Degrees, lon: 0 as Degrees, alt: 0 as Kilometers };
   }
-  rae(targetObject: BaseObject, date?: Date): RaeVec3<Kilometers, Degrees> {
+  rae(targetObject: BaseObjectAdv, date?: Date): RaeVec3<Kilometers, Degrees> {
     const overallOrientation = {
       azimuth: (this.parent?.orientation.azimuth ?? 0) + this.orientation.azimuth as Degrees,
       elevation: (this.parent?.orientation.elevation ?? 0) + this.orientation.elevation as Degrees,
@@ -43,7 +43,7 @@ export abstract class Sensor extends AttachableObject implements SatelliteObserv
   }
 
   abstract isRaeInFov(rae: RaeVec3): boolean;
-  abstract update(baseObject: BaseObject): void;
+  abstract update(baseObject: BaseObjectAdv): void;
 
   toJSON(): string {
     return JSON.stringify({

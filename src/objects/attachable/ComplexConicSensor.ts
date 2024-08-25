@@ -1,4 +1,4 @@
-import { Sensor, AttachableObject, BaseObject, Degrees, SensorParams, RaeVec3 } from '../../main.js';
+import { SensorAdv, AttachableObject, BaseObjectAdv, Degrees, SensorParams, RaeVec3 } from '../../main.js';
 
 export interface ComplexConicSensorParams extends SensorParams {
   innerHalfAngle: Degrees;
@@ -7,7 +7,7 @@ export interface ComplexConicSensorParams extends SensorParams {
   maxClockAngle: Degrees;
 }
 
-export class ComplexConicSensor extends Sensor implements AttachableObject {
+export class ComplexConicSensor extends SensorAdv implements AttachableObject {
   public innerHalfAngle: Degrees;
   public outerHalfAngle: Degrees;
   public minClockAngle: Degrees;
@@ -42,7 +42,7 @@ export class ComplexConicSensor extends Sensor implements AttachableObject {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  update(baseObject: BaseObject, ...args: unknown[]): void {
+  update(baseObject: BaseObjectAdv, ...args: unknown[]): void {
   // Do nothing
   }
 

@@ -1,18 +1,18 @@
-import { AttachableObject, BaseObject, RaeVec3, Sensor } from '../../main.js';
+import { AttachableObject, BaseObjectAdv, RaeVec3, SensorAdv } from '../../main.js';
 
 export interface SensorCollectionParams {
   name: string;
-  sensors: Sensor[];
+  sensors: SensorAdv[];
 }
 
 export class SensorCollection extends AttachableObject {
-  sensors: Sensor[];
+  sensors: SensorAdv[];
   constructor(info: SensorCollectionParams) {
     super(info);
     this.sensors = info.sensors || [];
   }
 
-  attachTo(object: BaseObject): void {
+  attachTo(object: BaseObjectAdv): void {
     this.parent = object;
     this.sensors.forEach((sensor) => sensor.attachTo(object));
   }
@@ -26,11 +26,11 @@ export class SensorCollection extends AttachableObject {
     return this.sensors.some((sensor) => sensor.isRaeInFov(rae));
   }
 
-  addSensor(sensor: Sensor): void {
+  addSensor(sensor: SensorAdv): void {
     this.sensors.push(sensor);
   }
 
-  removeSensor(sensor: Sensor): void {
+  removeSensor(sensor: SensorAdv): void {
     const index = this.sensors.indexOf(sensor);
 
     if (index > -1) {
@@ -38,7 +38,7 @@ export class SensorCollection extends AttachableObject {
     }
   }
 
-  update(baseObject: BaseObject): void {
+  update(baseObject: BaseObjectAdv): void {
     this.sensors.forEach((sensor) => sensor.update(baseObject));
   }
 

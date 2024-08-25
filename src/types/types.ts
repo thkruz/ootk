@@ -15,7 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PassType, Satellite, Vector3D } from '../main.js';
+import { SatelliteParams } from '../interfaces/SatelliteParams.js';
+import { CommLink, PassType, SatelliteAdv, Vector3D } from '../main.js';
+import { SensorParams } from '../interfaces/SensorParams.js';
 
 /**
  * Represents a distinct type.
@@ -750,7 +752,7 @@ export type StringifiedNumber = `${number}.${number}`;
  * TODO: #22 TleParams types should be more consistent.
  */
 export type TleParams = {
-  sat?: Satellite;
+  sat?: SatelliteAdv;
   inc: string|number;
   meanmo: string|number;
   rasc: string|number;
@@ -769,4 +771,93 @@ export type TleParams = {
 export type PositionVelocity = {
   position: Vector3D<Kilometers>;
   velocity: Vector3D<KilometersPerSecond>;
+};
+
+export interface DetailedSatelliteParams extends SatelliteParams {
+  id: number;
+  active?: boolean;
+  configuration?: string;
+  country?: string;
+  dryMass?: string;
+  equipment?: string;
+  launchDate?: string;
+  launchMass?: string;
+  launchSite?: string;
+  launchVehicle?: string;
+  lifetime?: string | number;
+  maneuver?: string;
+  manufacturer?: string;
+  mission?: string;
+  motor?: string;
+  owner?: string;
+  bus?: string;
+  payload?: string;
+  power?: string;
+  purpose?: string;
+  length?: string;
+  diameter?: string;
+  shape?: string;
+  span?: string;
+  user?: string;
+  vmag?: number | null;
+  rcs?: number | null;
+  source?: string;
+  altId?: string;
+  altName?: string;
+}
+
+export interface DetailedSensorParams extends SensorParams {
+  /** The country that owns the sensor */
+  country?: string;
+  /** 3 Letter Designation */
+  shortName?: string;
+  changeObjectInterval?: Milliseconds;
+  commLinks?: CommLink[];
+  freqBand?: string;
+  static?: boolean;
+  sensorId?: number;
+  url?: string;
+  /** Does this sensor use a volumetric search pattern? */
+  volume?: boolean;
+  /** How far away should we zoom when selecting this sensor? */
+  zoom?: ZoomValue;
+  /** This is the name of the object in the array */
+  objName?: string;
+  /** This is the name of the object in the UI */
+  uiName?: string;
+  /** This is the specific system (ex. AN/FPS-132) */
+  system?: string;
+  /** This is who operates the sensor */
+  operator?: string;
+}
+
+
+export type LaunchDetails = {
+  launchDate?: string;
+  launchMass?: string;
+  launchSite?: string;
+  launchVehicle?: string;
+};
+
+export type SpaceCraftDetails = {
+  lifetime?: string | number;
+  maneuver?: string;
+  manufacturer?: string;
+  motor?: string;
+  power?: string;
+  payload?: string;
+  purpose?: string;
+  shape?: string;
+  span?: string;
+  bus?: string;
+  configuration?: string;
+  equipment?: string;
+  dryMass?: string;
+};
+
+export type OperationsDetails = {
+  user?: string;
+  mission?: string;
+  owner?: string;
+  country?: string;
 };

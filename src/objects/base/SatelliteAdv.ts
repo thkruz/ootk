@@ -16,7 +16,7 @@ import {
   TleLine2,
   DEG2RAD, RAD2DEG,
   dopplerFactor,
-  BaseObject,
+  BaseObjectAdv,
   GroundObject,
   SpaceObjectType,
   OperationalInfo,
@@ -32,7 +32,7 @@ import {
 } from '../../main.js';
 
 export interface SatelliteObserver {
-  update(parent: BaseObject): void;
+  update(parent: BaseObjectAdv): void;
 }
 
 export interface SatelliteParams extends BaseObjectParams {
@@ -76,7 +76,7 @@ export interface SatelliteParams extends BaseObjectParams {
   altName?: string;
 }
 
-export class Satellite extends BaseObject {
+export class SatelliteAdv extends BaseObjectAdv {
   core: SatelliteCore;
   launchInfo: LaunchInfo;
   spaceCraftDetails: SpacecraftDetails;
@@ -145,11 +145,11 @@ export class Satellite extends BaseObject {
     }
   }
 
-  az(observer: BaseObject, date: Date = new Date()): Degrees {
+  az(observer: BaseObjectAdv, date: Date = new Date()): Degrees {
     return (this.rae(observer, date).az * RAD2DEG) as Degrees;
   }
 
-  toRae(observer: BaseObject, date: Date = new Date()): RAE {
+  toRae(observer: BaseObjectAdv, date: Date = new Date()): RAE {
     const rae = this.rae(observer, date);
     const rae2 = this.rae(observer, new Date(date.getTime() + 1000));
     const epoch = new EpochUTC(date.getTime() / 1000 as Seconds);
@@ -189,7 +189,7 @@ export class Satellite extends BaseObject {
     return new J2000(epoch, pos, vel);
   }
 
-  el(observer: BaseObject, date: Date = new Date()): Degrees {
+  el(observer: BaseObjectAdv, date: Date = new Date()): Degrees {
     return (this.rae(observer, date).el * RAD2DEG) as Degrees;
   }
 
@@ -219,7 +219,7 @@ export class Satellite extends BaseObject {
     return this.toJ2000(date).toITRF();
   }
 
-  toRIC(reference: Satellite, date: Date = new Date()): RIC {
+  toRIC(reference: SatelliteAdv, date: Date = new Date()): RIC {
     return RIC.fromJ2000(this.toJ2000(date), reference.toJ2000(date));
   }
 
@@ -227,7 +227,7 @@ export class Satellite extends BaseObject {
     return this.toJ2000(date).toClassicalElements();
   }
 
-  rae(observer: BaseObject, date: Date = new Date()): RaeVec3<Kilometers, Degrees> {
+  rae(observer: BaseObjectAdv, date: Date = new Date()): RaeVec3<Kilometers, Degrees> {
     const { gmst } = OrbitData.calculateTimeVariables(date, this.orbitData.satrec);
     const eci = this.eci(date).position;
     const ecf = eci2ecf(eci, gmst);
@@ -235,7 +235,7 @@ export class Satellite extends BaseObject {
     return ecf2rae(observer.lla(), ecf);
   }
 
-  rng(observer: BaseObject, date: Date = new Date()): Kilometers {
+  rng(observer: BaseObjectAdv, date: Date = new Date()): Kilometers {
     return this.rae(observer, date).rng;
   }
 
@@ -251,8 +251,8 @@ export class Satellite extends BaseObject {
     return dopplerFactor(observer.eci(date).position, position.position, position.velocity);
   }
 
-  clone(): Satellite {
-    return new Satellite({
+  clone(): SatelliteAdv {
+    return new SatelliteAdv({
       id: this.id,
       name: this.core.name,
       altId: this.core.altId,
@@ -300,10 +300,10 @@ export class Satellite extends BaseObject {
     });
   }
 
-  static fromJSON(json: string): Satellite {
+  static fromJSON(json: string): SatelliteAdv {
     const data = JSON.parse(json);
 
-    return new Satellite({
+    return new SatelliteAdv({
       id: data.id,
       name: data.core.name,
       altId: data.core.altId,
