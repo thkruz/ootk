@@ -1,4 +1,5 @@
-import { RfVec3, RuvVec3, RfSensor, DEG2RAD,
+import {
+  RfVec3, RuvVec3, DEG2RAD,
   Degrees,
   Earth,
   EcefVec3,
@@ -12,11 +13,10 @@ import { RfVec3, RuvVec3, RfSensor, DEG2RAD,
   PI,
   RAD2DEG,
   Radians,
-  RaeVec3,
-  Sensor,
-  SezVec3,
+  RaeVec3, SezVec3,
   Sgp4,
-  TAU} from '../main.js';
+  TAU,
+} from '../main.js';
 import { TransformCache } from './TransformCache.js';
 
 /**
@@ -230,13 +230,49 @@ export function lla2ecef<D extends number>(lla: LlaVec3<Degrees, D>): EcefVec3<D
 }
 
 /**
+ * Multiplies two matrices.
+ * @param a - The first matrix.
+ * @param b - The second matrix.
+ * @returns The result of multiplying matrix a by matrix b.
+ */
+function multiplyMatrices(a: number[][], b: number[][]): number[][] {
+  return a.map((row, i) =>
+    b[0].map((_, j) =>
+      row.reduce((acc, _, n) => acc + a[i][n] * b[n][j], 0),
+    ),
+  );
+}
+
+/**
+ * Multiplies a matrix by a vector.
+ * @param matrix - The matrix to multiply.
+ * @param vector - The vector to multiply.
+ * @returns The resulting vector after multiplication.
+ */
+function multiplyMatrixVector(matrix: number[][], vector: number[]): number[] {
+  return matrix.map((row) =>
+    row.reduce((sum, value, index) => sum + value * vector[index], 0),
+  );
+}
+
+export interface Orientation {
+  azimuth: Degrees;
+  elevation: Degrees;
+}
+
+/**
  * Converts LLA to SEZ coordinates.
  * @see http://www.celestrak.com/columns/v02n02/
  * @param lla The LLA coordinates.
  * @param ecf The ECF coordinates.
+ * @param orientation The orientation of the observer.
  * @returns The SEZ coordinates.
  */
-export function lla2sez<D extends number>(lla: LlaVec3<Radians, D>, ecf: EcfVec3<D>): SezVec3<D> {
+export function lla2sez<D extends number>(
+  lla: LlaVec3<Radians, D>,
+  ecf: EcfVec3<D>,
+  orientation: Orientation = { azimuth: 0 as Degrees, elevation: 0 as Degrees},
+): SezVec3<D> {
   const lon = lla.lon;
   const lat = lla.lat;
 
@@ -250,12 +286,36 @@ export function lla2sez<D extends number>(lla: LlaVec3<Radians, D>, ecf: EcfVec3
   const ry = ecf.y - observerEcf.y;
   const rz = ecf.z - observerEcf.z;
 
-  // Top is short for topocentric
-  const south = Math.sin(lat) * Math.cos(lon) * rx + Math.sin(lat) * Math.sin(lon) * ry - Math.cos(lat) * rz;
+  // Calculate the rotation matrices for azimuth and elevation
+  const cosAz = Math.cos(orientation.azimuth * DEG2RAD);
+  const sinAz = Math.sin(orientation.azimuth * DEG2RAD);
+  const cosEl = Math.cos(orientation.elevation * DEG2RAD);
+  const sinEl = Math.sin(orientation.elevation * DEG2RAD);
 
-  const east = -Math.sin(lon) * rx + Math.cos(lon) * ry;
+  // Rotation matrix for azimuth (around Z-axis)
+  const rotAz = [
+    [cosAz, -sinAz, 0],
+    [sinAz, cosAz, 0],
+    [0, 0, 1],
+  ];
 
-  const zenith = Math.cos(lat) * Math.cos(lon) * rx + Math.cos(lat) * Math.sin(lon) * ry + Math.sin(lat) * rz;
+  // Rotation matrix for elevation (around Y-axis)
+  const rotEl = [
+    [cosEl, 0, sinEl],
+    [0, 1, 0],
+    [-sinEl, 0, cosEl],
+  ];
+
+  // Combine rotations (first azimuth, then elevation)
+  const rotCombined = multiplyMatrices(rotEl, rotAz);
+
+  // Original SEZ calculation
+  const southOrig = Math.sin(lat) * Math.cos(lon) * rx + Math.sin(lat) * Math.sin(lon) * ry - Math.cos(lat) * rz;
+  const eastOrig = -Math.sin(lon) * rx + Math.cos(lon) * ry;
+  const zenithOrig = Math.cos(lat) * Math.cos(lon) * rx + Math.cos(lat) * Math.sin(lon) * ry + Math.sin(lat) * rz;
+
+  // Apply combined rotation to the original SEZ vector
+  const [south, east, zenith] = multiplyMatrixVector(rotCombined, [southOrig, eastOrig, zenithOrig]);
 
   return { s: <D>south, e: <D>east, z: <D>zenith };
 }
@@ -373,12 +433,13 @@ export function sez2rae<D extends number>(sez: SezVec3<D>): RaeVec3<D, Radians> 
 /**
  * Converts Earth-Centered Fixed (ECF) coordinates to Right Ascension (RA),
  * Elevation (E), and Azimuth (A) coordinates.
- * @param lla The Latitude, Longitude, and Altitude (LLA) coordinates.
- * @param ecf The Earth-Centered Fixed (ECF) coordinates.
+ * @param originLla The Latitude, Longitude, and Altitude (LLA) coordinates.
+ * @param targetEcf The Earth-Centered Fixed (ECF) coordinates.
+ * @param orientation The orientation of the observer.
  * @returns The Right Ascension (RA), Elevation (E), and Azimuth (A) coordinates.
  */
-export function ecfRad2rae<D extends number>(lla: LlaVec3<Radians, D>, ecf: EcfVec3<D>): RaeVec3<D, Degrees> {
-  const sezCoords = lla2sez(lla, ecf);
+export function ecfRad2rae<D extends number>(originLla: LlaVec3<Radians, D>, targetEcf: EcfVec3<D>, orientation: Orientation = { azimuth: 0 as Degrees, elevation: 0 as Degrees}): RaeVec3<D, Degrees> {
+  const sezCoords = lla2sez(originLla, targetEcf, orientation);
   const rae = sez2rae(sezCoords);
 
   return { rng: rae.rng, az: (rae.az * RAD2DEG) as Degrees, el: (rae.el * RAD2DEG) as Degrees };
@@ -388,23 +449,25 @@ export function ecfRad2rae<D extends number>(lla: LlaVec3<Radians, D>, ecf: EcfV
  * Converts Earth-Centered Fixed (ECF) coordinates to Right Ascension (RA),
  * Elevation (E), and Azimuth (A) coordinates.
  * @variation cached - results are cached
- * @param lla The Latitude, Longitude, and Altitude (LLA) coordinates.
- * @param ecf The Earth-Centered Fixed (ECF) coordinates.
+ * @param originLla The Latitude, Longitude, and Altitude (LLA) coordinates.
+ * @param targetEcf The Earth-Centered Fixed (ECF) coordinates.
+ * @param orientation The orientation of the observer.
  * @returns The Right Ascension (RA), Elevation (E), and Azimuth (A) coordinates.
  */
-export function ecf2rae<D extends number>(lla: LlaVec3<Degrees, D>, ecf: EcfVec3<D>): RaeVec3<D, Degrees> {
+export function ecf2rae<D extends number>(originLla: LlaVec3<Degrees, D>, targetEcf: EcfVec3<D>, orientation: Orientation = { azimuth: 0 as Degrees, elevation: 0 as Degrees}): RaeVec3<D, Degrees> {
   // Check cache
-  const key = `${lla.lat},${lla.lon},${lla.alt},${ecf.x},${ecf.y},${ecf.z}`;
+  const key = `${originLla.lat},${originLla.lon},${originLla.alt},${targetEcf.x},${targetEcf.y},${targetEcf.z},${orientation.azimuth},${orientation.elevation}`;
   const cached = TransformCache.get(key);
 
   if (cached) {
     return cached as RaeVec3<D, Degrees>;
   }
 
-  const { lat, lon } = lla;
+  const { lat, lon } = originLla;
   const latRad = (lat * DEG2RAD) as Radians;
   const lonRad = (lon * DEG2RAD) as Radians;
-  const rae = ecfRad2rae({ lat: latRad, lon: lonRad, alt: lla.alt }, ecf);
+
+  const rae = ecfRad2rae({ lat: latRad, lon: lonRad, alt: originLla.alt }, targetEcf, orientation);
 
   TransformCache.add(key, rae);
 
@@ -467,29 +530,30 @@ export function calcGmst(date: Date): { gmst: GreenwichMeanSiderealTime; j: numb
  * @variation cached - results are cached
  * @param now - Current date and time.
  * @param eci - ECI coordinates of the satellite.
- * @param sensor - Sensor object containing observer's geodetic coordinates.
+ * @param observerLla - LLA coordinates of the observer.
+ * @param observerOrientation - The orientation of the observer.
  * @returns Object containing azimuth, elevation and range in degrees and kilometers respectively.
  */
-export function eci2rae(now: Date, eci: EciVec3<Kilometers>, sensor: Sensor): RaeVec3<Kilometers, Degrees> {
+export function eci2rae(now: Date, eci: EciVec3<Kilometers>, observerLla: LlaVec3, observerOrientation: Orientation): RaeVec3<Kilometers, Degrees> {
   now = new Date(now);
   const { gmst } = calcGmst(now);
 
   // Check cache
-  const key = `${gmst},${eci.x},${eci.y},${eci.z},${sensor.lat},${sensor.lon},${sensor.alt}`;
+  const key = `${gmst},${eci.x},${eci.y},${eci.z},${observerLla.lat},${observerLla.lon},${observerLla.alt}`;
   const cached = TransformCache.get(key);
 
   if (cached) {
     return cached as RaeVec3<Kilometers, Degrees>;
   }
 
-  const positionEcf = eci2ecf(eci, gmst);
-  const lla = {
-    lat: (sensor.lat * DEG2RAD) as Radians,
-    lon: (sensor.lon * DEG2RAD) as Radians,
-    alt: sensor.alt,
+  const targetEcf = eci2ecf(eci, gmst);
+  const originLla = {
+    lat: (observerLla.lat * DEG2RAD) as Radians,
+    lon: (observerLla.lon * DEG2RAD) as Radians,
+    alt: observerLla.alt,
   };
 
-  const rae = ecfRad2rae(lla, positionEcf);
+  const rae = ecfRad2rae(originLla, targetEcf, observerOrientation);
 
   TransformCache.add(key, rae);
 
@@ -530,15 +594,13 @@ export function azel2uv(az: Radians, el: Radians, coneHalfAngle: Radians): { u: 
 /**
  * Determine azimuth and elevation off of boresight based on sensor orientation and RAE.
  * @param rae Range, Azimuth, Elevation
- * @param sensor Radar sensor object
- * @param face Face number of the sensor
+ * @param orientation Sensor orientation
  * @param maxSensorAz Maximum sensor azimuth
  * @returns Azimuth and Elevation off of boresight
  */
 export function rae2raeOffBoresight(
   rae: RaeVec3,
-  sensor: RfSensor,
-  face: number,
+  orientation: Orientation,
   maxSensorAz: Degrees,
 ): { az: Radians; el: Radians } {
   let az = (rae.az * DEG2RAD) as Radians;
@@ -547,8 +609,8 @@ export function rae2raeOffBoresight(
   // Correct azimuth for sensor orientation.
   az = az > maxSensorAz * DEG2RAD ? ((az - TAU) as Radians) : az;
 
-  az = (az - sensor.boresightAz[face]) as Radians;
-  el = (el - sensor.boresightEl[face]) as Radians;
+  az = (az - (orientation.azimuth * DEG2RAD) as Radians);
+  el = (el - (orientation.elevation * DEG2RAD) as Radians);
 
   return { az, el };
 }
@@ -556,14 +618,14 @@ export function rae2raeOffBoresight(
 /**
  * Converts Range Az El to Range U V.
  * @param rae Range, Azimuth, Elevation
- * @param sensor Radar sensor object
- * @param face Face number of the sensor
+ * @param orientation Sensor orientation
+ * @param beamwidth Beamwidth of the radar
  * @param maxSensorAz Maximum sensor azimuth
  * @returns Range, U, V
  */
-export function rae2ruv(rae: RaeVec3, sensor: RfSensor, face: number, maxSensorAz: Degrees): RuvVec3 {
-  const { az, el } = rae2raeOffBoresight(rae, sensor, face, maxSensorAz);
-  const { u, v } = azel2uv(az, el, sensor.beamwidthRad);
+export function rae2ruv(rae: RaeVec3, orientation: Orientation, beamwidth: Degrees, maxSensorAz: Degrees): RuvVec3 {
+  const { az, el } = rae2raeOffBoresight(rae, orientation, maxSensorAz);
+  const { u, v } = azel2uv(az, el, beamwidth * DEG2RAD as Radians);
 
   return { rng: rae.rng, u, v };
 }
