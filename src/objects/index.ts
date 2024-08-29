@@ -1,3 +1,7 @@
+export type { RfSensorParams } from './RfSensor.js';
+export type { DetailedSensorParams } from './DetailedSensor.js';
+export type { GroundPositionParams } from './GroundObject.js';
+
 export { BaseObject } from './BaseObject.js';
 export { GroundObject } from './GroundObject.js';
 export { Satellite } from './Satellite.js';

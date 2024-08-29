@@ -21,8 +21,19 @@
  * SOFTWARE.
  */
 
-import { azel2uv, DEG2RAD, Degrees, RAD2DEG, Radians, RfSensorParams, SpaceObjectType, uv2azel } from '../main.js';
-import { DetailedSensor } from './DetailedSensor.js';
+import { azel2uv, DEG2RAD, Degrees, RAD2DEG, Radians, SpaceObjectType, uv2azel } from '../main.js';
+import { DetailedSensor, DetailedSensorParams } from './DetailedSensor.js';
+
+export interface RfSensorParams extends DetailedSensorParams {
+  /** The azimuth angles at boresight of the sensor */
+  boresightAz: Degrees[];
+  /** The elevation angles at boresight of the sensor */
+  boresightEl: Degrees[];
+  /** The width of the beam */
+  beamwidth: Degrees;
+  /** The frequency this sensor operate in */
+  freqBand?: string;
+}
 
 export class RfSensor extends DetailedSensor {
   boresightAz: Degrees[];

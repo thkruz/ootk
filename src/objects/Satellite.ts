@@ -353,7 +353,7 @@ export class Satellite extends BaseObject {
     const eci = this.eci(date).position;
     const ecf = eci2ecf(eci, gmst);
 
-    return ecf2rae(observer, ecf);
+    return ecf2rae(observer, ecf, observer.orientation);
   }
 
   /**

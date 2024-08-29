@@ -1,6 +1,4 @@
-export type { RfSensorParams } from './RfSensorParams.js';
 export type { BaseObjectParams } from './BaseObjectParams.js';
-export type { GroundPositionParams } from './GroundPositionParams.js';
 export type { OptionsParams } from './OptionsParams.js';
 export type { SatelliteParams } from './SatelliteParams.js';
 export type { SensorParams } from './SensorParams.js';

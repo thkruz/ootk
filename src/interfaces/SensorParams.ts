@@ -1,7 +1,7 @@
 import { Degrees, Kilometers, SpaceObjectType } from '../types/types.js';
-import { BaseObjectParams } from './BaseObjectParams.js';
+import { GroundPositionParams } from '../main.js';
 
-export interface SensorParams extends BaseObjectParams{
+export interface SensorParams extends GroundPositionParams {
   /** Altitude in Kilometers */
   alt: Kilometers;
   /** Latitude in Degrees */

@@ -15,7 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { CatalogSource, DetailedSensor, FormatTle, OptionsParams, Satellite } from '../main.js';
+import { Satellite } from './Satellite.js';
+import { CatalogSource, DetailedSensor, FormatTle, OptionsParams } from '../main.js';
 import { DetailedSatelliteParams, LaunchDetails, OperationsDetails, SpaceCraftDetails, TleLine1, TleLine2 } from '../types/types.js';
 
 /**

@@ -1,4 +1,4 @@
-import { DEG2RAD, Degrees, Kilometers, Radians, RfSensor, SpaceObjectType, azel2uv, rae2raeOffBoresight, uv2azel } from '../../src/main.js';
+import { DEG2RAD, Degrees, Kilometers, Radians, azel2uv, rae2raeOffBoresight, uv2azel } from '../../src/main.js';
 
 // uv2azel
 it('should convert valid unit vector to azimuth and elevation', () => {
@@ -19,23 +19,11 @@ it('should convert valid RAE coordinates to RAE Off Boresight', () => {
     el: 0 as Degrees,
   };
 
-  const senor = new RfSensor({
-    type: SpaceObjectType.PHASED_ARRAY_RADAR,
-    lat: 0 as Degrees,
-    lon: 0 as Degrees,
-    alt: 0 as Kilometers,
-    minAz: 0 as Degrees,
-    maxAz: 0 as Degrees,
-    minEl: 0 as Degrees,
-    maxEl: 0 as Degrees,
-    minRng: 0 as Kilometers,
-    maxRng: 0 as Kilometers,
-    boresightAz: [0 as Degrees],
-    boresightEl: [0 as Degrees],
-    beamwidth: 0 as Degrees,
-  });
-
-  const raeOffBoresightCoordinates = rae2raeOffBoresight(rae, senor, 0, 10 as Degrees);
+  const orientation = {
+    azimuth: 0 as Degrees,
+    elevation: 0 as Degrees,
+  };
+  const raeOffBoresightCoordinates = rae2raeOffBoresight(rae, orientation, 0 as Degrees);
 
   expect(raeOffBoresightCoordinates).toMatchSnapshot();
 });

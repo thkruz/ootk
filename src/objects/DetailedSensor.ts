@@ -15,11 +15,38 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { SensorParams } from '../main.js';
 import { CommLink } from '../enums/CommLink.js';
-import { DetailedSensorParams, Milliseconds, ZoomValue } from '../types/types.js';
+import { Milliseconds, ZoomValue } from '../types/types.js';
 import { DetailedSatellite } from './DetailedSatellite.js';
 import { LandObject } from './LandObject.js';
 import { Sensor } from './Sensor.js';
+
+
+export interface DetailedSensorParams extends SensorParams {
+  /** The country that owns the sensor */
+  country?: string;
+  /** 3 Letter Designation */
+  shortName?: string;
+  changeObjectInterval?: Milliseconds;
+  commLinks?: CommLink[];
+  freqBand?: string;
+  static?: boolean;
+  sensorId?: number;
+  url?: string;
+  /** Does this sensor use a volumetric search pattern? */
+  volume?: boolean;
+  /** How far away should we zoom when selecting this sensor? */
+  zoom?: ZoomValue;
+  /** This is the name of the object in the array */
+  objName?: string;
+  /** This is the name of the object in the UI */
+  uiName?: string;
+  /** This is the specific system (ex. AN/FPS-132) */
+  system?: string;
+  /** This is who operates the sensor */
+  operator?: string;
+}
 
 export class DetailedSensor extends Sensor {
   sensorId?: number;

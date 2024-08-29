@@ -229,32 +229,6 @@ export function lla2ecef<D extends number>(lla: LlaVec3<Degrees, D>): EcefVec3<D
   return { x, y, z };
 }
 
-/**
- * Multiplies two matrices.
- * @param a - The first matrix.
- * @param b - The second matrix.
- * @returns The result of multiplying matrix a by matrix b.
- */
-function multiplyMatrices(a: number[][], b: number[][]): number[][] {
-  return a.map((row, i) =>
-    b[0].map((_, j) =>
-      row.reduce((acc, _, n) => acc + a[i][n] * b[n][j], 0),
-    ),
-  );
-}
-
-/**
- * Multiplies a matrix by a vector.
- * @param matrix - The matrix to multiply.
- * @param vector - The vector to multiply.
- * @returns The resulting vector after multiplication.
- */
-function multiplyMatrixVector(matrix: number[][], vector: number[]): number[] {
-  return matrix.map((row) =>
-    row.reduce((sum, value, index) => sum + value * vector[index], 0),
-  );
-}
-
 export interface Orientation {
   azimuth: Degrees;
   elevation: Degrees;
@@ -292,30 +266,15 @@ export function lla2sez<D extends number>(
   const cosEl = Math.cos(orientation.elevation * DEG2RAD);
   const sinEl = Math.sin(orientation.elevation * DEG2RAD);
 
-  // Rotation matrix for azimuth (around Z-axis)
-  const rotAz = [
-    [cosAz, -sinAz, 0],
-    [sinAz, cosAz, 0],
-    [0, 0, 1],
-  ];
+  // Apply orientation rotations to the ECF vector
+  const rxRotated = rx * cosAz * cosEl + ry * sinAz * cosEl + rz * sinEl;
+  const ryRotated = -rx * sinAz + ry * cosAz;
+  const rzRotated = -rx * cosAz * sinEl - ry * sinAz * sinEl + rz * cosEl;
 
-  // Rotation matrix for elevation (around Y-axis)
-  const rotEl = [
-    [cosEl, 0, sinEl],
-    [0, 1, 0],
-    [-sinEl, 0, cosEl],
-  ];
-
-  // Combine rotations (first azimuth, then elevation)
-  const rotCombined = multiplyMatrices(rotEl, rotAz);
-
-  // Original SEZ calculation
-  const southOrig = Math.sin(lat) * Math.cos(lon) * rx + Math.sin(lat) * Math.sin(lon) * ry - Math.cos(lat) * rz;
-  const eastOrig = -Math.sin(lon) * rx + Math.cos(lon) * ry;
-  const zenithOrig = Math.cos(lat) * Math.cos(lon) * rx + Math.cos(lat) * Math.sin(lon) * ry + Math.sin(lat) * rz;
-
-  // Apply combined rotation to the original SEZ vector
-  const [south, east, zenith] = multiplyMatrixVector(rotCombined, [southOrig, eastOrig, zenithOrig]);
+  // Calculate SEZ coordinates
+  const south = Math.sin(lat) * Math.cos(lon) * rxRotated + Math.sin(lat) * Math.sin(lon) * ryRotated - Math.cos(lat) * rzRotated;
+  const east = -Math.sin(lon) * rxRotated + Math.cos(lon) * ryRotated;
+  const zenith = Math.cos(lat) * Math.cos(lon) * rxRotated + Math.cos(lat) * Math.sin(lon) * ryRotated + Math.sin(lat) * rzRotated;
 
   return { s: <D>south, e: <D>east, z: <D>zenith };
 }
@@ -345,9 +304,14 @@ export function rae2sez<D extends number>(rae: RaeVec3<D, Radians>): SezVec3<D> 
  * @template A - The dimension of the LLA vector.
  * @param rae - The vector in RAE coordinate system.
  * @param lla - The vector in LLA coordinate system.
+ * @param orientation - The orientation of the observer.
  * @returns The vector in ECF coordinate system.
  */
-export function rae2ecf<D extends number>(rae: RaeVec3<D, Degrees>, lla: LlaVec3<Degrees, D>): EcfVec3<D> {
+export function rae2ecf<D extends number>(
+  rae: RaeVec3<D, Degrees>,
+  lla: LlaVec3<Degrees, D>,
+  orientation: Orientation = { azimuth: 0 as Degrees, elevation: 0 as Degrees},
+): EcfVec3<D> {
   const llaRad = {
     lat: (lla.lat * DEG2RAD) as Radians,
     lon: (lla.lon * DEG2RAD) as Radians,
@@ -360,17 +324,26 @@ export function rae2ecf<D extends number>(rae: RaeVec3<D, Degrees>, lla: LlaVec3
   };
 
   const obsEcf = llaRad2ecf(llaRad);
-  const sez = rae2sez(raeRad);
 
-  // Some needed calculations
+  // Convert RAE to local ENU coordinates
+  const east = raeRad.rng * Math.cos(raeRad.el) * Math.sin(raeRad.az);
+  const north = raeRad.rng * Math.cos(raeRad.el) * Math.cos(raeRad.az);
+  const up = raeRad.rng * Math.sin(raeRad.el);
+
+  // Rotate around East axis (elevation)
+  const eastAfterEl = east;
+  const northAfterEl = north * Math.cos(orientation.elevation * DEG2RAD) - up * Math.sin(orientation.elevation * DEG2RAD);
+  const upAfterEl = north * Math.sin(orientation.elevation * DEG2RAD) + up * Math.cos(orientation.elevation * DEG2RAD);
+
+  // Convert local ENU to ECEF
   const slat = Math.sin(llaRad.lat);
-  const slon = Math.sin(llaRad.lon);
   const clat = Math.cos(llaRad.lat);
+  const slon = Math.sin(llaRad.lon);
   const clon = Math.cos(llaRad.lon);
 
-  const x = slat * clon * sez.s + -slon * sez.e + clat * clon * sez.z + obsEcf.x;
-  const y = slat * slon * sez.s + clon * sez.e + clat * slon * sez.z + obsEcf.y;
-  const z = -clat * sez.s + slat * sez.z + obsEcf.z;
+  const x = -slat * clon * northAfterEl - slon * eastAfterEl + clat * clon * upAfterEl + obsEcf.x;
+  const y = -slat * slon * northAfterEl + clon * eastAfterEl + clat * slon * upAfterEl + obsEcf.y;
+  const z = clat * northAfterEl + slat * upAfterEl + obsEcf.z;
 
   return { x, y, z } as EcfVec3<D>;
 }
@@ -381,22 +354,24 @@ export function rae2ecf<D extends number>(rae: RaeVec3<D, Degrees>, lla: LlaVec3
  * @param rae The vector in RAE coordinates.
  * @param lla The vector in LLA (Latitude, Longitude, Altitude) coordinates.
  * @param gmst The Greenwich Mean Sidereal Time.
+ * @param orientation The orientation of the observer.
  * @returns The vector in ECI coordinates.
  */
 export function rae2eci<D extends number>(
   rae: RaeVec3<D, Degrees>,
   lla: LlaVec3<Degrees, D>,
   gmst: number,
+  orientation: Orientation = { azimuth: 0 as Degrees, elevation: 0 as Degrees},
 ): EciVec3<D> {
   // Check cache
-  const key = `${gmst},${rae.rng},${rae.az},${rae.el},${lla.lat},${lla.lon},${lla.alt}`;
+  const key = `${gmst},${rae.rng},${rae.az},${rae.el},${lla.lat},${lla.lon},${lla.alt},${orientation.azimuth},${orientation.elevation}`;
   const cached = TransformCache.get(key);
 
   if (cached) {
     return cached as EciVec3<D>;
   }
 
-  const ecf = rae2ecf(rae, lla);
+  const ecf = rae2ecf(rae, lla, orientation);
   const eci = ecf2eci(ecf, gmst);
 
   TransformCache.add(key, eci);
@@ -431,18 +406,61 @@ export function sez2rae<D extends number>(sez: SezVec3<D>): RaeVec3<D, Radians> 
 }
 
 /**
- * Converts Earth-Centered Fixed (ECF) coordinates to Right Ascension (RA),
- * Elevation (E), and Azimuth (A) coordinates.
- * @param originLla The Latitude, Longitude, and Altitude (LLA) coordinates.
- * @param targetEcf The Earth-Centered Fixed (ECF) coordinates.
- * @param orientation The orientation of the observer.
- * @returns The Right Ascension (RA), Elevation (E), and Azimuth (A) coordinates.
+ * Converts Earth-Centered Fixed (ECF) coordinates to range, Azimuth, and Elevation (RAE) coordinates.
+ * @param lla - The Latitude, Longitude, and Altitude (LLA) coordinates.
+ * @param ecf - The Earth-Centered Fixed (ECF) coordinates.
+ * @param orientation - The orientation of the observer.
+ * @returns The range, azimuth, and elevation coordinates.
  */
-export function ecfRad2rae<D extends number>(originLla: LlaVec3<Radians, D>, targetEcf: EcfVec3<D>, orientation: Orientation = { azimuth: 0 as Degrees, elevation: 0 as Degrees}): RaeVec3<D, Degrees> {
-  const sezCoords = lla2sez(originLla, targetEcf, orientation);
-  const rae = sez2rae(sezCoords);
+export function ecfRad2rae<D extends number>(
+  lla: LlaVec3<Radians, D>,
+  ecf: EcfVec3<D>,
+  orientation: Orientation = { azimuth: 0 as Degrees, elevation: 0 as Degrees },
+): RaeVec3<D, Degrees> {
 
-  return { rng: rae.rng, az: (rae.az * RAD2DEG) as Degrees, el: (rae.el * RAD2DEG) as Degrees };
+  const obsEcf = llaRad2ecf(lla);
+
+  // Calculate the difference vector
+  const dx = ecf.x - obsEcf.x;
+  const dy = ecf.y - obsEcf.y;
+  const dz = ecf.z - obsEcf.z;
+
+  // Convert ECEF to local ENU coordinates
+  const slat = Math.sin(lla.lat);
+  const clat = Math.cos(lla.lat);
+  const slon = Math.sin(lla.lon);
+  const clon = Math.cos(lla.lon);
+
+  const east = -slon * dx + clon * dy;
+  const north = -slat * clon * dx - slat * slon * dy + clat * dz;
+  const up = clat * clon * dx + clat * slon * dy + slat * dz;
+
+  // Apply orientation (azimuth only)
+  const azRad = orientation.azimuth * DEG2RAD;
+  const cosAz = Math.cos(azRad);
+  const sinAz = Math.sin(azRad);
+
+  const eastAfterAz = east * cosAz - north * sinAz;
+  const northAfterAz = east * sinAz + north * cosAz;
+  const upAfterAz = up;
+
+  // Calculate range
+  const rng = Math.sqrt(eastAfterAz * eastAfterAz + northAfterAz * northAfterAz + upAfterAz * upAfterAz);
+
+  // Calculate azimuth
+  let az = Math.atan2(eastAfterAz, northAfterAz);
+
+  // Calculate elevation
+  let el = Math.asin(upAfterAz / rng);
+
+  // Adjust elevation for sensor orientation
+  el -= orientation.elevation * DEG2RAD;
+
+  // Convert to degrees and normalize
+  az = ((az * RAD2DEG) % 360 + 360) % 360 as Degrees;
+  el = (el * RAD2DEG) as Degrees;
+
+  return { rng, az, el } as RaeVec3<D, Degrees>;
 }
 
 /**

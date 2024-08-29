@@ -131,7 +131,14 @@ export class Sensor extends GroundObject {
    * @param rae - The RAE vector to check.
    * @returns True if the RAE vector is within the field of view, false otherwise.
    */
+  // eslint-disable-next-line complexity
   isRaeInFov(rae: RaeVec3<Kilometers, Degrees>): boolean {
+    if (this.orientation.elevation > 80) {
+      // New logic for sensors that aim at the zenith
+      rae.az = rae.el > 0 ? rae.az as Degrees : rae.az - 180 as Degrees;
+      rae.az = rae.az < 0 ? rae.az + 360 as Degrees : rae.az as Degrees;
+    }
+
     if (rae.el < this.minEl || rae.el > this.maxEl) {
       return false;
     }
@@ -217,8 +224,10 @@ export class Sensor extends GroundObject {
   private validateFov_(info: SensorParams) {
     this.validateParameter(info.maxAz, 0, 360, 'Invalid maximum azimuth - must be between 0 and 360');
     this.validateParameter(info.minAz, 0, 360, 'Invalid maximum azimuth - must be between 0 and 360');
-    this.validateParameter(info.maxEl, -15, 180, 'Invalid maximum elevation - must be between 0 and 180');
-    this.validateParameter(info.minEl, -15, 90, 'Invalid minimum elevation - must be between 0 and 90');
+    /*
+     * this.validateParameter(info.maxEl, -90, 90, 'Invalid maximum elevation - must be between -90 and 90');
+     * this.validateParameter(info.minEl, -90, 90, 'Invalid minimum elevation - must be between -90 and 90');
+     */
     this.validateParameter(info.maxRng, 0, null, 'Invalid maximum range - must be greater than 0');
     this.validateParameter(info.minRng, 0, null, 'Invalid minimum range - must be greater than 0');
   }
@@ -230,8 +239,10 @@ export class Sensor extends GroundObject {
   private validateFov2_(info: SensorParams) {
     this.validateParameter(info.maxAz2, 0, 360, 'Invalid maximum azimuth2 - must be between 0 and 360');
     this.validateParameter(info.minAz2, 0, 360, 'Invalid maximum azimuth2 - must be between 0 and 360');
-    this.validateParameter(info.maxEl2, -15, 180, 'Invalid maximum elevation2 - must be between 0 and 180');
-    this.validateParameter(info.minEl2, -15, 90, 'Invalid minimum elevation2 - must be between 0 and 90');
+    /*
+     * this.validateParameter(info.maxEl2, -90, 90, 'Invalid maximum elevation2 - must be between -90 and 90');
+     * this.validateParameter(info.minEl2, -90, 90, 'Invalid minimum elevation2 - must be between -90 and 90');
+     */
     this.validateParameter(info.maxRng2, 0, null, 'Invalid maximum range2 - must be greater than 0');
     this.validateParameter(info.minRng2, 0, null, 'Invalid minimum range2 - must be greater than 0');
   }

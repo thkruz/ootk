@@ -22,9 +22,9 @@ import {
   EcfVec3,
   EciVec3,
   Geodetic,
-  GroundPositionParams,
   Kilometers,
   LlaVec3,
+  Orientation,
   Radians,
   RaeVec3,
   SpaceObjectType,
@@ -36,11 +36,20 @@ import {
 import { BaseObject } from './BaseObject.js';
 import { Satellite } from './Satellite.js';
 
+
+export interface GroundPositionParams extends BaseObjectParams {
+  lat: Degrees;
+  lon: Degrees;
+  alt: Kilometers;
+  orientation?: Orientation;
+}
+
 export class GroundObject extends BaseObject {
   name = 'Unknown Ground Object';
   lat: Degrees;
   lon: Degrees;
   alt: Kilometers;
+  orientation: Orientation;
 
   constructor(info: GroundPositionParams & BaseObjectParams) {
     super(info);
@@ -50,6 +59,7 @@ export class GroundObject extends BaseObject {
     this.lat = info.lat;
     this.lon = info.lon;
     this.alt = info.alt;
+    this.orientation = info.orientation ?? { azimuth: 0 as Degrees, elevation: 0 as Degrees };
   }
 
   /**

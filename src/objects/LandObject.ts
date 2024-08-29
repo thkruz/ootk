@@ -15,7 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { BaseObject, BaseObjectParams, Degrees, DetailedSensor, Kilometers } from '../main.js';
+import { BaseObject } from './BaseObject.js';
+import { BaseObjectParams, Degrees, DetailedSensor, Kilometers } from '../main.js';
 
 export interface LandObjectParams extends BaseObjectParams {
   lat: Degrees;

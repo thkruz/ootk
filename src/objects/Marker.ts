@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { BaseObject } from '../main.js';
+import { BaseObject } from './BaseObject.js';
 
 export class Marker extends BaseObject {
   isMarker() {
