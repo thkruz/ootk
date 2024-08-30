@@ -127,37 +127,72 @@ export class Sensor extends GroundObject {
 
   /**
    * Checks if the given RAE vector is within the field of view of the sensor.
-   * TODO: #8 This doesn't account for secondary sensor FOV
    * @param rae - The RAE vector to check.
    * @returns True if the RAE vector is within the field of view, false otherwise.
    */
   // eslint-disable-next-line complexity
   isRaeInFov(rae: RaeVec3<Kilometers, Degrees>): boolean {
+    if (!this.isInRangeLimit(rae.rng)) {
+      return false;
+    }
+
+    const adjustedRae = this.adjustRaeForOrientation(rae);
+
+    return this.isInPrimaryFov(adjustedRae) || this.isInSecondaryFov(adjustedRae);
+  }
+
+  private isInRangeLimit(range: number): boolean {
+    return (typeof this.minRng !== 'undefined' && typeof this.maxRng !== 'undefined' && range >= this.minRng && range <= this.maxRng) ||
+           (typeof this.minRng2 !== 'undefined' && typeof this.maxRng2 !== 'undefined' && range >= this.minRng2 && range <= this.maxRng2);
+  }
+
+  private adjustRaeForOrientation(rae: RaeVec3<Kilometers, Degrees>): { az: Degrees, el: Degrees } {
+    // let az = rae.az + this.orientation.azimuth;
+    let az = rae.az;
+    // const el = rae.el + this.orientation.elevation;
+    const el = rae.el;
+
     if (this.orientation.elevation > 80) {
-      // New logic for sensors that aim at the zenith
-      rae.az = rae.el > 0 ? rae.az as Degrees : rae.az - 180 as Degrees;
-      rae.az = rae.az < 0 ? rae.az + 360 as Degrees : rae.az as Degrees;
+      az = el > 0 ? az : (az - 180) as Degrees;
+      az = az < 0 ? (az + 360) as Degrees : az;
     }
 
-    if (rae.el < this.minEl || rae.el > this.maxEl) {
+    return { az: az as Degrees, el: el as Degrees };
+  }
+
+  private isInFov(az: Degrees, el: Degrees, minAz: Degrees, maxAz: Degrees, minEl: Degrees, maxEl: Degrees): boolean {
+    if (el < minEl || el > maxEl) {
       return false;
     }
 
-    if (rae.rng < this.minRng || rae.rng > this.maxRng) {
+    if (minAz > maxAz) {
+      return !(az < minAz && az > maxAz);
+    }
+
+    return az >= minAz && az <= maxAz;
+
+  }
+
+  private isInPrimaryFov({ az, el }: { az: Degrees, el: Degrees }): boolean {
+    const minAz = (this.minAz + this.orientation.azimuth) % 360 as Degrees;
+    const maxAz = (this.maxAz + this.orientation.azimuth) % 360 as Degrees;
+    const minEl = this.minEl + this.orientation.elevation as Degrees;
+    const maxEl = this.maxEl + this.orientation.elevation as Degrees;
+
+    return this.isInFov(az, el, minAz, maxAz, minEl, maxEl);
+  }
+
+  private isInSecondaryFov({ az, el }: { az: Degrees, el: Degrees }): boolean {
+    if (!this.minAz2 || !this.maxAz2 || !this.minEl2 || !this.maxEl2) {
       return false;
     }
 
-    if (this.minAz > this.maxAz) {
-      // North Facing Sensors
-      if (rae.az < this.minAz && rae.az > this.maxAz) {
-        return false;
-      }
-      // Normal Facing Sensors
-    } else if (rae.az < this.minAz || rae.az > this.maxAz) {
-      return false;
-    }
+    const minAz = (this.minAz2 + this.orientation.azimuth) % 360 as Degrees;
+    const maxAz = (this.maxAz2 + this.orientation.azimuth) % 360 as Degrees;
+    const minEl = this.minEl2 + this.orientation.elevation as Degrees;
+    const maxEl = this.maxEl2 + this.orientation.elevation as Degrees;
 
-    return true;
+    return this.isInFov(az, el, minAz, maxAz, minEl, maxEl);
   }
 
   /**

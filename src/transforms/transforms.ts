@@ -232,6 +232,8 @@ export function lla2ecef<D extends number>(lla: LlaVec3<Degrees, D>): EcefVec3<D
 export interface Orientation {
   azimuth: Degrees;
   elevation: Degrees;
+  azimuth2?: Degrees;
+  elevation2?: Degrees;
 }
 
 /**
@@ -330,10 +332,18 @@ export function rae2ecf<D extends number>(
   const north = raeRad.rng * Math.cos(raeRad.el) * Math.cos(raeRad.az);
   const up = raeRad.rng * Math.sin(raeRad.el);
 
+  const elevationRad = orientation.elevation * DEG2RAD; // Removed the negative sign
+  const azimuthRad = orientation.azimuth * DEG2RAD;
+
   // Rotate around East axis (elevation)
   const eastAfterEl = east;
-  const northAfterEl = north * Math.cos(orientation.elevation * DEG2RAD) - up * Math.sin(orientation.elevation * DEG2RAD);
-  const upAfterEl = north * Math.sin(orientation.elevation * DEG2RAD) + up * Math.cos(orientation.elevation * DEG2RAD);
+  const northAfterEl = north * Math.cos(elevationRad) - up * Math.sin(elevationRad); // Changed + to -
+  const upAfterEl = north * Math.sin(elevationRad) + up * Math.cos(elevationRad); // Changed - to +
+
+  // Rotate around Up axis (azimuth)
+  const eastAfterAz = eastAfterEl * Math.cos(azimuthRad) - northAfterEl * Math.sin(azimuthRad);
+  const northAfterAz = eastAfterEl * Math.sin(azimuthRad) + northAfterEl * Math.cos(azimuthRad);
+  const upAfterAz = upAfterEl;
 
   // Convert local ENU to ECEF
   const slat = Math.sin(llaRad.lat);
@@ -341,9 +351,9 @@ export function rae2ecf<D extends number>(
   const slon = Math.sin(llaRad.lon);
   const clon = Math.cos(llaRad.lon);
 
-  const x = -slat * clon * northAfterEl - slon * eastAfterEl + clat * clon * upAfterEl + obsEcf.x;
-  const y = -slat * slon * northAfterEl + clon * eastAfterEl + clat * slon * upAfterEl + obsEcf.y;
-  const z = clat * northAfterEl + slat * upAfterEl + obsEcf.z;
+  const x = -slat * clon * northAfterAz - slon * eastAfterAz + clat * clon * upAfterAz + obsEcf.x;
+  const y = -slat * slon * northAfterAz + clon * eastAfterAz + clat * slon * upAfterAz + obsEcf.y;
+  const z = clat * northAfterAz + slat * upAfterAz + obsEcf.z;
 
   return { x, y, z } as EcfVec3<D>;
 }
@@ -417,7 +427,6 @@ export function ecfRad2rae<D extends number>(
   ecf: EcfVec3<D>,
   orientation: Orientation = { azimuth: 0 as Degrees, elevation: 0 as Degrees },
 ): RaeVec3<D, Degrees> {
-
   const obsEcf = llaRad2ecf(lla);
 
   // Calculate the difference vector
@@ -435,29 +444,33 @@ export function ecfRad2rae<D extends number>(
   const north = -slat * clon * dx - slat * slon * dy + clat * dz;
   const up = clat * clon * dx + clat * slon * dy + slat * dz;
 
-  // Apply orientation (azimuth only)
+  // Apply orientation (azimuth and elevation)
   const azRad = orientation.azimuth * DEG2RAD;
+  const elRad = orientation.elevation * DEG2RAD;
   const cosAz = Math.cos(azRad);
   const sinAz = Math.sin(azRad);
+  const cosEl = Math.cos(elRad);
+  const sinEl = Math.sin(elRad);
 
+  // Rotate around Up axis (azimuth)
   const eastAfterAz = east * cosAz - north * sinAz;
   const northAfterAz = east * sinAz + north * cosAz;
-  const upAfterAz = up;
+
+  // Rotate around East axis (elevation)
+  const northAfterEl = northAfterAz * cosEl - up * sinEl;
+  const upAfterEl = northAfterAz * sinEl + up * cosEl;
 
   // Calculate range
-  const rng = Math.sqrt(eastAfterAz * eastAfterAz + northAfterAz * northAfterAz + upAfterAz * upAfterAz);
+  const rng = Math.sqrt(eastAfterAz * eastAfterAz + northAfterEl * northAfterEl + upAfterEl * upAfterEl);
 
-  // Calculate azimuth
-  let az = Math.atan2(eastAfterAz, northAfterAz);
+  // Calculate azimuth relative to sensor orientation
+  let az = Math.atan2(eastAfterAz, northAfterEl);
 
-  // Calculate elevation
-  let el = Math.asin(upAfterAz / rng);
-
-  // Adjust elevation for sensor orientation
-  el -= orientation.elevation * DEG2RAD;
+  // Calculate elevation relative to sensor orientation
+  let el = Math.asin(upAfterEl / rng);
 
   // Convert to degrees and normalize
-  az = ((az * RAD2DEG) % 360 + 360) % 360 as Degrees;
+  az = ((az * RAD2DEG + 360) % 360) as Degrees;
   el = (el * RAD2DEG) as Degrees;
 
   return { rng, az, el } as RaeVec3<D, Degrees>;

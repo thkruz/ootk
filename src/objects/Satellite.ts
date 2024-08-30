@@ -352,8 +352,19 @@ export class Satellite extends BaseObject {
     const { gmst } = Satellite.calculateTimeVariables(date, this.satrec);
     const eci = this.eci(date).position;
     const ecf = eci2ecf(eci, gmst);
+    const rae = ecf2rae(observer, ecf, observer.orientation);
 
-    return ecf2rae(observer, ecf, observer.orientation);
+    // If we have an orientation then rae is relative to that orientation - lets convert it
+    if (observer.orientation.azimuth !== 0 || observer.orientation.elevation !== 0) {
+      return {
+        az: rae.az + observer.orientation.azimuth as Degrees,
+        el: rae.el + observer.orientation.elevation as Degrees,
+        rng: rae.rng,
+      };
+    }
+
+    return rae;
+
   }
 
   /**
