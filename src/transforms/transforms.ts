@@ -16,6 +16,7 @@ import {
   RaeVec3, SezVec3,
   Sgp4,
   TAU,
+  Vector3D,
 } from '../main.js';
 import { TransformCache } from './TransformCache.js';
 
@@ -43,14 +44,14 @@ export function ecf2eci<T extends number>(ecf: EcfVec3<T>, gmst: number): EciVec
  * @param lla - The LLA coordinates.
  * @returns The ENU coordinates.
  */
-export function ecf2enu<T extends number>(ecf: EcefVec3<T>, lla: LlaVec3): EnuVec3<T> {
+export function ecf2enu<T extends number>(ecf: EcefVec3<T>, lla: LlaVec3<Degrees, T>): EnuVec3<T> {
   const { lat, lon } = lla;
   const { x, y, z } = ecf;
   const e = (-Math.sin(lon) * x + Math.cos(lon) * y) as T;
   const n = (-Math.sin(lat) * Math.cos(lon) * x - Math.sin(lat) * Math.sin(lon) * y + Math.cos(lat) * z) as T;
   const u = (Math.cos(lat) * Math.cos(lon) * x + Math.cos(lat) * Math.sin(lon) * y + Math.sin(lat) * z) as T;
 
-  return { x: e, y: n, z: u };
+  return { east: e, north: n, up: u };
 }
 
 /**
@@ -399,7 +400,7 @@ export function rae2enu(rae: RaeVec3): EnuVec3<Kilometers> {
   const n = (rae.rng * Math.cos(rae.el) * Math.cos(rae.az)) as Kilometers;
   const u = (rae.rng * Math.sin(rae.el)) as Kilometers;
 
-  return { x: e, y: n, z: u };
+  return { east: e, north: n, up: u };
 }
 
 /**
@@ -427,47 +428,26 @@ export function ecfRad2rae<D extends number>(
   ecf: EcfVec3<D>,
   orientation: Orientation = { azimuth: 0 as Degrees, elevation: 0 as Degrees },
 ): RaeVec3<D, Degrees> {
-  const obsEcf = llaRad2ecf(lla);
-
-  // Calculate the difference vector
-  const dx = ecf.x - obsEcf.x;
-  const dy = ecf.y - obsEcf.y;
-  const dz = ecf.z - obsEcf.z;
-
   // Convert ECEF to local ENU coordinates
-  const slat = Math.sin(lla.lat);
-  const clat = Math.cos(lla.lat);
-  const slon = Math.sin(lla.lon);
-  const clon = Math.cos(lla.lon);
+  const enu = ecf2enu(ecf, {
+    lat: lla.lat * RAD2DEG as Degrees,
+    lon: lla.lon * RAD2DEG as Degrees,
+    alt: lla.alt,
+  });
 
-  const east = -slon * dx + clon * dy;
-  const north = -slat * clon * dx - slat * slon * dy + clat * dz;
-  const up = clat * clon * dx + clat * slon * dy + slat * dz;
+  let enuVec = new Vector3D(enu.east, enu.north, enu.up);
 
-  // Apply orientation (azimuth first, then elevation)
-  const azRad = orientation.azimuth * DEG2RAD;
-  const elRad = orientation.elevation * DEG2RAD;
-  const cosAz = Math.cos(azRad);
-  const sinAz = Math.sin(azRad);
-  const cosEl = Math.cos(elRad);
-  const sinEl = Math.sin(elRad);
-
-  // Rotate around Up axis (azimuth)
-  const eastAfterAz = east * cosAz - north * sinAz;
-  const northAfterAz = east * sinAz + north * cosAz;
-
-  // Rotate around East axis (elevation)
-  const northAfterEl = northAfterAz * cosEl + up * sinEl;
-  const upAfterEl = -northAfterAz * sinEl + up * cosEl;
+  enuVec = enuVec.rotZ(orientation.azimuth * DEG2RAD as Radians);
+  enuVec = enuVec.rotX(orientation.elevation * DEG2RAD as Radians);
 
   // Calculate range
-  const rng = Math.sqrt(eastAfterAz * eastAfterAz + northAfterEl * northAfterEl + upAfterEl * upAfterEl);
+  const rng = Math.sqrt(enuVec.x * enuVec.x + enuVec.y * enuVec.y + enuVec.z * enuVec.z);
 
   // Calculate azimuth
-  let az = Math.atan2(eastAfterAz, northAfterEl);
+  let az = Math.atan2(enuVec.x, enuVec.y);
 
   // Calculate elevation
-  let el = Math.asin(upAfterEl / rng);
+  let el = Math.asin(enuVec.z / rng);
 
   // Convert to degrees and normalize
   az = ((az * RAD2DEG + 360) % 360) as Degrees;
@@ -688,17 +668,17 @@ export function uv2azel(u: number, v: number, coneHalfAngle: Radians): { az: Rad
 /**
  * Converts coordinates from East-North-Up (ENU) to Right-Front-Up (RF) coordinate system.
  * @param enu - The ENU coordinates to be converted.
- * @param enu.x - The east coordinate.
- * @param enu.y - The north coordinate.
- * @param enu.z - The up coordinate.
+ * @param enu.east - The east coordinate.
+ * @param enu.north - The north coordinate.
+ * @param enu.up - The up coordinate.
  * @param az - The azimuth angle in radians.
  * @param el - The elevation angle in radians.
  * @returns The converted RF coordinates.
  */
-export function enu2rf<D extends number, A extends number = Radians>({ x, y, z }: EnuVec3<D>, az: A, el: A): RfVec3<D> {
-  const xrf = Math.cos(el) * Math.cos(az) * x - Math.sin(az) * y + Math.sin(el) * Math.cos(az) * z;
-  const yrf = Math.cos(el) * Math.sin(az) * x + Math.cos(az) * y + Math.sin(el) * Math.sin(az) * z;
-  const zrf = -Math.sin(el) * x + Math.cos(el) * z;
+export function enu2rf<D extends number, A extends number = Radians>({ east, north, up }: EnuVec3<D>, az: A, el: A): RfVec3<D> {
+  const xrf = Math.cos(el) * Math.cos(az) * east - Math.sin(az) * north + Math.sin(el) * Math.cos(az) * up;
+  const yrf = Math.cos(el) * Math.sin(az) * east + Math.cos(az) * north + Math.sin(el) * Math.sin(az) * up;
+  const zrf = -Math.sin(el) * east + Math.cos(el) * up;
 
   return {
     x: xrf as D,

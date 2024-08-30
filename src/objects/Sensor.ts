@@ -136,9 +136,7 @@ export class Sensor extends GroundObject {
       return false;
     }
 
-    const adjustedRae = this.adjustRaeForOrientation(rae);
-
-    return this.isInPrimaryFov(adjustedRae) || this.isInSecondaryFov(adjustedRae);
+    return this.isInPrimaryFov(rae) || this.isInSecondaryFov(rae);
   }
 
   private isInRangeLimit(range: number): boolean {
@@ -146,18 +144,18 @@ export class Sensor extends GroundObject {
            (typeof this.minRng2 !== 'undefined' && typeof this.maxRng2 !== 'undefined' && range >= this.minRng2 && range <= this.maxRng2);
   }
 
-  private adjustRaeForOrientation(rae: RaeVec3<Kilometers, Degrees>): { az: Degrees, el: Degrees } {
+  private adjustRaeForOrientation(rae: RaeVec3<Kilometers, Degrees>, orientation: {azimuth: Degrees, elevation: Degrees}): {az: Degrees, el: Degrees} {
     // let az = rae.az - this.orientation.azimuth % 360 as Degrees;
     let az = rae.az;
-    const el = rae.el + this.orientation.elevation as Degrees;
+    const el = (rae.el + orientation.elevation) % 90 as Degrees;
     // const el = rae.el;
 
-    if (this.orientation.elevation > 80) {
-      az = el > 0 ? az : (az - 180) as Degrees;
+    if (orientation.elevation > 80) {
+      az = el < 90 ? az : (az - 180) as Degrees;
       az = az < 0 ? (az + 360) as Degrees : az;
     }
 
-    return { az: az as Degrees, el: el as Degrees };
+    return { az, el };
   }
 
   private isInFov(az: Degrees, el: Degrees, minAz: Degrees, maxAz: Degrees, minEl: Degrees, maxEl: Degrees): boolean {
@@ -173,7 +171,9 @@ export class Sensor extends GroundObject {
 
   }
 
-  private isInPrimaryFov({ az, el }: { az: Degrees, el: Degrees }): boolean {
+  private isInPrimaryFov(rae: RaeVec3<Kilometers, Degrees>): boolean {
+    const {az, el} = this.adjustRaeForOrientation(rae, {azimuth: this.orientation.azimuth, elevation: this.orientation.elevation});
+
     const minAz = (this.minAz + this.orientation.azimuth) % 360 as Degrees;
     const maxAz = (this.maxAz + this.orientation.azimuth) % 360 as Degrees;
     const minEl = this.minEl + this.orientation.elevation as Degrees;
@@ -182,15 +182,22 @@ export class Sensor extends GroundObject {
     return this.isInFov(az, el, minAz, maxAz, minEl, maxEl);
   }
 
-  private isInSecondaryFov({ az, el }: { az: Degrees, el: Degrees }): boolean {
+  private isInSecondaryFov(rae: RaeVec3<Kilometers, Degrees>): boolean {
+    const {az, el} = this.adjustRaeForOrientation(rae, {azimuth: this.orientation.azimuth2 as Degrees, elevation: this.orientation.elevation2 as Degrees});
+
     if (!this.minAz2 || !this.maxAz2 || !this.minEl2 || !this.maxEl2) {
       return false;
     }
 
-    const minAz = (this.minAz2 + this.orientation.azimuth) % 360 as Degrees;
-    const maxAz = (this.maxAz2 + this.orientation.azimuth) % 360 as Degrees;
-    const minEl = this.minEl2 + this.orientation.elevation as Degrees;
-    const maxEl = this.maxEl2 + this.orientation.elevation as Degrees;
+    // If no second orientation is provided, return false
+    if (!this.orientation.azimuth2 || !this.orientation.elevation2) {
+      return false;
+    }
+
+    const minAz = (this.minAz2 + this.orientation.azimuth2) % 360 as Degrees;
+    const maxAz = (this.maxAz2 + this.orientation.azimuth2) % 360 as Degrees;
+    const minEl = this.minEl2 + this.orientation.elevation2 as Degrees;
+    const maxEl = this.maxEl2 + this.orientation.elevation2 as Degrees;
 
     return this.isInFov(az, el, minAz, maxAz, minEl, maxEl);
   }

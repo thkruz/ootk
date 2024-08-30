@@ -85,8 +85,8 @@ export class J2000 extends StateVector {
       .rotX(n.mEps)
       .rotZ(-n.dPsi as Radians)
       .rotX(-n.eps);
-    const rPEF = rTOD.rotZ(ast) as Vector3D<Kilometers>;
-    const vPEF = vTOD.rotZ(ast).add(Earth.rotation.negate().cross(rPEF)) as Vector3D<KilometersPerSecond>;
+    const rPEF = rTOD.rotZ(ast);
+    const vPEF = vTOD.rotZ(ast).add(Earth.rotation.negate().cross(rPEF) as unknown as Vector3D<KilometersPerSecond>);
 
     return new ITRF(this.epoch, rPEF, vPEF);
   }

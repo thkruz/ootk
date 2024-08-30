@@ -187,11 +187,11 @@ export class Vector3D<T extends number = number> {
    * Create a copy of this [Vector3D] rotated in the x-axis by angle [theta]
    * _(rad)_.
    */
-  rotX(theta: number): Vector3D {
+  rotX(theta: number): Vector3D<T> {
     const cosT = Math.cos(theta);
     const sinT = Math.sin(theta);
 
-    return new Vector3D(this.x, cosT * this.y + sinT * this.z, -sinT * this.y + cosT * this.z);
+    return new Vector3D<T>(this.x, (cosT * this.y + sinT * this.z) as T, (-sinT * this.y + cosT * this.z) as T);
   }
 
   /*

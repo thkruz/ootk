@@ -354,14 +354,16 @@ export class Satellite extends BaseObject {
     const ecf = eci2ecf(eci, gmst);
     const rae = ecf2rae(observer, ecf, observer.orientation);
 
-    // If we have an orientation then rae is relative to that orientation - lets convert it
-    if (observer.orientation.azimuth !== 0 || observer.orientation.elevation !== 0) {
-      return {
-        az: (rae.az + observer.orientation.azimuth + 360) % 360 as Degrees,
-        el: (rae.el + observer.orientation.elevation) as Degrees,
-        rng: rae.rng,
-      };
-    }
+    /*
+     * If we have an orientation then rae is relative to that orientation - lets convert it
+     * if (observer.orientation.azimuth !== 0 || observer.orientation.elevation !== 0) {
+     *   return {
+     *     az: (rae.az + observer.orientation.azimuth + 360) % 360 as Degrees,
+     *     el: (rae.el + observer.orientation.elevation) as Degrees,
+     *     rng: rae.rng,
+     *   };
+     * }
+     */
 
     return rae;
 

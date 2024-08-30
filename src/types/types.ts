@@ -286,7 +286,11 @@ export type EcefVec3<Units = Kilometers> = EcfVec3<Units>;
  * of the vector, representing the distance from the origin to the point in the
  * upward direction.
  */
-export type EnuVec3<Units = Kilometers> = Vec3<Units>;
+export type EnuVec3<Units = Kilometers> = {
+  east: Units;
+  north: Units;
+  up: Units;
+}
 
 /**
  * Represents a three-dimensional vector in geographical coordinates.
