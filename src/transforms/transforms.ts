@@ -444,7 +444,7 @@ export function ecfRad2rae<D extends number>(
   const north = -slat * clon * dx - slat * slon * dy + clat * dz;
   const up = clat * clon * dx + clat * slon * dy + slat * dz;
 
-  // Apply orientation (azimuth and elevation)
+  // Apply orientation (azimuth first, then elevation)
   const azRad = orientation.azimuth * DEG2RAD;
   const elRad = orientation.elevation * DEG2RAD;
   const cosAz = Math.cos(azRad);
@@ -457,16 +457,16 @@ export function ecfRad2rae<D extends number>(
   const northAfterAz = east * sinAz + north * cosAz;
 
   // Rotate around East axis (elevation)
-  const northAfterEl = northAfterAz * cosEl - up * sinEl;
-  const upAfterEl = northAfterAz * sinEl + up * cosEl;
+  const northAfterEl = northAfterAz * cosEl + up * sinEl;
+  const upAfterEl = -northAfterAz * sinEl + up * cosEl;
 
   // Calculate range
   const rng = Math.sqrt(eastAfterAz * eastAfterAz + northAfterEl * northAfterEl + upAfterEl * upAfterEl);
 
-  // Calculate azimuth relative to sensor orientation
+  // Calculate azimuth
   let az = Math.atan2(eastAfterAz, northAfterEl);
 
-  // Calculate elevation relative to sensor orientation
+  // Calculate elevation
   let el = Math.asin(upAfterEl / rng);
 
   // Convert to degrees and normalize

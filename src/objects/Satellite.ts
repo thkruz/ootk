@@ -357,8 +357,8 @@ export class Satellite extends BaseObject {
     // If we have an orientation then rae is relative to that orientation - lets convert it
     if (observer.orientation.azimuth !== 0 || observer.orientation.elevation !== 0) {
       return {
-        az: rae.az + observer.orientation.azimuth as Degrees,
-        el: rae.el + observer.orientation.elevation as Degrees,
+        az: (rae.az + observer.orientation.azimuth + 360) % 360 as Degrees,
+        el: (rae.el + observer.orientation.elevation) as Degrees,
         rng: rae.rng,
       };
     }

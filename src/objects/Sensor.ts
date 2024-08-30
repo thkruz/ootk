@@ -147,10 +147,10 @@ export class Sensor extends GroundObject {
   }
 
   private adjustRaeForOrientation(rae: RaeVec3<Kilometers, Degrees>): { az: Degrees, el: Degrees } {
-    // let az = rae.az + this.orientation.azimuth;
+    // let az = rae.az - this.orientation.azimuth % 360 as Degrees;
     let az = rae.az;
-    // const el = rae.el + this.orientation.elevation;
-    const el = rae.el;
+    const el = rae.el + this.orientation.elevation as Degrees;
+    // const el = rae.el;
 
     if (this.orientation.elevation > 80) {
       az = el > 0 ? az : (az - 180) as Degrees;
