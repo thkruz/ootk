@@ -3,17 +3,24 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [4.0.4](https://github.com/thkruz/ootk/compare/v5.0.0-0...4.0.4)
+#### [4.0.5](https://github.com/thkruz/ootk/compare/v5.0.0-0...4.0.5)
 
+- feat: :sparkles: add status parameter to DetailedSatellite class [`3b1b8c2`](https://github.com/thkruz/ootk/commit/3b1b8c2b30bd9c3d14e7ce70067607a8d1366825)
 - feat: :sparkles: add PayloadStatus enum [`9828703`](https://github.com/thkruz/ootk/commit/9828703c3eef82676a54d06f5ab3adb40f296660)
 - fix: :arrow_up: bump ootk-core [`2f0ac47`](https://github.com/thkruz/ootk/commit/2f0ac47d4a9ae18ebd58b72b4db98610b20aa267)
 
-#### [v5.0.0-0](https://github.com/thkruz/ootk/compare/v4.0.3...v5.0.0-0)
+#### [v5.0.0-0](https://github.com/thkruz/ootk/compare/v4.0.4...v5.0.0-0)
 
 > 23 August 2024 
 
 - refactor: :recycle: Merge ootk-core with ootk for upgrade to v5 [`1e137bb`](https://github.com/thkruz/ootk/commit/1e137bba174072586cf748fee18b3dbd793c7fc7)
 - fix: :memo: fix outdated documentation [`0f6c26f`](https://github.com/thkruz/ootk/commit/0f6c26f40edaa5d8fe275b8aa967e5a00188beca)
+
+#### [v4.0.4](https://github.com/thkruz/ootk/compare/v4.0.3...v4.0.4)
+
+> 14 January 2025 
+
+- feat: :sparkles: add PayloadStatus enum [`9828703`](https://github.com/thkruz/ootk/commit/9828703c3eef82676a54d06f5ab3adb40f296660)
 
 #### [v4.0.3](https://github.com/thkruz/ootk/compare/v4.0.2...v4.0.3)
 
