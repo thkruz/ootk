@@ -25,7 +25,7 @@ import {
   TleLine1,
   TleLine2,
 } from 'ootk-core';
-import { DetailedSatelliteParams } from '../types/types.js';
+import { DetailedSatelliteParams, PayloadStatus } from '../types/types.js';
 import { CatalogSource } from '../main.js';
 
 /**
@@ -60,6 +60,7 @@ export class DetailedSatellite extends Satellite {
   rcs: number|null;
   altId: string = '';
   altName: string = '';
+  status: PayloadStatus = PayloadStatus.UNKNOWN;
 
   constructor(
     info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails,
@@ -82,6 +83,7 @@ export class DetailedSatellite extends Satellite {
     this.altName = info.altName ?? '';
     this.initOperationDetails_(info);
     this.initLaunchDetails_(info);
+    this.status = info.status ?? PayloadStatus.UNKNOWN;
   }
 
   private static setSccNumTo0_(info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails) {
