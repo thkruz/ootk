@@ -39,6 +39,7 @@ export class DetailedSatellite extends Satellite {
   launchDate: string = '';
   launchMass: string = '';
   launchSite: string = '';
+  launchPad: string = '';
   launchVehicle: string = '';
   lifetime: string | number = '';
   maneuver: string = '';
@@ -132,6 +133,7 @@ export class DetailedSatellite extends Satellite {
     this.launchDate = info.launchDate ?? '';
     this.launchMass = info.launchMass ?? '';
     this.launchSite = info.launchSite ?? '';
+    this.launchPad = info.launchPad ?? '';
     this.launchVehicle = info.launchVehicle ?? '';
   }
 
