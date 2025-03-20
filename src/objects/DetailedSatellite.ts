@@ -87,12 +87,12 @@ export class DetailedSatellite extends Satellite {
   }
 
   private static setSccNumTo0_(info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails) {
-    info.tle1 = FormatTle.setCharAt(info.tle1, 2, '0') as TleLine1;
+    info.tle1 = FormatTle.setCharAt(info.tle1 as string, 2, '0') as TleLine1;
     info.tle1 = FormatTle.setCharAt(info.tle1, 3, '0') as TleLine1;
     info.tle1 = FormatTle.setCharAt(info.tle1, 4, '0') as TleLine1;
     info.tle1 = FormatTle.setCharAt(info.tle1, 5, '0') as TleLine1;
     info.tle1 = FormatTle.setCharAt(info.tle1, 6, '0') as TleLine1;
-    info.tle2 = FormatTle.setCharAt(info.tle2, 2, '0') as TleLine2;
+    info.tle2 = FormatTle.setCharAt(info.tle2 as string, 2, '0') as TleLine2;
     info.tle2 = FormatTle.setCharAt(info.tle2, 3, '0') as TleLine2;
     info.tle2 = FormatTle.setCharAt(info.tle2, 4, '0') as TleLine2;
     info.tle2 = FormatTle.setCharAt(info.tle2, 5, '0') as TleLine2;
