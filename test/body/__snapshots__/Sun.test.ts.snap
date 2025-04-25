@@ -1,0 +1,87 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Sun should handle cases where the observers position is the same as the suns position 1`] = `NaN`;
+
+exports[`Sun should handle cases where the satellite is directly above or below the earth 1`] = `
+Array [
+  3.141592653589793,
+  NaN,
+  NaN,
+]
+`;
+
+exports[`Sun should handle extreme values of solar latitude 1`] = `565.420893384895`;
+
+exports[`Sun should handle extreme values of solar mean anomaly 1`] = `364.97003894087004`;
+
+exports[`Sun should handle invalid dates 1`] = `NaN`;
+
+exports[`Sun should return the Julian date of the sunrise when the observers position, date, and time are provided 1`] = `2451533.314279268`;
+
+exports[`Sun should return the angles necessary to determine if a satellite is in the shadow of the earth 1`] = `
+Array [
+  3.141592653589793,
+  NaN,
+  NaN,
+]
+`;
+
+exports[`Sun should return the angular diameter of the sun given the observers position and the suns position 1`] = `NaN`;
+
+exports[`Sun should return the azimuth and elevation of the sun given a date, latitude, and longitude 1`] = `
+Object {
+  "az": 4.284718248237755,
+  "el": -0.06852341194048539,
+}
+`;
+
+exports[`Sun should return the date and time of the suns position given a specific azimuth 1`] = `2024-01-12T11:48:41.319Z`;
+
+exports[`Sun should return the ecliptic latitude of the sun given the solar latitude 1`] = `147.22965595225526`;
+
+exports[`Sun should return the ecliptic longitude of the sun given the solar mean anomaly 1`] = `4.938185716373701`;
+
+exports[`Sun should return the number of days since January 1, 2000, for a given date 1`] = `8777.561652974691`;
+
+exports[`Sun should return the same apparent position result given the same time and position 1`] = `
+Vector3D {
+  "x": 55101974.26909711,
+  "y": -125165869.77224815,
+  "z": -54258234.63367154,
+}
+`;
+
+exports[`Sun should return the same julian cycle result given the same date 1`] = `8777`;
+
+exports[`Sun should return the same lighting ratio result given the same positions 1`] = `1`;
+
+exports[`Sun should return the same shadow result given the same time and position 1`] = `false`;
+
+exports[`Sun should return the same sunlight result given the same positions 1`] = `1`;
+
+exports[`Sun should return the sunrise, sunset, and other event times when given a date, latitude, and longitude 1`] = `
+Object {
+  "amateurDawn": 2024-01-12T14:08:48.295Z,
+  "amateurDusk": 2024-01-13T02:29:02.928Z,
+  "astronomicalDawn": 2024-01-12T13:53:05.375Z,
+  "astronomicalDusk": 2024-01-13T02:44:45.848Z,
+  "blueHourDawnEnd": 2024-01-12T15:08:10.931Z,
+  "blueHourDawnStart": 2024-01-12T14:46:12.437Z,
+  "blueHourDuskEnd": 2024-01-13T01:51:38.787Z,
+  "blueHourDuskStart": 2024-01-13T01:29:40.292Z,
+  "civilDawn": 2024-01-12T14:57:07.812Z,
+  "civilDusk": 2024-01-13T01:40:43.411Z,
+  "goldenHourDawnEnd": 2024-01-12T16:06:02.767Z,
+  "goldenHourDawnStart": 2024-01-12T15:25:02.285Z,
+  "goldenHourDuskEnd": 2024-01-13T01:12:48.939Z,
+  "goldenHourDuskStart": 2024-01-13T00:31:48.456Z,
+  "nadir": 2024-01-13T08:18:55.612Z,
+  "nauticalDawn": 2024-01-12T14:24:41.646Z,
+  "nauticalDusk": 2024-01-13T02:13:09.577Z,
+  "solarNoon": 2024-01-12T20:18:55.612Z,
+  "sunriseEnd": 2024-01-12T15:29:01.495Z,
+  "sunriseStart": 2024-01-12T15:25:59.235Z,
+  "sunsetEnd": 2024-01-13T01:11:51.988Z,
+  "sunsetStart": 2024-01-13T01:08:49.728Z,
+}
+`;

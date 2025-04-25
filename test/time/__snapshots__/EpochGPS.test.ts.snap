@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`EpochGPS should be constructed from a week and seconds 1`] = `1`;
+
+exports[`EpochGPS should be constructed from a week and seconds 2`] = `1`;
+
+exports[`EpochGPS should convert to a UTC epoch 1`] = `
+EpochUTC {
+  "posix": 316569605,
+}
+`;
+
+exports[`EpochGPS should convert to a string 1`] = `"1:5.000"`;

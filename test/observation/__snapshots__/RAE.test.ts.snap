@@ -1,0 +1,91 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RAE should be constructable 1`] = `
+RAE {
+  "azRad": 0.17453292519943295,
+  "azRateRad": undefined,
+  "elRad": 0.3490658503988659,
+  "elRateRad": undefined,
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "rng": 1000,
+  "rngRate": undefined,
+}
+`;
+
+exports[`RAE should be constructable from degrees 1`] = `
+RAE {
+  "azRad": 0.17453292519943295,
+  "azRateRad": undefined,
+  "elRad": 0.3490658503988659,
+  "elRateRad": undefined,
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "rng": 1000,
+  "rngRate": undefined,
+}
+`;
+
+exports[`RAE should return a RAE object from a state vector 1`] = `
+RAE {
+  "azRad": 4.202021284209623,
+  "azRateRad": 0.00043952100964508644,
+  "elRad": 0.5130090849662382,
+  "elRateRad": -0.0003354532635408476,
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "rng": 999.9999999999991,
+  "rngRate": 0.5104272486229879,
+}
+`;
+
+exports[`RAE should return a state vector 1`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": 5649.940123598527,
+    "y": 6839.039773929244,
+    "z": 8922.794608001712,
+  },
+  "velocity": Vector3D {
+    "x": -0.4986876341007287,
+    "y": 0.41048541483137624,
+    "z": 0.0011464115053515227,
+  },
+}
+`;
+
+exports[`RAE should return a string representation 1`] = `
+"[RazEl]
+  Epoch:     2024-01-13T01:28:46.817Z
+  Azimuth:   10.0000°
+  Elevation: 20.0000°
+  Range:     1000.000 km"
+`;
+
+exports[`RAE should return the angle 1`] = `0.11878030341845575`;
+
+exports[`RAE should return the angle 2`] = `0.11878030341845577`;
+
+exports[`RAE should return the angle in degrees 1`] = `6.805610075160859`;
+
+exports[`RAE should return the azimuth in degrees 1`] = `10`;
+
+exports[`RAE should return the azimuth rate in degrees 1`] = `undefined`;
+
+exports[`RAE should return the elevation in degrees 1`] = `20`;
+
+exports[`RAE should return the elevation rate in degrees 1`] = `undefined`;
+
+exports[`RAE should return the position vector 1`] = `
+Vector3D {
+  "x": 5649.940123598527,
+  "y": 6839.039773929244,
+  "z": 8922.794608001712,
+}
+`;

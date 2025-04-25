@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Epoch should convert to Julian centuries 1`] = `0.21162217659137578`;
+
+exports[`Epoch should convert to a DateTime object 1`] = `2021-03-01T00:00:00.000Z`;
+
+exports[`Epoch should convert to a Julian date 1`] = `2459274.5`;
+
+exports[`Epoch should convert to a string 1`] = `"2021-03-01T00:00:00.000Z"`;
+
+exports[`Epoch should convert to an Excel string 1`] = `"2021-03-01T00:00:00"`;
+
+exports[`Epoch should convert to an epoch year and day 1`] = `
+Object {
+  "epochDay": "060.00000000",
+  "epochYr": "21",
+}
+`;

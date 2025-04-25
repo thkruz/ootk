@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Ensure bstar and ndot account for leading zeros rv2coe 1`] = `
+Object {
+  "a": 36127.16533103146,
+  "arglat": 999999.1,
+  "argp": 0.9317417321423879,
+  "ecc": 0.8328526866648804,
+  "incl": 1.5336055626394494,
+  "lonper": 999999.1,
+  "m": 0.13272880776065465,
+  "nu": 1.6115535789428714,
+  "omega": 3.9775750028016947,
+  "p": 11067.78839665728,
+  "truelon": 999999.1,
+}
+`;

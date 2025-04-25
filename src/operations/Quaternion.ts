@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Matrix, Radians, RadiansPerSecond, Vector, Vector3D, wrapAngle } from 'ootk-core';
+import { Matrix, Radians, RadiansPerSecond, Vector, Vector3D, wrapAngle } from '../main.js';
 
 export class Quaternion {
   x: number;

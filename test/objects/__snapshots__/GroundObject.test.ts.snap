@@ -1,0 +1,56 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GroundObject should calculate ecf 1`] = `
+Object {
+  "x": 6378.137,
+  "y": 0,
+  "z": 0,
+}
+`;
+
+exports[`GroundObject should calculate eci 1`] = `
+Object {
+  "x": -4444.532338535956,
+  "y": 4564.633188736234,
+  "z": 0,
+}
+`;
+
+exports[`GroundObject should calculate llaRad 1`] = `
+Object {
+  "alt": 0,
+  "lat": 0,
+  "lon": 0,
+}
+`;
+
+exports[`GroundObject should convert to geodetic 1`] = `
+Geodetic {
+  "alt": 0,
+  "lat": 0,
+  "lon": 0,
+}
+`;
+
+exports[`GroundObject should create from geodetic 1`] = `
+GroundObject {
+  "active": true,
+  "alt": 0,
+  "id": -1,
+  "lat": 0,
+  "lon": 0,
+  "name": "Unknown Ground Object",
+  "position": Object {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+  },
+  "totalVelocity": 0,
+  "type": 0,
+  "velocity": Object {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+  },
+}
+`;

@@ -15,18 +15,18 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Satellite } from './Satellite.js';
 import {
   FormatTle,
   LaunchDetails,
   OperationsDetails,
   OptionsParams,
-  Satellite,
   SpaceCraftDetails,
   TleLine1,
   TleLine2,
-} from 'ootk-core';
+  CatalogSource,
+} from '../main.js';
 import { DetailedSatelliteParams, PayloadStatus } from '../types/types.js';
-import { CatalogSource } from '../main.js';
 
 /**
  * Represents a detailed satellite object with launch, spacecraft, and operations details.

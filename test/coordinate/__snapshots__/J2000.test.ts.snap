@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`J2000 should calculate the angular rate 1`] = `0.000002809314397474213`;
+
+exports[`J2000 should calculate the mechanical energy 1`] = `-0.539173763730993`;
+
+exports[`J2000 should calculate the period 1`] = `37275.911593878845`;
+
+exports[`J2000 should convert to classical elements 1`] = `369640.0569843672`;
+
+exports[`J2000 should convert to classical elements 2`] = `0.9909435374737835`;
+
+exports[`J2000 should convert to classical elements 3`] = `2.896313029154172`;
+
+exports[`J2000 should convert to classical elements 4`] = `1.955753713088999`;
+
+exports[`J2000 should convert to classical elements 5`] = `5.144903601262446`;
+
+exports[`J2000 should convert to classical elements 6`] = `2.0019281534313316`;
+
+exports[`J2000 should return a string 1`] = `
+"[J2000]
+  Epoch: 2024-01-13T01:28:46.817Z
+  Position: [5000.000000, 10000.000000, 2100.000000] km
+  Velocity: [7.000000000, 4.000000000, 2.000000000] km/s"
+`;

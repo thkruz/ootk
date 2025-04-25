@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-import { Degrees } from 'ootk-core';
+import { Degrees } from '../main.js';
 import { DetailedSensorParams } from '../types/types.js';
 
 export interface RfSensorParams extends DetailedSensorParams {

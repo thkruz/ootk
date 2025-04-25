@@ -1,0 +1,71 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RadecGeocentric should be constructable 1`] = `
+RadecGeocentric {
+  "declination": 0,
+  "declinationRate": undefined,
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "range": undefined,
+  "rangeRate": undefined,
+  "rightAscension": 0.4363323129985824,
+  "rightAscensionRate": undefined,
+}
+`;
+
+exports[`RadecGeocentric should be constructable from a state vector 1`] = `
+RadecGeocentric {
+  "declination": 0.679673818908244,
+  "declinationRate": 0,
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "range": 12727.922061357855,
+  "rangeRate": 0,
+  "rightAscension": 0.7853981633974483,
+  "rightAscensionRate": -0,
+}
+`;
+
+exports[`RadecGeocentric should be constructable from degrees 1`] = `
+RadecGeocentric {
+  "declination": 0,
+  "declinationRate": null,
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "range": undefined,
+  "rangeRate": undefined,
+  "rightAscension": 0.4363323129985824,
+  "rightAscensionRate": null,
+}
+`;
+
+exports[`RadecGeocentric should return the angle 1`] = `0.017453292519941554`;
+
+exports[`RadecGeocentric should return the angle in degrees 1`] = `0.9999999999999002`;
+
+exports[`RadecGeocentric should return the declination in degrees 1`] = `0`;
+
+exports[`RadecGeocentric should return the declination rate in degrees 1`] = `null`;
+
+exports[`RadecGeocentric should return the position 1`] = `
+Vector3D {
+  "x": 0.9063077870366499,
+  "y": 0.42261826174069944,
+  "z": 0,
+}
+`;
+
+exports[`RadecGeocentric should return the right ascension in degrees 1`] = `25`;
+
+exports[`RadecGeocentric should return the right ascension rate in degrees 1`] = `null`;
+
+exports[`RadecGeocentric should return the velocity 1`] = `
+Vector3D {
+  "x": -11.752592909334684,
+  "y": 23.401642759234754,
+  "z": 43.62658574738897,
+}
+`;

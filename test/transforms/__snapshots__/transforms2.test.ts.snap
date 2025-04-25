@@ -1,0 +1,57 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Rae2Ecf should convert valid ECF coordinates to ENU 1`] = `
+Object {
+  "x": 4000,
+  "y": 4000,
+  "z": 4000,
+}
+`;
+
+exports[`Rae2Ecf should convert valid ECI coordinates to RAE 1`] = `
+Object {
+  "az": 305.2667894949389,
+  "el": -42.29513998190954,
+  "rng": 9365.828830438693,
+}
+`;
+
+exports[`Rae2Ecf should convert valid ENU coordinates to RF 1`] = `
+Object {
+  "x": 4000,
+  "y": 4000,
+  "z": 4000,
+}
+`;
+
+exports[`Rae2Ecf should convert valid LLA coordinates to ECF 1`] = `
+Object {
+  "x": 6378.137,
+  "y": 0,
+  "z": 0,
+}
+`;
+
+exports[`Rae2Ecf should convert valid LLA coordinates to ECI 1`] = `
+Object {
+  "x": -4444.532338535956,
+  "y": 4564.633188736234,
+  "z": 0,
+}
+`;
+
+exports[`Rae2Ecf should convert valid RAE coordinates to ECI 1`] = `
+Object {
+  "x": -4449.505609609978,
+  "y": 4569.740848321526,
+  "z": 0,
+}
+`;
+
+exports[`Rae2Ecf should convert valid RAE coordinates to ENU 1`] = `
+Object {
+  "x": 0,
+  "y": 0,
+  "z": 0,
+}
+`;

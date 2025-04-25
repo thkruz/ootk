@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, J2000, Seconds } from 'ootk-core';
+import { EpochUTC, J2000, Seconds } from '../main.js';
 import { Thrust } from '../force/Thrust.js';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
 import { GoldenSection } from './../optimize/GoldenSection.js';

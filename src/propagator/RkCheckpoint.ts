@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { J2000 } from 'ootk-core';
+import { J2000 } from '../main.js';
 
 // / Runge-Kutta adaptive state checkpoint.
 export class RkCheckpoint {

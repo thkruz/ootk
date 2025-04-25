@@ -1,0 +1,321 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ITRF should convert the current ITRF coordinate to Geodetic coordinate 1`] = `
+Geodetic {
+  "alt": -2622.6838742181076,
+  "lat": 0.935735641017013,
+  "lon": 1.1071487177940904,
+}
+`;
+
+exports[`ITRF should convert the current coordinate to the J2000 coordinate system 1`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": -2127.189919581918,
+    "y": -667.2073608873604,
+    "z": 3004.978765916125,
+  },
+  "velocity": Vector3D {
+    "x": -21.223238500045827,
+    "y": -6.827700074091167,
+    "z": 30.049679644550032,
+  },
+}
+`;
+
+exports[`ITRF should handle position at different epochs 1`] = `-2622.7069029008003`;
+
+exports[`ITRF should handle position at different epochs 2`] = `-2622.7069029008003`;
+
+exports[`ITRF should handle position at different epochs 3`] = `-2622.7069029008003`;
+
+exports[`ITRF should handle position at different epochs 4`] = `-2622.7069029008003`;
+
+exports[`ITRF should handle position at different epochs 5`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": -2127.189919581918,
+    "y": -667.2073608873604,
+    "z": 3004.978765916125,
+  },
+  "velocity": Vector3D {
+    "x": -21.223238500045827,
+    "y": -6.827700074091167,
+    "z": 30.049679644550032,
+  },
+}
+`;
+
+exports[`ITRF should handle position at different epochs 6`] = `
+Geodetic {
+  "alt": -2622.6838742181076,
+  "lat": 0.935735641017013,
+  "lon": 1.1071487177940904,
+}
+`;
+
+exports[`ITRF should handle position at high altitude 1`] = `1000`;
+
+exports[`ITRF should handle position at high altitude 2`] = `1000`;
+
+exports[`ITRF should handle position at high altitude 3`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": -5313.7806839984505,
+    "y": -5118.639766380342,
+    "z": 12.531790472796377,
+  },
+  "velocity": Vector3D {
+    "x": 0.37325612599463637,
+    "y": -0.38748808327640394,
+    "z": -0.0008553895575912965,
+  },
+}
+`;
+
+exports[`ITRF should handle position at high altitude 4`] = `
+Geodetic {
+  "alt": 1000,
+  "lat": 0,
+  "lon": 1.5707963267948966,
+}
+`;
+
+exports[`ITRF should handle position at low altitude 1`] = `-10`;
+
+exports[`ITRF should handle position at low altitude 2`] = `-10`;
+
+exports[`ITRF should handle position at low altitude 3`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": -4586.372260974545,
+    "y": -4417.944366643129,
+    "z": 10.816301918115789,
+  },
+  "velocity": Vector3D {
+    "x": 0.32216074473221884,
+    "y": -0.3344444760297924,
+    "z": -0.0007382944785579285,
+  },
+}
+`;
+
+exports[`ITRF should handle position at low altitude 4`] = `
+Geodetic {
+  "alt": -10,
+  "lat": 0,
+  "lon": 1.5707963267948966,
+}
+`;
+
+exports[`ITRF should handle position at the International Date Line 1`] = `0`;
+
+exports[`ITRF should handle position at the International Date Line 2`] = `0`;
+
+exports[`ITRF should handle position at the International Date Line 3`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": -4424.870330550322,
+    "y": 4593.587094016537,
+    "z": 10.140457479062466,
+  },
+  "velocity": Vector3D {
+    "x": -0.33496872909712727,
+    "y": -0.32266748652491783,
+    "z": 0.0007899757588086132,
+  },
+}
+`;
+
+exports[`ITRF should handle position at the International Date Line 4`] = `
+Geodetic {
+  "alt": 0,
+  "lat": 0,
+  "lon": 0,
+}
+`;
+
+exports[`ITRF should handle position at the North Pole 1`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": 14.787499061093714,
+    "y": 0.21172360852619188,
+    "z": 6356.734413210253,
+  },
+  "velocity": Vector3D {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+  },
+}
+`;
+
+exports[`ITRF should handle position at the North Pole 2`] = `
+Geodetic {
+  "alt": 0,
+  "lat": 1.5707963267948966,
+  "lon": 0,
+}
+`;
+
+exports[`ITRF should handle position at the Prime Meridian 1`] = `"ITRF"`;
+
+exports[`ITRF should handle position at the Prime Meridian 2`] = `false`;
+
+exports[`ITRF should handle position at the Prime Meridian 3`] = `0`;
+
+exports[`ITRF should handle position at the Prime Meridian 4`] = `0`;
+
+exports[`ITRF should handle position at the Prime Meridian 5`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": -4593.574324568842,
+    "y": -4424.881944858347,
+    "z": 10.833286953310731,
+  },
+  "velocity": Vector3D {
+    "x": 0.32266663959620306,
+    "y": -0.3349696602599569,
+    "z": -0.0007394538357761064,
+  },
+}
+`;
+
+exports[`ITRF should handle position at the Prime Meridian 6`] = `
+Geodetic {
+  "alt": 0,
+  "lat": 0,
+  "lon": 1.5707963267948966,
+}
+`;
+
+exports[`ITRF should handle position at the South Pole 1`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": -14.787499061093714,
+    "y": -0.21172360852619188,
+    "z": -6356.734413210253,
+  },
+  "velocity": Vector3D {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+  },
+}
+`;
+
+exports[`ITRF should handle position at the South Pole 2`] = `
+Geodetic {
+  "alt": 0,
+  "lat": -1.5707963267948966,
+  "lon": 0,
+}
+`;
+
+exports[`ITRF should handle position at the antimeridian 1`] = `21.384683407853117`;
+
+exports[`ITRF should handle position at the antimeridian 2`] = `21.384683407853117`;
+
+exports[`ITRF should handle position at the antimeridian 3`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": 14.837245536162833,
+    "y": 0.21243586576184958,
+    "z": 6378.119038744385,
+  },
+  "velocity": Vector3D {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+  },
+}
+`;
+
+exports[`ITRF should handle position at the antimeridian 4`] = `[Function]`;
+
+exports[`ITRF should handle position at the center of the Earth 1`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+  },
+  "velocity": Vector3D {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+  },
+}
+`;
+
+exports[`ITRF should handle position at the equator with negative y-coordinate 1`] = `"ITRF"`;
+
+exports[`ITRF should handle position at the equator with negative y-coordinate 2`] = `false`;
+
+exports[`ITRF should handle position at the equator with negative y-coordinate 3`] = `0`;
+
+exports[`ITRF should handle position at the equator with negative y-coordinate 4`] = `0`;
+
+exports[`ITRF should handle position at the equator with negative y-coordinate 5`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": 4593.574324568842,
+    "y": 4424.881944858347,
+    "z": -10.833286953310731,
+  },
+  "velocity": Vector3D {
+    "x": -0.32266663959620306,
+    "y": 0.3349696602599569,
+    "z": 0.0007394538357761064,
+  },
+}
+`;
+
+exports[`ITRF should handle position at the equator with negative y-coordinate 6`] = `
+Geodetic {
+  "alt": 0,
+  "lat": 0,
+  "lon": -1.5707963267948966,
+}
+`;
+
+exports[`ITRF should return the altitude in kilometers 1`] = `-2622.7069029008003`;
+
+exports[`ITRF should return the height above the surface of the Earth in kilometers 1`] = `-2622.7069029008003`;
+
+exports[`ITRF should return the name of the coordinate system 1`] = `"ITRF"`;
+
+exports[`ITRF should return whether the coordinate system is inertial 1`] = `false`;

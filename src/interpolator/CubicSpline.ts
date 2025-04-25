@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Kilometers, KilometersPerSecond, Seconds, Vector3D } from 'ootk-core';
+import { Kilometers, KilometersPerSecond, Seconds, Vector3D } from '../main.js';
 
 // / Container for cubic spline data.
 export class CubicSpline {

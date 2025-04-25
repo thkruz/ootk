@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth, EpochUTC, MetersPerSecond, Seconds, SecondsPerMeterPerSecond } from 'ootk-core';
+import { Earth, EpochUTC, MetersPerSecond, Seconds, SecondsPerMeterPerSecond } from '../main.js';
 import { Thrust } from '../force/Thrust.js';
 
 // / Container for a two-burn orbit transfer.

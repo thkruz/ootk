@@ -25,7 +25,7 @@ import {
   KilometersPerSecond,
   Seconds,
   Vector3D,
-} from 'ootk-core';
+} from '../main.js';
 import { CubicSplineInterpolator } from './CubicSplineInterpolator.js';
 import { LagrangeInterpolator } from './LagrangeInterpolator.js';
 import { StateInterpolator } from './StateInterpolator.js';

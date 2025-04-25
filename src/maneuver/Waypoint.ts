@@ -24,7 +24,7 @@ import {
   RIC,
   SecondsPerMeterPerSecond,
   Vector3D,
-} from 'ootk-core';
+} from '../main.js';
 import { Thrust } from '../force/Thrust.js';
 import { StateInterpolator } from '../interpolator/StateInterpolator.js';
 import { ForceModel } from './../force/ForceModel.js';

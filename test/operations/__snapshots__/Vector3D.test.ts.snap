@@ -1,0 +1,138 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Vector3D should create a Vector3D from a Vector3D 1`] = `
+Vector3D {
+  "x": 1,
+  "y": 2,
+  "z": 3,
+}
+`;
+
+exports[`Vector3D should return a Vector3D as a Vector 1`] = `
+Vector {
+  "elements": Array [
+    1,
+    2,
+    3,
+  ],
+  "length": 3,
+}
+`;
+
+exports[`Vector3D should return a Vector3D as a string 1`] = `"[1, 2, 3]"`;
+
+exports[`Vector3D should return an array of elements 1`] = `
+Float64Array [
+  1,
+  2,
+  3,
+]
+`;
+
+exports[`Vector3D should return the angle between two Vector3Ds in degrees 1`] = `12.93315449189912`;
+
+exports[`Vector3D should return the bisect of two Vector3Ds 1`] = `
+Vector3D {
+  "x": 0.36386679548865963,
+  "y": 0.5556981892812022,
+  "z": 0.7475295830737448,
+}
+`;
+
+exports[`Vector3D should return the column of a Vector3D 1`] = `
+Matrix {
+  "columns": 1,
+  "elements": Array [
+    Array [
+      1,
+    ],
+    Array [
+      2,
+    ],
+    Array [
+      3,
+    ],
+  ],
+  "rows": 3,
+}
+`;
+
+exports[`Vector3D should return the distance between two Vector3Ds 1`] = `5.196152422706632`;
+
+exports[`Vector3D should return the join of two Vector3Ds 1`] = `
+Vector {
+  "elements": Float64Array [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+  ],
+  "length": 6,
+}
+`;
+
+exports[`Vector3D should return the outer product of two Vector3Ds 1`] = `
+Matrix {
+  "columns": 3,
+  "elements": Array [
+    Array [
+      4,
+      5,
+      6,
+    ],
+    Array [
+      8,
+      10,
+      12,
+    ],
+    Array [
+      12,
+      15,
+      18,
+    ],
+  ],
+  "rows": 3,
+}
+`;
+
+exports[`Vector3D should return the row of a Vector3D 1`] = `
+Matrix {
+  "columns": 3,
+  "elements": Array [
+    Array [
+      1,
+      2,
+      3,
+    ],
+  ],
+  "rows": 1,
+}
+`;
+
+exports[`Vector3D should return the sight of a Vector3D 1`] = `true`;
+
+exports[`Vector3D should return the skew symmetric of a Vector3D 1`] = `
+Matrix {
+  "columns": 3,
+  "elements": Array [
+    Array [
+      0,
+      -3,
+      2,
+    ],
+    Array [
+      3,
+      0,
+      -1,
+    ],
+    Array [
+      -2,
+      1,
+      0,
+    ],
+  ],
+  "rows": 3,
+}
+`;

@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Random should return a random bool 1`] = `false`;
+
+exports[`Random should return a random float 1`] = `0.21132115912208504`;
+
+exports[`Random should return a random int 1`] = `0`;

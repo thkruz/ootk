@@ -1,0 +1,134 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Sun and Moon Moon Unit Tests 1`] = `
+Object {
+  "angle": 2.0303507547114927,
+  "fraction": 0.046426852648024874,
+  "next": Object {
+    "date": "2022-08-27T06:46:57.840Z",
+    "firstQuarter": Object {
+      "date": "2022-09-03T15:57:58.534Z",
+      "value": 1662220678534.5,
+    },
+    "fullMoon": Object {
+      "date": "2022-09-11T01:08:59.229Z",
+      "value": 1662858539229,
+    },
+    "newMoon": Object {
+      "date": "2022-08-27T06:46:57.840Z",
+      "value": 1661582817840,
+    },
+    "thirdQuarter": Object {
+      "date": "2022-09-18T10:19:59.923Z",
+      "value": 1663496399923.5,
+    },
+    "type": "newMoon",
+    "value": 1661582817840,
+  },
+  "phase": Object {
+    "code": ":waning_crescent_moon:",
+    "css": "wi-moon-wan-cres",
+    "emoji": "🌘",
+    "from": 0.783863193308711,
+    "id": "waningCrescentMoon",
+    "name": "Waning Crescent",
+    "to": 0.966136806691289,
+    "weight": 6.3825,
+  },
+  "phaseValue": 0.9308720062791223,
+}
+`;
+
+exports[`Sun and Moon getMoonIllumination returns fraction and angle of moons illuminated limb and phase 1`] = `
+Object {
+  "angle": 2.0303507547114927,
+  "fraction": 0.046426852648024874,
+  "next": Object {
+    "date": "2022-08-27T06:46:57.840Z",
+    "firstQuarter": Object {
+      "date": "2022-09-03T15:57:58.534Z",
+      "value": 1662220678534.5,
+    },
+    "fullMoon": Object {
+      "date": "2022-09-11T01:08:59.229Z",
+      "value": 1662858539229,
+    },
+    "newMoon": Object {
+      "date": "2022-08-27T06:46:57.840Z",
+      "value": 1661582817840,
+    },
+    "thirdQuarter": Object {
+      "date": "2022-09-18T10:19:59.923Z",
+      "value": 1663496399923.5,
+    },
+    "type": "newMoon",
+    "value": 1661582817840,
+  },
+  "phase": Object {
+    "code": ":waning_crescent_moon:",
+    "css": "wi-moon-wan-cres",
+    "emoji": "🌘",
+    "from": 0.783863193308711,
+    "id": "waningCrescentMoon",
+    "name": "Waning Crescent",
+    "to": 0.966136806691289,
+    "weight": 6.3825,
+  },
+  "phaseValue": 0.9308720062791223,
+}
+`;
+
+exports[`Suncalc.js tests getMoonIllumination returns fraction and angle of moons illuminated limb and phase 1`] = `
+Object {
+  "angle": 1.6260163867660833,
+  "fraction": 0.42576863432885875,
+  "next": Object {
+    "date": "2013-03-12T04:53:32.814Z",
+    "firstQuarter": Object {
+      "date": "2013-03-19T14:04:33.508Z",
+      "value": 1363701873508.5,
+    },
+    "fullMoon": Object {
+      "date": "2013-03-26T23:15:34.203Z",
+      "value": 1364339734203,
+    },
+    "newMoon": Object {
+      "date": "2013-03-12T04:53:32.814Z",
+      "value": 1363064012814,
+    },
+    "thirdQuarter": Object {
+      "date": "2013-04-03T08:26:34.897Z",
+      "value": 1364977594897.5,
+    },
+    "type": "newMoon",
+    "value": 1363064012814,
+  },
+  "phase": Object {
+    "code": ":last_quarter_moon:",
+    "css": "wi-moon-third-quart",
+    "emoji": "🌗",
+    "from": 0.716136806691289,
+    "id": "thirdQuarterMoon",
+    "name": "third Quarter",
+    "to": 0.783863193308711,
+    "weight": 1,
+  },
+  "phaseValue": 0.773716250255787,
+}
+`;
+
+exports[`Suncalc.js tests getMoonPosition returns moon position data given time and location 1`] = `
+Object {
+  "az": 4.745208978619362,
+  "el": -0.4894905500271524,
+  "parallacticAngle": 0.7460123936598905,
+  "rng": 364139.79362404963,
+}
+`;
+
+exports[`Suncalc.js tests getSunAzEl returns azimuth and altitude for the given time and location 1`] = `
+Object {
+  "az": 3.6915486281450507,
+  "el": 0.5021704545690489,
+}
+`;

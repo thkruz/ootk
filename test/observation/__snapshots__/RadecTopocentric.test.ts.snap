@@ -1,0 +1,71 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RadecTopocentric should be constructable 1`] = `
+RadecTopocentric {
+  "declination": 0,
+  "declinationRate": undefined,
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "range": undefined,
+  "rangeRate": undefined,
+  "rightAscension": 0.4363323129985824,
+  "rightAscensionRate": undefined,
+}
+`;
+
+exports[`RadecTopocentric should be constructable from a state vector 1`] = `
+RadecTopocentric {
+  "declination": 0,
+  "declinationRate": 0,
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "range": 1000,
+  "rangeRate": 0,
+  "rightAscension": 3.141592653589793,
+  "rightAscensionRate": -0,
+}
+`;
+
+exports[`RadecTopocentric should be constructable from degrees 1`] = `
+RadecTopocentric {
+  "declination": 0,
+  "declinationRate": null,
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "range": undefined,
+  "rangeRate": undefined,
+  "rightAscension": 0.4363323129985824,
+  "rightAscensionRate": null,
+}
+`;
+
+exports[`RadecTopocentric should return the angle 1`] = `0.017453292519941554`;
+
+exports[`RadecTopocentric should return the angle in degrees 1`] = `0.9999999999999002`;
+
+exports[`RadecTopocentric should return the declination in degrees 1`] = `0`;
+
+exports[`RadecTopocentric should return the declination rate in degrees 1`] = `null`;
+
+exports[`RadecTopocentric should return the position 1`] = `
+Vector3D {
+  "x": 8000.906307787037,
+  "y": 7000.42261826174,
+  "z": 8000,
+}
+`;
+
+exports[`RadecTopocentric should return the right ascension in degrees 1`] = `25`;
+
+exports[`RadecTopocentric should return the right ascension rate in degrees 1`] = `null`;
+
+exports[`RadecTopocentric should return the velocity 1`] = `
+Vector3D {
+  "x": -11.752592909334684,
+  "y": 23.401642759234754,
+  "z": 43.62658574738897,
+}
+`;

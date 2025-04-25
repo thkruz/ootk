@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Earth should calculate Earth's diameter from satellite position 1`] = `NaN`;
+
+exports[`Earth should calculate drift rate when given a semimajor axis 1`] = `5.858163121001669`;
+
+exports[`Earth should calculate mean motion when given a semimajor axis 1`] = `0.0010780076124668337`;
+
+exports[`Earth should calculate nutation angles when given an epoch 1`] = `-0.000022653923055009833`;
+
+exports[`Earth should calculate nutation angles when given an epoch 2`] = `0.000039533533539525476`;
+
+exports[`Earth should calculate nutation angles when given an epoch 3`] = `0.40903826060434395`;
+
+exports[`Earth should calculate nutation angles when given an epoch 4`] = `0.4090777941378835`;
+
+exports[`Earth should calculate nutation angles when given an epoch 5`] = `-0.000020780433407756886`;
+
+exports[`Earth should calculate nutation angles when given an epoch 6`] = `2.342843536610454`;
+
+exports[`Earth should calculate precession angles when given an epoch 1`] = `0.0026870317857958003`;
+
+exports[`Earth should calculate precession angles when given an epoch 2`] = `0.002335075451748929`;
+
+exports[`Earth should calculate precession angles when given an epoch 3`] = `0.0026872537755354814`;
+
+exports[`Earth should calculate semimajor axis from drift rate 1`] = `42156.361072415566`;
+
+exports[`Earth should handle drift rate of 0 when calculating semimajor axis 1`] = `42164.16961350806`;
+
+exports[`Earth should handle epoch after 2150 when calculating nutation angles 1`] = `-0.000022653923055009833`;
+
+exports[`Earth should handle epoch after 2150 when calculating precession angles 1`] = `0.0026870317857958003`;
+
+exports[`Earth should handle epoch before 1900 when calculating nutation angles 1`] = `-0.000022653923055009833`;
+
+exports[`Earth should handle epoch before 1900 when calculating precession angles 1`] = `0.0026870317857958003`;
+
+exports[`Earth should handle negative drift rate when calculating semimajor axis 1`] = `42171.97743162094`;

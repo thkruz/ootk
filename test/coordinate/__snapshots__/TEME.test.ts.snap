@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TEME should convert the TEME coordinates to J2000 coordinates 1`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": 1538.2233358428946,
+    "y": 5102.2612040219665,
+    "z": 4432.634965003576,
+  },
+  "velocity": Vector3D {
+    "x": -7.341518909379303,
+    "y": 0.6516718453998649,
+    "z": 1.793388249986199,
+  },
+}
+`;
+
+exports[`TEME should create a TEME coordinate from classical orbital elements 1`] = `
+TEME {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": -6935.3813042612455,
+    "y": -146.1261328371035,
+    "z": 46.43907991639276,
+  },
+  "velocity": Vector3D {
+    "x": 0.07740377357485445,
+    "y": -5.543955093986134,
+    "z": -5.174123893746047,
+  },
+}
+`;
+
+exports[`TEME should return the name of the coordinate system 1`] = `"TEME"`;
+
+exports[`TEME should return whether the coordinate system is inertial 1`] = `true`;

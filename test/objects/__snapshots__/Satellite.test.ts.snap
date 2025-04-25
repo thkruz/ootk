@@ -1,0 +1,251 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Satellite should calculate and return ECF coordinates correctly 1`] = `
+Object {
+  "x": 2103.9414256471673,
+  "y": 5645.057714165688,
+  "z": -3117.140819332331,
+}
+`;
+
+exports[`Satellite should calculate and return ECI coordinates 1`] = `
+Object {
+  "position": Object {
+    "x": -5512.260085235448,
+    "y": -2430.686090702759,
+    "z": -3117.140819332331,
+  },
+  "velocity": Object {
+    "x": 4.465372431076766,
+    "y": -3.8849829704336245,
+    "z": -4.87332392823815,
+  },
+}
+`;
+
+exports[`Satellite should calculate and return Geodetic coordinates when given a date 1`] = `
+Geodetic {
+  "alt": 409.48725329355693,
+  "lat": -0.48221646502840027,
+  "lon": 1.2198848056557416,
+}
+`;
+
+exports[`Satellite should calculate and return ITRF coordinates when called 1`] = `
+ITRF {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": 2068.607191044621,
+    "y": 5650.9777806539605,
+    "z": -3130.036328555523,
+  },
+  "velocity": Vector3D {
+    "x": -5.491548321368525,
+    "y": -0.6798748760128108,
+    "z": -4.863052489363518,
+  },
+}
+`;
+
+exports[`Satellite should calculate and return LLA coordinates when given a date 1`] = `
+Object {
+  "alt": 409.4490107065576,
+  "lat": -27.505811285213248,
+  "lon": 69.5593222250588,
+}
+`;
+
+exports[`Satellite should calculate and return RAE coordinates 1`] = `
+RAE {
+  "azRad": 1.3489093210949852,
+  "azRateRad": 0.031044709157512784,
+  "elRad": -1.2837885129141846,
+  "elRateRad": -0.03103994353789119,
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "rng": 12650.301530537545,
+  "rngRate": 1.8799097918581538,
+}
+`;
+
+exports[`Satellite should calculate and return RIC coordinates correctly 1`] = `
+RIC {
+  "position": Vector3D {
+    "x": -651.0936413365231,
+    "y": 2844.5316796447228,
+    "z": -360.1817484095949,
+  },
+  "velocity": Vector3D {
+    "x": -0.1772334154266959,
+    "y": -8.239366799238207,
+    "z": -7.64249654102282,
+  },
+}
+`;
+
+exports[`Satellite should calculate and return azimuth and elevation angles correctly 1`] = `4428.208084880647`;
+
+exports[`Satellite should calculate and return azimuth and elevation angles correctly 2`] = `-4214.429082266819`;
+
+exports[`Satellite should calculate and return range to an observer 1`] = `12650.301530537545`;
+
+exports[`Satellite should instantiate Satellite with valid input parameters 1`] = `
+Satellite {
+  "active": true,
+  "apogee": 427.1806416558675,
+  "argOfPerigee": 35.9781,
+  "bstar": 0.000061583,
+  "eccentricity": 0.0005168,
+  "epochDay": 203.46960946,
+  "epochYear": 22,
+  "id": -1,
+  "inclination": 51.6415,
+  "intlDes": "1998-067A",
+  "meanAnomaly": 54.7009,
+  "meanMoDev1": 0.00003068,
+  "meanMoDev2": 0,
+  "meanMotion": 15.50067047,
+  "name": "Unknown",
+  "options": Object {
+    "notes": "",
+  },
+  "perigee": 420.1576716155696,
+  "period": 92.89920734635164,
+  "position": Object {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+  },
+  "rightAscension": 161.8339,
+  "satrec": Object {
+    "PInco": 0,
+    "a": 1.0653855229682034,
+    "alta": 0.06593611420647338,
+    "altp": 0.06483493172993349,
+    "argpdot": 0.00004469391640450765,
+    "argpo": 0.6279363036117719,
+    "atime": 0,
+    "aycof": 0.0009194351859734261,
+    "bstar": 0.000061583,
+    "cc1": 1.054843477494549e-9,
+    "cc4": 0.0000010146140032928037,
+    "cc5": 0.000502156969435659,
+    "con41": 0.1553585313770025,
+    "d2": 8.920486693245565e-17,
+    "d2201": 0,
+    "d2211": 0,
+    "d3": 1.1284305919522795e-23,
+    "d3210": 0,
+    "d3222": 0,
+    "d4": 1.664351729935925e-30,
+    "d4410": 0,
+    "d4422": 0,
+    "d5220": 0,
+    "d5232": 0,
+    "d5421": 0,
+    "d5433": 0,
+    "dedt": 0,
+    "del1": 0,
+    "del2": 0,
+    "del3": 0,
+    "delmo": 1.0180635988014979,
+    "didt": 0,
+    "dmdt": 0,
+    "dnodt": 0,
+    "domdt": 0,
+    "e3": 0,
+    "ecco": 0.0005168,
+    "ee2": 0,
+    "epochdays": 203.46960946,
+    "epochyr": 22,
+    "error": 0,
+    "eta": 0.010357978846619898,
+    "gsto": 1.9068261868288872,
+    "inclo": 0.9013142056686517,
+    "init": false,
+    "irez": 0,
+    "isimp": false,
+    "j2": 0.001082616,
+    "j3": -0.00000253881,
+    "j3oj2": -0.002345069720011528,
+    "j4": -0.00000165597,
+    "jdsatepoch": 2459782.96960946,
+    "mdot": 0.06763444178039692,
+    "method": "n",
+    "mo": 0.9547108088041661,
+    "mus": 398600.8,
+    "nddot": 0,
+    "ndot": 0.00003068,
+    "no": 0.06762691649010695,
+    "nodecf": -2.2167955787538495e-13,
+    "nodedot": -0.00006007612419537387,
+    "nodeo": 2.8245343963432514,
+    "omgcof": 1.0625960227343085e-7,
+    "operationmode": "i",
+    "peo": 0,
+    "pgho": 0,
+    "pho": 0,
+    "plo": 0,
+    "radiusearthkm": 6378.135,
+    "satnum": "25544",
+    "se2": 0,
+    "se3": 0,
+    "sgh2": 0,
+    "sgh3": 0,
+    "sgh4": 0,
+    "sh2": 0,
+    "sh3": 0,
+    "si2": 0,
+    "si3": 0,
+    "sinmao": 0.8161466669458108,
+    "sl2": 0,
+    "sl3": 0,
+    "sl4": 0,
+    "t": 0,
+    "t2cof": 1.5822652162418235e-9,
+    "t3cof": 9.143025645648123e-17,
+    "t4cof": 8.748455252805885e-24,
+    "t5cof": 1.0373269324942988e-30,
+    "tumin": 13.446839696959309,
+    "vkmpersec": 7.905370510517634,
+    "x1mth2": 0.6148804895409992,
+    "x7thm1": 1.6958365732130058,
+    "xfact": 0,
+    "xgh2": 0,
+    "xgh3": 0,
+    "xgh4": 0,
+    "xh2": 0,
+    "xh3": 0,
+    "xi2": 0,
+    "xi3": 0,
+    "xke": 0.07436691613317342,
+    "xl2": 0,
+    "xl3": 0,
+    "xl4": 0,
+    "xlamo": 0,
+    "xlcof": 0.0017312384987971355,
+    "xli": 0,
+    "xmcof": -0.001806247608164991,
+    "xni": 0,
+    "zmol": 0,
+    "zmos": 0,
+  },
+  "sccNum": "25544",
+  "sccNum5": "25544",
+  "sccNum6": "25544",
+  "semiMajorAxis": 6794.6691566357185,
+  "semiMinorAxis": 6794.668249267928,
+  "tle1": "1 25544U 98067A   22203.46960946  .00003068  00000+0  61583-4 0  9996",
+  "tle2": "2 25544  51.6415 161.8339 0005168  35.9781  54.7009 15.50067047350657",
+  "totalVelocity": 0,
+  "type": 0,
+  "velocity": Object {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+  },
+}
+`;
