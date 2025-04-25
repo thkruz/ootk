@@ -1,10 +1,8 @@
 # ootk
 
-[![build](https://img.shields.io/github/workflow/status/thkruz/ootk/CI?style=flat-square)](https://github.com/thkruz/ootk/actions?query=workflow%3ACI)
 ![Size](https://img.shields.io/github/languages/code-size/thkruz/ootk?style=flat-square)
 [![Release](https://img.shields.io/github/v/release/thkruz/ootk?style=flat-square)](https://www.npmjs.com/package/ootk)
 [![Issues](https://img.shields.io/github/issues/thkruz/ootk?style=flat-square)](https://github.com/thkruz/ootk/issues)
-[![Coverage](https://img.shields.io/codecov/c/github/thkruz/ootk?style=flat-square)](https://codecov.io/gh/thkruz/ootk)
 [![License](https://img.shields.io/github/license/thkruz/ootk?style=flat-square)](LICENSE.MD)
 
 > An Orbital Object Toolkit in Your Web Browser
@@ -14,19 +12,6 @@ developed to simplify the math and let you focus on using the results.
 
 Most of the functionality was originally written for [KeepTrack](https://github.com/thkruz/keeptrack.space) and then
 later refactored into this library for others to use.
-
-## :blue_book: Table of Contents
-
-- [Installation](#Installation)
-- [Usage](#Usage)
-  - [Loading the Library](#Loading-the-Library)
-  - [Propagating a TLE](#Propagating-a-TLE)
-  - [Creating a Satellite](#Creating-a-Satellite)
-  - [Creating a Sensor](#Creating-a-Sensor)
-- [Contributing](#Contributing)
-- [Building](#Building)
-- [Contributors](#Contributors)
-- [License](#License)
 
 ## :wrench: Installation
 
