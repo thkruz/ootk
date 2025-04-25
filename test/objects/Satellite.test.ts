@@ -33,7 +33,7 @@ describe('Basic Satellite functionality', () => {
   it('should allow getting eci coordinates', () => {
     const sat = new Satellite({ name: 'Test', tle1, tle2 });
 
-    const eci = sat.eci(dateObj).position;
+    const eci = sat.eci(dateObj)!.position;
 
     expect(eci.x).toBeCloseTo(6512.640035319078);
     expect(eci.y).toBeCloseTo(-1545.524934684146);
@@ -45,9 +45,9 @@ describe('Basic Satellite functionality', () => {
 
     const eci = sat.ecf(dateObj);
 
-    expect(eci.x).toBeCloseTo(4585.677469309576);
-    expect(eci.y).toBeCloseTo(-4875.929624270418);
-    expect(eci.z).toBeCloseTo(-1195.219347050479);
+    expect(eci!.x).toBeCloseTo(4585.677469309576);
+    expect(eci!.y).toBeCloseTo(-4875.929624270418);
+    expect(eci!.z).toBeCloseTo(-1195.219347050479);
   });
 
   it('should allow getting lla coordinates', () => {
@@ -55,9 +55,9 @@ describe('Basic Satellite functionality', () => {
 
     const eci = sat.lla(dateObj);
 
-    expect(eci.lat).toBeCloseTo(-0.17779469476167792 * RAD2DEG);
-    expect(eci.lon).toBeCloseTo(-0.8160653803347542 * RAD2DEG);
-    expect(eci.alt).toBeCloseTo(421.9147233728436);
+    expect(eci!.lat).toBeCloseTo(-0.17779469476167792 * RAD2DEG);
+    expect(eci!.lon).toBeCloseTo(-0.8160653803347542 * RAD2DEG);
+    expect(eci!.alt).toBeCloseTo(421.9147233728436);
   });
 
   it('should be able to get the orbital period', () => {
