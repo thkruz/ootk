@@ -7,8 +7,15 @@
     "module": "ES2022",
     "moduleResolution": "Bundler",
     "noEmit": true,
-    "strict": true
+    "strict": true,
+    "strictNullChecks": true,
   },
-  "include": ["./src/**/*.ts", "./test/**/*.ts"],
-  "filesGlob": ["./src/**/*.ts", "./test/**/*.ts"],
+  "include": [
+    "./src/**/*.ts",
+    "./test/**/*.ts"
+  ],
+  "filesGlob": [
+    "./src/**/*.ts",
+    "./test/**/*.ts"
+  ],
 }
