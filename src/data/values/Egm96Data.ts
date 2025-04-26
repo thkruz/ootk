@@ -62,7 +62,7 @@ export class Egm96Data {
 
   // / Return de-normalized EGM-96 coefficients for a given [l] and [m] index.
   getCoeffs(l: number, m: number): Egm96Entry {
-    return this.coeffs_[Egm96Data.index_(l, m)] as Egm96Entry;
+    return this.coeffs_[Egm96Data.index_(l, m)];
   }
 
   // / Return the EGM-96 index for a given [l] and [m] lookup.

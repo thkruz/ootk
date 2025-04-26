@@ -64,10 +64,10 @@ class LeapSecondData {
 
   constructor(offsets: LeapSecond[]) {
     this.offsets_ = offsets;
-    this.jdFirst_ = (this.offsets_[0] as LeapSecond).jd;
-    this.jdLast_ = (this.offsets_[this.offsets_.length - 1] as LeapSecond).jd;
-    this.offsetFirst_ = (this.offsets_[0] as LeapSecond).offset;
-    this.offsetLast_ = (this.offsets_[this.offsets_.length - 1] as LeapSecond).offset;
+    this.jdFirst_ = (this.offsets_[0]).jd;
+    this.jdLast_ = (this.offsets_[this.offsets_.length - 1]).jd;
+    this.offsetFirst_ = (this.offsets_[0]).offset;
+    this.offsetLast_ = (this.offsets_[this.offsets_.length - 1]).offset;
   }
 
   /**
@@ -97,8 +97,8 @@ class LeapSecondData {
       return this.offsetFirst_;
     }
     for (let i = 0; i < this.offsets_.length - 2; i++) {
-      const currentLeapSecond = this.offsets_[i] as LeapSecond;
-      const nextLeapSecond = this.offsets_[i + 1] as LeapSecond;
+      const currentLeapSecond = this.offsets_[i];
+      const nextLeapSecond = this.offsets_[i + 1];
 
       if (jd >= currentLeapSecond.jd && jd < nextLeapSecond.jd) {
         return currentLeapSecond.offset;

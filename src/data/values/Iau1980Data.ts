@@ -55,7 +55,7 @@ export class Iau1980Data {
 
   // / Get IAU-1980 coefficients for a given row number.
   getCoeffs(row: number): Iau1980Entry {
-    return this.coeffs_[row] as Iau1980Entry;
+    return this.coeffs_[row];
   }
 }
 

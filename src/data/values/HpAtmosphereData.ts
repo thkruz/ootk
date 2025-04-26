@@ -61,14 +61,14 @@ export class HpAtmosphereData {
     }
     let index = 0;
 
-    while (index < this.table_.length - 2 && height > (this.table_[index + 1] as HpAtmosphereEntry)[0]) {
+    while (index < this.table_.length - 2 && height > (this.table_[index + 1])[0]) {
       index++;
     }
 
     return new HpAtmosphereResult(
       height,
-      (this.table_[index] as HpAtmosphereEntry),
-      (this.table_[index + 1] as HpAtmosphereEntry),
+      (this.table_[index]),
+      (this.table_[index + 1]),
     );
   }
 }
