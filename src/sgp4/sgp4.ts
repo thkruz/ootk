@@ -623,8 +623,8 @@ export class Sgp4 {
     let i = 1;
     let inttemp = 0;
 
-    while (dayofyr > inttemp + (lmonth[i - 1] as number) && i < 12) {
-      inttemp += (lmonth[i - 1] as number);
+    while (dayofyr > inttemp + (lmonth[i - 1]) && i < 12) {
+      inttemp += (lmonth[i - 1]);
       i += 1;
     }
 
@@ -1496,7 +1496,7 @@ export class Sgp4 {
 
       rdotv = Sgp4.dot_(r, v);
       for (i = 0; i <= 2; i++) {
-        ebar[i] = (c1 * (r[i] as number) - rdotv * (v[i] as number)) / mus;
+        ebar[i] = (c1 * (r[i]) - rdotv * (v[i])) / mus;
       }
       ecc = Sgp4.mag_(ebar);
 
