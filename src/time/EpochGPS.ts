@@ -50,7 +50,7 @@ export class EpochGPS {
   static reference: EpochUTC;
 
   // / GPS leap second difference from TAI/UTC offsets.
-  static offset = 19 as Seconds;
+  static readonly offset = 19 as Seconds;
 
   // / Get GPS week accounting for 10-bit rollover.
   get week10Bit(): number {

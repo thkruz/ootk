@@ -164,8 +164,8 @@ export class EpochUTC extends Epoch {
 
   private static dayOfYear_(year: number, month: number, day: number): number {
     const dex = EpochUTC.isLeapYear_(year) ? 1 : 0;
-    const dayOfYearArray = EpochUTC.dayOfYearLookup_[dex] as number[];
-    const daysBeforeCurrentMonth = dayOfYearArray[month - 1] as number;
+    const dayOfYearArray = EpochUTC.dayOfYearLookup_[dex];
+    const daysBeforeCurrentMonth = dayOfYearArray[month - 1];
 
     return daysBeforeCurrentMonth + day - 1;
   }
