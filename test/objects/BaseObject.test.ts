@@ -1,9 +1,11 @@
-import { BaseObject, BaseObjectParams, EciVec3, Kilometers, SpaceObjectType } from '../../src/main';
+import {
+  BaseObject, BaseObjectParams, EciVec3, KilometersPerSecond, SpaceObjectType,
+} from '../../src/main';
 const mockVelocity = {
   x: 8000,
   y: 0,
   z: 0,
-} as EciVec3;
+} as EciVec3<KilometersPerSecond>;
 const mockPosition = {
   x: 4,
   y: 0,
@@ -225,9 +227,9 @@ describe('BaseObject', () => {
       name: 'Satellite',
       position: mockPosition,
       velocity: {
-        x: 0 as Kilometers,
-        y: 0 as Kilometers,
-        z: 0 as Kilometers,
+        x: 0 as KilometersPerSecond,
+        y: 0 as KilometersPerSecond,
+        z: 0 as KilometersPerSecond,
       },
       active: true,
     });

@@ -22,14 +22,14 @@ describe('Basic Sensor functionality', () => {
       maxRng: 100000 as Kilometers,
     });
 
-    const rae = sensor.rae(sat, dateObj);
+    const rae = sensor.rae(sat, dateObj)!;
 
     expect(rae.az).toMatchSnapshot();
     expect(rae.el).toMatchSnapshot();
     expect(rae.rng).toMatchSnapshot();
 
     // Verify it works in reverse
-    const rae2 = sat.rae(sensor, dateObj);
+    const rae2 = sat.rae(sensor, dateObj)!;
 
     expect(rae2.az).toMatchSnapshot();
     expect(rae2.el).toMatchSnapshot();
@@ -52,7 +52,7 @@ describe('Basic Sensor functionality', () => {
     });
 
     const inView = sensor.isSatInFov(sat, dateObj);
-    const rae = sat.rae(sensor, dateObj);
+    const rae = sat.rae(sensor, dateObj)!;
 
     const inView2 = sensor.isRaeInFov(rae);
 
@@ -74,7 +74,7 @@ describe('Basic Sensor functionality', () => {
     });
 
     const inView = sensor.isSatInFov(sat, dateObj);
-    const rae = sat.rae(sensor, dateObj);
+    const rae = sat.rae(sensor, dateObj)!;
 
     const inView2 = sensor.isRaeInFov(rae);
 
