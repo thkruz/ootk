@@ -25,7 +25,7 @@ import { AzEl, Degrees, Kilometers, RAD2DEG, RaDec, Radians, Sun } from '../main
 
 /**
  * Celestial is a static class that provides methods for calculating the position of celestial objects such as the Sun,
- * Moon, and planets in the sky.
+ * Moon, and planets in the sky. To create an instance of a Celestial object, use the Star class.
  */
 export class Celestial {
   private constructor() {
