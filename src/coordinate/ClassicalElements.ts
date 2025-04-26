@@ -21,7 +21,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Minutes, PositionVelocity, Degrees, Kilometers, Radians, Seconds, KilometersPerSecond, Earth } from '../main.js';
+import {
+  Minutes, PositionVelocity, Degrees, Kilometers, Radians, Seconds, KilometersPerSecond, Earth,
+} from '../main.js';
 import { Vector3D } from '../operations/Vector3D.js';
 import { EpochUTC } from '../time/EpochUTC.js';
 import { earthGravityParam, MINUTES_PER_DAY, RAD2DEG, sec2min, TAU } from '../utils/constants.js';
