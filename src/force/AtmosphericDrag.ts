@@ -86,11 +86,9 @@ export class AtmosphericDrag implements Force {
     }
     const rotation = new ITRF(
       state.epoch,
-      // TODO: #26 This is a bit of a hack to get Radians/Second to work with StateVector class
       Earth.rotation as unknown as Vector3D<Kilometers>,
       Vector3D.origin as Vector3D<KilometersPerSecond>,
     ).toJ2000().position;
-    // TODO: #26 This is a bit of a hack to get Radians/Second to work with StateVector class
     const vRel = state.velocity.subtract(rotation.cross(state.position) as unknown as Vector3D<KilometersPerSecond>)
       .scale(1000.0 as KilometersPerSecond);
     const vm = vRel.magnitude();

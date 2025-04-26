@@ -24,7 +24,7 @@ describe('Sun and Moon', () => {
     Moon.rae(dateObj, 0 as Degrees, 0 as Degrees);
 
     /*
-     * TODO: #4 Fix this test to work on ci/cd pipeline
+     * TODO: Fix this test to work on ci/cd pipeline
      * Moon.getMoonTimes(dateObj, 0 as Degrees, 0 as Degrees, true);
      * Moon.getMoonTimes(dateObj, -10 as Degrees, -10 as Degrees, false);
      */

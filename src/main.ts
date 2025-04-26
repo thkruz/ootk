@@ -6,7 +6,8 @@
  * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
- * Pious Squid library (https://github.com/david-rc-dayton/pious_squid).
+ * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
+ * is licensed under the MIT license.
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software

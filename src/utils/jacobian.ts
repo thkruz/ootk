@@ -1,10 +1,14 @@
 import { array2d, Matrix, Vector } from '../main.js';
 import { JacobianFunction } from '../types/types.js';
 
-// TODO: #11 Expand documentation of Jacobian function.
-
 /**
  * Calculates the Jacobian matrix of a given Jacobian function.
+ *
+ * The function calculates how small perturbations in each input variable affect all output variables,
+ * using a second-order accurate central difference approximation.
+ *
+ * In orbital mechanics applications, this matrix is essential for solving complex problems like
+ * orbit transfers, trajectory optimization, and precise orbital determination.
  * @param f The Jacobian function.
  * @param m The number of rows in the Jacobian matrix.
  * @param x0 The initial values of the variables.

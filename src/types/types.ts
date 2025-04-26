@@ -712,7 +712,7 @@ export type StringifiedNumber = `${number}.${number}`;
 /**
  * Represents a set of data containing both Line 1 and Line 2 TLE information.
  *
- * TODO: #22 TleParams types should be more consistent.
+ * TODO: TleParams types should be more consistent.
  */
 export type TleParams = {
   sat?: Satellite;
