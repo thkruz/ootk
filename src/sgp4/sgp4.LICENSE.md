@@ -19,10 +19,10 @@ links to the main page, to facilitate communications regarding any questions on 
 
 [https://celestrak.org/publications/AIAA/2006-6753/faq.php](Link to Source)
 
-## ootk-core Notes
+## ootk Notes
 
 Since the original authors do not have a license file, this file is to document the permission granted to use the code
 to develop a TypeScript implementation.
 
-The ootk-core TypeScript implementation is licensed under the MIT License. ootk-core is not affiliated with the original
+The ootk TypeScript implementation is licensed under the AGPL 3.0 License. ootk is not affiliated with the original
 authors.
