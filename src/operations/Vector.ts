@@ -184,7 +184,7 @@ export class Vector<T extends number = number> {
     const output = new Array(this.length);
 
     for (let i = 0; i < this.length; i++) {
-      output[i] = (this.elements[i] as number) + (v.elements[i] as number);
+      output[i] = (this.elements[i] as number) + (v.elements[i]);
     }
 
     return new Vector(output);
@@ -199,7 +199,7 @@ export class Vector<T extends number = number> {
     const output = new Array(this.length);
 
     for (let i = 0; i < this.length; i++) {
-      output[i] = (this.elements[i] as number) - (v.elements[i] as number);
+      output[i] = (this.elements[i] as number) - (v.elements[i]);
     }
 
     return new Vector(output);
@@ -262,7 +262,7 @@ export class Vector<T extends number = number> {
     let total = 0;
 
     for (let i = 0; i < this.length; i++) {
-      total += (this.elements[i] as number) * (v.elements[i] as number);
+      total += (this.elements[i] as number) * (v.elements[i]);
     }
 
     return total;
@@ -279,7 +279,7 @@ export class Vector<T extends number = number> {
     for (let i = 0; i < this.length; i++) {
       result[i] = [];
       for (let j = 0; j < v.length; j++) {
-        (result[i] as number[])[j] = (this.elements[i] as number) * (v.elements[j] as number);
+        (result[i])[j] = (this.elements[i] as number) * (v.elements[j]);
       }
     }
 
@@ -296,8 +296,8 @@ export class Vector<T extends number = number> {
 
     for (let i = 0; i < this.length; i++) {
       output[i] =
-        (this.elements[(i + 1) % this.length] as number) * (v.elements[(i + 2) % this.length] as number) -
-        (this.elements[(i + 2) % this.length] as number) * (v.elements[(i + 1) % this.length] as number);
+        (this.elements[(i + 1) % this.length] as number) * (v.elements[(i + 2) % this.length]) -
+        (this.elements[(i + 2) % this.length] as number) * (v.elements[(i + 1) % this.length]);
     }
 
     return new Vector(output);
