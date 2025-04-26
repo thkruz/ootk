@@ -30,13 +30,13 @@ import { BatchLeastSquaresResult } from './BatchLeastSquaresResult.js';
  */
 export class BatchLeastSquaresOD {
   /** Propagator pair cache, for generating observation Jacobians. */
-  private propPairs_: PropagatorPairs;
+  private readonly propPairs_: PropagatorPairs;
   /**  Nominal state propagator. */
   private propagator_: Propagator;
   /**  State estimate during solve. */
-  private nominal_: J2000;
+  private readonly nominal_: J2000;
   /**  Solve start epoch. */
-  private start_: EpochUTC;
+  private readonly start_: EpochUTC;
 
   /**
    * Create a new [BatchLeastSquaresOD] object from a list of [Observation]
@@ -51,12 +51,12 @@ export class BatchLeastSquaresOD {
    * @returns [BatchLeastSquaresOD] object.
    */
   constructor(
-    private observations_: Observation[],
-    private apriori_: J2000,
-    private forceModel_?: ForceModel,
-    private posStep_: number = 1e-5,
-    private velStep_: number = 1e-5,
-    private fastDerivatives_: boolean = false,
+    private readonly observations_: Observation[],
+    private readonly apriori_: J2000,
+    private readonly forceModel_?: ForceModel,
+    private readonly posStep_: number = 1e-5,
+    private readonly velStep_: number = 1e-5,
+    private readonly fastDerivatives_: boolean = false,
   ) {
     this.observations_.sort((a, b) => a.epoch.posix - b.epoch.posix);
     this.start_ = this.observations_[0].epoch;

@@ -26,9 +26,9 @@ export class ChebyshevCoefficients {
   constructor(
     public a: Seconds,
     public b: Seconds,
-    private cx_: Float64Array,
-    private cy_: Float64Array,
-    private cz_: Float64Array,
+    private readonly cx_: Float64Array,
+    private readonly cy_: Float64Array,
+    private readonly cz_: Float64Array,
   ) {
     this.cxd_ = ChebyshevCoefficients._derivative(a, b, cx_);
     this.cyd_ = ChebyshevCoefficients._derivative(a, b, cy_);

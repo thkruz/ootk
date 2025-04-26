@@ -33,7 +33,7 @@ export class RungeKutta4Propagator extends Propagator {
    * @param checkpoints_ Cached state vector checkpoints.
    */
   constructor(
-    private initState_: J2000,
+    private readonly initState_: J2000,
     private forceModel_: ForceModel = new ForceModel().setGravity(),
     private stepSize_: number = 15.0,
     private cacheState_: J2000 = initState_,

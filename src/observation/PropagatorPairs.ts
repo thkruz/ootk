@@ -18,7 +18,7 @@
 import { Propagator } from '../propagator/Propagator.js';
 
 export class PropagatorPairs {
-  constructor(private _posStep: number, private _velStep: number) {
+  constructor(private readonly posStep_: number, private readonly velStep_: number) {
     // Do nothing.
   }
 
@@ -40,6 +40,6 @@ export class PropagatorPairs {
    * @returns The step size.
    */
   step(index: number): number {
-    return index < 3 ? this._posStep : this._velStep;
+    return index < 3 ? this.posStep_ : this.velStep_;
   }
 }

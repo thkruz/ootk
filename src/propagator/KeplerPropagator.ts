@@ -22,40 +22,40 @@ import { Propagator } from './Propagator.js';
 
 // / Kepler analytical two-body propagator.
 export class KeplerPropagator extends Propagator {
-  private _initElements: ClassicalElements;
-  private _elements: ClassicalElements;
-  private _cacheState: J2000;
-  private _checkpoints: J2000[];
+  private readonly initElements_: ClassicalElements;
+  private elements_: ClassicalElements;
+  private cacheState_: J2000;
+  private checkpoints_: J2000[];
 
   constructor(initElements: ClassicalElements) {
     super();
-    this._initElements = initElements;
-    this._elements = initElements;
-    this._cacheState = J2000.fromClassicalElements(initElements);
-    this._checkpoints = [];
+    this.initElements_ = initElements;
+    this.elements_ = initElements;
+    this.cacheState_ = J2000.fromClassicalElements(initElements);
+    this.checkpoints_ = [];
   }
 
   get state(): J2000 {
-    return this._cacheState;
+    return this.cacheState_;
   }
 
   propagate(epoch: EpochUTC): J2000 {
-    this._cacheState = J2000.fromClassicalElements(this._elements.propagate(epoch));
+    this.cacheState_ = J2000.fromClassicalElements(this.elements_.propagate(epoch));
 
-    return this._cacheState;
+    return this.cacheState_;
   }
 
   reset(): void {
-    this._elements = this._initElements;
-    this._cacheState = J2000.fromClassicalElements(this._elements);
+    this.elements_ = this.initElements_;
+    this.cacheState_ = J2000.fromClassicalElements(this.elements_);
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   maneuver(maneuver: Thrust, interval = 60): J2000[] {
-    this._cacheState = maneuver.apply(this.propagate(maneuver.center));
-    this._elements = this._cacheState.toClassicalElements();
+    this.cacheState_ = maneuver.apply(this.propagate(maneuver.center));
+    this.elements_ = this.cacheState_.toClassicalElements();
 
-    return [this._cacheState];
+    return [this.cacheState_];
   }
 
   ephemerisManeuver(start: EpochUTC, finish: EpochUTC, maneuvers: Thrust[], interval = 60.0): VerletBlendInterpolator {
@@ -66,37 +66,37 @@ export class KeplerPropagator extends Propagator {
       ephemeris.push(this.propagate(start));
     }
     for (const mvr of tMvr) {
-      while (this._cacheState.epoch < mvr.center) {
-        const step = Math.min(mvr.center.difference(this._cacheState.epoch), interval) as Seconds;
+      while (this.cacheState_.epoch < mvr.center) {
+        const step = Math.min(mvr.center.difference(this.cacheState_.epoch), interval) as Seconds;
 
-        this.propagate(this._cacheState.epoch.roll(step));
-        if (this._cacheState.epoch.posix !== mvr.center.posix) {
-          ephemeris.push(this._cacheState);
+        this.propagate(this.cacheState_.epoch.roll(step));
+        if (this.cacheState_.epoch.posix !== mvr.center.posix) {
+          ephemeris.push(this.cacheState_);
         }
       }
       ephemeris.push(...this.maneuver(mvr, interval));
     }
-    while (this._cacheState.epoch < finish) {
-      const step = Math.min(finish.difference(this._cacheState.epoch), interval) as Seconds;
+    while (this.cacheState_.epoch < finish) {
+      const step = Math.min(finish.difference(this.cacheState_.epoch), interval) as Seconds;
 
-      this.propagate(this._cacheState.epoch.roll(step));
-      ephemeris.push(this._cacheState);
+      this.propagate(this.cacheState_.epoch.roll(step));
+      ephemeris.push(this.cacheState_);
     }
 
     return new VerletBlendInterpolator(ephemeris);
   }
 
   checkpoint(): number {
-    this._checkpoints.push(this._cacheState);
+    this.checkpoints_.push(this.cacheState_);
 
-    return this._checkpoints.length - 1;
+    return this.checkpoints_.length - 1;
   }
 
   clearCheckpoints(): void {
-    this._checkpoints = [];
+    this.checkpoints_ = [];
   }
 
   restore(index: number): void {
-    this._cacheState = this._checkpoints[index];
+    this.cacheState_ = this.checkpoints_[index];
   }
 }

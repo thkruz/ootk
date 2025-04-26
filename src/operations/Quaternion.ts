@@ -30,11 +30,11 @@ export class Quaternion {
     this.w = w;
   }
 
-  static zero = new Quaternion(0, 0, 0, 0);
-  static one = new Quaternion(0, 0, 0, 1);
-  static xAxis = new Quaternion(1, 0, 0, 0);
-  static yAxis = new Quaternion(0, 1, 0, 0);
-  static zAxis = new Quaternion(0, 0, 1, 0);
+  static readonly zero = new Quaternion(0, 0, 0, 0);
+  static readonly one = new Quaternion(0, 0, 0, 1);
+  static readonly xAxis = new Quaternion(1, 0, 0, 0);
+  static readonly yAxis = new Quaternion(0, 1, 0, 0);
+  static readonly zAxis = new Quaternion(0, 0, 1, 0);
 
   toString(precision = 8): string {
     const xStr = this.x.toFixed(precision);

@@ -23,7 +23,7 @@ import { ChebyshevInterpolator } from './../interpolator/ChebyshevInterpolator.j
 // / Ephemeris compressor.
 export class ChebyshevCompressor {
   // / Create a new [ChebyshevCompressor] object from an [Interpolator].
-  constructor(private _interpolator: StateInterpolator) {
+  constructor(private readonly interpolator_: StateInterpolator) {
     // Do nothing.
   }
 
@@ -41,7 +41,7 @@ export class ChebyshevCompressor {
     for (let i = 0; i < n; i++) {
       const x = ChebyshevCompressor._cosPi((i + h) / n);
       const seconds = x * (h * (b - a)) + h * (b + a) as Seconds;
-      const state = this._interpolator.interpolate(new EpochUTC(seconds))!;
+      const state = this.interpolator_.interpolate(new EpochUTC(seconds))!;
       const fx = state.position.x;
       const fy = state.position.y;
       const fz = state.position.z;
@@ -78,8 +78,8 @@ export class ChebyshevCompressor {
    * @returns A new [ChebyshevInterpolator] object.
    */
   compress(cpr = 21): ChebyshevInterpolator {
-    const { start, end } = this._interpolator.window();
-    const period = this._interpolator.interpolate(start)!.period;
+    const { start, end } = this.interpolator_.window();
+    const period = this.interpolator_.interpolate(start)!.period;
     const coefficients: ChebyshevCoefficients[] = [];
     let current = start;
 

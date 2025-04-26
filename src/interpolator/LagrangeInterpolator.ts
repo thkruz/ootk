@@ -19,11 +19,11 @@ import { EpochUTC, EpochWindow, J2000, Kilometers, KilometersPerSecond, Seconds,
 import { StateInterpolator } from './StateInterpolator.js';
 
 export class LagrangeInterpolator extends StateInterpolator {
-  private t_: Float64Array;
-  private x_: Float64Array;
-  private y_: Float64Array;
-  private z_: Float64Array;
-  private order: number;
+  private readonly t_: Float64Array;
+  private readonly x_: Float64Array;
+  private readonly y_: Float64Array;
+  private readonly z_: Float64Array;
+  private readonly order: number;
 
   constructor(t: Float64Array, x: Float64Array, y: Float64Array, z: Float64Array, order = 10) {
     super();

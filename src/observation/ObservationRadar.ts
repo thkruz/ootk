@@ -38,12 +38,16 @@ import { PropagatorPairs } from './PropagatorPairs.js';
 // / Radar observation data.
 export class ObservationRadar extends Observation {
   // / Create a new [ObservationRadar] object.
-  constructor(private _site: J2000, public observation: RAE, private _noise: Matrix = ObservationRadar.defaultNoise) {
+  constructor(
+    private readonly site_: J2000,
+    public observation: RAE,
+    private readonly noise_: Matrix = ObservationRadar.defaultNoise,
+  ) {
     super();
   }
 
   // / Default noise matrix.
-  private static defaultNoise: Matrix =
+  private static readonly defaultNoise: Matrix =
     ObservationRadar.noiseFromSigmas(0.32 as Kilometers, 0.015 * DEG2RAD as Radians, 0.015 * DEG2RAD as Radians);
 
   get epoch(): EpochUTC {
@@ -51,11 +55,11 @@ export class ObservationRadar extends Observation {
   }
 
   get site(): J2000 {
-    return this._site;
+    return this.site_;
   }
 
   get noise(): Matrix {
-    return this._noise;
+    return this.noise_;
   }
 
   toVector(): Vector {

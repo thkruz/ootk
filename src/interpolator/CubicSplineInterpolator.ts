@@ -28,7 +28,7 @@ import { StateInterpolator } from './StateInterpolator.js';
  * sparse ephemerides.
  */
 export class CubicSplineInterpolator extends StateInterpolator {
-  constructor(private _splines: CubicSpline[]) {
+  constructor(private readonly splines_: CubicSpline[]) {
     super();
   }
 
@@ -52,24 +52,24 @@ export class CubicSplineInterpolator extends StateInterpolator {
   }
 
   get sizeBytes(): number {
-    return (64 * 14 * this._splines.length) / 8;
+    return (64 * 14 * this.splines_.length) / 8;
   }
 
   private matchSpline_(posix: number): CubicSpline {
     let left = 0;
-    let right = this._splines.length;
+    let right = this.splines_.length;
 
     while (left < right) {
       const middle = (left + right) >> 1;
 
-      if (this._splines[middle].t1 < posix) {
+      if (this.splines_[middle].t1 < posix) {
         left = middle + 1;
       } else {
         right = middle;
       }
     }
 
-    return this._splines[left];
+    return this.splines_[left];
   }
 
   interpolate(epoch: EpochUTC): J2000 | null {
@@ -85,6 +85,6 @@ export class CubicSplineInterpolator extends StateInterpolator {
   }
 
   window(): EpochWindow {
-    return new EpochWindow(new EpochUTC(this._splines[0].t0), new EpochUTC(this._splines[this._splines.length - 1].t1));
+    return new EpochWindow(new EpochUTC(this.splines_[0].t0), new EpochUTC(this.splines_[this.splines_.length - 1].t1));
   }
 }

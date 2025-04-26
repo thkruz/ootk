@@ -38,8 +38,8 @@ type SolveOptions = {
  * Used for orbit determination from multiple optical observations.
  */
 export class ModifiedGoodingIOD {
-  private observations_: ObservationOptical[];
-  private mu_: number;
+  private readonly observations_: ObservationOptical[];
+  private readonly mu_: number;
 
   constructor(observations: ObservationOptical[], mu: number = Earth.mu) {
     this.observations_ = observations;

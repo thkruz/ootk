@@ -19,14 +19,14 @@ import { Vector, Vector3D } from '../main.js';
 import { BoxMuller } from './BoxMuller.js';
 
 export class RandomGaussianSource {
-  private _boxMuller: BoxMuller;
+  private readonly boxMuller_: BoxMuller;
 
   constructor(seed = 0) {
-    this._boxMuller = new BoxMuller(0, 1, seed);
+    this.boxMuller_ = new BoxMuller(0, 1, seed);
   }
 
   nextGauss(): number {
-    return this._boxMuller.nextGauss();
+    return this.boxMuller_.nextGauss();
   }
 
   gaussVector(n: number): Vector {
