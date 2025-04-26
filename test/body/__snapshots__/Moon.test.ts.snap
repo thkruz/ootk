@@ -1,0 +1,100 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Moon should be callable with an "EpochUTC" parameter and return a "Vector3D" object 1`] = `
+Vector3D {
+  "x": 248471.54051777,
+  "y": -229511.18274819673,
+  "z": -131233.28802621315,
+}
+`;
+
+exports[`Moon should be callable with two "Vector3D" parameters and return a number 1`] = `NaN`;
+
+exports[`Moon should call the private method 'moonCoords' with a number parameter and return a RaDec object 1`] = `
+Object {
+  "dec": -0.21428784368024154,
+  "dist": 401235.63978571084,
+  "ra": -0.7625969983284882,
+}
+`;
+
+exports[`Moon should return 0.5 if the "origin" parameter is not provided 1`] = `0.03596620967759451`;
+
+exports[`Moon should return a MoonIlluminationData object when called with a number parameter 1`] = `
+Object {
+  "angle": 2.042516805424306,
+  "fraction": 0.1878109225830057,
+  "next": Object {
+    "date": "2021-11-04T23:26:30.060Z",
+    "firstQuarter": Object {
+      "date": "2021-11-12T08:37:30.754Z",
+      "value": 1636706250754.5,
+    },
+    "fullMoon": Object {
+      "date": "2021-11-19T17:48:31.449Z",
+      "value": 1637344111449,
+    },
+    "newMoon": Object {
+      "date": "2021-11-04T23:26:30.060Z",
+      "value": 1636068390060,
+    },
+    "thirdQuarter": Object {
+      "date": "2021-11-27T02:59:32.143Z",
+      "value": 1637981972143.5,
+    },
+    "type": "newMoon",
+    "value": 1636068390060,
+  },
+  "phase": Object {
+    "code": ":waning_crescent_moon:",
+    "css": "wi-moon-wan-cres",
+    "emoji": "🌘",
+    "from": 0.783863193308711,
+    "id": "waningCrescentMoon",
+    "name": "Waning Crescent",
+    "to": 0.966136806691289,
+    "weight": 6.3825,
+  },
+  "phaseValue": 0.8573237783716006,
+}
+`;
+
+exports[`Moon should return an object with 'az', 'el', 'rng', and 'parallacticAngle' properties 1`] = `
+Object {
+  "az": 5.030114468719165,
+  "el": -0.12433217612739415,
+  "parallacticAngle": 0.8650448747993286,
+  "rng": 380743.9840372972,
+}
+`;
+
+exports[`Moon should return an object with 'az', 'el', 'rng', and 'parallacticAngle' properties 2`] = `
+Object {
+  "az": 4.034314328077605,
+  "el": 0.19547892013212267,
+  "parallacticAngle": 0.7236664732665937,
+  "rng": 366252.754397278,
+}
+`;
+
+exports[`Moon should return with 'rise', 'set', 'ye', 'alwaysUp', 'alwaysDown', 'highest' properties 1`] = `
+Object {
+  "alwaysDown": false,
+  "alwaysUp": false,
+  "highest": 2024-01-12T21:42:31.618Z,
+  "rise": 2024-01-12T16:43:59.167Z,
+  "set": 2024-01-13T02:41:04.069Z,
+  "ye": null,
+}
+`;
+
+exports[`Moon should return with 'rise', 'set', 'ye', 'alwaysUp', 'alwaysDown', and 'highest' properties 1`] = `
+Object {
+  "alwaysDown": false,
+  "alwaysUp": false,
+  "highest": 2024-01-12T21:42:31.618Z,
+  "rise": 2024-01-12T16:43:59.167Z,
+  "set": 2024-01-13T02:41:04.069Z,
+  "ye": null,
+}
+`;

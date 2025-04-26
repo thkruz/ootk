@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, Vector3D } from 'ootk-core';
+import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../main.js';
 
 /**
  * Herrik-Gibbs 3-position initial orbit determination.

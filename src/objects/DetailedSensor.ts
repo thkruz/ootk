@@ -15,7 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Milliseconds, Sensor } from 'ootk-core';
+import { Sensor } from './Sensor.js';
+import { Milliseconds } from '../main.js';
 import { DetailedSensorParams, ZoomValue } from '../types/types.js';
 import { CommLink } from '../enums/CommLink.js';
 

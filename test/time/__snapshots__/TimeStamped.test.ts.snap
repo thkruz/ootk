@@ -1,0 +1,10 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TimeStamped should be constructed from an epoch 1`] = `
+TimeStamped {
+  "epoch": EpochUTC {
+    "posix": 315964800,
+  },
+  "value": "test",
+}
+`;

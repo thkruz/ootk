@@ -20,14 +20,22 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from 'ootk-core';
 export * from './enums/index.js';
 export * from './types/types.js';
 export * from './interfaces/index.js';
+export * from './time/index.js';
+export * from './transforms/index.js';
+export * from './utils/index.js';
+export * from './operations/operations.js';
+export { BaseObject } from './objects/index.js';
+export { Earth } from './body/index.js';
 export * from './coordinate/index.js';
+export * from './observation/index.js';
+export * from './data/DataHandler.js';
+export * from './sgp4/index.js';
 export * from './objects/index.js';
+export * from './body/index.js';
 export * from './operations/index.js';
 export * from './force/index.js';
 export * from './propagator/index.js';
-export * from './transforms/index.js';
-export * from './utils/index.js';
+export * from './orbit_determination/index.js';

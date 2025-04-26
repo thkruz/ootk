@@ -15,18 +15,18 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Satellite } from './Satellite.js';
 import {
   FormatTle,
   LaunchDetails,
   OperationsDetails,
   OptionsParams,
-  Satellite,
   SpaceCraftDetails,
   TleLine1,
   TleLine2,
-} from 'ootk-core';
-import { DetailedSatelliteParams } from '../types/types.js';
-import { CatalogSource } from '../main.js';
+  CatalogSource,
+} from '../main.js';
+import { DetailedSatelliteParams, PayloadStatus } from '../types/types.js';
 
 /**
  * Represents a detailed satellite object with launch, spacecraft, and operations details.
@@ -39,6 +39,7 @@ export class DetailedSatellite extends Satellite {
   launchDate: string = '';
   launchMass: string = '';
   launchSite: string = '';
+  launchPad: string = '';
   launchVehicle: string = '';
   lifetime: string | number = '';
   maneuver: string = '';
@@ -60,6 +61,7 @@ export class DetailedSatellite extends Satellite {
   rcs: number|null;
   altId: string = '';
   altName: string = '';
+  status: PayloadStatus = PayloadStatus.UNKNOWN;
 
   constructor(
     info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails,
@@ -82,15 +84,16 @@ export class DetailedSatellite extends Satellite {
     this.altName = info.altName ?? '';
     this.initOperationDetails_(info);
     this.initLaunchDetails_(info);
+    this.status = info.status ?? PayloadStatus.UNKNOWN;
   }
 
   private static setSccNumTo0_(info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails) {
-    info.tle1 = FormatTle.setCharAt(info.tle1, 2, '0') as TleLine1;
+    info.tle1 = FormatTle.setCharAt(info.tle1 as string, 2, '0') as TleLine1;
     info.tle1 = FormatTle.setCharAt(info.tle1, 3, '0') as TleLine1;
     info.tle1 = FormatTle.setCharAt(info.tle1, 4, '0') as TleLine1;
     info.tle1 = FormatTle.setCharAt(info.tle1, 5, '0') as TleLine1;
     info.tle1 = FormatTle.setCharAt(info.tle1, 6, '0') as TleLine1;
-    info.tle2 = FormatTle.setCharAt(info.tle2, 2, '0') as TleLine2;
+    info.tle2 = FormatTle.setCharAt(info.tle2 as string, 2, '0') as TleLine2;
     info.tle2 = FormatTle.setCharAt(info.tle2, 3, '0') as TleLine2;
     info.tle2 = FormatTle.setCharAt(info.tle2, 4, '0') as TleLine2;
     info.tle2 = FormatTle.setCharAt(info.tle2, 5, '0') as TleLine2;
@@ -130,6 +133,7 @@ export class DetailedSatellite extends Satellite {
     this.launchDate = info.launchDate ?? '';
     this.launchMass = info.launchMass ?? '';
     this.launchSite = info.launchSite ?? '';
+    this.launchPad = info.launchPad ?? '';
     this.launchVehicle = info.launchVehicle ?? '';
   }
 

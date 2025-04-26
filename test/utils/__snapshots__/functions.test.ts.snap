@@ -1,12 +1,84 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`functions should be calculate acotch 1`] = `Infinity`;
+
+exports[`functions should be calculate acsch 1`] = `0.8813735870195429`;
+
+exports[`functions should be calculate array2d 1`] = `
+Array [
+  Array [
+    3,
+    3,
+  ],
+]
+`;
+
+exports[`functions should be calculate asech 1`] = `0`;
+
+exports[`functions should be calculate concat 1`] = `
+Float64Array [
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+]
+`;
+
+exports[`functions should be calculate copySign 1`] = `1`;
+
+exports[`functions should be calculate copySign 2`] = `1`;
+
+exports[`functions should be calculate copySign 3`] = `-1`;
+
+exports[`functions should be calculate copySign 4`] = `-1`;
+
+exports[`functions should be calculate covariance 1`] = `0.6666666666666666`;
+
+exports[`functions should be calculate createVec 1`] = `
+Array [
+  1,
+]
+`;
+
+exports[`functions should be calculate csch 1`] = `0.8509181282393216`;
+
+exports[`functions should be calculate deg2rad 1`] = `0.017453292519943295`;
+
+exports[`functions should be calculate gamma 1`] = `1`;
+
+exports[`functions should be calculate linearInterpolate 1`] = `0.75`;
+
+exports[`functions should be calculate log10 1`] = `2`;
+
+exports[`functions should be calculate mean 1`] = `2`;
+
+exports[`functions should be calculate rad2deg 1`] = `57.29577951308232`;
+
+exports[`functions should be calculate sech 1`] = `0.6480542736638855`;
+
+exports[`functions should be calculate sign 1`] = `1`;
+
+exports[`functions should be calculate sign 2`] = `-1`;
+
+exports[`functions should be calculate spaceObjType2Str 1`] = `"Debris"`;
+
+exports[`functions should be calculate std 1`] = `0.816496580927726`;
+
+exports[`functions should be calculate wrapAngle 1`] = `1`;
+
+exports[`functions should be calculate wrapAngle 2`] = `-1.2831853071795862`;
+
+exports[`functions should be calculate wrapAngle 3`] = `-5`;
+
 exports[`should be calculate derivative 1`] = `[Function]`;
 
 exports[`should be calculate jacobian 1`] = `
 Matrix {
   "columns": 3,
-  "elements": [
-    [
+  "elements": Array [
+    Array [
       1.000000000006551,
       0,
       0,

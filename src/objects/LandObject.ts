@@ -15,7 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { BaseObject, BaseObjectParams, Degrees, Kilometers } from 'ootk-core';
+import { BaseObject } from './BaseObject.js';
+import { BaseObjectParams, Degrees, Kilometers } from '../main.js';
 /* eslint-disable class-methods-use-this */
 
 export interface LandObjectParams extends BaseObjectParams {

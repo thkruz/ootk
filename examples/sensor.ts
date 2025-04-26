@@ -14,7 +14,7 @@ import {
   SpaceObjectType,
   TleLine1,
   TleLine2,
-} from 'ootk-core';
+} from '../dist/main.js';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const capeCodRadar = new Sensor({

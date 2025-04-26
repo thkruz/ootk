@@ -1,0 +1,180 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Tle should create a TLE from classical orbital elements 1`] = `
+Tle {
+  "epoch": EpochUTC {
+    "posix": 1705109279.999904,
+  },
+  "line1": "1 00001U 58001A   24013.06111111 +.00000000 +00000+0 +00000-0 0 09990",
+  "line2": "2 00001 043.0239 001.6180 0011236 145.4534 033.9125 15.00481387 00010",
+  "satnum": 1,
+  "satrec_": Object {
+    "PInco": 0,
+    "a": 1.088949028290718,
+    "alta": 0.09017257141890522,
+    "altp": 0.08772548516253043,
+    "argpdot": 0.00007500841038277947,
+    "argpo": 2.53864073822032,
+    "atime": 0,
+    "aycof": 0.0008000244899288449,
+    "bstar": 0,
+    "cc1": 0,
+    "cc4": 4.3305287931362373e-7,
+    "cc5": 0.00011839745575895689,
+    "con41": 0.6033863216244524,
+    "d2": 0,
+    "d2201": 0,
+    "d2211": 0,
+    "d3": 0,
+    "d3210": 0,
+    "d3222": 0,
+    "d4": 0,
+    "d4410": 0,
+    "d4422": 0,
+    "d5220": 0,
+    "d5232": 0,
+    "d5421": 0,
+    "d5433": 0,
+    "dedt": 0,
+    "del1": 0,
+    "del2": 0,
+    "del3": 0,
+    "delmo": 1.0402336592605395,
+    "didt": 0,
+    "dmdt": 0,
+    "dnodt": 0,
+    "domdt": 0,
+    "e3": 0,
+    "ecco": 0.0011236,
+    "ee2": 0,
+    "epochdays": 13.06111111,
+    "epochyr": 24,
+    "error": 0,
+    "eta": 0.01594821618248224,
+    "gsto": 2.3394503579736323,
+    "inclo": 0.7509087120487883,
+    "init": false,
+    "irez": 0,
+    "isimp": false,
+    "j2": 0.001082616,
+    "j3": -0.00000253881,
+    "j3oj2": -0.002345069720011528,
+    "j4": -0.00000165597,
+    "jdsatepoch": 2460322.56111111,
+    "mdot": 0.06547085575553616,
+    "method": "n",
+    "mo": 0.591884782582577,
+    "mus": 398600.8,
+    "nddot": 0,
+    "ndot": 0,
+    "no": 0.06544379037496881,
+    "nodecf": -0,
+    "nodedot": -0.00006565190786601781,
+    "nodeo": 0.028239427297268253,
+    "omgcof": -0,
+    "operationmode": "a",
+    "peo": 0,
+    "pgho": 0,
+    "pho": 0,
+    "plo": 0,
+    "radiusearthkm": 6378.135,
+    "satnum": "00001",
+    "se2": 0,
+    "se3": 0,
+    "sgh2": 0,
+    "sgh3": 0,
+    "sgh4": 0,
+    "sh2": 0,
+    "sh3": 0,
+    "si2": 0,
+    "si3": 0,
+    "sinmao": 0.5579261762949905,
+    "sl2": 0,
+    "sl3": 0,
+    "sl4": 0,
+    "t": 0,
+    "t2cof": 0,
+    "t3cof": 0,
+    "t4cof": 0,
+    "t5cof": 0,
+    "tumin": 13.446839696959309,
+    "vkmpersec": 7.905370510517634,
+    "x1mth2": 0.4655378927918492,
+    "x7thm1": 2.7412347504570556,
+    "xfact": 0,
+    "xgh2": 0,
+    "xgh3": 0,
+    "xgh4": 0,
+    "xh2": 0,
+    "xh3": 0,
+    "xi2": 0,
+    "xi3": 0,
+    "xke": 0.07436691613317342,
+    "xl2": 0,
+    "xl3": 0,
+    "xl4": 0,
+    "xlamo": 0,
+    "xlcof": 0.0015379049393216336,
+    "xli": 0,
+    "xmcof": -0,
+    "xni": 0,
+    "zmol": 0,
+    "zmos": 0,
+  },
+}
+`;
+
+exports[`Tle should propagate the TLE 1`] = `
+TEME {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": 3699.9683427262826,
+    "y": -4340.514516979853,
+    "z": 3939.5098576859164,
+  },
+  "velocity": Vector3D {
+    "x": -6.276352177964951,
+    "y": -3.990490995081803,
+    "z": 1.4943962253306078,
+  },
+}
+`;
+
+exports[`Tle should return the TLE as a string 1`] = `
+"1 56006U 23042W   24012.45049317  .00000296  00000-0  36967-4 0  9992
+2 56006 143.0043  13.3620 0001137 267.5965  92.4747 15.02542972 44491"
+`;
+
+exports[`Tle should return the apogee 1`] = `6937.9838309710485`;
+
+exports[`Tle should return the eccentricity 1`] = `0.0001137`;
+
+exports[`Tle should return the inclination 1`] = `2.495895879509727`;
+
+exports[`Tle should return the inclination in degrees 1`] = `143.0043`;
+
+exports[`Tle should return the perigee 1`] = `6936.406312811701`;
+
+exports[`Tle should return the period 1`] = `95.83752523784717`;
+
+exports[`Tle should return the semi-major axis 1`] = `6937.195071891375`;
+
+exports[`Tle should return the state vector 1`] = `
+TEME {
+  "epoch": EpochUTC {
+    "posix": 1705056522.609888,
+  },
+  "position": Vector3D {
+    "x": 6748.804592785081,
+    "y": 1602.0774592717344,
+    "z": 0.7217817565636419,
+  },
+  "velocity": Vector3D {
+    "x": 1.3943615794564204,
+    "y": -5.89340298337042,
+    "z": 4.566020263208419,
+  },
+}
+`;

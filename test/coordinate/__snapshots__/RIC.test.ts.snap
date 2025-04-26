@@ -1,0 +1,79 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RIC should create a RIC coordinate system from a J2000 state and origin 1`] = `
+RIC {
+  "position": Vector3D {
+    "x": -0.4434101992280181,
+    "y": 1.9338646031157782,
+    "z": -0.25249770699242563,
+  },
+  "velocity": Vector3D {
+    "x": -0.002221880767217895,
+    "y": 0.009676856714746954,
+    "z": -0.001192346417169753,
+  },
+}
+`;
+
+exports[`RIC should create a new RIC coordinate from J2000 state vectors and origin 1`] = `
+RIC {
+  "position": Vector3D {
+    "x": -2,
+    "y": 0.010000000000218279,
+    "z": -0.010000000000218279,
+  },
+  "velocity": Vector3D {
+    "x": -0.010000000000000675,
+    "y": 0,
+    "z": 0,
+  },
+}
+`;
+
+exports[`RIC should get the name of the RIC coordinate system 1`] = `"RIC"`;
+
+exports[`RIC should return a string representation of the RIC coordinate 1`] = `
+"[RIC]
+  Position: [1538.223336, 5102.261204, 4432.634965] km
+  Velocity: [-7.341518909, 0.651671845, 1.793388250] km/s"
+`;
+
+exports[`RIC should return the range of the RIC coordinate 1`] = `6931.627020979389`;
+
+exports[`RIC should return the range rate of the RIC coordinate 1`] = `-0.002663194316531782`;
+
+exports[`RIC should transform the current RIC coordinate to J2000 using the provided origin and transform matrix 1`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": -2526.8631969362687,
+    "y": 3698.432701341307,
+    "z": 9867.307227222767,
+  },
+  "velocity": Vector3D {
+    "x": -9.379496377921184,
+    "y": -5.899851460084735,
+    "z": -1.4349469513344795,
+  },
+}
+`;
+
+exports[`RIC should transform the current RIC coordinate to the J2000 coordinate system using the provided origin 1`] = `
+J2000 {
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "position": Vector3D {
+    "x": 3078.44667168579,
+    "y": 10204.512408043935,
+    "z": 8865.279930007155,
+  },
+  "velocity": Vector3D {
+    "x": -14.673037818758605,
+    "y": 1.303343690799729,
+    "z": 3.5867764999723986,
+  },
+}
+`;

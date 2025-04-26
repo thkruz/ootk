@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, Seconds, Vector3D } from 'ootk-core';
+import { EpochUTC, Seconds, Vector3D } from '../main.js';
 import { StateInterpolator } from '../interpolator/StateInterpolator.js';
 import { ChebyshevCoefficients } from './../interpolator/ChebyshevCoefficients.js';
 import { ChebyshevInterpolator } from './../interpolator/ChebyshevInterpolator.js';

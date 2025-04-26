@@ -27,7 +27,7 @@ import {
   RIC,
   Vector,
   Vector3D,
-} from 'ootk-core';
+} from '../main.js';
 import { ForceModel } from '../force/ForceModel.js';
 import { Thrust } from '../force/Thrust.js';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator.js';

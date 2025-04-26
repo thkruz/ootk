@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Celestial should calculate the atmospheric refraction when elevation is 0 1`] = `0.008446689093277518`;
+
+exports[`Celestial should calculate the atmospheric refraction when given a valid elevation 1`] = `0.0005363221501954175`;
+
+exports[`Celestial should calculate the azimuth and elevation when given valid inputs 1`] = `
+Object {
+  "az": 58.636843073419904,
+  "el": 39.53055812197483,
+}
+`;
+
+exports[`Celestial should calculate the azimuth when given valid sidereal time, latitude, and declination 1`] = `4.816878749628938`;
+
+exports[`Celestial should calculate the declination when given valid ecliptic longitude and latitude 1`] = `0.4704906087409695`;
+
+exports[`Celestial should calculate the elevation when given valid sidereal time, latitude, and declination 1`] = `0.46170567615036917`;
+
+exports[`Celestial should calculate the right ascension when given valid ecliptic longitude and latitude 1`] = `0.3464473691313705`;

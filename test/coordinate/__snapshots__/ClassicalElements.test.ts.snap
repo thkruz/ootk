@@ -1,0 +1,106 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ClassicalElements should calculate argument of perigee in degrees 1`] = `145.4534258954243`;
+
+exports[`ClassicalElements should calculate inclination in degrees 1`] = `43.02390063917958`;
+
+exports[`ClassicalElements should calculate right ascension in degrees 1`] = `1.6180073591471598`;
+
+exports[`ClassicalElements should calculate the apogee of ClassicalElements 1`] = `580.3415297612491`;
+
+exports[`ClassicalElements should calculate the mean motion of ClassicalElements 1`] = `0.0010911808567933578`;
+
+exports[`ClassicalElements should calculate the orbit regime of ClassicalElements 1`] = `"Low Earth Orbit"`;
+
+exports[`ClassicalElements should calculate the perigee of ClassicalElements 1`] = `564.7380332899556`;
+
+exports[`ClassicalElements should calculate the period of ClassicalElements 1`] = `95.96920113444682`;
+
+exports[`ClassicalElements should calculate true anomaly in degrees 1`] = `33.984415021959016`;
+
+exports[`ClassicalElements should construct a ClassicalElements object with valid parameters 1`] = `
+ClassicalElements {
+  "argPerigee": 2.5386411901807353,
+  "eccentricity": 0.0011235968124658146,
+  "epoch": EpochUTC {
+    "posix": 1705243179.914,
+  },
+  "inclination": 0.7509087232045765,
+  "mu": 398600.4415,
+  "rightAscension": 0.028239555738616327,
+  "semimajorAxis": 6943.547853722985,
+  "trueAnomaly": 0.5931399364974058,
+}
+`;
+
+exports[`ClassicalElements should convert ClassicalElements to EquinoctialElements 1`] = `
+EquinoctialElements {
+  "I": 1,
+  "a": 6943.547853722985,
+  "epoch": EpochUTC {
+    "posix": 1705243179.914,
+  },
+  "h": 0.0006107793657340771,
+  "k": -0.0009430897960304828,
+  "lambda": 3.15876545174161,
+  "mu": 398600.4415,
+  "p": 0.01112918196689249,
+  "q": 0.3939942790541112,
+}
+`;
+
+exports[`ClassicalElements should convert ClassicalElements to PositionVelocity 1`] = `
+Object {
+  "position": Vector3D {
+    "x": -6935.3813042612455,
+    "y": -146.1261328371035,
+    "z": 46.43907991639276,
+  },
+  "velocity": Vector3D {
+    "x": 0.07740377357485445,
+    "y": -5.543955093986134,
+    "z": -5.174123893746047,
+  },
+}
+`;
+
+exports[`ClassicalElements should convert ClassicalElements to string 1`] = `
+"[ClassicalElements]
+  Epoch: 2024-01-14T14:39:39.914Z
+  Semimajor Axis (a):       6943.5479 km
+  Eccentricity (e):         0.0011236
+  Inclination (i):          43.0239°
+  Right Ascension (Ω):      1.6180°
+  Argument of Perigee (ω):  145.4534°
+  True Anomaly (ν):         33.9844°"
+`;
+
+exports[`ClassicalElements should create ClassicalElements from StateVector 1`] = `
+ClassicalElements {
+  "argPerigee": 1.7497725502749213,
+  "eccentricity": 0.0006908917666211547,
+  "epoch": EpochUTC {
+    "posix": 1705109326.817,
+  },
+  "inclination": 0.7503068041317154,
+  "mu": 398600.4415,
+  "rightAscension": 0.17555503341584255,
+  "semimajorAxis": 6935.754028093152,
+  "trueAnomaly": 5.749771010517163,
+}
+`;
+
+exports[`ClassicalElements should propagate ClassicalElements to a new epoch 1`] = `
+ClassicalElements {
+  "argPerigee": 2.5386411901807353,
+  "eccentricity": 0.0011235968124658146,
+  "epoch": EpochUTC {
+    "posix": 1705329579.914,
+  },
+  "inclination": 0.7509087232045765,
+  "mu": 398600.4415,
+  "rightAscension": 0.028239555738616327,
+  "semimajorAxis": 6943.547853722985,
+  "trueAnomaly": 0.6234422142843716,
+}
+`;

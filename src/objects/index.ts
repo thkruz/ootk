@@ -1,3 +1,8 @@
+export { BaseObject } from './BaseObject.js';
+export { GroundObject } from './GroundObject.js';
+export { Satellite } from './Satellite.js';
+export { Sensor } from './Sensor.js';
+export { Star } from './Star.js';
 export { DetailedSatellite } from './DetailedSatellite.js';
 export { DetailedSensor } from './DetailedSensor.js';
 export { LandObject } from './LandObject.js';

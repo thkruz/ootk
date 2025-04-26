@@ -26,7 +26,7 @@ import {
   Radians,
   Sun,
   Vector3D,
-} from 'ootk-core';
+} from '../main.js';
 import { Force } from './Force.js';
 
 /**

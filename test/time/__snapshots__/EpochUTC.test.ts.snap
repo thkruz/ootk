@@ -1,0 +1,70 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`EpochGPS fromDate 1`] = `
+EpochUTC {
+  "posix": 1614556800,
+}
+`;
+
+exports[`EpochGPS fromDateTime 1`] = `
+EpochUTC {
+  "posix": 1614574800,
+}
+`;
+
+exports[`EpochGPS fromDateTimeString 1`] = `
+EpochUTC {
+  "posix": 1614556800,
+}
+`;
+
+exports[`EpochGPS fromDefinitiveString 1`] = `
+EpochUTC {
+  "posix": 1609459200,
+}
+`;
+
+exports[`EpochGPS fromJ2000TTSeconds 1`] = `
+EpochUTC {
+  "posix": 946727935.816,
+}
+`;
+
+exports[`EpochGPS should calculate the GMST angle 1`] = `4.088037525758033`;
+
+exports[`EpochGPS should calculate the GMST angle in degrees 1`] = `234.22729671703883`;
+
+exports[`EpochGPS should convert to a GPS epoch 1`] = `
+EpochGPS {
+  "seconds": 104417.99999993818,
+  "week": 2147,
+}
+`;
+
+exports[`EpochGPS should convert to a TAI epoch 1`] = `
+EpochTAI {
+  "posix": 1614574837,
+}
+`;
+
+exports[`EpochGPS should convert to a TDB epoch 1`] = `
+EpochTDB {
+  "posix": 1614574869.1853862,
+}
+`;
+
+exports[`EpochGPS should convert to a TT epoch 1`] = `
+EpochTT {
+  "posix": 1614574869.184,
+}
+`;
+
+exports[`EpochGPS should convert to an MJD 1`] = `59274.20833333349`;
+
+exports[`EpochGPS should convert to an MJD GSFC 1`] = `29274.70833333349`;
+
+exports[`EpochGPS should roll the epoch forward 1`] = `
+EpochUTC {
+  "posix": 1614574860,
+}
+`;

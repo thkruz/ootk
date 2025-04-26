@@ -1,0 +1,93 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ClassicalElements should return the ClassicalElements object 1`] = `
+ClassicalElements {
+  "argPerigee": 1.7497725502749217,
+  "eccentricity": 0.0006908917666211547,
+  "epoch": EpochUTC {
+    "posix": 1705243179.914,
+  },
+  "inclination": 0.7503068041317155,
+  "mu": 398600.4415,
+  "rightAscension": 0.17555503341584255,
+  "semimajorAxis": 6935.754028093152,
+  "trueAnomaly": -0.5334142966624242,
+}
+`;
+
+exports[`ClassicalElements should return the ClassicalElements object 2`] = `
+ClassicalElements {
+  "argPerigee": 1.5622345094945798,
+  "eccentricity": 0.0008533645148705458,
+  "epoch": EpochUTC {
+    "posix": 1705243179.914,
+  },
+  "inclination": 2.4961547762752434,
+  "mu": 398600.4415,
+  "rightAscension": 0.296230054374017,
+  "semimajorAxis": 6937.389795521736,
+  "trueAnomaly": -0.32533674963545683,
+}
+`;
+
+exports[`ClassicalElements should return the PositionVelocity object 1`] = `
+Object {
+  "position": Vector3D {
+    "x": 1538.2233358428962,
+    "y": 5102.261204021967,
+    "z": 4432.634965003576,
+  },
+  "velocity": Vector3D {
+    "x": -7.3415189093793,
+    "y": 0.6516718453998642,
+    "z": 1.7933882499862026,
+  },
+}
+`;
+
+exports[`ClassicalElements should return the PositionVelocity object 2`] = `
+Object {
+  "position": Vector3D {
+    "x": 3699.9682301219336,
+    "y": -4340.514588573352,
+    "z": 3939.5098844969084,
+  },
+  "velocity": Vector3D {
+    "x": -6.276352257339577,
+    "y": -3.9904909019658032,
+    "z": 1.4943961405848338,
+  },
+}
+`;
+
+exports[`ClassicalElements should return the mean longitude 1`] = `7.675800884962325`;
+
+exports[`ClassicalElements should return the mean longitude 2`] = `7.224398200203262`;
+
+exports[`ClassicalElements should return the mean motion 1`] = `0.0010930206413363934`;
+
+exports[`ClassicalElements should return the mean motion 2`] = `0.0010926340790517568`;
+
+exports[`ClassicalElements should return the period 1`] = `95.80766470395568`;
+
+exports[`ClassicalElements should return the period 2`] = `95.8415604339752`;
+
+exports[`ClassicalElements should return the retrograde factor 1`] = `1`;
+
+exports[`ClassicalElements should return the retrograde factor 2`] = `-1`;
+
+exports[`ClassicalElements should return the revs per day 1`] = `15.030112720621878`;
+
+exports[`ClassicalElements should return the revs per day 2`] = `15.02479710763901`;
+
+exports[`ClassicalElements should return the semi-major axis 1`] = `6935.754028093152`;
+
+exports[`ClassicalElements should return the semi-major axis 2`] = `6937.389795521736`;
+
+exports[`ClassicalElements should return true if the orbit is prograde 1`] = `true`;
+
+exports[`ClassicalElements should return true if the orbit is prograde 2`] = `false`;
+
+exports[`ClassicalElements should return true if the orbit is retrograde 1`] = `false`;
+
+exports[`ClassicalElements should return true if the orbit is retrograde 2`] = `true`;

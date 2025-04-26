@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { J2000, Moon, Sun, Vector3D } from 'ootk-core';
+import { J2000, Moon, Sun, Vector3D } from '../main.js';
 import { Force } from './Force.js';
 
 // / Third-body gravity model.

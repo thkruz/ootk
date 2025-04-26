@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Random, TAU, Vector } from 'ootk-core';
+import { Random, TAU, Vector } from '../main.js';
 
 // / Box-Muller random Gaussian number generator.
 export class BoxMuller {

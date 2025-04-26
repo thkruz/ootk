@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, EpochWindow, J2000 } from 'ootk-core';
+import { EpochUTC, EpochWindow, J2000 } from '../main.js';
 import { ChebyshevCoefficients } from './ChebyshevCoefficients.js';
 import { StateInterpolator } from './StateInterpolator.js';
 

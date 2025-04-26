@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Basic Star functionality should be able to get ECI coordinates 1`] = `255314.47433812887`;
+
+exports[`Basic Star functionality should be able to get ECI coordinates 2`] = `5732.535422340079`;
+
+exports[`Basic Star functionality should be able to get ECI coordinates 3`] = `-2.4943615850552645e-11`;
+
+exports[`Basic Star functionality should be able to get rae coordinates 1`] = `270`;
+
+exports[`Basic Star functionality should be able to get rae coordinates 2`] = `57.10188128555508`;
+
+exports[`Basic Star functionality should be able to get rae coordinates 3`] = `250000`;

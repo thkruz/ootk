@@ -1,0 +1,54 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Geodetic should calculate the angle between two Geodetic objects using Haversine method 1`] = `1.0238932134660375`;
+
+exports[`Geodetic should calculate the angle between two Geodetic objects using Spherical Law of Cosines method 1`] = `1.0238932134660375`;
+
+exports[`Geodetic should calculate the angle in degrees between two Geodetic objects using Haversine method 1`] = `58.66475980369142`;
+
+exports[`Geodetic should calculate the angle in degrees between two Geodetic objects using Spherical Law of Cosines method 1`] = `58.66475980369142`;
+
+exports[`Geodetic should calculate the distance between two Geodetic objects using Haversine method 1`] = `10007.572625484478`;
+
+exports[`Geodetic should calculate the distance between two Geodetic objects using Spherical Law of Cosines method 1`] = `0.0000949354182511178`;
+
+exports[`Geodetic should convert a Geodetic object from degrees to radians 1`] = `
+Geodetic {
+  "alt": 0,
+  "lat": 0.7853981633974483,
+  "lon": 1.5707963267948966,
+}
+`;
+
+exports[`Geodetic should convert a Geodetic object to ITRF coordinates 1`] = `
+ITRF {
+  "epoch": EpochUTC {
+    "posix": 1705243179.914,
+  },
+  "position": Vector3D {
+    "x": -0.01685374002219863,
+    "y": 4588.292662103151,
+    "z": 4558.066993511299,
+  },
+  "velocity": Vector3D {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+  },
+}
+`;
+
+exports[`Geodetic should convert a Geodetic object to a string 1`] = `
+"Geodetic
+  Latitude:  45.0001°
+  Longitude: 90.0002°
+  Altitude:  100.000 km"
+`;
+
+exports[`Geodetic should create a Geodetic object with valid latitude, longitude, and altitude values 1`] = `
+Geodetic {
+  "alt": 100,
+  "lat": 0.7854,
+  "lon": 1.5708,
+}
+`;

@@ -27,7 +27,7 @@ import {
   RelativeState,
   Seconds,
   Vector3D,
-} from 'ootk-core';
+} from '../main.js';
 import { Thrust } from './../force/Thrust.js';
 import { Waypoint } from './../maneuver/Waypoint.js';
 

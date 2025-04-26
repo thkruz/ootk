@@ -5,4 +5,9 @@ dist
 node_modules
 *.log
 
+test/performance
+test/satellite/transform*
+test/sgp4/sgp4prop
+
 **/**.out
+.qodo

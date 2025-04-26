@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Vector } from 'ootk-core';
+import { Vector } from '../main.js';
 
 /**
  * Optimization cost function that takes in parameter array [xs] and returns

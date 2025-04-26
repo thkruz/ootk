@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, EpochWindow, J2000, Kilometers, KilometersPerSecond, Vector3D } from 'ootk-core';
+import { EpochUTC, EpochWindow, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../main.js';
 import { CubicSpline } from './CubicSpline.js';
 import { StateInterpolator } from './StateInterpolator.js';
 

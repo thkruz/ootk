@@ -27,7 +27,7 @@ import {
   RIC,
   Vector,
   Vector3D,
-} from 'ootk-core';
+} from '../main.js';
 import { RandomGaussianSource } from '../operations/RandomGaussianSource.js';
 import { Propagator } from '../propagator/Propagator.js';
 import { Observation } from './Observation.js';

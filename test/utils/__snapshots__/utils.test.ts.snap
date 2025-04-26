@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Doppler factor calculates earth rotation the same as before #1 1`] = `1.000001479636888`;
+
+exports[`Doppler factor calculates earth rotation the same as before #2 1`] = `1`;

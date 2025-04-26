@@ -1,8 +1,7 @@
-import { LambertIOD } from '@src/orbit_determination/LambertIOD.js';
-import { GibbsIOD } from './../src/orbit_determination/GibbsIOD.js';
-import { HerrickGibbsIOD } from './../src/orbit_determination/HerrickGibbsIOD.js';
-import { DEG2RAD, Degrees, EpochUTC, J2000, Kilometers, KilometersPerSecond, RAE, Radians, Tle, Vector3D, calcGmst,
-  lla2eci } from 'ootk-core';
+import {
+  DEG2RAD, Degrees, EpochUTC, J2000, Kilometers, KilometersPerSecond, RAE, Radians, Tle, Vector3D, calcGmst,
+  lla2eci, LambertIOD, GibbsIOD, HerrickGibbsIOD,
+} from '../dist/main.js';
 /* eslint-disable no-console */
 
 const lambert = new LambertIOD();

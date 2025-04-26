@@ -3,23 +3,64 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [4.0.2](https://github.com/thkruz/ootk/compare/v5.0.0-0...4.0.2)
+#### [4.0.9](https://github.com/thkruz/ootk/compare/v5.0.0-0...4.0.9)
 
-- feat: :sparkles: Add node support [`7d28c3f`](https://github.com/thkruz/ootk/commit/7d28c3f5de0e3e9d2dd13bbf5cdfd5527f6126a8)
-- refactor: :recycle: update RfSensor to allow multiple faces [`179b486`](https://github.com/thkruz/ootk/commit/179b486bbbd9355569414f9ca7ca82aaa374ca93)
-- fix: :bug: add fix for vite compiler [`c72bd38`](https://github.com/thkruz/ootk/commit/c72bd38df2be1fef82603e85fd687a2e3f67ca83)
-- refactor: :recycle: make rfSensor an extension of DetailedSensor [`add7613`](https://github.com/thkruz/ootk/commit/add7613c9cea3ddf56b5da0accef36b8b866b144)
-- build: :arrow_up: bump ootk-core [`9ac1464`](https://github.com/thkruz/ootk/commit/9ac1464338284e6169304e44ceecb9c978543203)
-- refactor: :recycle: move freqBand from RfSensor to DetailedSensor [`185cc50`](https://github.com/thkruz/ootk/commit/185cc506482c0e0224ff0392e6bb1bad599d54ec)
-- refactor: :recycle: update transforms to allow multiple faces [`53c8877`](https://github.com/thkruz/ootk/commit/53c887730d389b06f18889d4f2170a1e4ac82993)
-- feat: :sparkles: add new catalog sources [`9dd4160`](https://github.com/thkruz/ootk/commit/9dd41607da91e4daffd8456f795239e945493a2d)
+- feat: :sparkles: add status parameter to DetailedSatellite class [`3b1b8c2`](https://github.com/thkruz/ootk/commit/3b1b8c2b30bd9c3d14e7ce70067607a8d1366825)
+- build: :lock: fix security issues [`e3ad7c5`](https://github.com/thkruz/ootk/commit/e3ad7c565ea4062e2927ce6d6c3df8e9b94bea5d)
+- feat: :sparkles: add PayloadStatus enum [`9828703`](https://github.com/thkruz/ootk/commit/9828703c3eef82676a54d06f5ab3adb40f296660)
+- feat: :sparkles: add launchPad to DetailedSatellite [`648c90a`](https://github.com/thkruz/ootk/commit/648c90af9367b023ca59f38590477d680973e3cc)
+- build: :arrow_up: bump ootk-core [`be33f7f`](https://github.com/thkruz/ootk/commit/be33f7f915d68421bb895ef2a52c91a42996ce03)
+- build: :arrow_up: bump ootk-core [`af78108`](https://github.com/thkruz/ootk/commit/af78108d45fbaab4b2c6c853112ffd08ae5cdb0f)
+- fix: :arrow_up: bump ootk-core [`2f0ac47`](https://github.com/thkruz/ootk/commit/2f0ac47d4a9ae18ebd58b72b4db98610b20aa267)
+
+#### [v5.0.0-0](https://github.com/thkruz/ootk/compare/v4.0.8...v5.0.0-0)
+
+> 23 August 2024 
+
+- refactor: :recycle: Merge ootk-core with ootk for upgrade to v5 [`1e137bb`](https://github.com/thkruz/ootk/commit/1e137bba174072586cf748fee18b3dbd793c7fc7)
+- fix: :memo: fix outdated documentation [`0f6c26f`](https://github.com/thkruz/ootk/commit/0f6c26f40edaa5d8fe275b8aa967e5a00188beca)
+
+#### [v4.0.8](https://github.com/thkruz/ootk/compare/v4.0.7...v4.0.8)
+
+> 20 March 2025 
+
+- build: :arrow_up: bump ootk-core [`be33f7f`](https://github.com/thkruz/ootk/commit/be33f7f915d68421bb895ef2a52c91a42996ce03)
+
+#### [v4.0.7](https://github.com/thkruz/ootk/compare/v4.0.6...v4.0.7)
+
+> 20 March 2025 
+
+- build: :lock: fix security issues [`e3ad7c5`](https://github.com/thkruz/ootk/commit/e3ad7c565ea4062e2927ce6d6c3df8e9b94bea5d)
+
+#### [v4.0.6](https://github.com/thkruz/ootk/compare/v4.0.5...v4.0.6)
+
+> 1 March 2025 
+
+- build: :arrow_up: bump ootk-core [`af78108`](https://github.com/thkruz/ootk/commit/af78108d45fbaab4b2c6c853112ffd08ae5cdb0f)
+
+#### [v4.0.5](https://github.com/thkruz/ootk/compare/v4.0.4...v4.0.5)
+
+> 14 January 2025 
+
+- feat: :sparkles: add status parameter to DetailedSatellite class [`3b1b8c2`](https://github.com/thkruz/ootk/commit/3b1b8c2b30bd9c3d14e7ce70067607a8d1366825)
+
+#### [v4.0.4](https://github.com/thkruz/ootk/compare/v4.0.3...v4.0.4)
+
+> 14 January 2025 
+
+- feat: :sparkles: add PayloadStatus enum [`9828703`](https://github.com/thkruz/ootk/commit/9828703c3eef82676a54d06f5ab3adb40f296660)
+
+#### [v4.0.3](https://github.com/thkruz/ootk/compare/v4.0.2...v4.0.3)
+
+> 31 December 2024 
+
+- fix: :arrow_up: bump ootk-core [`2f0ac47`](https://github.com/thkruz/ootk/commit/2f0ac47d4a9ae18ebd58b72b4db98610b20aa267)
+
+#### [v4.0.2](https://github.com/thkruz/ootk/compare/v4.0.1...v4.0.2)
+
+> 3 August 2024 
+
 - fix: :arrow_up: bump ootk-core [`3c87557`](https://github.com/thkruz/ootk/commit/3c875578298b20a3906cf00e45e5bedf55cfa43f)
-- build: :arrow_up: bump ootk-core [`2ff598e`](https://github.com/thkruz/ootk/commit/2ff598ec309be005a40335b99eb1b232b646f44b)
-- fix: :arrow_up: bump ootk-core [`edaafb7`](https://github.com/thkruz/ootk/commit/edaafb7ee1092064addd040d438d100f6b84514b)
-- build: :arrow_up: bump ootk-core [`f5152ed`](https://github.com/thkruz/ootk/commit/f5152ed69c98f92e354240dfe36589fad81e1fa6)
-- fix: :bug: fix issue with vite [`9b540f9`](https://github.com/thkruz/ootk/commit/9b540f9231076ce8670eb2230321b592d0696b99)
-
-#### [v5.0.0-0](https://github.com/thkruz/ootk/compare/v4.0.1...v5.0.0-0)
 
 #### [v4.0.1](https://github.com/thkruz/ootk/compare/v4.0.0...v4.0.1)
 

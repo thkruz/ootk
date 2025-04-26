@@ -1,0 +1,161 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Matrix should calculate the inverse of a matrix correctly 1`] = `
+Array [
+  Array [
+    0,
+    -2.6666666666666665,
+    1.6666666666666665,
+  ],
+  Array [
+    0,
+    2.333333333333333,
+    -1.3333333333333333,
+  ],
+  Array [
+    1,
+    -2,
+    1,
+  ],
+]
+`;
+
+exports[`Matrix should create a cholesky matrix 1`] = `
+Array [
+  Array [
+    0,
+    0,
+    0,
+  ],
+  Array [
+    NaN,
+    NaN,
+    0,
+  ],
+  Array [
+    NaN,
+    NaN,
+    NaN,
+  ],
+]
+`;
+
+exports[`Matrix should create a diagonal matrix 1`] = `
+Array [
+  Array [
+    1,
+    0,
+    0,
+  ],
+  Array [
+    0,
+    2,
+    0,
+  ],
+  Array [
+    0,
+    0,
+    3,
+  ],
+]
+`;
+
+exports[`Matrix should create a reciprocal matrix 1`] = `
+Array [
+  Array [
+    0,
+    0,
+    0,
+  ],
+  Array [
+    0,
+    0,
+    0,
+  ],
+  Array [
+    0,
+    0,
+    0,
+  ],
+]
+`;
+
+exports[`Matrix should create a rotation matrix around the x-axis 1`] = `
+Array [
+  Array [
+    1,
+    0,
+    0,
+  ],
+  Array [
+    0,
+    6.123233995736766e-17,
+    1,
+  ],
+  Array [
+    0,
+    -1,
+    6.123233995736766e-17,
+  ],
+]
+`;
+
+exports[`Matrix should create a rotation matrix around the y-axis 1`] = `
+Array [
+  Array [
+    6.123233995736766e-17,
+    0,
+    -1,
+  ],
+  Array [
+    0,
+    1,
+    0,
+  ],
+  Array [
+    1,
+    0,
+    6.123233995736766e-17,
+  ],
+]
+`;
+
+exports[`Matrix should create a rotation matrix around the z-axis 1`] = `
+Array [
+  Array [
+    6.123233995736766e-17,
+    1,
+    0,
+  ],
+  Array [
+    -1,
+    6.123233995736766e-17,
+    0,
+  ],
+  Array [
+    0,
+    0,
+    1,
+  ],
+]
+`;
+
+exports[`Matrix should create an identity matrix 1`] = `
+Array [
+  Array [
+    1,
+    0,
+    0,
+  ],
+  Array [
+    0,
+    1,
+    0,
+  ],
+  Array [
+    0,
+    0,
+    1,
+  ],
+]
+`;
