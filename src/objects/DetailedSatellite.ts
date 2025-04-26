@@ -64,6 +64,7 @@ export class DetailedSatellite extends Satellite {
   status: PayloadStatus = PayloadStatus.UNKNOWN;
 
   constructor(
+    // TODO: Replace this intersection with a type alias
     info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails,
     options?: OptionsParams,
   ) {
