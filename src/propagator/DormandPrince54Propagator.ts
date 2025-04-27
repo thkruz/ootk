@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -19,9 +19,9 @@
 import { RungeKuttaAdaptive } from './RungeKuttaAdaptive.js';
 
 export class DormandPrince54Propagator extends RungeKuttaAdaptive {
-  private _a: Float64Array = Float64Array.from([0.0, 1.0 / 5.0, 3.0 / 10.0, 4.0 / 5.0, 8.0 / 9.0, 1.0, 1.0]);
+  private readonly a_: Float64Array = Float64Array.from([0.0, 1.0 / 5.0, 3.0 / 10.0, 4.0 / 5.0, 8.0 / 9.0, 1.0, 1.0]);
 
-  private _b: Float64Array[] = [
+  private readonly b_: Float64Array[] = [
     new Float64Array(),
     Float64Array.from([1.0 / 5.0]),
     Float64Array.from([3.0 / 40.0, 9.0 / 40.0]),
@@ -31,7 +31,7 @@ export class DormandPrince54Propagator extends RungeKuttaAdaptive {
     Float64Array.from([35.0 / 384.0, 0.0, 500.0 / 1113.0, 125.0 / 192.0, -2187.0 / 6784.0, 11.0 / 84.0]),
   ];
 
-  private _ch: Float64Array = Float64Array.from([
+  private readonly ch_: Float64Array = Float64Array.from([
     35.0 / 384.0,
     0.0,
     500.0 / 1113.0,
@@ -41,7 +41,7 @@ export class DormandPrince54Propagator extends RungeKuttaAdaptive {
     0.0,
   ]);
 
-  private _c: Float64Array = Float64Array.from([
+  private readonly c_: Float64Array = Float64Array.from([
     5179.0 / 57600.0,
     0.0,
     7571.0 / 16695.0,
@@ -52,19 +52,19 @@ export class DormandPrince54Propagator extends RungeKuttaAdaptive {
   ]);
 
   get a(): Float64Array {
-    return this._a;
+    return this.a_;
   }
 
   get b(): Float64Array[] {
-    return this._b;
+    return this.b_;
   }
 
   get ch(): Float64Array {
-    return this._ch;
+    return this.ch_;
   }
 
   get c(): Float64Array {
-    return this._c;
+    return this.c_;
   }
 
   get order(): number {

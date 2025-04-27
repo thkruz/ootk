@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -38,8 +38,8 @@ type SolveOptions = {
  * Used for orbit determination from multiple optical observations.
  */
 export class ModifiedGoodingIOD {
-  private observations_: ObservationOptical[];
-  private mu_: number;
+  private readonly observations_: ObservationOptical[];
+  private readonly mu_: number;
 
   constructor(observations: ObservationOptical[], mu: number = Earth.mu) {
     this.observations_ = observations;

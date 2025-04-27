@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -30,11 +30,11 @@ export class Quaternion {
     this.w = w;
   }
 
-  static zero = new Quaternion(0, 0, 0, 0);
-  static one = new Quaternion(0, 0, 0, 1);
-  static xAxis = new Quaternion(1, 0, 0, 0);
-  static yAxis = new Quaternion(0, 1, 0, 0);
-  static zAxis = new Quaternion(0, 0, 1, 0);
+  static readonly zero = new Quaternion(0, 0, 0, 0);
+  static readonly one = new Quaternion(0, 0, 0, 1);
+  static readonly xAxis = new Quaternion(1, 0, 0, 0);
+  static readonly yAxis = new Quaternion(0, 1, 0, 0);
+  static readonly zAxis = new Quaternion(0, 0, 1, 0);
 
   toString(precision = 8): string {
     const xStr = this.x.toFixed(precision);

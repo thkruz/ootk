@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -33,7 +33,7 @@ export class RungeKutta4Propagator extends Propagator {
    * @param checkpoints_ Cached state vector checkpoints.
    */
   constructor(
-    private initState_: J2000,
+    private readonly initState_: J2000,
     private forceModel_: ForceModel = new ForceModel().setGravity(),
     private stepSize_: number = 15.0,
     private cacheState_: J2000 = initState_,

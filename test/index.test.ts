@@ -1,6 +1,6 @@
 import * as ootk from '../src/main';
 
-describe('ootk-core', () => {
+describe('ootk', () => {
   it('should export Celestial', () => {
     expect(ootk.Celestial).toBeDefined();
   });

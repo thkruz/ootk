@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -28,20 +28,20 @@ import { Propagator } from './Propagator.js';
  * state of the TLE at different epochs.
  */
 export class Sgp4Propagator extends Propagator {
-  constructor(private tle: Tle) {
+  constructor(private readonly tle_: Tle) {
     super();
-    this._cacheState = tle.state.toJ2000();
+    this.cacheState_ = tle_.state.toJ2000();
   }
 
-  private _cacheState: J2000;
-  private _checkpoints: J2000[] = [];
+  private cacheState_: J2000;
+  private checkpoints_: J2000[] = [];
 
   /**
    * Gets the state of the propagator in the J2000 coordinate system.
    * @returns The J2000 state of the propagator.
    */
   get state(): J2000 {
-    return this._cacheState;
+    return this.cacheState_;
   }
 
   /**
@@ -71,9 +71,9 @@ export class Sgp4Propagator extends Propagator {
    * @returns The propagated state in J2000 coordinates.
    */
   propagate(epoch: EpochUTC): J2000 {
-    this._cacheState = this.tle.propagate(epoch).toJ2000();
+    this.cacheState_ = this.tle_.propagate(epoch).toJ2000();
 
-    return this._cacheState;
+    return this.cacheState_;
   }
 
   /**
@@ -81,7 +81,7 @@ export class Sgp4Propagator extends Propagator {
    * to the current J2000 state of the TLE.
    */
   reset(): void {
-    this._cacheState = this.tle.state.toJ2000();
+    this.cacheState_ = this.tle_.state.toJ2000();
   }
 
   /**
@@ -89,16 +89,16 @@ export class Sgp4Propagator extends Propagator {
    * @returns The index of the checkpoint.
    */
   checkpoint(): number {
-    this._checkpoints.push(this._cacheState);
+    this.checkpoints_.push(this.cacheState_);
 
-    return this._checkpoints.length - 1;
+    return this.checkpoints_.length - 1;
   }
 
   /**
    * Clears all the checkpoints in the propagator.
    */
   clearCheckpoints(): void {
-    this._checkpoints = [];
+    this.checkpoints_ = [];
   }
 
   /**
@@ -106,6 +106,6 @@ export class Sgp4Propagator extends Propagator {
    * @param index - The index of the checkpoint to restore.
    */
   restore(index: number): void {
-    this._cacheState = this._checkpoints[index];
+    this.cacheState_ = this.checkpoints_[index];
   }
 }

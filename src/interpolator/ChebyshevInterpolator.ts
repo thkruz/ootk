@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -30,17 +30,17 @@ import { StateInterpolator } from './StateInterpolator.js';
  * in increased accuracy and decreased performance.
  */
 export class ChebyshevInterpolator extends StateInterpolator {
-  private _coefficients: ChebyshevCoefficients[];
+  private readonly coefficients_: ChebyshevCoefficients[];
 
   constructor(coefficients: ChebyshevCoefficients[]) {
     super();
-    this._coefficients = coefficients;
+    this.coefficients_ = coefficients;
   }
 
   private _calcSizeBytes(): number {
     let output = 0;
 
-    for (const coeffs of this._coefficients) {
+    for (const coeffs of this.coefficients_) {
       output += coeffs.sizeBytes;
     }
 
@@ -63,25 +63,25 @@ export class ChebyshevInterpolator extends StateInterpolator {
 
   window(): EpochWindow {
     return new EpochWindow(
-      new EpochUTC(this._coefficients[0].a),
-      new EpochUTC(this._coefficients[this._coefficients.length - 1].b),
+      new EpochUTC(this.coefficients_[0].a),
+      new EpochUTC(this.coefficients_[this.coefficients_.length - 1].b),
     );
   }
 
   private _matchCoefficients(posix: number): ChebyshevCoefficients {
     let left = 0;
-    let right = this._coefficients.length;
+    let right = this.coefficients_.length;
 
     while (left < right) {
       const middle = (left + right) >> 1;
 
-      if (this._coefficients[middle].b < posix) {
+      if (this.coefficients_[middle].b < posix) {
         left = middle + 1;
       } else {
         right = middle;
       }
     }
 
-    return this._coefficients[left];
+    return this.coefficients_[left];
   }
 }

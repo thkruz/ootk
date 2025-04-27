@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -38,28 +38,28 @@ import { PropagatorPairs } from './PropagatorPairs.js';
 export class ObservationOptical extends Observation {
   // / Create a new [ObservationOptical] object.
   constructor(
-    private _site: J2000,
+    private readonly site_: J2000,
     public observation: RadecTopocentric,
-    private _noise: Matrix = ObservationOptical.defaultNoise,
+    private readonly noise_: Matrix = ObservationOptical.defaultNoise,
   ) {
     super();
   }
 
   // / Inertial site location.
   get site(): J2000 {
-    return this._site;
+    return this.site_;
   }
 
   // / Noise matrix.
   get noise(): Matrix {
-    return this._noise;
+    return this.noise_;
   }
 
   /**
    * Default noise matrix _(right-ascension, declination)_.
    * Based on the Maui Optical Site noise model.
    */
-  static defaultNoise: Matrix = ObservationOptical.noiseFromSigmas(
+  static readonly defaultNoise: Matrix = ObservationOptical.noiseFromSigmas(
     0.0037 * DEG2RAD as Radians,
     0.003 * DEG2RAD as Radians,
   );

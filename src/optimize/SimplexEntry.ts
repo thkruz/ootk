@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -25,15 +25,15 @@ export type CostFunction = (points: Float64Array) => number;
 
 export class SimplexEntry {
   score: number;
-  private _x: Vector;
+  private readonly x_: Vector;
 
-  constructor(private _f: CostFunction, public points: Float64Array) {
-    this._x = new Vector(points);
-    this.score = this._f(points);
+  constructor(private readonly f_: CostFunction, public points: Float64Array) {
+    this.x_ = new Vector(points);
+    this.score = this.f_(points);
   }
 
   getPoints(): Float64Array {
-    return this._x.toArray();
+    return this.x_.toArray();
   }
 
   getScore(): number {
@@ -41,10 +41,10 @@ export class SimplexEntry {
   }
 
   modify(n: number, xa: SimplexEntry, xb: SimplexEntry): SimplexEntry {
-    return new SimplexEntry(this._f, this._x.add(xa._x.subtract(xb._x).scale(n)).toArray());
+    return new SimplexEntry(this.f_, this.x_.add(xa.x_.subtract(xb.x_).scale(n)).toArray());
   }
 
   distance(se: SimplexEntry): number {
-    return this._x.distance(se._x);
+    return this.x_.distance(se.x_);
   }
 }

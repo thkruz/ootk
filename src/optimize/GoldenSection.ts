@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -21,7 +21,7 @@ import { DifferentiableFunction } from '../main.js';
 export class GoldenSection {
   private static readonly _grInv: number = 1.0 / (0.5 * (Math.sqrt(5) + 1));
 
-  private static _check(fc: number, fd: number, solveMax: boolean): boolean {
+  private static check_(fc: number, fd: number, solveMax: boolean): boolean {
     return solveMax ? fc > fd : fc < fd;
   }
 
@@ -57,7 +57,7 @@ export class GoldenSection {
     let d = a + (b - a) * GoldenSection._grInv;
 
     while (Math.abs(b - a) > tolerance) {
-      if (GoldenSection._check(f(c), f(d), solveMax)) {
+      if (GoldenSection.check_(f(c), f(d), solveMax)) {
         b = d;
       } else {
         a = c;

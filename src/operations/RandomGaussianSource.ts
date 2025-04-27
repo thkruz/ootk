@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -19,14 +19,14 @@ import { Vector, Vector3D } from '../main.js';
 import { BoxMuller } from './BoxMuller.js';
 
 export class RandomGaussianSource {
-  private _boxMuller: BoxMuller;
+  private readonly boxMuller_: BoxMuller;
 
   constructor(seed = 0) {
-    this._boxMuller = new BoxMuller(0, 1, seed);
+    this.boxMuller_ = new BoxMuller(0, 1, seed);
   }
 
   nextGauss(): number {
-    return this._boxMuller.nextGauss();
+    return this.boxMuller_.nextGauss();
   }
 
   gaussVector(n: number): Vector {

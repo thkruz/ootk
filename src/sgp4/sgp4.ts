@@ -1,26 +1,23 @@
 /**
- * @author Theodore Kruczek.
- * @license MIT
- * @copyright (c) 2022-2025 Theodore Kruczek Permission is
- * hereby granted, free of charge, to any person obtaining a copy of this
- * software and associated documentation files (the "Software"), to deal in the
- * Software without restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do
- * so, subject to the following conditions:
+ * @author @thkruz Theodore Kruczek
+ * @description Orbital Object ToolKit (ootk) is a collection of tools for working
+ * with satellites and other orbital objects.
+ * @license AGPL-3.0-or-later
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * This class was ported from the python-sgp4 library by Brandon Rhodes. That library
+ * is licensed under the MIT license and he maintains the copyright for that work.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- * @copyright (c) 2012–2016 Brandon Rhodes
- * This was ported from the python-sgp4 library by Brandon Rhodes.
+ * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * Orbital Object ToolKit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with
+ * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
 // NOTE: This file is meant to maintain as much of the original format as possible.
@@ -626,8 +623,8 @@ export class Sgp4 {
     let i = 1;
     let inttemp = 0;
 
-    while (dayofyr > inttemp + (lmonth[i - 1] as number) && i < 12) {
-      inttemp += (lmonth[i - 1] as number);
+    while (dayofyr > inttemp + (lmonth[i - 1]) && i < 12) {
+      inttemp += (lmonth[i - 1]);
       i += 1;
     }
 
@@ -1499,7 +1496,7 @@ export class Sgp4 {
 
       rdotv = Sgp4.dot_(r, v);
       for (i = 0; i <= 2; i++) {
-        ebar[i] = (c1 * (r[i] as number) - rdotv * (v[i] as number)) / mus;
+        ebar[i] = (c1 * (r[i]) - rdotv * (v[i])) / mus;
       }
       ecc = Sgp4.mag_(ebar);
 

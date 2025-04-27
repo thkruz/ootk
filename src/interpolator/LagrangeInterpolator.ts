@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -19,11 +19,11 @@ import { EpochUTC, EpochWindow, J2000, Kilometers, KilometersPerSecond, Seconds,
 import { StateInterpolator } from './StateInterpolator.js';
 
 export class LagrangeInterpolator extends StateInterpolator {
-  private t_: Float64Array;
-  private x_: Float64Array;
-  private y_: Float64Array;
-  private z_: Float64Array;
-  private order: number;
+  private readonly t_: Float64Array;
+  private readonly x_: Float64Array;
+  private readonly y_: Float64Array;
+  private readonly z_: Float64Array;
+  private readonly order: number;
 
   constructor(t: Float64Array, x: Float64Array, y: Float64Array, z: Float64Array, order = 10) {
     super();

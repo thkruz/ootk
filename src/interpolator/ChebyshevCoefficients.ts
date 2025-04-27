@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -26,9 +26,9 @@ export class ChebyshevCoefficients {
   constructor(
     public a: Seconds,
     public b: Seconds,
-    private cx_: Float64Array,
-    private cy_: Float64Array,
-    private cz_: Float64Array,
+    private readonly cx_: Float64Array,
+    private readonly cy_: Float64Array,
+    private readonly cz_: Float64Array,
   ) {
     this.cxd_ = ChebyshevCoefficients._derivative(a, b, cx_);
     this.cyd_ = ChebyshevCoefficients._derivative(a, b, cy_);

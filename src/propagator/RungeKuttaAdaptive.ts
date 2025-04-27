@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -33,9 +33,9 @@ export abstract class RungeKuttaAdaptive extends Propagator {
    * @param tolerance_ Minimum allowable local error tolerance.
    */
   constructor(
-    private initState_: J2000,
+    private readonly initState_: J2000,
     private forceModel_: ForceModel = new ForceModel().setGravity(),
-    private tolerance_: number = 1e-9,
+    private readonly tolerance_: number = 1e-9,
   ) {
     super();
     this._cacheState = this.initState_;

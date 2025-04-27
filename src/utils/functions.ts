@@ -92,10 +92,10 @@ export function copySign(mag: number, sgn: number): number {
  * @returns The result of evaluating the polynomial at the given value.
  */
 export function evalPoly(x: number, coeffs: Float64Array): number {
-  let result: number = coeffs[0] as number;
+  let result: number = coeffs[0];
 
   for (let i = 1; i < coeffs.length; i++) {
-    result = result * x + coeffs[i]!;
+    result = result * x + coeffs[i];
   }
 
   return result;
@@ -293,7 +293,7 @@ export function covariance(a: number[], b: number[], isSample = false): number {
   let result = 0.0;
 
   for (let i = 0; i < n; i++) {
-    result += (a[i]! - am) * (b[i]! - bm);
+    result += (a[i] - am) * (b[i] - bm);
   }
   const m = isSample ? 1 : 0;
 

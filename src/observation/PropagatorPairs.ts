@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -18,7 +18,7 @@
 import { Propagator } from '../propagator/Propagator.js';
 
 export class PropagatorPairs {
-  constructor(private _posStep: number, private _velStep: number) {
+  constructor(private readonly posStep_: number, private readonly velStep_: number) {
     // Do nothing.
   }
 
@@ -40,6 +40,6 @@ export class PropagatorPairs {
    * @returns The step size.
    */
   step(index: number): number {
-    return index < 3 ? this._posStep : this._velStep;
+    return index < 3 ? this.posStep_ : this.velStep_;
   }
 }

@@ -3,10 +3,11 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2020-2024 Theodore Kruczek
+ * @copyright (c) 2025 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
- * Pious Squid library (https://github.com/david-rc-dayton/pious_squid).
+ * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
+ * is licensed under the MIT license.
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -39,3 +40,4 @@ export * from './operations/index.js';
 export * from './force/index.js';
 export * from './propagator/index.js';
 export * from './orbit_determination/index.js';
+export * from './covariance/index.js';
