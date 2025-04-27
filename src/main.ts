@@ -40,3 +40,4 @@ export * from './operations/index.js';
 export * from './force/index.js';
 export * from './propagator/index.js';
 export * from './orbit_determination/index.js';
+export * from './covariance/index.js';

@@ -24,7 +24,7 @@
 
 import { ClassicalElements, FormatTle, TEME } from './index.js';
 import { Sgp4OpsMode } from '../enums/Sgp4OpsMode.js';
-import { Satellite, Sgp4, Vector3D } from '../main.js';
+import { Sgp4, Vector3D } from '../main.js';
 import { Sgp4GravConstants } from '../sgp4/sgp4.js';
 import { EpochUTC } from '../time/EpochUTC.js';
 import {
@@ -51,8 +51,8 @@ import { TleFormatData } from './tle-format-data.js';
  * Tle is a static class with a collection of methods for working with TLEs.
  */
 export class Tle {
-  line1: string;
-  line2: string;
+  line1: TleLine1;
+  line2: TleLine2;
   epoch: EpochUTC;
   satnum: number;
   private readonly satrec_: SatelliteRecord;
@@ -136,8 +136,8 @@ export class Tle {
     opsMode: Sgp4OpsMode = Sgp4OpsMode.AFSPC,
     gravConst: Sgp4GravConstants = Sgp4GravConstants.wgs72,
   ) {
-    this.line1 = line1;
-    this.line2 = line2;
+    this.line1 = line1 as TleLine1;
+    this.line2 = line2 as TleLine2;
     this.epoch = Tle.parseEpoch_(line1.substring(18, 32));
     this.satnum = parseInt(Tle.convertA5to6Digit(line1.substring(2, 7)));
     this.satrec_ = Sgp4.createSatrec(line1, line2, gravConst, opsMode);
@@ -228,7 +228,7 @@ export class Tle {
   }
 
   static calcElsetAge(
-    sat: Satellite,
+    tle1: TleLine1,
     nowInput?: Date,
     outputUnits: 'days' | 'hours' | 'minutes' | 'seconds' = 'days',
   ): number {
@@ -236,8 +236,8 @@ export class Tle {
     const currentYearFull = nowInput.getUTCFullYear();
     const currentYearShort = currentYearFull % 100;
 
-    const epochYearShort = parseInt(sat.tle1.substring(18, 20), 10);
-    const epochDayOfYear = parseFloat(sat.tle1.substring(20, 32));
+    const epochYearShort = parseInt(tle1.substring(18, 20), 10);
+    const epochDayOfYear = parseFloat(tle1.substring(20, 32));
 
     let epochYearFull: number;
 
