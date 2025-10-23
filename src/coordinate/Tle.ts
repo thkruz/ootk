@@ -22,10 +22,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Sgp4OpsMode } from '../enums/Sgp4OpsMode.js';
-import { Sgp4, Vector3D } from '../main.js';
-import { Sgp4GravConstants } from '../sgp4/sgp4.js';
-import { EpochUTC } from '../time/EpochUTC.js';
+import { Sgp4OpsMode } from '../enums/Sgp4OpsMode';
+import { Sgp4, Vector3D } from '../main';
+import { Sgp4GravConstants } from '../sgp4/sgp4';
+import { EpochUTC } from '../time/EpochUTC';
 import {
   Degrees,
   EciVec3,
@@ -42,10 +42,10 @@ import {
   TleLine1,
   TleLine2,
 } from '../types/types.js';
-import { DEG2RAD, earthGravityParam, RAD2DEG, secondsPerDay, TAU } from '../utils/constants.js';
-import { getDayOfYear, newtonNu, toPrecision } from '../utils/functions.js';
-import { ClassicalElements, FormatTle, TEME } from './index.js';
-import { TleFormatData } from './tle-format-data.js';
+import { DEG2RAD, earthGravityParam, RAD2DEG, secondsPerDay, TAU } from '../utils/constants';
+import { getDayOfYear, newtonNu, toPrecision } from '../utils/functions';
+import { ClassicalElements, FormatTle, TEME } from './index';
+import { TleFormatData } from './tle-format-data';
 
 /**
  * Tle is a static class with a collection of methods for working with TLEs.

@@ -21,8 +21,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { OrbitRegime } from '../enums/OrbitRegime.js';
-import { ClassicalElementsParams } from '../interfaces/ClassicalElementsParams.js';
+import { OrbitRegime } from '../enums/OrbitRegime';
+import { ClassicalElementsParams } from '../interfaces/ClassicalElementsParams';
 import {
   Degrees,
   Earth,
@@ -30,13 +30,13 @@ import {
   KilometersPerSecond,
   Minutes, PositionVelocity,
   Radians, Seconds,
-} from '../main.js';
-import { Vector3D } from '../operations/Vector3D.js';
-import { EpochUTC } from '../time/EpochUTC.js';
-import { earthGravityParam, MINUTES_PER_DAY, RAD2DEG, sec2min, TAU } from '../utils/constants.js';
-import { clamp, matchHalfPlane, newtonNu } from '../utils/functions.js';
-import { EquinoctialElements } from './EquinoctialElements.js';
-import { StateVector } from './StateVector.js';
+} from '../main';
+import { Vector3D } from '../operations/Vector3D';
+import { EpochUTC } from '../time/EpochUTC';
+import { earthGravityParam, MINUTES_PER_DAY, RAD2DEG, sec2min, TAU } from '../utils/constants';
+import { clamp, matchHalfPlane, newtonNu } from '../utils/functions';
+import { EquinoctialElements } from './EquinoctialElements';
+import { StateVector } from './StateVector';
 
 /**
  * The ClassicalElements class represents the classical orbital elements of an object.

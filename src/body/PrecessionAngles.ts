@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Radians } from '../main.js';
+import { Radians } from '../main';
 
 /** Represents the precession angles in radians. */
 export type PrecessionAngles = {

@@ -21,8 +21,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { factorial } from '../../utils/functions.js';
-import { egm96 } from './egm96.js';
+import { factorial } from '../../utils/functions';
+import { egm96 } from './egm96';
 
 // / EGM-96 entry for l, m indexes and clm, slm values.
 export type Egm96Entry = [number, number, number, number];

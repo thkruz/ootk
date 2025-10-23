@@ -159,7 +159,7 @@ describe('BaseObject', () => {
 
     const baseObject = new BaseObject(info);
 
-    expect(baseObject.isNotional()).toBe(true);
+    expect(baseObject.type === SpaceObjectType.NOTIONAL).toBe(true);
   });
 
   // get BaseObject type string

@@ -36,13 +36,13 @@
  * moon calculations are based on formulas from this website
  */
 
-import { AngularDiameterMethod, Celestial, Degrees, Kilometers, RaDec, Radians } from '../main.js';
-import { Vector3D } from '../operations/Vector3D.js';
-import { EpochUTC } from '../time/EpochUTC.js';
-import { DEG2RAD, MS_PER_DAY } from '../utils/constants.js';
-import { angularDiameter } from '../utils/functions.js';
-import { Earth } from './Earth.js';
-import { Sun } from './Sun.js';
+import { AngularDiameterMethod, Celestial, Degrees, Kilometers, RaDec, Radians } from '../main';
+import { Vector3D } from '../operations/Vector3D';
+import { EpochUTC } from '../time/EpochUTC';
+import { DEG2RAD, MS_PER_DAY } from '../utils/constants';
+import { angularDiameter } from '../utils/functions';
+import { Earth } from './Earth';
+import { Sun } from './Sun';
 
 type MoonIlluminationData = {
   fraction: number;

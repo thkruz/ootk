@@ -28,7 +28,7 @@ import {
   Kilometers, KilometersPerSecond, Minutes,
   TAU,
   Vector3D,
-} from '../main.js';
+} from '../main';
 
 /**
  * A state vector is a set of coordinates used to specify the position and

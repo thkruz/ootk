@@ -15,8 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Vector3D, PassType, Satellite, CommLink, SatelliteParams, SensorParams } from '../main.js';
-import { Sgp4ErrorCode } from '../sgp4/sgp4-error.js';
+import { CommLink, PassType, Satellite, SatelliteParams, SensorParams, Vector3D } from '../main';
+import { Sgp4ErrorCode } from '../sgp4/sgp4-error';
 
 /**
  * Represents a distinct type.

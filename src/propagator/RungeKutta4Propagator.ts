@@ -15,11 +15,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ForceModel } from '../force/ForceModel.js';
-import { Thrust } from '../force/Thrust.js';
-import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
-import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, Vector, Vector3D } from '../main.js';
-import { Propagator } from './Propagator.js';
+import { ForceModel } from '../force/ForceModel';
+import { Thrust } from '../force/Thrust';
+import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
+import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, Vector, Vector3D } from '../main';
+import { Propagator } from './Propagator';
 
 // / Runge-Kutta 4 fixed numerical propagator.
 export class RungeKutta4Propagator extends Propagator {
