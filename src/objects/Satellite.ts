@@ -312,7 +312,7 @@ export class Satellite extends BaseObject {
     date ??= new Date();
     const { m } = Satellite.calculateTimeVariables(date, this.satrec, j, gmst);
 
-    if (!m) {
+    if (m === null) {
       return null;
     }
     const pv = Sgp4.propagate(this.satrec, m);
@@ -334,7 +334,7 @@ export class Satellite extends BaseObject {
   toJ2000(date: Date = new Date()): J2000 {
     const { m } = Satellite.calculateTimeVariables(date, this.satrec);
 
-    if (!m) {
+    if (m === null) {
       throw new Error('Propagation failed!');
     }
     const pv = Sgp4.propagate(this.satrec, m);
