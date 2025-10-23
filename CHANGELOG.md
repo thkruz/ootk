@@ -3,22 +3,61 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [4.0.9](https://github.com/thkruz/ootk/compare/v5.0.0-0...4.0.9)
+#### [5.1.1](https://github.com/thkruz/ootk/compare/v5.0.0-0...5.1.1)
 
+- Development [`#33`](https://github.com/thkruz/ootk/pull/33)
+- Version 5 [`#32`](https://github.com/thkruz/ootk/pull/32)
+- Develop [`#29`](https://github.com/thkruz/ootk/pull/29)
+- Version 4.0.0 [`#24`](https://github.com/thkruz/ootk/pull/24)
+- Delete LICENSE [`#25`](https://github.com/thkruz/ootk/pull/25)
+- Develop [`#23`](https://github.com/thkruz/ootk/pull/23)
+- feat: :sparkles: merge ootk-core back into ootk [`bcbee46`](https://github.com/thkruz/ootk/commit/bcbee4629de3e454bcd888a488bd6d7639f3ac47)
+- docs: :page_facing_up: transfer more license to Kruczek Labs LLC [`34178fc`](https://github.com/thkruz/ootk/commit/34178fc90ec6968e6eacb8d7475ddd453df5e540)
+- chore: remove @thkruz handle from file headers; tidy imports/exports and minor formatting [`be21d87`](https://github.com/thkruz/ootk/commit/be21d87f58867b2cdb119502c25b6ae2b71d0940)
+- refactor: :recycle: improve naming consistency [`1405f62`](https://github.com/thkruz/ootk/commit/1405f62b8bbf824f8c0f41f5eec6b2d1a2513b36)
+- feat: :sparkles: add covariance ellipsoid calculations [`26cdcac`](https://github.com/thkruz/ootk/commit/26cdcac13f5ebfb805ee2760ccd76801e43f96c0)
+- docs: :page_facing_up: transfer license to Kruczek Labs LLC [`bdb1494`](https://github.com/thkruz/ootk/commit/bdb14941a52d1c2402f7149408a235fd226c519e)
+- refactor: :label: remove unnecessary type assertions [`c1230fb`](https://github.com/thkruz/ootk/commit/c1230fb474c71853928173df711bbbca0866d990)
 - feat: :sparkles: add status parameter to DetailedSatellite class [`3b1b8c2`](https://github.com/thkruz/ootk/commit/3b1b8c2b30bd9c3d14e7ce70067607a8d1366825)
+- docs: :page_facing_up: transfer more license to Kruczek Labs LLC [`65de7fb`](https://github.com/thkruz/ootk/commit/65de7fbeca6827c77a4b5f9e85cd2e300d650219)
 - build: :lock: fix security issues [`e3ad7c5`](https://github.com/thkruz/ootk/commit/e3ad7c565ea4062e2927ce6d6c3df8e9b94bea5d)
+- refactor: :label: remove unnecessary type assertions [`e23c679`](https://github.com/thkruz/ootk/commit/e23c679ab6d025511b8783db81724133e3e778d6)
+- docs: :page_facing_up: transfer more license to Kruczek Labs LLC [`a9c5d84`](https://github.com/thkruz/ootk/commit/a9c5d84269cdca87006cfec882f50a14ca2f5070)
+- refactor: :recycle: improve naming consistency [`f51025b`](https://github.com/thkruz/ootk/commit/f51025be13ed5c938aa331e2cbbe7413c32ad224)
+- build: :label: add strict null checks [`82e0761`](https://github.com/thkruz/ootk/commit/82e07616b198f2084b7d7e5d3993e9bd12407a91)
 - feat: :sparkles: add PayloadStatus enum [`9828703`](https://github.com/thkruz/ootk/commit/9828703c3eef82676a54d06f5ab3adb40f296660)
+- refactor: :label: remove unnecessary type assertions [`6de14db`](https://github.com/thkruz/ootk/commit/6de14db719910ca5d6b9c241a16c9db59a0921de)
+- Update LICENSE for v4.0.0 [`f9514a0`](https://github.com/thkruz/ootk/commit/f9514a07c4ddbe0f9d8df8679b5c6169d719419a)
+- test: :adhesive_bandage: fix broken tests [`df737f2`](https://github.com/thkruz/ootk/commit/df737f2d47cac43f9056f9c9d0d596daf9080741)
+- docs: :memo: update README [`0494f3e`](https://github.com/thkruz/ootk/commit/0494f3e3d455b18ebf105c3becc6ef846b2f9869)
+- test: :white_check_mark: fix test [`e533d26`](https://github.com/thkruz/ootk/commit/e533d26442784872bf118c74582d07fff9d3aae9)
+- refactor: :label: remove unnecessary type assertions [`7e6b78b`](https://github.com/thkruz/ootk/commit/7e6b78b307aabecf36805919d68c67cb705cde19)
+- refactor: :label: remove unnecessary type assertions [`3240407`](https://github.com/thkruz/ootk/commit/3240407d6f21c768da83eaebafcfe6c4df1b7c7b)
+- fix: :bug: treat m === 0 as valid by checking explicit null before propagation [`226f0e7`](https://github.com/thkruz/ootk/commit/226f0e7420d79e006a340ff490a3e80c44c457d8)
+- docs: :bookmark: bump version [`ae02a3d`](https://github.com/thkruz/ootk/commit/ae02a3da4b5e6d2767e067c8793d3a097e5f021b)
+- refactor: :rotating_light: fix linter issue with line length [`540f8ac`](https://github.com/thkruz/ootk/commit/540f8acdab910df70a3031f7ef3036aeab905ac1)
+- refactor: :rotating_light: fix linter issue with line length [`822062f`](https://github.com/thkruz/ootk/commit/822062fde22f140ed489c34bc6265a893424da92)
+- docs: :memo: make Celestial vs Star more clear [`499bdb2`](https://github.com/thkruz/ootk/commit/499bdb231ba496c58467ddbb99e7ac961f935755)
 - feat: :sparkles: add launchPad to DetailedSatellite [`648c90a`](https://github.com/thkruz/ootk/commit/648c90af9367b023ca59f38590477d680973e3cc)
 - build: :arrow_up: bump ootk-core [`be33f7f`](https://github.com/thkruz/ootk/commit/be33f7f915d68421bb895ef2a52c91a42996ce03)
 - build: :arrow_up: bump ootk-core [`af78108`](https://github.com/thkruz/ootk/commit/af78108d45fbaab4b2c6c853112ffd08ae5cdb0f)
 - fix: :arrow_up: bump ootk-core [`2f0ac47`](https://github.com/thkruz/ootk/commit/2f0ac47d4a9ae18ebd58b72b4db98610b20aa267)
+- chore: :memo: add todo for later [`022525f`](https://github.com/thkruz/ootk/commit/022525ff38feb8070df4039fb29739f0ed005d5a)
+- refactor: :coffin: remove old export [`a4371f8`](https://github.com/thkruz/ootk/commit/a4371f8573ed6c7c008732885555f26b379d5e1a)
+- docs: :bulb: remove unnecessary todo [`5e7a51e`](https://github.com/thkruz/ootk/commit/5e7a51ef0b9faaa91767b84c802340fdaceee6b8)
 
-#### [v5.0.0-0](https://github.com/thkruz/ootk/compare/v4.0.8...v5.0.0-0)
+#### [v5.0.0-0](https://github.com/thkruz/ootk/compare/v4.0.9...v5.0.0-0)
 
 > 23 August 2024 
 
 - refactor: :recycle: Merge ootk-core with ootk for upgrade to v5 [`1e137bb`](https://github.com/thkruz/ootk/commit/1e137bba174072586cf748fee18b3dbd793c7fc7)
 - fix: :memo: fix outdated documentation [`0f6c26f`](https://github.com/thkruz/ootk/commit/0f6c26f40edaa5d8fe275b8aa967e5a00188beca)
+
+#### [v4.0.9](https://github.com/thkruz/ootk/compare/v4.0.8...v4.0.9)
+
+> 20 March 2025 
+
+- feat: :sparkles: add launchPad to DetailedSatellite [`648c90a`](https://github.com/thkruz/ootk/commit/648c90af9367b023ca59f38590477d680973e3cc)
 
 #### [v4.0.8](https://github.com/thkruz/ootk/compare/v4.0.7...v4.0.8)
 
