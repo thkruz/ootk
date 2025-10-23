@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
@@ -21,9 +21,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Degrees, DegreesPerSecond, Kilometers, KilometersPerSecond, Radians, RadiansPerSecond } from '../main.js';
 import { J2000 } from '../coordinate/J2000.js';
 import { AngularDistanceMethod } from '../enums/AngularDistanceMethod.js';
+import { Degrees, DegreesPerSecond, Kilometers, KilometersPerSecond, Radians, RadiansPerSecond } from '../main.js';
 import { Vector3D } from '../operations/Vector3D.js';
 import { EpochUTC } from '../time/EpochUTC.js';
 import { DEG2RAD, RAD2DEG, TAU } from '../utils/constants.js';

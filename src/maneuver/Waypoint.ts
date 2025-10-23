@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
  * @copyright (c) 2025 Kruczek Labs LLC
  *
@@ -15,6 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Thrust } from '../force/Thrust.js';
+import { StateInterpolator } from '../interpolator/StateInterpolator.js';
 import {
   EpochUTC,
   J2000,
@@ -25,8 +27,6 @@ import {
   SecondsPerMeterPerSecond,
   Vector3D,
 } from '../main.js';
-import { Thrust } from '../force/Thrust.js';
-import { StateInterpolator } from '../interpolator/StateInterpolator.js';
 import { ForceModel } from './../force/ForceModel.js';
 import { DownhillSimplex } from './../optimize/DownhillSimplex.js';
 import { LambertIOD } from './../orbit_determination/LambertIOD.js';

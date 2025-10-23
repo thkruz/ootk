@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
@@ -21,14 +21,16 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { ClassicalElements } from '../coordinate/index.js';
 import { Geodetic } from '../coordinate/Geodetic.js';
+import type { ClassicalElements } from '../coordinate/index.js';
 import { ITRF } from '../coordinate/ITRF.js';
 import { J2000 } from '../coordinate/J2000.js';
 import { RIC } from '../coordinate/RIC.js';
 import { Tle } from '../coordinate/Tle.js';
+import { OmmDataFormat, OmmParsedDataFormat } from '../interfaces/OmmFormat.js';
 import { OptionsParams } from '../interfaces/OptionsParams.js';
 import { SatelliteParams } from '../interfaces/SatelliteParams.js';
+import { Sgp4 } from '../main.js';
 import { RAE } from '../observation/RAE.js';
 import { Vector3D } from '../operations/Vector3D.js';
 import { EpochUTC } from '../time/EpochUTC.js';
@@ -54,8 +56,6 @@ import { DEG2RAD, MILLISECONDS_TO_DAYS, MINUTES_PER_DAY, RAD2DEG } from '../util
 import { dopplerFactor } from './../utils/functions.js';
 import { BaseObject } from './BaseObject.js';
 import { GroundObject } from './GroundObject.js';
-import { OmmDataFormat, OmmParsedDataFormat } from '../interfaces/OmmFormat.js';
-import { Sgp4 } from '../main.js';
 
 /**
  * Represents a satellite object with orbital information and methods for
@@ -312,7 +312,7 @@ export class Satellite extends BaseObject {
     date ??= new Date();
     const { m } = Satellite.calculateTimeVariables(date, this.satrec, j, gmst);
 
-    if (!m) {
+    if (m === null) {
       return null;
     }
     const pv = Sgp4.propagate(this.satrec, m);
@@ -334,7 +334,7 @@ export class Satellite extends BaseObject {
   toJ2000(date: Date = new Date()): J2000 {
     const { m } = Satellite.calculateTimeVariables(date, this.satrec);
 
-    if (!m) {
+    if (m === null) {
       throw new Error('Propagation failed!');
     }
     const pv = Sgp4.propagate(this.satrec, m);

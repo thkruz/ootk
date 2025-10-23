@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Vector3D, Vector, Radians } from '../main.js';
+import { Radians, Vector, Vector3D } from '../main.js';
 
 /**
  * A matrix is a rectangular array of numbers or other mathematical objects for

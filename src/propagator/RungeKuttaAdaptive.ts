@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
  * @copyright (c) 2025 Kruczek Labs LLC
  *
@@ -15,9 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, Vector, Vector3D } from '../main.js';
 import { ForceModel } from '../force/ForceModel.js';
 import { Thrust } from '../force/Thrust.js';
+import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, Vector, Vector3D } from '../main.js';
 import { VerletBlendInterpolator } from './../interpolator/VerletBlendInterpolator.js';
 import { Propagator } from './Propagator.js';
 import { RkCheckpoint } from './RkCheckpoint.js';
@@ -84,7 +84,7 @@ export abstract class RungeKuttaAdaptive extends Propagator {
 
   private kfn_(
     epoch: EpochUTC,
-    rv: Vector<Kilometers|KilometersPerSecond>,
+    rv: Vector<Kilometers | KilometersPerSecond>,
     hArg: Seconds,
     kArg: Vector<Kilometers>,
     step: Seconds,

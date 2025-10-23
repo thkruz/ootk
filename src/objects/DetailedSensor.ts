@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
  * @copyright (c) 2025 Kruczek Labs LLC
  *
@@ -15,10 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Sensor } from './Sensor.js';
+import { CommLink } from '../enums/CommLink.js';
 import { Milliseconds } from '../main.js';
 import { DetailedSensorParams, ZoomValue } from '../types/types.js';
-import { CommLink } from '../enums/CommLink.js';
+import { Sensor } from './Sensor.js';
 
 export class DetailedSensor extends Sensor {
   sensorId?: number;

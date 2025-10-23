@@ -120,7 +120,7 @@ describe('Moon', () => {
    * 'Degrees', 'Degrees', and 'boolean' parameters and return an object with
    * 'rise', 'set', 'ye', 'alwaysUp', 'alwaysDown', and 'highest' properties.
    */
-  it('should return with \'rise\', \'set\', \'ye\', \'alwaysUp\', \'alwaysDown\', \'highest\' properties', () => {
+  it('should have a functioning getMoonTimes method', () => {
     const date = exampleDate;
     const lat = 37.7749 as Degrees; // San Francisco latitude
     const lon = -122.4194 as Degrees; // San Francisco longitude
@@ -135,7 +135,7 @@ describe('Moon', () => {
    * 'Degrees' parameters and return an object with 'az', 'el', 'rng', and
    * 'parallacticAngle' properties.
    */
-  it('should return an object with \'az\', \'el\', \'rng\', and \'parallacticAngle\' properties', () => {
+  it('should have a functioning rae method', () => {
     const date = new Date(exampleDate); // November 1, 2021
     const lat = 37.7749 as Degrees; // San Francisco latitude
     const lon = -122.4194 as Degrees; // San Francisco longitude
@@ -149,7 +149,7 @@ describe('Moon', () => {
    * 'Degrees', 'Degrees', and 'boolean' parameters and return an object with
    * 'rise', 'set', 'ye', 'alwaysUp', 'alwaysDown', and 'highest' properties.
    */
-  it('should return with \'rise\', \'set\', \'ye\', \'alwaysUp\', \'alwaysDown\', and \'highest\' properties', () => {
+  it('should have a functioning getMoonTimes method with timezone adjustment', () => {
     const date = new Date(exampleDate.getTime() - exampleDate.getTimezoneOffset() * 60000);
     const lat = 37.7749 as Degrees; // San Francisco latitude
     const lon = -122.4194 as Degrees; // San Francisco longitude
