@@ -27,12 +27,12 @@ import {
   RIC,
   Vector,
   Vector3D,
-} from '../main.js';
-import { RandomGaussianSource } from '../operations/RandomGaussianSource.js';
-import { Propagator } from '../propagator/Propagator.js';
-import { Observation } from './Observation.js';
-import { normalizeAngle, observationDerivative, observationNoiseFromSigmas } from './ObservationUtils.js';
-import { PropagatorPairs } from './PropagatorPairs.js';
+} from '../main';
+import { RandomGaussianSource } from '../operations/RandomGaussianSource';
+import { Propagator } from '../propagator/Propagator';
+import { Observation } from './Observation';
+import { normalizeAngle, observationDerivative, observationNoiseFromSigmas } from './ObservationUtils';
+import { PropagatorPairs } from './PropagatorPairs';
 
 // / Optical observation data.
 export class ObservationOptical extends Observation {

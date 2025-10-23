@@ -21,8 +21,8 @@
  * SOFTWARE.
  */
 
-import { Degrees } from '../main.js';
-import { DetailedSensorParams } from '../types/types.js';
+import { Degrees } from '../main';
+import { DetailedSensorParams } from '../types/types';
 
 export interface RfSensorParams extends DetailedSensorParams {
   /** The azimuth angles at boresight of the sensor */

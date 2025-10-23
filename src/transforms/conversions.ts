@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DEG2RAD, Degrees, PI, RAD2DEG, Radians } from '../main.js';
+import { DEG2RAD, Degrees, PI, RAD2DEG, Radians } from '../main';
 
 /**
  * Converts radians to degrees.

@@ -21,8 +21,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { BaseObjectParams } from '../interfaces/BaseObjectParams.js';
-import { EciVec3, Kilometers, KilometersPerSecond, SpaceObjectType } from '../types/types.js';
+import { BaseObjectParams } from '../interfaces/BaseObjectParams';
+import { EciVec3, Kilometers, KilometersPerSecond, SpaceObjectType } from '../types/types';
 
 export class BaseObject {
   id: number;

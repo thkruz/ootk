@@ -37,8 +37,8 @@ import {
   Sgp4,
   SpaceObjectType,
   StarObjectParams,
-} from '../main.js';
-import { BaseObject } from './BaseObject.js';
+} from '../main';
+import { BaseObject } from './BaseObject';
 
 export class Star extends BaseObject {
   ra: Radians;

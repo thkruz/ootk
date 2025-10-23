@@ -15,10 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, J2000, Matrix, Vector, Vector3D } from '../main.js';
-import { Propagator } from '../propagator/Propagator.js';
-import { RandomGaussianSource } from './../operations/RandomGaussianSource.js';
-import { PropagatorPairs } from './PropagatorPairs.js';
+import { EpochUTC, J2000, Matrix, Vector, Vector3D } from '../main';
+import { Propagator } from '../propagator/Propagator';
+import { RandomGaussianSource } from './../operations/RandomGaussianSource';
+import { PropagatorPairs } from './PropagatorPairs';
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /**
@@ -40,9 +40,7 @@ export abstract class Observation {
    * @param propagator Propagator to compare against.
    * @throws Not implemented.
    */
-  clos(propagator: Propagator): number {
-    throw new Error('Not implemented');
-  }
+  abstract clos(propagator: Propagator): number;
 
   /**
    * Return relative state residual for the observation when compared against
@@ -50,35 +48,27 @@ export abstract class Observation {
    * @param propagator Propagator to compare against.
    * @throws Not implemented.
    */
-  ricDiff(propagator: Propagator): Vector3D {
-    throw new Error('Not implemented');
-  }
+  abstract ricDiff(propagator: Propagator): Vector3D;
 
   /**
    * Convert this observation to vector form.
    * @throws Not implemented.
    */
-  toVector(): Vector {
-    throw new Error('Not implemented');
-  }
+  abstract toVector(): Vector;
 
   /**
    * Compute the state derivative matrix for this observation.
    * @param propPairs Propagator pairs to compare against.
    * @throws Not implemented.
    */
-  jacobian(propPairs: PropagatorPairs): Matrix {
-    throw new Error('Not implemented');
-  }
+  abstract jacobian(propPairs: PropagatorPairs): Matrix;
 
   /**
    * Compute the state residual matrix for this observation.
    * @param propagator Propagator to compare against.
    * @throws Not implemented.
    */
-  residual(propagator: Propagator): Matrix {
-    throw new Error('Not implemented');
-  }
+  abstract residual(propagator: Propagator): Matrix;
 
   /**
    * Convert this observation's noise matrix into a covariance matrix.
@@ -119,7 +109,5 @@ export abstract class Observation {
    * @param sigma Sigma value to scale the noise by.
    * @throws Not implemented.
    */
-  sample(random: RandomGaussianSource, sigma = 1.0): Observation {
-    throw new Error('Not implemented');
-  }
+  abstract sample(random: RandomGaussianSource, sigma: number): Observation;
 }

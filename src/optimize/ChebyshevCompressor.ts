@@ -15,10 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { StateInterpolator } from '../interpolator/StateInterpolator.js';
-import { EpochUTC, Seconds, Vector3D } from '../main.js';
-import { ChebyshevCoefficients } from './../interpolator/ChebyshevCoefficients.js';
-import { ChebyshevInterpolator } from './../interpolator/ChebyshevInterpolator.js';
+import { StateInterpolator } from '../interpolator/StateInterpolator';
+import { EpochUTC, Seconds, Vector3D } from '../main';
+import { ChebyshevCoefficients } from './../interpolator/ChebyshevCoefficients';
+import { ChebyshevInterpolator } from './../interpolator/ChebyshevInterpolator';
 
 // / Ephemeris compressor.
 export class ChebyshevCompressor {

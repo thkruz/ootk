@@ -21,8 +21,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { Matrix } from './Matrix.js';
-export { Random } from './Random.js';
-export { Vector } from './Vector.js';
-export { Vector3D } from './Vector3D.js';
+export { Matrix } from './Matrix';
+export { Random } from './Random';
+export { Vector } from './Vector';
+export { Vector3D } from './Vector3D';
 

@@ -1,9 +1,9 @@
-import { DifferentiableFunction } from '../main.js';
+import { DifferentiableFunction } from '../main';
 /* eslint-disable require-jsdoc */
-import { AngularDiameterMethod } from '../enums/AngularDiameterMethod.js';
-import { AngularDistanceMethod } from '../enums/AngularDistanceMethod.js';
-import { EcfVec3, Kilometers, KilometersPerSecond, Radians, SpaceObjectType } from '../types/types.js';
-import { angularVelocityOfEarth, cKmPerSec } from './constants.js';
+import { AngularDiameterMethod } from '../enums/AngularDiameterMethod';
+import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';
+import { EcfVec3, Kilometers, KilometersPerSecond, Radians, SpaceObjectType } from '../types/types';
+import { angularVelocityOfEarth, cKmPerSec } from './constants';
 
 /**
  * Calculates the factorial of a given number.

@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { EpochUTC } from './EpochUTC.js';
+import type { EpochUTC } from './EpochUTC';
 
 export class TimeStamped<T> {
   /**

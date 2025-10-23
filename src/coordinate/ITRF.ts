@@ -22,11 +22,11 @@
  */
 
 /* eslint-disable class-methods-use-this */
-import { Earth } from '../body/Earth.js';
-import { Kilometers, KilometersPerSecond, Radians, Vector3D } from '../main.js';
-import { Geodetic } from './Geodetic.js';
-import { J2000 } from './J2000.js';
-import { StateVector } from './StateVector.js';
+import { Earth } from '../body/Earth';
+import { Kilometers, KilometersPerSecond, Radians, Vector3D } from '../main';
+import { Geodetic } from './Geodetic';
+import { J2000 } from './J2000';
+import { StateVector } from './StateVector';
 
 /**
  * The International Terrestrial Reference Frame (ITRF) is a geocentric reference frame for the Earth. It is the

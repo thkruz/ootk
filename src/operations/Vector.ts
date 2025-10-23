@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Degrees, Matrix, Radians, Vector3D } from '../main.js';
+import { Degrees, Matrix, Radians, Vector3D } from '../main';
 
 /**
  * A Vector is a mathematical object that has both magnitude and direction.

@@ -15,11 +15,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, J2000 } from '../main.js';
+import { EpochUTC, J2000 } from '../main';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable class-methods-use-this */
 
-import { Interpolator } from './Interpolator.js';
+import { Interpolator } from './Interpolator';
 
 // / Base class for state vector interpolators.
 export abstract class StateInterpolator extends Interpolator {
@@ -28,9 +28,7 @@ export abstract class StateInterpolator extends Interpolator {
    * @param epoch The epoch in UTC format.
    * @throws If the interpolator has not been initialized.
    */
-  interpolate(epoch: EpochUTC): J2000 | null {
-    throw new Error('Not implemented.');
-  }
+  abstract interpolate(epoch: EpochUTC): J2000 | null;
 
   // / Return the size _(bytes)_ of this interpolator's cached data.
   get sizeBytes(): number {

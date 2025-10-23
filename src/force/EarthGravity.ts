@@ -15,11 +15,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DataHandler, Earth, ITRF, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../main.js';
+import { DataHandler, Earth, ITRF, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../main';
 /* eslint-disable class-methods-use-this */
 // / Complex Earth gravity model, accounting for EGM-96 zonal, sectoral, and
 
-import { Force } from './Force.js';
+import { Force } from './Force';
 
 /**
  * designed to model the Earth's gravitational field, which is not uniformly distributed due to variations in mass
