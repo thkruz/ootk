@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
  * @copyright (c) 2025 Kruczek Labs LLC
  *
@@ -15,8 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Satellite } from './Satellite.js';
 import {
+  CatalogSource,
   FormatTle,
   LaunchDetails,
   OperationsDetails,
@@ -24,9 +24,9 @@ import {
   SpaceCraftDetails,
   TleLine1,
   TleLine2,
-  CatalogSource,
 } from '../main.js';
 import { DetailedSatelliteParams, PayloadStatus } from '../types/types.js';
+import { Satellite } from './Satellite.js';
 
 /**
  * Represents a detailed satellite object with launch, spacecraft, and operations details.
@@ -57,8 +57,8 @@ export class DetailedSatellite extends Satellite {
   span: string = '';
   user: string = '';
   source: string = '';
-  vmag: number|null;
-  rcs: number|null;
+  vmag: number | null;
+  rcs: number | null;
   altId: string = '';
   altName: string = '';
   status: PayloadStatus = PayloadStatus.UNKNOWN;
@@ -105,8 +105,8 @@ export class DetailedSatellite extends Satellite {
 
   private initSpaceCraftDetails_(
     info: DetailedSatelliteParams &
-          LaunchDetails & OperationsDetails &
-          SpaceCraftDetails,
+      LaunchDetails & OperationsDetails &
+      SpaceCraftDetails,
   ) {
     this.lifetime = info.lifetime ?? '';
     this.maneuver = info.maneuver ?? '';

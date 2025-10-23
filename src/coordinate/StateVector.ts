@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
@@ -22,7 +22,12 @@
  */
 
 import {
-  ClassicalElements, TAU, Earth, Kilometers, KilometersPerSecond, Minutes, EpochUTC, Vector3D,
+  ClassicalElements,
+  Earth,
+  EpochUTC,
+  Kilometers, KilometersPerSecond, Minutes,
+  TAU,
+  Vector3D,
 } from '../main.js';
 
 /**

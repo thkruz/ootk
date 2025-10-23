@@ -38,7 +38,8 @@ describe('Sun and Moon', () => {
 });
 
 /**
- * @author Robert Myers @xqjibz See: https://github.com/mourner/suncalc/pull/35
+ * @author Robert Myers
+ * See: https://github.com/mourner/suncalc/pull/35
  */
 describe('Test for #6 fix', () => {
   test('Test for #6 fix', () => {

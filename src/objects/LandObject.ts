@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
  * @copyright (c) 2025 Kruczek Labs LLC
  *
@@ -15,8 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { BaseObject } from './BaseObject.js';
 import { BaseObjectParams, Degrees, Kilometers } from '../main.js';
+import { BaseObject } from './BaseObject.js';
 /* eslint-disable class-methods-use-this */
 
 export interface LandObjectParams extends BaseObjectParams {

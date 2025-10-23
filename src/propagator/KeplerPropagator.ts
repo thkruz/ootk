@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
  * @copyright (c) 2025 Kruczek Labs LLC
  *
@@ -15,9 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ClassicalElements, EpochUTC, J2000, Seconds } from '../main.js';
 import { Thrust } from '../force/Thrust.js';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
+import { ClassicalElements, EpochUTC, J2000, Seconds } from '../main.js';
 import { Propagator } from './Propagator.js';
 
 // / Kepler analytical two-body propagator.

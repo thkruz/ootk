@@ -1,6 +1,6 @@
 /* eslint-disable max-lines */
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
@@ -22,7 +22,6 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ClassicalElements, FormatTle, TEME } from './index.js';
 import { Sgp4OpsMode } from '../enums/Sgp4OpsMode.js';
 import { Sgp4, Vector3D } from '../main.js';
 import { Sgp4GravConstants } from '../sgp4/sgp4.js';
@@ -45,6 +44,7 @@ import {
 } from '../types/types.js';
 import { DEG2RAD, earthGravityParam, RAD2DEG, secondsPerDay, TAU } from '../utils/constants.js';
 import { getDayOfYear, newtonNu, toPrecision } from '../utils/functions.js';
+import { ClassicalElements, FormatTle, TEME } from './index.js';
 import { TleFormatData } from './tle-format-data.js';
 
 /**

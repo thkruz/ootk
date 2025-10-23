@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
  * @copyright (c) 2025 Kruczek Labs LLC
  *
@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Radians, Kilometers, Vector3D, RadiansPerSecond, KilometersPerSecond, Matrix } from '../main.js';
+import { Kilometers, KilometersPerSecond, Matrix, Radians, RadiansPerSecond, Vector3D } from '../main.js';
 
 export const radecToPosition = (ra: Radians, dec: Radians, r: Kilometers): Vector3D<Kilometers> => {
   const ca = Math.cos(ra);

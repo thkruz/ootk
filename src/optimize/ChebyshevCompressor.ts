@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
  * @copyright (c) 2025 Kruczek Labs LLC
  *
@@ -15,8 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, Seconds, Vector3D } from '../main.js';
 import { StateInterpolator } from '../interpolator/StateInterpolator.js';
+import { EpochUTC, Seconds, Vector3D } from '../main.js';
 import { ChebyshevCoefficients } from './../interpolator/ChebyshevCoefficients.js';
 import { ChebyshevInterpolator } from './../interpolator/ChebyshevInterpolator.js';
 

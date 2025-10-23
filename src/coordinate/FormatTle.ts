@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Tle, StringifiedNumber, TleParams, TleLine1, TleLine2 } from '../main.js';
+import { StringifiedNumber, Tle, TleLine1, TleLine2, TleParams } from '../main.js';
 
 /**
  * A class containing static methods for formatting TLEs (Two-Line Elements).

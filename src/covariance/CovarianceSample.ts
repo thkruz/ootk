@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
  * @copyright (c) 2025 Kruczek Labs LLC
  *
@@ -16,6 +16,8 @@
  */
 
 /* eslint-disable class-methods-use-this */
+import { ForceModel } from '../force/ForceModel.js';
+import { Thrust } from '../force/Thrust.js';
 import {
   Epoch,
   EpochUTC,
@@ -30,8 +32,6 @@ import {
   Vector,
   Vector3D,
 } from '../main.js';
-import { ForceModel } from '../force/ForceModel.js';
-import { Thrust } from '../force/Thrust.js';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator.js';
 import { CovarianceFrame, StateCovariance } from './StateCovariance.js';
 
@@ -80,10 +80,10 @@ export class CovarianceSample {
 
     for (let i = 0; i < 6; i++) {
       for (let j = 0; j < 6; j++) {
-      /*
-       * Apply scale[0] to R, scale[1] to I, scale[2] to C (x, y, z)
-       * Position: i = 0,1,2; Velocity: i = 3,4,5
-       */
+        /*
+         * Apply scale[0] to R, scale[1] to I, scale[2] to C (x, y, z)
+         * Position: i = 0,1,2; Velocity: i = 3,4,5
+         */
         const scaleIdx = i % 3;
 
         s[i][j] *= sqrt6 * scale[scaleIdx];
@@ -271,18 +271,18 @@ export class CovarianceSample {
     switch (regime) {
 
       case OrbitRegime.LEO:
-      // Target ~×2 (R), ×3 (I), ×2.2 (C) after 1 day
+        // Target ~×2 (R), ×3 (I), ×2.2 (C) after 1 day
         return [1 + 1.0 * t, 1 + 2.0 * t, 1 + 1.2 * t];
 
       case OrbitRegime.MEO:
-      // GNSS shells – slower growth
+        // GNSS shells – slower growth
         return [1 + 0.4 * t, 1 + 0.9 * t, 1 + 0.6 * t];
 
       case OrbitRegime.GEO:
         return [1 + 0.2 * t, 1 + 0.5 * t, 1 + 0.3 * t];
 
       case OrbitRegime.HEO:
-      // Highly elliptical transfer or Molniya
+        // Highly elliptical transfer or Molniya
         return [1 + 1.2 * t, 1 + 2.4 * t, 1 + 1.4 * t];
 
       default:

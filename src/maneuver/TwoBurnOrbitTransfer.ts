@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
  * @copyright (c) 2025 Kruczek Labs LLC
  *
@@ -15,8 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth, EpochUTC, MetersPerSecond, Seconds, SecondsPerMeterPerSecond } from '../main.js';
 import { Thrust } from '../force/Thrust.js';
+import { Earth, EpochUTC, MetersPerSecond, Seconds, SecondsPerMeterPerSecond } from '../main.js';
 
 // / Container for a two-burn orbit transfer.
 export class TwoBurnOrbitTransfer {

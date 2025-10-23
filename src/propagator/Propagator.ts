@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
  * @copyright (c) 2025 Kruczek Labs LLC
  *
@@ -15,9 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, J2000, Seconds } from '../main.js';
 import { Thrust } from '../force/Thrust.js';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
+import { EpochUTC, J2000, Seconds } from '../main.js';
 import { GoldenSection } from './../optimize/GoldenSection.js';
 
 // Propagator base class.

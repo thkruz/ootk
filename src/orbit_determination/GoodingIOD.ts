@@ -1,5 +1,5 @@
 /**
- * @author @thkruz Theodore Kruczek
+ * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
  * @copyright (c) 2025 Kruczek Labs LLC
  *
@@ -15,8 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth, J2000, Kilometers, KilometersPerSecond, Seconds, TAU, Vector3D } from '../main.js';
 import { ForceModel } from '../force/ForceModel.js';
+import { Earth, J2000, Kilometers, KilometersPerSecond, Seconds, TAU, Vector3D } from '../main.js';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator.js';
 import { ObservationOptical } from './../observation/ObservationOptical.js';
 import { GibbsIOD } from './GibbsIOD.js';
