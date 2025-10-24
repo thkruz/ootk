@@ -33,7 +33,6 @@
 import {
   angularDiameter,
   AngularDiameterMethod,
-  astronomicalUnit,
   AzEl,
   Celestial,
   cKmPerSec,
@@ -42,6 +41,7 @@ import {
   Earth,
   EpochUTC,
   Kilometers,
+  KM_PER_AU,
   Meters,
   MS_PER_DAY,
   RAD2DEG,
@@ -500,7 +500,7 @@ export class Sun {
       rMag * Math.cos(obliq * dtr) * Math.sin(lamEc * dtr),
       rMag * Math.sin(obliq * dtr) * Math.sin(lamEc * dtr),
     );
-    const rMOD = r.scale(astronomicalUnit);
+    const rMOD = r.scale(KM_PER_AU);
     const p = Earth.precession(epoch);
 
     return rMOD
