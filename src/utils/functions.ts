@@ -502,6 +502,11 @@ const spaceObjTypeStrMap_ = {
   [SpaceObjectType.NOTIONAL]: 'Notional',
   [SpaceObjectType.FRAGMENT]: 'Fragment',
   [SpaceObjectType.SHORT_TERM_FENCE]: 'Short Term Fence',
+  [SpaceObjectType.TERRESTRIAL_PLANET]: 'Terrestrial Planet',
+  [SpaceObjectType.GAS_GIANT]: 'Gas Giant',
+  [SpaceObjectType.ICE_GIANT]: 'Ice Giant',
+  [SpaceObjectType.DWARF_PLANET]: 'Dwarf Planet',
+  [SpaceObjectType.MOON]: 'Moon',
   [SpaceObjectType.MAX_SPACE_OBJECT_TYPE]: 'Max Space Object Type',
 };
 
