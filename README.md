@@ -89,6 +89,24 @@ fetch('https://api.keeptrack.space/v1/sat/25544')
   });
 ```
 
+## :books: Documentation
+
+**New to OOTK?** Check out our comprehensive documentation:
+
+- **[Getting Started Guide](./docs/getting-started.md)** - Perfect for beginners! Learn the basics with step-by-step tutorials
+- **[User Guide](./docs/user-guide.md)** - Complete reference for all features and advanced capabilities
+- **[Documentation Index](./docs/README.md)** - Browse all available documentation
+
+The documentation covers:
+- Installation and setup
+- Satellite tracking and propagation
+- Ground sensor operations and pass predictions
+- Coordinate system transformations
+- Orbit determination methods
+- Maneuver planning
+- Advanced features (force models, interpolation, covariance)
+- Common use cases with complete examples
+
 ## :desktop_computer: Building
 
 1. Install [Node.js](https://nodejs.org/) and [Node Package Manager](https://www.npmjs.com/);
