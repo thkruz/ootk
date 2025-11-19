@@ -60,3 +60,13 @@ export * from './propagator/index.js';
 export * from './orbit_determination/index.js';
 
 export * from './covariance/index.js';
+
+export * from './coverage/index.js';
+
+export * from './conjunction/index.js';
+
+export * from './link_budget/index.js';
+
+export * from './constellation/index.js';
+
+export * from './attitude/index.js';
