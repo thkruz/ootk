@@ -1,4 +1,24 @@
 Run the examples using tsx.
 
 Example:
-npx tsx .\examples\julian.ts -p ./examples/tsconfig.json
+npx tsx ./examples/julian.ts -p ./examples/tsconfig.json
+
+## Available Examples
+
+### Lambert State Vector Generation
+Demonstrates how to use Lambert's problem solution to generate state vectors without SGP4/TLE:
+
+```bash
+npx tsx ./examples/lambert-state-vector.ts -p ./examples/tsconfig.json
+```
+
+This example covers:
+- Basic Lambert solution from two position observations
+- Using Lambert with numerical propagators (RungeKutta89)
+- Converting Lambert solutions to Satellite objects via TLE
+- Transfer orbit planning and delta-V calculation
+- Multi-revolution transfers
+- Short path vs long path comparison
+- Solution validation and error handling
+
+See the comprehensive guide: `docs/lambert-satellite-integration-guide.md`
