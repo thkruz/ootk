@@ -26,8 +26,8 @@ import {
   Radians,
   Sun,
   Vector3D,
-} from '../main.js';
-import { Force } from './Force.js';
+} from '../main';
+import { Force } from './Force';
 
 /**
  * Harris-Priester atmospheric drag force model.

@@ -1,5 +1,5 @@
-import { EciVec3, SpaceObjectType, TleLine1, TleLine2 } from '../types/types.js';
-import { OmmDataFormat } from './OmmFormat.js';
+import { EciVec3, SpaceObjectType, TleLine1, TleLine2 } from '../types/types';
+import { OmmDataFormat } from './OmmFormat';
 
 /**
  * Information about a space object.

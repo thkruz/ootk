@@ -1,5 +1,5 @@
-import { array2d, Matrix, Vector } from '../main.js';
-import { JacobianFunction } from '../types/types.js';
+import { array2d, Matrix, Vector } from '../main';
+import { JacobianFunction } from '../types/types';
 
 /**
  * Calculates the Jacobian matrix of a given Jacobian function.

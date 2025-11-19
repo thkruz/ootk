@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DEG2RAD, Degrees, Matrix, RAD2DEG, Radians, Vector3D } from '../main.js';
+import { DEG2RAD, Degrees, Matrix, RAD2DEG, Radians, Vector3D } from '../main';
 
 // / Class containing Euler angles.
 export class EulerAngles {

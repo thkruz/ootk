@@ -15,8 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Vector3D, PassType, Satellite, CommLink, SatelliteParams, SensorParams } from '../main.js';
-import { Sgp4ErrorCode } from '../sgp4/sgp4-error.js';
+import { CommLink, PassType, Satellite, SatelliteParams, SensorParams, Vector3D } from '../main';
+import { Sgp4ErrorCode } from '../sgp4/sgp4-error';
 
 /**
  * Represents a distinct type.
@@ -573,7 +573,12 @@ export enum SpaceObjectType {
   NOTIONAL = 29,
   FRAGMENT = 30,
   SHORT_TERM_FENCE = 31,
-  MAX_SPACE_OBJECT_TYPE = 32,
+  TERRESTRIAL_PLANET = 33,
+  GAS_GIANT = 34,
+  ICE_GIANT = 35,
+  DWARF_PLANET = 36,
+  MOON = 37,
+  MAX_SPACE_OBJECT_TYPE = 40,
 }
 
 /**

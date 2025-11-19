@@ -15,10 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Thrust } from '../force/Thrust.js';
-import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
-import { EpochUTC, J2000, Seconds } from '../main.js';
-import { GoldenSection } from './../optimize/GoldenSection.js';
+import { Thrust } from '../force/Thrust';
+import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
+import { EpochUTC, J2000, Seconds } from '../main';
+import { GoldenSection } from './../optimize/GoldenSection';
 
 // Propagator base class.
 export abstract class Propagator {
@@ -93,7 +93,7 @@ export abstract class Propagator {
   ephemerisManeuver(
     start: EpochUTC,
     finish: EpochUTC,
-    maneuvers: Thrust[],
+    _maneuvers: Thrust[],
     interval = 60.0 as Seconds,
   ): VerletBlendInterpolator {
     const output: J2000[] = [];

@@ -15,13 +15,13 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ForceModel } from '../force/ForceModel.js';
-import { Thrust } from '../force/Thrust.js';
-import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, Vector, Vector3D } from '../main.js';
-import { VerletBlendInterpolator } from './../interpolator/VerletBlendInterpolator.js';
-import { Propagator } from './Propagator.js';
-import { RkCheckpoint } from './RkCheckpoint.js';
-import { RkResult } from './RkResult.js';
+import { ForceModel } from '../force/ForceModel';
+import { Thrust } from '../force/Thrust';
+import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, Vector, Vector3D } from '../main';
+import { VerletBlendInterpolator } from './../interpolator/VerletBlendInterpolator';
+import { Propagator } from './Propagator';
+import { RkCheckpoint } from './RkCheckpoint';
+import { RkResult } from './RkResult';
 
 // / Adaptive Runge-Kutta propagator base class.
 export abstract class RungeKuttaAdaptive extends Propagator {

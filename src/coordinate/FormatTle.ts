@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { StringifiedNumber, Tle, TleLine1, TleLine2, TleParams } from '../main.js';
+import { StringifiedNumber, Tle, TleLine1, TleLine2, TleParams } from '../main';
 
 /**
  * A class containing static methods for formatting TLEs (Two-Line Elements).

@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Degrees, Kilometers } from '../types/types.js';
+import { Degrees, Kilometers } from '../types/types';
 
 export interface GroundPositionParams {
   lat: Degrees;

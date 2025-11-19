@@ -18,7 +18,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable class-methods-use-this */
 
-import { Interpolator } from './Interpolator.js';
+import { Interpolator } from './Interpolator';
 
 // / Base class for arbitrary field interpolators.
 export abstract class FieldInterpolator extends Interpolator {
@@ -31,7 +31,5 @@ export abstract class FieldInterpolator extends Interpolator {
    * @param epoch Epoch to interpolate field values at.
    * @throws [Error] if the interpolator is not initialized.
    */
-  interpolate(final: unknown, EpochUTC: unknown, epoch: unknown) {
-    throw new Error('Method not implemented.');
-  }
+  abstract interpolate(final: unknown, EpochUTC: unknown, epoch: unknown): unknown;
 }

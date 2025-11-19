@@ -37,10 +37,10 @@ import {
   calcGmst,
   lla2eci,
   llaRad2ecf,
-} from '../main.js';
+} from '../main';
 
-import { BaseObject } from './BaseObject.js';
-import { Satellite } from './Satellite.js';
+import { BaseObject } from './BaseObject';
+import { Satellite } from './Satellite';
 
 export class GroundObject extends BaseObject {
   override name = 'Unknown Ground Object';

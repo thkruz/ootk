@@ -14,14 +14,14 @@ import {
   RAD2DEG,
   Radians,
   RaeVec3,
+  RfSensor,
+  RfVec3,
+  RuvVec3,
   Sensor,
   SezVec3,
   Sgp4,
   TAU,
-  RfVec3,
-  RuvVec3,
-  RfSensor,
-} from '../main.js';
+} from '../main';
 
 /**
  * Converts ECF to ECI coordinates.

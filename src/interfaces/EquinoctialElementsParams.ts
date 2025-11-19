@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, Kilometers, Radians } from '../main.js';
+import { EpochUTC, Kilometers, Radians } from '../main';
 
 export interface EquinoctialElementsParams {
   epoch: EpochUTC;

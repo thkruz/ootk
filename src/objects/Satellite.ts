@@ -21,20 +21,20 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Geodetic } from '../coordinate/Geodetic.js';
-import type { ClassicalElements } from '../coordinate/index.js';
-import { ITRF } from '../coordinate/ITRF.js';
-import { J2000 } from '../coordinate/J2000.js';
-import { RIC } from '../coordinate/RIC.js';
-import { Tle } from '../coordinate/Tle.js';
-import { OmmDataFormat, OmmParsedDataFormat } from '../interfaces/OmmFormat.js';
-import { OptionsParams } from '../interfaces/OptionsParams.js';
-import { SatelliteParams } from '../interfaces/SatelliteParams.js';
-import { Sgp4 } from '../main.js';
-import { RAE } from '../observation/RAE.js';
-import { Vector3D } from '../operations/Vector3D.js';
-import { EpochUTC } from '../time/EpochUTC.js';
-import { ecf2rae, eci2ecf, eci2lla, jday } from '../transforms/index.js';
+import { Geodetic } from '../coordinate/Geodetic';
+import type { ClassicalElements } from '../coordinate/index';
+import { ITRF } from '../coordinate/ITRF';
+import { J2000 } from '../coordinate/J2000';
+import { RIC } from '../coordinate/RIC';
+import { Tle } from '../coordinate/Tle';
+import { OmmDataFormat, OmmParsedDataFormat } from '../interfaces/OmmFormat';
+import { OptionsParams } from '../interfaces/OptionsParams';
+import { SatelliteParams } from '../interfaces/SatelliteParams';
+import { Sgp4 } from '../main';
+import { RAE } from '../observation/RAE';
+import { Vector3D } from '../operations/Vector3D';
+import { EpochUTC } from '../time/EpochUTC';
+import { ecf2rae, eci2ecf, eci2lla, jday } from '../transforms/index';
 import {
   Degrees,
   EcfVec3,
@@ -52,10 +52,10 @@ import {
   TleLine1,
   TleLine2,
 } from '../types/types.js';
-import { DEG2RAD, MILLISECONDS_TO_DAYS, MINUTES_PER_DAY, RAD2DEG } from '../utils/constants.js';
-import { dopplerFactor } from './../utils/functions.js';
-import { BaseObject } from './BaseObject.js';
-import { GroundObject } from './GroundObject.js';
+import { DEG2RAD, MILLISECONDS_TO_DAYS, MINUTES_PER_DAY, RAD2DEG } from '../utils/constants';
+import { dopplerFactor } from './../utils/functions';
+import { BaseObject } from './BaseObject';
+import { GroundObject } from './GroundObject';
 
 /**
  * Represents a satellite object with orbital information and methods for

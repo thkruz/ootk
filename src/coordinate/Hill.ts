@@ -27,9 +27,9 @@ import {
   RelativeState,
   Seconds,
   Vector3D,
-} from '../main.js';
-import { Thrust } from './../force/Thrust.js';
-import { Waypoint } from './../maneuver/Waypoint.js';
+} from '../main';
+import { Thrust } from './../force/Thrust';
+import { Waypoint } from './../maneuver/Waypoint';
 
 // / Hill Modified Equidistant Cyllindrical _(EQCM)_ coordinates.
 export class Hill {

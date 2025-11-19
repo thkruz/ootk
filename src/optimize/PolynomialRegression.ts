@@ -17,9 +17,9 @@
 
 /* eslint-disable require-jsdoc */
 /* eslint-disable func-style */
-import { evalPoly } from '../main.js';
-import { DownhillSimplex } from './DownhillSimplex.js';
-import { PolynomicalRegressionResult } from './PolynomicalRegressionResult.js';
+import { evalPoly } from '../main';
+import { DownhillSimplex } from './DownhillSimplex';
+import { PolynomicalRegressionResult } from './PolynomicalRegressionResult';
 // / Polynomial regression optimizer.
 export class PolynomialRegression {
   private constructor() {

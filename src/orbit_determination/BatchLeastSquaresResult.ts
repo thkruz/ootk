@@ -15,8 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { J2000 } from '../main.js';
-import { StateCovariance } from './../covariance/StateCovariance.js';
+import { J2000 } from '../main';
+import { StateCovariance } from './../covariance/StateCovariance';
 
 // / Batch least squares orbit determination result.
 export class BatchLeastSquaresResult {

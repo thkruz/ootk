@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Radians, Vector, Vector3D } from '../main.js';
+import { Radians, Vector, Vector3D } from '../main';
 
 /**
  * A matrix is a rectangular array of numbers or other mathematical objects for

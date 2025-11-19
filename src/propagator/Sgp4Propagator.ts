@@ -17,10 +17,10 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable class-methods-use-this */
-import { Thrust } from '../force/Thrust.js';
-import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
-import { EpochUTC, J2000, Tle } from '../main.js';
-import { Propagator } from './Propagator.js';
+import { Thrust } from '../force/Thrust';
+import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
+import { EpochUTC, J2000, Tle } from '../main';
+import { Propagator } from './Propagator';
 
 /**
  * Sgp4Propagator is a propagator that uses the SGP4 model to propagate the state of an object.
@@ -51,7 +51,7 @@ export class Sgp4Propagator extends Propagator {
    * @param maneuvers The array of thrust maneuvers.
    * @param interval The time interval in seconds.
    */
-  ephemerisManeuver(start: EpochUTC, finish: EpochUTC, maneuvers: Thrust[], interval = 60.0): VerletBlendInterpolator {
+  ephemerisManeuver(_start: EpochUTC, _finish: EpochUTC, _maneuvers: Thrust[], _interval = 60.0): VerletBlendInterpolator {
     throw new Error('Maneuvers cannot be modelled with SGP4.');
   }
 
@@ -61,7 +61,7 @@ export class Sgp4Propagator extends Propagator {
    * @param interval - The time interval for the maneuver (default: 60.0 seconds).
    * @throws Error if maneuvers cannot be modeled with SGP4.
    */
-  maneuver(maneuver: Thrust, interval = 60.0): J2000[] {
+  maneuver(_maneuver: Thrust, _interval = 60.0): J2000[] {
     throw new Error('Maneuvers cannot be modelled with SGP4.');
   }
 

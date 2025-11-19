@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Egm96Entry } from './Egm96Data.js';
+import { Egm96Entry } from './Egm96Data';
 
 // / The first degree 36 EGM-96 normalized coefficients.
 export const egm96 = <Egm96Entry[]>[

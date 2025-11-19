@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { J2000, Vector3D } from '../main.js';
+import { J2000, Vector3D } from '../main';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable class-methods-use-this */
 
@@ -27,7 +27,5 @@ export abstract class Force {
    * @param state The state vector.
    * @throws If the force cannot be calculated.
    */
-  acceleration(state: J2000): Vector3D {
-    throw Error('Not implemented');
-  }
+  abstract acceleration(state: J2000): Vector3D;
 }
