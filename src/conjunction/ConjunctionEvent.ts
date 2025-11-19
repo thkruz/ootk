@@ -1,0 +1,149 @@
+/**
+ * @author Theodore Kruczek
+ * @license AGPL-3.0-or-later
+ * @copyright (c) 2025 Kruczek Labs LLC
+ *
+ * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * Orbital Object ToolKit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with
+ * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import type { EpochUTC } from '../time/EpochUTC.js';
+import type { J2000 } from '../coordinate/J2000.js';
+import type { RIC } from '../coordinate/RIC.js';
+import type { StateCovariance } from '../covariance/StateCovariance.js';
+import type { Kilometers, KilometersPerSecond } from '../main.js';
+import { Matrix } from '../operations/Matrix.js';
+
+/**
+ * Represents the result of a conjunction assessment between two space objects.
+ * Contains all relevant information about the close approach event.
+ */
+export class ConjunctionEvent {
+  constructor(
+    /** Time of Closest Approach (TCA) */
+    public tca: EpochUTC,
+    /** Primary object state at TCA in J2000 frame */
+    public primaryState: J2000,
+    /** Secondary object state at TCA in J2000 frame */
+    public secondaryState: J2000,
+    /** Relative state in RIC frame (relative to primary) */
+    public relativeState: RIC,
+    /** Total miss distance at TCA (km) */
+    public missDistance: Kilometers,
+    /** Radial component of miss distance (km) */
+    public radialDistance: Kilometers,
+    /** Intrack component of miss distance (km) */
+    public intrackDistance: Kilometers,
+    /** Crosstrack component of miss distance (km) */
+    public crosstrackDistance: Kilometers,
+    /** Relative velocity magnitude at TCA (km/s) */
+    public relativeVelocity: KilometersPerSecond,
+    /** Combined position covariance matrix in RIC frame (optional) */
+    public combinedCovariance?: StateCovariance,
+    /** Probability of collision (optional, 0-1) */
+    public probabilityOfCollision?: number,
+    /** Hard body radius for primary object (km, optional) */
+    public primaryRadius?: Kilometers,
+    /** Hard body radius for secondary object (km, optional) */
+    public secondaryRadius?: Kilometers,
+  ) {}
+
+  /**
+   * Returns a formatted string representation of the conjunction event.
+   * @returns A multi-line string with conjunction details.
+   */
+  toString(): string {
+    const lines = [
+      '[Conjunction Event]',
+      `  TCA: ${this.tca.toString()}`,
+      `  Miss Distance: ${this.missDistance.toFixed(6)} km`,
+      `    Radial:     ${this.radialDistance.toFixed(6)} km`,
+      `    Intrack:    ${this.intrackDistance.toFixed(6)} km`,
+      `    Crosstrack: ${this.crosstrackDistance.toFixed(6)} km`,
+      `  Relative Velocity: ${this.relativeVelocity.toFixed(6)} km/s`,
+    ];
+
+    if (this.probabilityOfCollision !== undefined) {
+      lines.push(`  Probability of Collision: ${this.probabilityOfCollision.toExponential(6)}`);
+    }
+
+    if (this.primaryRadius !== undefined && this.secondaryRadius !== undefined) {
+      const combinedRadius = this.primaryRadius + this.secondaryRadius;
+
+      lines.push(`  Combined Hard Body Radius: ${combinedRadius.toFixed(3)} km`);
+    }
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Checks if this is a high-risk conjunction based on miss distance and Pc.
+   * @param distanceThreshold Miss distance threshold in km (default: 1.0 km)
+   * @param pcThreshold Probability of collision threshold (default: 1e-4)
+   * @returns True if the conjunction exceeds risk thresholds.
+   */
+  isHighRisk(distanceThreshold: Kilometers = 1.0 as Kilometers, pcThreshold: number = 1e-4): boolean {
+    const distanceRisk = this.missDistance < distanceThreshold;
+    const pcRisk = this.probabilityOfCollision !== undefined && this.probabilityOfCollision > pcThreshold;
+
+    return distanceRisk || pcRisk;
+  }
+
+  /**
+   * Gets the Mahalanobis distance if covariance is available.
+   * This is the miss distance normalized by the combined covariance.
+   * @returns The Mahalanobis distance (unitless), or undefined if no covariance.
+   */
+  getMahalanobisDistance(): number | undefined {
+    if (!this.combinedCovariance) {
+      return undefined;
+    }
+
+    // Extract position-only covariance (first 3x3 block)
+    const posCovariance = this.extractPositionCovariance(this.combinedCovariance.matrix);
+    const relativePosition = [
+      this.relativeState.position.x,
+      this.relativeState.position.y,
+      this.relativeState.position.z,
+    ];
+
+    try {
+      // Compute Mahalanobis distance: sqrt(r^T * C^-1 * r)
+      const covInv = posCovariance.inverse();
+      const temp = covInv.multiplyVector(relativePosition);
+      let mahalanobis = 0;
+
+      for (let i = 0; i < 3; i++) {
+        mahalanobis += relativePosition[i] * temp[i];
+      }
+
+      return Math.sqrt(mahalanobis);
+    } catch {
+      // Covariance may be singular
+      return undefined;
+    }
+  }
+
+  /**
+   * Extracts the 3x3 position covariance from a 6x6 state covariance matrix.
+   * @param stateCov 6x6 state covariance matrix
+   * @returns 3x3 position covariance matrix
+   */
+  private extractPositionCovariance(stateCov: Matrix): Matrix {
+    const elements = [
+      [stateCov.elements[0][0], stateCov.elements[0][1], stateCov.elements[0][2]],
+      [stateCov.elements[1][0], stateCov.elements[1][1], stateCov.elements[1][2]],
+      [stateCov.elements[2][0], stateCov.elements[2][1], stateCov.elements[2][2]],
+    ];
+
+    return new Matrix(elements);
+  }
+}

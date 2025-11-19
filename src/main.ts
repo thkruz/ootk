@@ -60,3 +60,5 @@ export * from './propagator/index.js';
 export * from './orbit_determination/index.js';
 
 export * from './covariance/index.js';
+
+export * from './conjunction/index.js';
