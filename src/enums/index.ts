@@ -5,3 +5,6 @@ export { AngularDistanceMethod } from './AngularDistanceMethod.js';
 export { PassType } from './PassType.js';
 export { CatalogSource } from './CatalogSource.js';
 export { CommLink } from './CommLink.js';
+export { FrequencyBand } from './FrequencyBand.js';
+export { PolarizationType } from './PolarizationType.js';
+export { ModulationType } from './ModulationType.js';

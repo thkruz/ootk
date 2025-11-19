@@ -871,3 +871,39 @@ export type JacobianFunction = (xs: Float64Array) => Float64Array;
  */
 
 export type DifferentiableFunction = (x: number) => number;
+
+/**
+ * Represents a quantity in decibels (dB).
+ * Commonly used for power ratios, antenna gain, etc.
+ */
+export type Decibels = Distinct<number, 'Decibels'>;
+
+/**
+ * Represents a quantity in watts (W).
+ */
+export type Watts = Distinct<number, 'Watts'>;
+
+/**
+ * Represents a quantity in hertz (Hz).
+ */
+export type Hertz = Distinct<number, 'Hertz'>;
+
+/**
+ * Represents a quantity in megahertz (MHz).
+ */
+export type Megahertz = Distinct<number, 'Megahertz'>;
+
+/**
+ * Represents a quantity in gigahertz (GHz).
+ */
+export type Gigahertz = Distinct<number, 'Gigahertz'>;
+
+/**
+ * Represents a temperature in Kelvin (K).
+ */
+export type Kelvin = Distinct<number, 'Kelvin'>;
+
+/**
+ * Represents a data rate in bits per second (bps).
+ */
+export type BitsPerSecond = Distinct<number, 'BitsPerSecond'>;

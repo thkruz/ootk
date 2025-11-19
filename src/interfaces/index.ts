@@ -7,3 +7,8 @@ export type { StarObjectParams } from './StarObjectParams.js';
 export type { ClassicalElementsParams } from './ClassicalElementsParams.js';
 export type { EquinoctialElementsParams } from './EquinoctialElementsParams.js';
 export type { RfSensorParams } from './RfSensorParams.js';
+export type { AntennaParams } from './AntennaParams.js';
+export type { TransmitterParams } from './TransmitterParams.js';
+export type { ReceiverParams } from './ReceiverParams.js';
+export type { GroundStationParams } from './GroundStationParams.js';
+export type { LinkBudgetParams } from './LinkBudgetParams.js';
