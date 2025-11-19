@@ -15,10 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { CommLink } from '../enums/CommLink.js';
-import { Milliseconds } from '../main.js';
-import { DetailedSensorParams, ZoomValue } from '../types/types.js';
-import { Sensor } from './Sensor.js';
+import { CommLink } from '../enums/CommLink';
+import { Milliseconds } from '../main';
+import { DetailedSensorParams, ZoomValue } from '../types/types';
+import { Sensor } from './Sensor';
 
 export class DetailedSensor extends Sensor {
   sensorId?: number;

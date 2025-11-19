@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AzEl, Degrees, Kilometers, RAD2DEG, RaDec, Radians, Sun } from '../main.js';
+import { AzEl, Degrees, Kilometers, RAD2DEG, RaDec, Radians, Sun } from '../main';
 
 /**
  * Celestial is a static class that provides methods for calculating the position of celestial objects such as the Sun,

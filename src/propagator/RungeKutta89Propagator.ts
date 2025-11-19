@@ -17,7 +17,7 @@
 
 /* eslint-disable @typescript-eslint/no-loss-of-precision */
 /* eslint-disable class-methods-use-this */
-import { RungeKuttaAdaptive } from './RungeKuttaAdaptive.js';
+import { RungeKuttaAdaptive } from './RungeKuttaAdaptive';
 
 // / Runge-Kutta 8(9) adaptive numerical propagator.
 export class RungeKutta89Propagator extends RungeKuttaAdaptive {

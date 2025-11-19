@@ -1,4 +1,4 @@
-import { Days, Degrees, Milliseconds, Minutes, Radians, Seconds } from '../types/types.js';
+import { Days, Degrees, Milliseconds, Minutes, Radians, Seconds } from '../types/types';
 
 /**
  * Full circle in radians (PI * 2)
@@ -55,7 +55,7 @@ export const angularVelocityOfEarth = 7.292115e-5;
 /**
  * Astronomical unit in kilometers.
  */
-export const astronomicalUnit = 149597870.0;
+export const KM_PER_AU = 149597870.0;
 
 // / Convert milliseconds to seconds.
 export const msec2sec = 1e-3 as Seconds;

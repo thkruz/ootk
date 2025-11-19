@@ -1,4 +1,4 @@
-import { Tle, CovarianceSample, CovarianceFrame, StateCovariance } from '../main.js';
+import { CovarianceFrame, CovarianceSample, StateCovariance, Tle } from '../main';
 
 /**
  * Creates a 6x6 state covariance matrix from a TLE

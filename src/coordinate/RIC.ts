@@ -21,9 +21,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Matrix } from '../operations/Matrix.js';
-import { J2000 } from './J2000.js';
-import { RelativeState } from './RelativeState.js';
+import { Matrix } from '../operations/Matrix';
+import { J2000 } from './J2000';
+import { RelativeState } from './RelativeState';
 
 /**
  * Represents a Radial-Intrack-Crosstrack (RIC) coordinates.

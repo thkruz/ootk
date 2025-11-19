@@ -24,9 +24,9 @@ import {
   SpaceCraftDetails,
   TleLine1,
   TleLine2,
-} from '../main.js';
-import { DetailedSatelliteParams, PayloadStatus } from '../types/types.js';
-import { Satellite } from './Satellite.js';
+} from '../main';
+import { DetailedSatelliteParams, PayloadStatus } from '../types/types';
+import { Satellite } from './Satellite';
 
 /**
  * Represents a detailed satellite object with launch, spacecraft, and operations details.

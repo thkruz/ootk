@@ -25,8 +25,8 @@ import {
   Seconds,
   SecondsPerMeterPerSecond,
   Vector3D,
-} from '../main.js';
-import { Force } from './Force.js';
+} from '../main';
+import { Force } from './Force';
 
 // / Thrust force model.
 export class Thrust implements Force {

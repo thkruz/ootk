@@ -21,12 +21,12 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PassType } from '../enums/PassType.js';
-import { SensorParams } from '../interfaces/SensorParams.js';
-import { calcGmst, EpochUTC, J2000, lla2eci, Vector3D } from '../main.js';
-import { Degrees, Kilometers, KilometersPerSecond, Lookangle, RaeVec3, SpaceObjectType } from '../types/types.js';
-import { GroundObject } from './GroundObject.js';
-import { Satellite } from './Satellite.js';
+import { PassType } from '../enums/PassType';
+import { SensorParams } from '../interfaces/SensorParams';
+import { calcGmst, EpochUTC, J2000, lla2eci, Vector3D } from '../main';
+import { Degrees, Kilometers, KilometersPerSecond, Lookangle, RaeVec3, SpaceObjectType } from '../types/types';
+import { GroundObject } from './GroundObject';
+import { Satellite } from './Satellite';
 
 export class Sensor extends GroundObject {
   minRng: Kilometers;

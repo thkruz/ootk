@@ -1,4 +1,4 @@
-import { GreenwichMeanSiderealTime } from '../types/types.js';
+import { GreenwichMeanSiderealTime } from '../types/types';
 
 export interface TimeVariables {
   gmst: GreenwichMeanSiderealTime;

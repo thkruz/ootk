@@ -21,8 +21,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { Celestial } from './Celestial.js';
-export { Earth } from './Earth.js';
-export { Moon } from './Moon.js';
-export { Sun } from './Sun.js';
+export { Celestial } from './Celestial';
+export { Earth } from './Earth';
+export { Moon } from './Moon';
+export { Sun } from './Sun';
 

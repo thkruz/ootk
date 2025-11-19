@@ -1,7 +1,8 @@
-export { BatchLeastSquaresOD } from './BatchLeastSquaresOD.js';
-export { BatchLeastSquaresResult } from './BatchLeastSquaresResult.js';
-export { GibbsIOD } from './GibbsIOD.js';
-export { GoodingIOD } from './GoodingIOD.js';
-export { HerrickGibbsIOD } from './HerrickGibbsIOD.js';
-export { LambertIOD } from './LambertIOD.js';
-export { ModifiedGoodingIOD } from './ModifiedGoodingIOD.js';
+export { BatchLeastSquaresOD } from './BatchLeastSquaresOD';
+export { BatchLeastSquaresResult } from './BatchLeastSquaresResult';
+export { GibbsIOD } from './GibbsIOD';
+export { GoodingIOD } from './GoodingIOD';
+export { HerrickGibbsIOD } from './HerrickGibbsIOD';
+export { LambertIOD } from './LambertIOD';
+export { ModifiedGoodingIOD } from './ModifiedGoodingIOD';
+

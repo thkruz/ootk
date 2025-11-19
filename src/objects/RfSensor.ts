@@ -21,8 +21,8 @@
  * SOFTWARE.
  */
 
-import { DEG2RAD, Degrees, RAD2DEG, Radians, SpaceObjectType, azel2uv, uv2azel, RfSensorParams } from '../main.js';
-import { DetailedSensor } from './DetailedSensor.js';
+import { DEG2RAD, Degrees, RAD2DEG, Radians, RfSensorParams, SpaceObjectType, azel2uv, uv2azel } from '../main';
+import { DetailedSensor } from './DetailedSensor';
 
 export class RfSensor extends DetailedSensor {
   boresightAz: Degrees[];

@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
-import { TleLine1 } from '@src/main.js';
-import { CovarianceFrame, createCovarianceFromTle, createSampleCovarianceFromTle } from '../dist/main.js';
+import { CovarianceFrame, createCovarianceFromTle, createSampleCovarianceFromTle, TleLine1 } from '../dist/main';
 
 // Example TLE for the International Space Station
 const tle1 = '1 25544U 98067A   23054.45075046  .00008600  00000+0  16094-3 0  9999' as TleLine1;

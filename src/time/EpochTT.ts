@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Epoch } from './Epoch.js';
+import { Epoch } from './Epoch';
 
 /** Represents a Terrestrial Time (TT) epoch. */
 export class EpochTT extends Epoch { }
