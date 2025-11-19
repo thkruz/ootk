@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Epoch } from './Epoch.js';
+import { Epoch } from './Epoch';
 
 /** Represents an Epoch in International Atomic Time (TAI). */
 export class EpochTAI extends Epoch { }

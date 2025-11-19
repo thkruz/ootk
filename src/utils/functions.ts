@@ -1,9 +1,9 @@
-import { DifferentiableFunction } from '../main.js';
+import { DifferentiableFunction } from '../main';
 /* eslint-disable require-jsdoc */
-import { AngularDiameterMethod } from '../enums/AngularDiameterMethod.js';
-import { AngularDistanceMethod } from '../enums/AngularDistanceMethod.js';
-import { EcfVec3, Kilometers, KilometersPerSecond, Radians, SpaceObjectType } from '../types/types.js';
-import { angularVelocityOfEarth, cKmPerSec } from './constants.js';
+import { AngularDiameterMethod } from '../enums/AngularDiameterMethod';
+import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';
+import { EcfVec3, Kilometers, KilometersPerSecond, Radians, SpaceObjectType } from '../types/types';
+import { angularVelocityOfEarth, cKmPerSec } from './constants';
 
 /**
  * Calculates the factorial of a given number.
@@ -502,6 +502,11 @@ const spaceObjTypeStrMap_ = {
   [SpaceObjectType.NOTIONAL]: 'Notional',
   [SpaceObjectType.FRAGMENT]: 'Fragment',
   [SpaceObjectType.SHORT_TERM_FENCE]: 'Short Term Fence',
+  [SpaceObjectType.TERRESTRIAL_PLANET]: 'Terrestrial Planet',
+  [SpaceObjectType.GAS_GIANT]: 'Gas Giant',
+  [SpaceObjectType.ICE_GIANT]: 'Ice Giant',
+  [SpaceObjectType.DWARF_PLANET]: 'Dwarf Planet',
+  [SpaceObjectType.MOON]: 'Moon',
   [SpaceObjectType.MAX_SPACE_OBJECT_TYPE]: 'Max Space Object Type',
 };
 

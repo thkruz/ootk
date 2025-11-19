@@ -5,6 +5,10 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "module": "ES2022",
+    "lib": [
+      "ES2021",
+      "DOM"
+    ],
     "moduleResolution": "Bundler",
     "noEmit": true,
     "strict": true,

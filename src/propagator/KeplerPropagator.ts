@@ -15,10 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Thrust } from '../force/Thrust.js';
-import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
-import { ClassicalElements, EpochUTC, J2000, Seconds } from '../main.js';
-import { Propagator } from './Propagator.js';
+import { Thrust } from '../force/Thrust';
+import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
+import { ClassicalElements, EpochUTC, J2000, Seconds } from '../main';
+import { Propagator } from './Propagator';
 
 // / Kepler analytical two-body propagator.
 export class KeplerPropagator extends Propagator {
@@ -50,8 +50,7 @@ export class KeplerPropagator extends Propagator {
     this.cacheState_ = J2000.fromClassicalElements(this.elements_);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  maneuver(maneuver: Thrust, interval = 60): J2000[] {
+  maneuver(maneuver: Thrust): J2000[] {
     this.cacheState_ = maneuver.apply(this.propagate(maneuver.center));
     this.elements_ = this.cacheState_.toClassicalElements();
 
@@ -74,7 +73,7 @@ export class KeplerPropagator extends Propagator {
           ephemeris.push(this.cacheState_);
         }
       }
-      ephemeris.push(...this.maneuver(mvr, interval));
+      ephemeris.push(...this.maneuver(mvr));
     }
     while (this.cacheState_.epoch < finish) {
       const step = Math.min(finish.difference(this.cacheState_.epoch), interval) as Seconds;

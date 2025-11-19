@@ -21,12 +21,12 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth } from '../body/Earth.js';
-import { Kilometers, KilometersPerSecond, Radians, Vector3D } from '../main.js';
-import { ClassicalElements } from './ClassicalElements.js';
-import { ITRF } from './ITRF.js';
-import { StateVector } from './StateVector.js';
-import { TEME } from './TEME.js';
+import { Earth } from '../body/Earth';
+import { Kilometers, KilometersPerSecond, Radians, Vector3D } from '../main';
+import { ClassicalElements } from './ClassicalElements';
+import { ITRF } from './ITRF';
+import { StateVector } from './StateVector';
+import { TEME } from './TEME';
 
 /**
  * Represents a position and velocity in the J2000 coordinate system. This is an Earth-centered inertial (ECI)

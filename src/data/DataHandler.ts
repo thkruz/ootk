@@ -21,11 +21,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { egm96Data, Egm96Entry } from './values/Egm96Data.js';
-import { hpAtmosphereData } from './values/HpAtmosphereData.js';
-import { HpAtmosphereResult } from './values/HpAtmosphereResult.js';
-import { iau1980Data, Iau1980Entry } from './values/Iau1980Data.js';
-import { leapSecondData } from './values/LeapSecondData.js';
+import { egm96Data, Egm96Entry } from './values/Egm96Data';
+import { hpAtmosphereData } from './values/HpAtmosphereData';
+import { HpAtmosphereResult } from './values/HpAtmosphereResult';
+import { iau1980Data, Iau1980Entry } from './values/Iau1980Data';
+import { leapSecondData } from './values/LeapSecondData';
 
 /**
  * Astrodynamic data management singleton.

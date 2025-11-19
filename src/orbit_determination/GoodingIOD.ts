@@ -15,12 +15,12 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ForceModel } from '../force/ForceModel.js';
-import { Earth, J2000, Kilometers, KilometersPerSecond, Seconds, TAU, Vector3D } from '../main.js';
-import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator.js';
-import { ObservationOptical } from './../observation/ObservationOptical.js';
-import { GibbsIOD } from './GibbsIOD.js';
-import { LambertIOD } from './LambertIOD.js';
+import { ForceModel } from '../force/ForceModel';
+import { Earth, J2000, Kilometers, KilometersPerSecond, Seconds, TAU, Vector3D } from '../main';
+import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
+import { ObservationOptical } from './../observation/ObservationOptical';
+import { GibbsIOD } from './GibbsIOD';
+import { LambertIOD } from './LambertIOD';
 
 type SolveRangeProblemParams = {
   rho1init: Kilometers;

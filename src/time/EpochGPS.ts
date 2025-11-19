@@ -21,10 +21,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DataHandler } from '../data/DataHandler.js';
-import { Seconds } from '../main.js';
-import { secondsPerWeek } from '../utils/constants.js';
-import type { EpochUTC } from './EpochUTC.js';
+import { DataHandler } from '../data/DataHandler';
+import { Seconds } from '../main';
+import { secondsPerWeek } from '../utils/constants';
+import type { EpochUTC } from './EpochUTC';
 // / Global Positioning System _(GPS)_ formatted epoch.
 export class EpochGPS {
   /**

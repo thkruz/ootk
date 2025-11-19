@@ -16,8 +16,8 @@
  */
 
 /* eslint-disable class-methods-use-this */
-import { ForceModel } from '../force/ForceModel.js';
-import { Thrust } from '../force/Thrust.js';
+import { ForceModel } from '../force/ForceModel';
+import { Thrust } from '../force/Thrust';
 import {
   Epoch,
   EpochUTC,
@@ -31,9 +31,9 @@ import {
   Tle, Vec3Flat,
   Vector,
   Vector3D,
-} from '../main.js';
-import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator.js';
-import { CovarianceFrame, StateCovariance } from './StateCovariance.js';
+} from '../main';
+import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
+import { CovarianceFrame, StateCovariance } from './StateCovariance';
 
 // / Sigma point covariance sample.
 export class CovarianceSample {

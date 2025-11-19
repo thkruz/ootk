@@ -3,10 +3,14 @@
     "enable": true
   },
   "compilerOptions": {
+    "paths": {
+      "@src/*": ["src/*"],
+      "@tests/*": ["tests/*"]
+    },
     "lib": ["ES2023"],
     "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "declaration": true,
     "baseUrl": ".",
     "allowJs": true,

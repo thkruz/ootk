@@ -15,13 +15,13 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ForceModel } from '../force/ForceModel.js';
-import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, RadecTopocentric, Vector3D } from '../main.js';
-import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator.js';
-import { ObservationOptical } from './../observation/ObservationOptical.js';
-import { DownhillSimplex } from './../optimize/DownhillSimplex.js';
-import { CostFunction } from './../optimize/SimplexEntry.js';
-import { GoodingIOD } from './GoodingIOD.js';
+import { ForceModel } from '../force/ForceModel';
+import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, RadecTopocentric, Vector3D } from '../main';
+import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
+import { ObservationOptical } from './../observation/ObservationOptical';
+import { DownhillSimplex } from './../optimize/DownhillSimplex';
+import { CostFunction } from './../optimize/SimplexEntry';
+import { GoodingIOD } from './GoodingIOD';
 
 type SolveOptions = {
   nRev?: number;

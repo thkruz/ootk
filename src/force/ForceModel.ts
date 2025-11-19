@@ -15,14 +15,14 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth, J2000, Vector, Vector3D } from '../main.js';
-import { AtmosphericDrag } from './AtmosphericDrag.js';
-import { EarthGravity } from './EarthGravity.js';
-import { Force } from './Force.js';
-import { Gravity } from './Gravity.js';
-import { SolarRadiationPressure } from './SolarRadiationPressure.js';
-import { ThirdBodyGravity } from './ThirdBodyGravity.js';
-import { Thrust } from './Thrust.js';
+import { Earth, J2000, Vector, Vector3D } from '../main';
+import { AtmosphericDrag } from './AtmosphericDrag';
+import { EarthGravity } from './EarthGravity';
+import { Force } from './Force';
+import { Gravity } from './Gravity';
+import { SolarRadiationPressure } from './SolarRadiationPressure';
+import { ThirdBodyGravity } from './ThirdBodyGravity';
+import { Thrust } from './Thrust';
 
 // / Force model for spacecraft propagation.
 
