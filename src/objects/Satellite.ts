@@ -184,14 +184,6 @@ export class Satellite extends BaseObject {
   }
 
   /**
-   * Checks if the object is a satellite.
-   * @returns True if the object is a satellite, false otherwise.
-   */
-  override isSatellite(): boolean {
-    return true;
-  }
-
-  /**
    * Returns whether the satellite is static or not.
    * @returns True if the satellite is static, false otherwise.
    */

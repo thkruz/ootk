@@ -64,8 +64,7 @@ export class DetailedSatellite extends Satellite {
   status: PayloadStatus = PayloadStatus.UNKNOWN;
 
   constructor(
-    // TODO: Replace this intersection with a type alias
-    info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails,
+    info: DetailedSatelliteParams & Partial<LaunchDetails> & Partial<OperationsDetails> & Partial<SpaceCraftDetails>,
     options?: OptionsParams,
   ) {
     if (info.source === CatalogSource.VIMPEL) {
@@ -88,7 +87,7 @@ export class DetailedSatellite extends Satellite {
     this.status = info.status ?? PayloadStatus.UNKNOWN;
   }
 
-  private static setSccNumTo0_(info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails) {
+  private static setSccNumTo0_(info: DetailedSatelliteParams & Partial<LaunchDetails> & Partial<OperationsDetails> & Partial<SpaceCraftDetails>) {
     info.tle1 = FormatTle.setCharAt(info.tle1 as string, 2, '0') as TleLine1;
     info.tle1 = FormatTle.setCharAt(info.tle1, 3, '0') as TleLine1;
     info.tle1 = FormatTle.setCharAt(info.tle1, 4, '0') as TleLine1;
@@ -105,8 +104,8 @@ export class DetailedSatellite extends Satellite {
 
   private initSpaceCraftDetails_(
     info: DetailedSatelliteParams &
-      LaunchDetails & OperationsDetails &
-      SpaceCraftDetails,
+      Partial<LaunchDetails> & Partial<OperationsDetails> &
+      Partial<SpaceCraftDetails>,
   ) {
     this.lifetime = info.lifetime ?? '';
     this.maneuver = info.maneuver ?? '';
@@ -123,14 +122,14 @@ export class DetailedSatellite extends Satellite {
     this.dryMass = info.dryMass ?? '';
   }
 
-  private initOperationDetails_(info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails) {
+  private initOperationDetails_(info: DetailedSatelliteParams & Partial<LaunchDetails> & Partial<OperationsDetails> & Partial<SpaceCraftDetails>) {
     this.mission = info.mission ?? '';
     this.user = info.user ?? '';
     this.owner = info.owner ?? '';
     this.country = info.country ?? '';
   }
 
-  private initLaunchDetails_(info: DetailedSatelliteParams & LaunchDetails & OperationsDetails & SpaceCraftDetails) {
+  private initLaunchDetails_(info: DetailedSatelliteParams & Partial<LaunchDetails> & Partial<OperationsDetails> & Partial<SpaceCraftDetails>) {
     this.launchDate = info.launchDate ?? '';
     this.launchMass = info.launchMass ?? '';
     this.launchSite = info.launchSite ?? '';

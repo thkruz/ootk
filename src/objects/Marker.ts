@@ -16,10 +16,6 @@
  */
 
 import { BaseObject } from './BaseObject.js';
-/* eslint-disable class-methods-use-this */
 
 export class Marker extends BaseObject {
-  isMarker() {
-    return true;
-  }
 }

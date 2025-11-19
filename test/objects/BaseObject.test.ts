@@ -1,5 +1,5 @@
 import {
-  BaseObject, BaseObjectParams, EciVec3, KilometersPerSecond, SpaceObjectType,
+  BaseObject, BaseObjectParams, EciVec3, KilometersPerSecond, SpaceObjectType, Satellite, Sensor, Marker, GroundObject,
 } from '../../src/main';
 const mockVelocity = {
   x: 8000,
@@ -61,7 +61,7 @@ describe('BaseObject', () => {
 
     const baseObject = new BaseObject(info);
 
-    expect(baseObject.isSatellite()).toBe(false);
+    expect(baseObject instanceof Satellite).toBe(false);
   });
 
   // check if BaseObject is a payload
@@ -191,7 +191,7 @@ describe('BaseObject', () => {
 
     const baseObject = new BaseObject(info);
 
-    const result = baseObject.isSensor();
+    const result = baseObject instanceof Sensor;
 
     expect(result).toBe(false);
   });
@@ -208,7 +208,7 @@ describe('BaseObject', () => {
 
     const baseObject = new BaseObject(info);
 
-    const result = baseObject.isMarker();
+    const result = baseObject instanceof Marker;
 
     expect(result).toBe(false);
   });
@@ -250,7 +250,7 @@ describe('BaseObject', () => {
 
     const baseObject = new BaseObject(info);
 
-    const result = baseObject.isGroundObject();
+    const result = baseObject instanceof GroundObject;
 
     expect(result).toBe(false);
   });

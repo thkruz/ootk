@@ -35,12 +35,6 @@ export class Sensor extends GroundObject {
   maxRng: Kilometers;
   maxAz: Degrees;
   maxEl: Degrees;
-  minRng2?: Kilometers;
-  minAz2?: Degrees;
-  minEl2?: Degrees;
-  maxRng2?: Kilometers;
-  maxAz2?: Degrees;
-  maxEl2?: Degrees;
 
   constructor(info: SensorParams) {
     // If there is a sensor type verify it is valid
@@ -68,20 +62,6 @@ export class Sensor extends GroundObject {
     this.maxRng = info.maxRng;
     this.maxAz = info.maxAz;
     this.maxEl = info.maxEl;
-    this.minRng2 = info.minRng2;
-    this.minAz2 = info.minAz2;
-    this.minEl2 = info.minEl2;
-    this.maxRng2 = info.maxRng2;
-    this.maxAz2 = info.maxAz2;
-    this.maxEl2 = info.maxEl2;
-  }
-
-  /**
-   * Checks if the object is a sensor.
-   * @returns True if the object is a sensor, false otherwise.
-   */
-  override isSensor(): boolean {
-    return true;
   }
 
   calculatePasses(planningInterval: number, sat: Satellite, date: Date = new Date()) {
@@ -243,28 +223,12 @@ export class Sensor extends GroundObject {
   }
 
   /**
-   * Validates the field of view parameters for the sensor.
-   * @param info - The sensor parameters.
-   */
-  private validateFov2_(info: SensorParams) {
-    this.validateParameter(info.maxAz2, 0, 360, 'Invalid maximum azimuth2 - must be between 0 and 360');
-    this.validateParameter(info.minAz2, 0, 360, 'Invalid maximum azimuth2 - must be between 0 and 360');
-    this.validateParameter(info.maxEl2, -15, 180, 'Invalid maximum elevation2 - must be between 0 and 180');
-    this.validateParameter(info.minEl2, -15, 90, 'Invalid minimum elevation2 - must be between 0 and 90');
-    this.validateParameter(info.maxRng2, 0, null, 'Invalid maximum range2 - must be greater than 0');
-    this.validateParameter(info.minRng2, 0, null, 'Invalid minimum range2 - must be greater than 0');
-  }
-
-  /**
    * Validates the input data for the sensor.
    * @param info - The sensor parameters.
    */
   private validateSensorInputData_(info: SensorParams) {
     this.validateLla_(info);
     this.validateFov_(info);
-    if (info.minAz2 || info.maxAz2 || info.minEl2 || info.maxEl2 || info.minRng2 || info.maxRng2) {
-      this.validateFov2_(info);
-    }
   }
 
   /**

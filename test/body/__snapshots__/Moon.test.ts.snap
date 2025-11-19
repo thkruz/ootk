@@ -18,6 +18,37 @@ Object {
 }
 `;
 
+exports[`Moon should have a functioning getMoonTimes method 1`] = `
+Object {
+  "alwaysDown": false,
+  "alwaysUp": false,
+  "highest": 2024-01-12T21:42:31.618Z,
+  "rise": 2024-01-12T16:43:59.167Z,
+  "set": 2024-01-13T02:41:04.069Z,
+  "ye": null,
+}
+`;
+
+exports[`Moon should have a functioning getMoonTimes method with timezone adjustment 1`] = `
+Object {
+  "alwaysDown": false,
+  "alwaysUp": false,
+  "highest": 2024-01-12T21:42:31.618Z,
+  "rise": 2024-01-12T16:43:59.167Z,
+  "set": 2024-01-13T02:41:04.069Z,
+  "ye": null,
+}
+`;
+
+exports[`Moon should have a functioning rae method 1`] = `
+Object {
+  "az": 4.034314328077605,
+  "el": 0.19547892013212267,
+  "parallacticAngle": 0.7236664732665937,
+  "rng": 366252.754397278,
+}
+`;
+
 exports[`Moon should return 0.5 if the "origin" parameter is not provided 1`] = `0.03596620967759451`;
 
 exports[`Moon should return a MoonIlluminationData object when called with a number parameter 1`] = `

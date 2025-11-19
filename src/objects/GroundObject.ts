@@ -156,21 +156,4 @@ export class GroundObject extends BaseObject {
     this.validateParameter(info.alt, 0, null, 'Invalid altitude - must be greater than 0');
   }
 
-  override isGroundObject(): boolean {
-    switch (this.type) {
-      case SpaceObjectType.INTERGOVERNMENTAL_ORGANIZATION:
-      case SpaceObjectType.SUBORBITAL_PAYLOAD_OPERATOR:
-      case SpaceObjectType.PAYLOAD_OWNER:
-      case SpaceObjectType.METEOROLOGICAL_ROCKET_LAUNCH_AGENCY_OR_MANUFACTURER:
-      case SpaceObjectType.PAYLOAD_MANUFACTURER:
-      case SpaceObjectType.LAUNCH_VEHICLE_MANUFACTURER:
-      case SpaceObjectType.ENGINE_MANUFACTURER:
-      case SpaceObjectType.LAUNCH_AGENCY:
-      case SpaceObjectType.LAUNCH_SITE:
-      case SpaceObjectType.LAUNCH_POSITION:
-        return true;
-      default:
-        return false;
-    }
-  }
 }

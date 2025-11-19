@@ -56,38 +56,6 @@ export class BaseObject {
   }
 
   /**
-   * Checks if the object is a satellite.
-   * @returns True if the object is a satellite, false otherwise.
-   */
-  isSatellite(): boolean {
-    return false;
-  }
-
-  /**
-   * Checks if the object is a ground object.
-   * @returns True if the object is a ground object, false otherwise.
-   */
-  isGroundObject(): boolean {
-    return false;
-  }
-
-  /**
-   * Returns whether the object is a sensor.
-   * @returns True if the object is a sensor, false otherwise.
-   */
-  isSensor(): boolean {
-    return false;
-  }
-
-  /**
-   * Checks if the object is a marker.
-   * @returns True if the object is a marker, false otherwise.
-   */
-  isMarker(): boolean {
-    return false;
-  }
-
-  /**
    * Returns whether the object's position is static.
    * @returns True if the object is static, false otherwise.
    */
