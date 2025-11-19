@@ -1,7 +1,8 @@
-export { OrbitRegime } from './OrbitRegime.js';
-export { Sgp4OpsMode } from './Sgp4OpsMode.js';
-export { AngularDiameterMethod } from './AngularDiameterMethod.js';
-export { AngularDistanceMethod } from './AngularDistanceMethod.js';
-export { PassType } from './PassType.js';
-export { CatalogSource } from './CatalogSource.js';
-export { CommLink } from './CommLink.js';
+export { AngularDiameterMethod } from './AngularDiameterMethod';
+export { AngularDistanceMethod } from './AngularDistanceMethod';
+export { CatalogSource } from './CatalogSource';
+export { CommLink } from './CommLink';
+export { OrbitRegime } from './OrbitRegime';
+export { PassType } from './PassType';
+export { Sgp4OpsMode } from './Sgp4OpsMode';
+

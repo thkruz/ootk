@@ -21,8 +21,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { hpAtmosphere } from './hpAtmosphere.js';
-import { HpAtmosphereResult } from './HpAtmosphereResult.js';
+import { hpAtmosphere } from './hpAtmosphere';
+import { HpAtmosphereResult } from './HpAtmosphereResult';
 
 // / Harris-Priester atmosphere entry for height, min, and max density values.
 export type HpAtmosphereEntry = [number, number, number];

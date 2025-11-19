@@ -21,5 +21,5 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { Sgp4 } from './sgp4.js';
+export { Sgp4 } from './sgp4';
 

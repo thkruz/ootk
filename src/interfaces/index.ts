@@ -1,9 +1,10 @@
-export type { BaseObjectParams } from './BaseObjectParams.js';
-export type { GroundPositionParams } from './GroundPositionParams.js';
-export type { OptionsParams } from './OptionsParams.js';
-export type { SatelliteParams } from './SatelliteParams.js';
-export type { SensorParams } from './SensorParams.js';
-export type { StarObjectParams } from './StarObjectParams.js';
-export type { ClassicalElementsParams } from './ClassicalElementsParams.js';
-export type { EquinoctialElementsParams } from './EquinoctialElementsParams.js';
-export type { RfSensorParams } from './RfSensorParams.js';
+export type { BaseObjectParams } from './BaseObjectParams';
+export type { ClassicalElementsParams } from './ClassicalElementsParams';
+export type { EquinoctialElementsParams } from './EquinoctialElementsParams';
+export type { GroundPositionParams } from './GroundPositionParams';
+export type { OptionsParams } from './OptionsParams';
+export type { RfSensorParams } from './RfSensorParams';
+export type { SatelliteParams } from './SatelliteParams';
+export type { SensorParams } from './SensorParams';
+export type { StarObjectParams } from './StarObjectParams';
+

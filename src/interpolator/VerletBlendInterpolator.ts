@@ -25,10 +25,10 @@ import {
   KilometersPerSecond,
   Seconds,
   Vector3D,
-} from '../main.js';
-import { CubicSplineInterpolator } from './CubicSplineInterpolator.js';
-import { LagrangeInterpolator } from './LagrangeInterpolator.js';
-import { StateInterpolator } from './StateInterpolator.js';
+} from '../main';
+import { CubicSplineInterpolator } from './CubicSplineInterpolator';
+import { LagrangeInterpolator } from './LagrangeInterpolator';
+import { StateInterpolator } from './StateInterpolator';
 
 /**
  * Two-body Velocity Verlet Blend interpolator.

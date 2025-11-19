@@ -22,14 +22,14 @@
  */
 
 /* eslint-disable no-undefined */
-import { ITRF } from '../coordinate/ITRF.js';
-import { J2000 } from '../coordinate/J2000.js';
-import { AngularDistanceMethod } from '../enums/AngularDistanceMethod.js';
-import { Degrees, Kilometers, KilometersPerSecond, Radians } from '../main.js';
-import { Vector3D } from '../operations/Vector3D.js';
-import { EpochUTC } from '../time/EpochUTC.js';
-import { DEG2RAD, halfPi, RAD2DEG, TAU } from '../utils/constants.js';
-import { angularDistance } from '../utils/functions.js';
+import { ITRF } from '../coordinate/ITRF';
+import { J2000 } from '../coordinate/J2000';
+import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';
+import { Degrees, Kilometers, KilometersPerSecond, Radians } from '../main';
+import { Vector3D } from '../operations/Vector3D';
+import { EpochUTC } from '../time/EpochUTC';
+import { DEG2RAD, halfPi, RAD2DEG, TAU } from '../utils/constants';
+import { angularDistance } from '../utils/functions';
 
 // / Range, azimuth, and elevation.
 export class RAE {

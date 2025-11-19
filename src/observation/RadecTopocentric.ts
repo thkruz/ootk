@@ -21,14 +21,14 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { J2000 } from '../coordinate/J2000.js';
-import { AngularDistanceMethod } from '../enums/AngularDistanceMethod.js';
-import { Degrees, DegreesPerSecond, Kilometers, KilometersPerSecond, Radians, RadiansPerSecond } from '../main.js';
-import { Vector3D } from '../operations/Vector3D.js';
-import { EpochUTC } from '../time/EpochUTC.js';
-import { DEG2RAD, RAD2DEG, TAU } from '../utils/constants.js';
-import { angularDistance } from '../utils/functions.js';
-import { radecToPosition, radecToVelocity } from './ObservationUtils.js';
+import { J2000 } from '../coordinate/J2000';
+import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';
+import { Degrees, DegreesPerSecond, Kilometers, KilometersPerSecond, Radians, RadiansPerSecond } from '../main';
+import { Vector3D } from '../operations/Vector3D';
+import { EpochUTC } from '../time/EpochUTC';
+import { DEG2RAD, RAD2DEG, TAU } from '../utils/constants';
+import { angularDistance } from '../utils/functions';
+import { radecToPosition, radecToVelocity } from './ObservationUtils';
 
 /**
  * Represents a topocentric right ascension and declination observation.

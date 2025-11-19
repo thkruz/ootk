@@ -15,9 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, EpochWindow, J2000 } from '../main.js';
-import { ChebyshevCoefficients } from './ChebyshevCoefficients.js';
-import { StateInterpolator } from './StateInterpolator.js';
+import { EpochUTC, EpochWindow, J2000 } from '../main';
+import { ChebyshevCoefficients } from './ChebyshevCoefficients';
+import { StateInterpolator } from './StateInterpolator';
 
 /**
  * Compressed Chebyshev ephemeris interpolator.

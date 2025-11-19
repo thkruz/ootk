@@ -21,13 +21,13 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth } from '../body/Earth.js';
-import { AngularDistanceMethod, Degrees, GroundObject, Kilometers, KilometersPerSecond, Radians } from '../main.js';
-import { Vector3D } from '../operations/Vector3D.js';
-import { EpochUTC } from '../time/EpochUTC.js';
-import { DEG2RAD, RAD2DEG } from '../utils/constants.js';
-import { angularDistance } from '../utils/functions.js';
-import { ITRF } from './ITRF.js';
+import { Earth } from '../body/Earth';
+import { AngularDistanceMethod, Degrees, GroundObject, Kilometers, KilometersPerSecond, Radians } from '../main';
+import { Vector3D } from '../operations/Vector3D';
+import { EpochUTC } from '../time/EpochUTC';
+import { DEG2RAD, RAD2DEG } from '../utils/constants';
+import { angularDistance } from '../utils/functions';
+import { ITRF } from './ITRF';
 
 /**
  * This Geodetic class represents a geodetic coordinate in three-dimensional

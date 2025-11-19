@@ -15,8 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth, J2000, Vector3D } from '../main.js';
-import { Force } from './Force.js';
+import { Earth, J2000, Vector3D } from '../main';
+import { Force } from './Force';
 
 // / Simple central-body gravity model.
 export class Gravity implements Force {

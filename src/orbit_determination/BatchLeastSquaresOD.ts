@@ -15,15 +15,15 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { concat, EpochUTC, J2000, Kilometers, KilometersPerSecond, Matrix, Vector, Vector3D } from '../main.js';
-import { Observation } from '../observation/Observation.js';
-import { PropagatorPairs } from '../observation/PropagatorPairs.js';
-import { Propagator } from '../propagator/Propagator.js';
-import { CovarianceFrame, StateCovariance } from './../covariance/StateCovariance.js';
-import { ForceModel } from './../force/ForceModel.js';
-import { KeplerPropagator } from './../propagator/KeplerPropagator.js';
-import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator.js';
-import { BatchLeastSquaresResult } from './BatchLeastSquaresResult.js';
+import { concat, EpochUTC, J2000, Kilometers, KilometersPerSecond, Matrix, Vector, Vector3D } from '../main';
+import { Observation } from '../observation/Observation';
+import { PropagatorPairs } from '../observation/PropagatorPairs';
+import { Propagator } from '../propagator/Propagator';
+import { CovarianceFrame, StateCovariance } from './../covariance/StateCovariance';
+import { ForceModel } from './../force/ForceModel';
+import { KeplerPropagator } from './../propagator/KeplerPropagator';
+import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
+import { BatchLeastSquaresResult } from './BatchLeastSquaresResult';
 
 /**
  * Batch least squares orbit determination.

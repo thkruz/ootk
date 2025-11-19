@@ -21,15 +21,15 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Seconds } from '../main.js';
-import { DEG2RAD, MS_PER_DAY, RAD2DEG, secondsPerWeek, TAU } from '../utils/constants.js';
-import { evalPoly } from '../utils/functions.js';
-import { DataHandler } from './../data/DataHandler.js';
-import { Epoch } from './Epoch.js';
-import { EpochGPS } from './EpochGPS.js';
-import { EpochTAI } from './EpochTAI.js';
-import { EpochTDB } from './EpochTDB.js';
-import { EpochTT } from './EpochTT.js';
+import { Seconds } from '../main';
+import { DEG2RAD, MS_PER_DAY, RAD2DEG, secondsPerWeek, TAU } from '../utils/constants';
+import { evalPoly } from '../utils/functions';
+import { DataHandler } from './../data/DataHandler';
+import { Epoch } from './Epoch';
+import { EpochGPS } from './EpochGPS';
+import { EpochTAI } from './EpochTAI';
+import { EpochTDB } from './EpochTDB';
+import { EpochTT } from './EpochTT';
 
 type FromDateParams = {
   year: number;

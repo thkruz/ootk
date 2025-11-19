@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { BaseObject } from './BaseObject.js';
+import { BaseObject } from './BaseObject';
 /* eslint-disable class-methods-use-this */
 
 export class Marker extends BaseObject {

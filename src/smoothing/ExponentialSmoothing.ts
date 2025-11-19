@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC } from '../main.js';
+import { EpochUTC } from '../main';
 
 // / Exponential data smoothing methods.
 export class ExponentialSmoothing {
