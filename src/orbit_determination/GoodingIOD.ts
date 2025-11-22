@@ -15,9 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { KeplerPropagator } from '@src/propagator/KeplerPropagator';
 import { ForceModel } from '../force/ForceModel';
-import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, TAU, Vector3D } from '../main';
+import { Earth, J2000, Kilometers, KilometersPerSecond, Seconds, TAU, Vector3D } from '../main';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
 import { ObservationOptical } from './../observation/ObservationOptical';
 import { GaussIOD } from './GaussIOD';
@@ -676,18 +675,4 @@ export class GoodingIOD {
 
     return null;
   }
-
-  /**
-   * Compute the initial guess of the distance between the receiver and the satellite.
-   * @param propagator propagator used to compute the orbit at measurement epoch
-   * @param measurementEpoch measurement epoch
-   * @param receiverPosition receiver position in outputFrame
-   * @return the initial guess of the distant between the receiver and the satellite
-   */
-  private computeDistance(propagator: KeplerPropagator, measurementEpoch: EpochUTC, receiverPosition: Vector3D<Kilometers>): Kilometers {
-    const orbitAtMeasurementEpoch = propagator.propagate(measurementEpoch);
-
-    return receiverPosition.distance(orbitAtMeasurementEpoch.position);
-  }
-
 }

@@ -1,6 +1,10 @@
 {
   "permissions": {
     "allow": [
+      "Bash(mkdir:*)",
+      "Bash(dir:*)",
+      "Bash(tree /f /a f:irissrc -L 3 -I node_modules 2)",
+      "Bash(NUL)",
       "Bash(npm test:*)"
     ],
     "deny": [],

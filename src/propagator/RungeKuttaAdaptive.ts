@@ -140,8 +140,8 @@ export abstract class RungeKuttaAdaptive extends Propagator {
       throw new RangeError(`Invalid error value in integration: ${teVal}`);
     }
 
-    let hNew = 0.9 * step * (this.tolerance_ / teVal) ** (1.0 / this.order);
     const hOld = Math.abs(step);
+    let hNew = 0.9 * hOld * (this.tolerance_ / teVal) ** (1.0 / this.order);
 
     hNew = Math.max(0.2 * hOld, Math.min(5.0 * hOld, hNew));
     hNew = Math.max(1e-5, Math.min(1000.0, hNew));
