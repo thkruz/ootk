@@ -101,6 +101,14 @@ export abstract class RungeKuttaAdaptive extends Propagator {
   }
 
   private integrate_(state: J2000, step: Seconds): RkResult {
+    // Check for NaN in input
+    if (!Number.isFinite(step)) {
+      throw new RangeError(`Invalid step size: ${step}`);
+    }
+    if (!Number.isFinite(state.epoch.posix)) {
+      throw new RangeError(`Invalid epoch: ${state.epoch.posix}`);
+    }
+
     const k: Vector[] = new Array(this.a.length).fill(Vector.origin3);
     const y = state.position.join(state.velocity) as Vector<Kilometers>;
 
@@ -121,16 +129,37 @@ export abstract class RungeKuttaAdaptive extends Propagator {
       y1 = y1.add(k[i].scale(this.ch[i])) as Vector<Kilometers>;
       y2 = y2.add(k[i].scale(this.c[i])) as Vector<Kilometers>;
     }
-    const teVal = y1.distance(y2);
+    let teVal = y1.distance(y2);
+
+    if (teVal === 0) {
+      teVal = Number.EPSILON;
+    }
+
+    // Guard against division by zero or very small errors
+    if (!Number.isFinite(teVal) || teVal === 0) {
+      throw new RangeError(`Invalid error value in integration: ${teVal}`);
+    }
+
     let hNew = 0.9 * step * (this.tolerance_ / teVal) ** (1.0 / this.order);
     const hOld = Math.abs(step);
 
     hNew = Math.max(0.2 * hOld, Math.min(5.0 * hOld, hNew));
     hNew = Math.max(1e-5, Math.min(1000.0, hNew));
 
+    // Verify step size is valid
+    if (!Number.isFinite(hNew)) {
+      throw new RangeError(`Computed step size is invalid: ${hNew}`);
+    }
+
+    const newEpoch = state.epoch.roll(step);
+
+    if (!Number.isFinite(newEpoch.posix)) {
+      throw new RangeError(`Computed epoch is invalid: ${newEpoch.posix}`);
+    }
+
     return new RkResult(
       new J2000(
-        state.epoch.roll(step),
+        newEpoch,
         y1.toVector3D(0) as Vector3D<Kilometers>,
         y1.toVector3D(3) as Vector3D<KilometersPerSecond>,
       ),
@@ -141,6 +170,8 @@ export abstract class RungeKuttaAdaptive extends Propagator {
 
   propagate(epoch: EpochUTC): J2000 {
     let delta = epoch.difference(this._cacheState.epoch);
+    let consecutiveFailures = 0;
+    const maxConsecutiveFailures = 1000;
 
     while (delta !== 0) {
       const direction = delta >= 0 ? 1 : -1;
@@ -149,7 +180,26 @@ export abstract class RungeKuttaAdaptive extends Propagator {
 
       this._stepSize = result.newStep;
       if (result.error > this.tolerance_) {
+        consecutiveFailures++;
+        if (consecutiveFailures >= maxConsecutiveFailures) {
+          return this._cacheState;
+        }
         continue;
+      }
+      consecutiveFailures = 0;
+      // Validate result.state before assigning
+      if (!Number.isFinite(result.state.epoch.posix)) {
+        throw new RangeError(`Invalid propagated epoch: ${result.state.epoch.posix}`);
+      }
+      if (!Number.isFinite(result.state.position.x) ||
+          !Number.isFinite(result.state.position.y) ||
+          !Number.isFinite(result.state.position.z)) {
+        throw new RangeError(`Invalid propagated position: ${result.state.position}`);
+      }
+      if (!Number.isFinite(result.state.velocity.x) ||
+          !Number.isFinite(result.state.velocity.y) ||
+          !Number.isFinite(result.state.velocity.z)) {
+        throw new RangeError(`Invalid propagated velocity: ${result.state.velocity}`);
       }
       this._cacheState = result.state;
       delta = epoch.difference(this._cacheState.epoch);

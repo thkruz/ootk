@@ -3,6 +3,8 @@ const jestConfig = {
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^@src/(.*)$': '<rootDir>/src/$1',
+    '^@src$': '<rootDir>/src',
   },
   transform: {
     '^.+\\.jsx?$': 'babel-jest',

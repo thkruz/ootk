@@ -134,7 +134,10 @@ export class RadecTopocentric {
    * @returns The right ascension in degrees.
    */
   get rightAscensionDegrees(): Degrees {
-    return this.rightAscension * RAD2DEG as Degrees;
+    const deg = this.rightAscension * RAD2DEG;
+    const normalized = ((deg % 360) + 360) % 360;
+
+    return normalized as Degrees;
   }
 
   /**
