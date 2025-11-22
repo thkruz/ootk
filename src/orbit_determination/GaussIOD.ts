@@ -23,8 +23,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DEG2RAD, Earth, J2000, Kilometers, KilometersPerSecond, Matrix, Radians, Vector3D } from '@src/main';
-import { ObservationOptical } from '@src/observation/ObservationOptical';
+import { Earth } from '../body';
+import { J2000 } from '../coordinate';
+import { Kilometers, KilometersPerSecond, Matrix, Radians, Vector3D } from '../main';
+import { ObservationOptical } from '../observation/ObservationOptical';
+import { DEG2RAD } from '../utils';
 import { GibbsIOD } from './GibbsIOD';
 import { HerrickGibbsIOD } from './HerrickGibbsIOD';
 
