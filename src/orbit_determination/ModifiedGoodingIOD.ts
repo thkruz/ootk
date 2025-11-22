@@ -48,13 +48,12 @@ export class ModifiedGoodingIOD {
 
   private createInitial_(r0: Kilometers, rN: Kilometers, nRev: number, direction: boolean): J2000 {
     const iod = new GoodingIOD(
-      this.observations_[0],
-      this.observations_[Math.floor(this.observations_.length / 2)],
-      this.observations_[this.observations_.length - 1],
       this.mu_,
     );
 
-    return iod.solve(r0, rN, nRev, direction);
+    return iod.estimate(this.observations_[0],
+      this.observations_[Math.floor(this.observations_.length / 2)],
+      this.observations_[this.observations_.length - 1], r0, rN, nRev, direction);
   }
 
   private _createErrorFunction(aprioriEpoch: EpochUTC): CostFunction {

@@ -286,4 +286,6 @@ export class Vector3D<T extends number = number> {
 
     return new Vector(output);
   }
+
+  static readonly zero = new Vector3D<number>(0, 0, 0);
 }
