@@ -1,6 +1,6 @@
 {
   "name": "ootk",
-  "version": "6.0.0-rc.2",
+  "version": "6.0.0-rc.3",
   "type": "module",
   "module": "dist/main.js",
   "description": "Orbital Object Toolkit including Multiple Propagators, Initial Orbit Determination, and Maneuver Calculations.",
