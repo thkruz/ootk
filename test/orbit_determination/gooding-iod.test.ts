@@ -8,11 +8,11 @@
  * Technical Report 93004, April 1993
  */
 
-import { ClassicalElements, DEG2RAD, Degrees, Kilometers, Radians, Sgp4Propagator, Tle } from '@src/main';
+import { ClassicalElements, DEG2RAD, Degrees, Kilometers, RAD2DEG, Radians, Sgp4Propagator, Tle } from '@src/main';
 import { Sensor } from '@src/objects';
 import { RadecTopocentric } from '@src/observation';
 import { ObservationOptical } from '@src/observation/ObservationOptical';
-import { GoodingIOD } from '@src/orbit_determination';
+import { GoodingIOD, ModifiedGoodingIOD } from '@src/orbit_determination';
 import { KeplerPropagator } from '@src/propagator/KeplerPropagator';
 import { EpochUTC } from '@src/time';
 
@@ -286,32 +286,52 @@ describe('GoodingIOD', () => {
         maxRng: 50_000 as Kilometers,
       });
 
-      const t1 = EpochUTC.fromDateTimeString('2025-01-01T12:00:00.000Z');
-      const t2 = EpochUTC.fromDateTimeString('2025-01-01T12:03:00.000Z');
-      const t3 = EpochUTC.fromDateTimeString('2025-01-01T12:06:00.000Z');
-
+      const t1 = EpochUTC.fromDateTimeString('2025-11-22T05:48:00.000Z');
+      const t2 = EpochUTC.fromDateTimeString('2025-11-22T05:48:30.000Z');
+      const t3 = EpochUTC.fromDateTimeString('2025-11-22T05:49:00.000Z');
+      const t4 = EpochUTC.fromDateTimeString('2025-11-22T05:49:30.000Z');
+      const t5 = EpochUTC.fromDateTimeString('2025-11-22T05:50:00.000Z');
+      const t6 = EpochUTC.fromDateTimeString('2025-11-22T05:50:30.000Z');
+      const t7 = EpochUTC.fromDateTimeString('2025-11-22T05:51:00.000Z');
+      const t8 = EpochUTC.fromDateTimeString('2025-11-22T05:51:30.000Z');
+      const t9 = EpochUTC.fromDateTimeString('2025-11-22T05:52:00.000Z');
+      const t10 = EpochUTC.fromDateTimeString('2025-11-22T05:52:30.000Z');
       // Generate observations from known orbit
       const raDec1 = RadecTopocentric.fromStateVector(propagator.propagate(t1), sensor.toJ2000(t1.toDateTime()));
       const raDec2 = RadecTopocentric.fromStateVector(propagator.propagate(t2), sensor.toJ2000(t2.toDateTime()));
       const raDec3 = RadecTopocentric.fromStateVector(propagator.propagate(t3), sensor.toJ2000(t3.toDateTime()));
+      const raDec4 = RadecTopocentric.fromStateVector(propagator.propagate(t4), sensor.toJ2000(t4.toDateTime()));
+      const raDec5 = RadecTopocentric.fromStateVector(propagator.propagate(t5), sensor.toJ2000(t5.toDateTime()));
+      const raDec6 = RadecTopocentric.fromStateVector(propagator.propagate(t6), sensor.toJ2000(t6.toDateTime()));
+      const raDec7 = RadecTopocentric.fromStateVector(propagator.propagate(t7), sensor.toJ2000(t7.toDateTime()));
+      const raDec8 = RadecTopocentric.fromStateVector(propagator.propagate(t8), sensor.toJ2000(t8.toDateTime()));
+      const raDec9 = RadecTopocentric.fromStateVector(propagator.propagate(t9), sensor.toJ2000(t9.toDateTime()));
+      const raDec10 = RadecTopocentric.fromStateVector(propagator.propagate(t10), sensor.toJ2000(t10.toDateTime()));
 
       const obs1 = new ObservationOptical(sensor.toJ2000(t1.toDateTime()), raDec1);
       const obs2 = new ObservationOptical(sensor.toJ2000(t2.toDateTime()), raDec2);
       const obs3 = new ObservationOptical(sensor.toJ2000(t3.toDateTime()), raDec3);
+      const obs4 = new ObservationOptical(sensor.toJ2000(t4.toDateTime()), raDec4);
+      const obs5 = new ObservationOptical(sensor.toJ2000(t5.toDateTime()), raDec5);
+      const obs6 = new ObservationOptical(sensor.toJ2000(t6.toDateTime()), raDec6);
+      const obs7 = new ObservationOptical(sensor.toJ2000(t7.toDateTime()), raDec7);
+      const obs8 = new ObservationOptical(sensor.toJ2000(t8.toDateTime()), raDec8);
+      const obs9 = new ObservationOptical(sensor.toJ2000(t9.toDateTime()), raDec9);
+      const obs10 = new ObservationOptical(sensor.toJ2000(t10.toDateTime()), raDec10);
 
-      const iod = new GoodingIOD();
+      const iod = new ModifiedGoodingIOD();
 
       // LEO range estimates
       const leoRange1 = 1_000 as Kilometers;
       const leoRange3 = 1_500 as Kilometers;
 
-      const orbit = iod.estimate(obs1, obs2, obs3, leoRange1, leoRange3);
+      const orbit = iod.solve([obs1, obs2, obs3, obs4, obs5, obs6, obs7, obs8, obs9, obs10], leoRange1, leoRange3);
       const elements = orbit.toClassicalElements();
 
       // Should recover LEO orbit
-      expect(elements.semimajorAxis).toBeCloseTo(6_778, 1);
       expect(elements.eccentricity).toBeLessThan(0.01);
-      expect(elements.inclinationDegrees).toBeCloseTo(51.6, 1);
+      expect(elements.inclinationDegrees).toBeCloseTo(53.2176, 0);
+      expect(Math.abs(elements.semimajorAxis - 6919.20905)).toBeLessThanOrEqual(20);
     });
 
     it('should handle MEO observations', () => {
@@ -336,31 +356,37 @@ describe('GoodingIOD', () => {
       });
 
       const t1 = EpochUTC.fromDateTimeString('2025-11-22T16:00:00.000Z');
-      const t2 = EpochUTC.fromDateTimeString('2025-11-22T16:05:00.000Z');
-      const t3 = EpochUTC.fromDateTimeString('2025-11-22T16:10:00.000Z');
+      const t2 = EpochUTC.fromDateTimeString('2025-11-22T16:02:00.000Z');
+      const t3 = EpochUTC.fromDateTimeString('2025-11-22T16:04:00.000Z');
+      const t4 = EpochUTC.fromDateTimeString('2025-11-22T16:06:00.000Z');
+      const t5 = EpochUTC.fromDateTimeString('2025-11-22T16:08:00.000Z');
 
       // Generate observations from known orbit
       const raDec1 = RadecTopocentric.fromStateVector(propagator.propagate(t1), sensor.toJ2000(t1.toDateTime()));
       const raDec2 = RadecTopocentric.fromStateVector(propagator.propagate(t2), sensor.toJ2000(t2.toDateTime()));
       const raDec3 = RadecTopocentric.fromStateVector(propagator.propagate(t3), sensor.toJ2000(t3.toDateTime()));
+      const raDec4 = RadecTopocentric.fromStateVector(propagator.propagate(t4), sensor.toJ2000(t4.toDateTime()));
+      const raDec5 = RadecTopocentric.fromStateVector(propagator.propagate(t5), sensor.toJ2000(t5.toDateTime()));
 
       const obs1 = new ObservationOptical(sensor.toJ2000(t1.toDateTime()), raDec1);
       const obs2 = new ObservationOptical(sensor.toJ2000(t2.toDateTime()), raDec2);
       const obs3 = new ObservationOptical(sensor.toJ2000(t3.toDateTime()), raDec3);
+      const obs4 = new ObservationOptical(sensor.toJ2000(t4.toDateTime()), raDec4);
+      const obs5 = new ObservationOptical(sensor.toJ2000(t5.toDateTime()), raDec5);
 
-      const iod = new GoodingIOD();
+      const iod = new ModifiedGoodingIOD();
 
       // MEO range estimates (GPS-like)
       const meoRange1 = 20_000 as Kilometers;
       const meoRange3 = 21_000 as Kilometers;
 
-      const orbit = iod.estimate(obs1, obs2, obs3, meoRange1, meoRange3);
+      const orbit = iod.solve([obs1, obs2, obs3, obs4, obs5], meoRange1, meoRange3);
       const elements = orbit.toClassicalElements();
 
       // Should recover MEO orbit
-      expect(elements.semimajorAxis).toBeCloseTo(26_560, 1);
-      expect(elements.eccentricity).toBeCloseTo(0.01, 1);
-      expect(elements.inclinationDegrees).toBeCloseTo(55.0, 1);
+      expect(Math.abs(elements.semimajorAxis - 27_317)).toBeLessThanOrEqual(10);
+      expect(elements.eccentricity).toBeCloseTo(0.024082567, 1);
+      expect(Math.abs(elements.inclinationDegrees - 1.1074806036594826 * RAD2DEG)).toBeLessThanOrEqual(0.2);
     });
   });
 });

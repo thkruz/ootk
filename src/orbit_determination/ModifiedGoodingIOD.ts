@@ -38,25 +38,24 @@ type SolveOptions = {
  * Used for orbit determination from multiple optical observations.
  */
 export class ModifiedGoodingIOD {
-  private readonly observations_: ObservationOptical[];
+  private observations_!: ObservationOptical[];
   private readonly mu_: number;
 
-  constructor(observations: ObservationOptical[], mu: number = Earth.mu) {
-    this.observations_ = observations;
+  constructor(mu: number = Earth.mu) {
     this.mu_ = mu;
   }
 
-  private createInitial_(r0: Kilometers, rN: Kilometers, nRev: number, direction: boolean): J2000 {
+  private createInitial_(r1Init: Kilometers | null, rNInit: Kilometers | null, nRev: number, direction: boolean): J2000 {
     const iod = new GoodingIOD(
       this.mu_,
     );
 
     return iod.estimate(this.observations_[0],
       this.observations_[Math.floor(this.observations_.length / 2)],
-      this.observations_[this.observations_.length - 1], r0, rN, nRev, direction);
+      this.observations_[this.observations_.length - 1], r1Init, rNInit, nRev, direction);
   }
 
-  private _createErrorFunction(aprioriEpoch: EpochUTC): CostFunction {
+  private createErrorFunction_(aprioriEpoch: EpochUTC): CostFunction {
     const forceModel = new ForceModel().setGravity(this.mu_);
     const scoreFn = (x: Float64Array): number => {
       const position = new Vector3D(x[0] as Kilometers, x[1] as Kilometers, x[2] as Kilometers);
@@ -86,8 +85,9 @@ export class ModifiedGoodingIOD {
   }
 
   solve(
-    r0: Kilometers,
-    rN: Kilometers,
+    observations: ObservationOptical[],
+    r0?: Kilometers,
+    rN?: Kilometers,
     {
       nRev = 0,
       direction = true,
@@ -95,14 +95,15 @@ export class ModifiedGoodingIOD {
       velSearch = 0.1,
       tolerance = 1e-6,
       printIter = false,
-    }: SolveOptions,
+    }: SolveOptions = this.defaultSolveOptions_(),
   ): J2000 {
+    this.observations_ = observations;
     if (this.observations_.length < 3) {
       throw new Error('At least 3 observations required for Gooding IOD.');
     }
-    const init = this.createInitial_(r0, rN, nRev, direction);
+    const init = this.createInitial_(r0 ?? null, rN ?? null, nRev, direction);
     const guess = Float64Array.from([...init.position.toArray(), ...init.velocity.toArray()]);
-    const solveFn = this._createErrorFunction(init.epoch);
+    const solveFn = this.createErrorFunction_(init.epoch);
     const simplex = [
       Float64Array.from(guess),
       Float64Array.from([guess[0] + posSearch, guess[1], guess[2], guess[3], guess[4], guess[5]]),
@@ -128,5 +129,16 @@ export class ModifiedGoodingIOD {
         result[5] as KilometersPerSecond,
       ),
     );
+  }
+
+  private defaultSolveOptions_(): SolveOptions {
+    return {
+      nRev: 0,
+      direction: true,
+      posSearch: 10.0,
+      velSearch: 0.1,
+      tolerance: 1e-6,
+      printIter: false,
+    };
   }
 }
