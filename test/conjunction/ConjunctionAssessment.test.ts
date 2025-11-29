@@ -267,11 +267,13 @@ describe('ConjunctionAssessment', () => {
 
     it('should return higher Pc for smaller miss distances', () => {
       const covariance = StateCovariance.fromSigmas([1.0, 1.0, 1.0, 0.001, 0.001, 0.001], CovarianceFrame.RIC);
-      const relativeVelocity = new Vector3D(0.1, 0.1, 0.1);
+      // Use velocity along Z-axis so positions in X-Y plane project onto encounter plane
+      const relativeVelocity = new Vector3D(0.0, 0.0, 1.0);
       const combinedRadius = 0.02 as Kilometers;
 
-      const relativePosition1 = new Vector3D(0.1 as Kilometers, 0.1 as Kilometers, 0.1 as Kilometers);
-      const relativePosition2 = new Vector3D(1.0 as Kilometers, 1.0 as Kilometers, 1.0 as Kilometers);
+      // Positions perpendicular to velocity so they project fully onto the encounter plane
+      const relativePosition1 = new Vector3D(0.1 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+      const relativePosition2 = new Vector3D(1.0 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
 
       const pc1 = ProbabilityOfCollision.calculate(relativePosition1, relativeVelocity, covariance, combinedRadius);
       const pc2 = ProbabilityOfCollision.calculate(relativePosition2, relativeVelocity, covariance, combinedRadius);
