@@ -15,19 +15,19 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC } from '../time/EpochUTC.js';
 import { J2000 } from '../coordinate/J2000.js';
 import { RIC } from '../coordinate/RIC.js';
 import { Tle } from '../coordinate/Tle.js';
-import { StateCovariance, CovarianceFrame } from '../covariance/StateCovariance.js';
 import { CovarianceSample } from '../covariance/CovarianceSample.js';
-import { Propagator } from '../propagator/Propagator.js';
-import { Sgp4Propagator } from '../propagator/Sgp4Propagator.js';
-import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator.js';
+import { CovarianceFrame, StateCovariance } from '../covariance/StateCovariance.js';
 import { ForceModel } from '../force/ForceModel.js';
-import { GoldenSection } from '../optimize/GoldenSection.js';
+import type { Kilometers, Seconds, Vector3D } from '../main.js';
 import { Matrix } from '../operations/Matrix.js';
-import type { Kilometers, Seconds } from '../main.js';
+import { GoldenSection } from '../optimize/GoldenSection.js';
+import { Propagator } from '../propagator/Propagator.js';
+import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator.js';
+import { Sgp4Propagator } from '../propagator/Sgp4Propagator.js';
+import { EpochUTC } from '../time/EpochUTC.js';
 import { ConjunctionEvent } from './ConjunctionEvent.js';
 import { ProbabilityOfCollision } from './ProbabilityOfCollision.js';
 
@@ -150,7 +150,7 @@ export class ConjunctionAssessment {
 
     // Initialize covariance samples if requested
     if (propagateCovariance) {
-      this.initializeCovarianceSamples(useHighFidelity, forceModel);
+      this.initializeCovarianceSamples(startTime, useHighFidelity, forceModel);
     }
 
     // Find Time of Closest Approach (TCA)
@@ -180,8 +180,8 @@ export class ConjunctionAssessment {
       this.secondaryCovSample.propagate(tca);
 
       // Get covariances in RIC frame
-      const primaryCov = this.primaryCovSample.covarianceRIC();
-      const secondaryCov = this.secondaryCovSample.covarianceRIC();
+      const primaryCov = this.primaryCovSample.desampleRIC();
+      const secondaryCov = this.secondaryCovSample.desampleRIC();
 
       // Combine covariances
       combinedCovariance = ProbabilityOfCollision.combineCovarianceMatrices(primaryCov, secondaryCov);
@@ -196,8 +196,10 @@ export class ConjunctionAssessment {
         combinedRadius,
       );
     } else if (this.primary.covariance && this.secondary.covariance && this.primary.radius && this.secondary.radius) {
-      // Use provided covariances without propagation
-      // Transform to RIC if needed
+      /*
+       * Use provided covariances without propagation
+       * Transform to RIC if needed
+       */
       let primaryCovRIC = this.primary.covariance;
       let secondaryCovRIC = this.secondary.covariance;
 
@@ -300,7 +302,7 @@ export class ConjunctionAssessment {
     if (obj.tle) {
       if (useHighFidelity) {
         // Convert TLE to state and use RK89
-        const state = obj.tle.toJ2000();
+        const state = obj.tle.propagate(new EpochUTC(Date.now() / 1000 as Seconds)).toJ2000();
         const fm = forceModel ?? new ForceModel().setGravity();
 
         return new RungeKutta89Propagator(state, fm);
@@ -329,31 +331,31 @@ export class ConjunctionAssessment {
    * @param useHighFidelity Whether to use high-fidelity propagation
    * @param forceModel Optional force model
    */
-  private initializeCovarianceSamples(useHighFidelity: boolean, forceModel?: ForceModel): void {
+  private initializeCovarianceSamples(startTime: EpochUTC, useHighFidelity: boolean, forceModel?: ForceModel): void {
     const fm = forceModel ?? new ForceModel().setGravity();
 
     // Primary covariance
     if (this.primary.tle) {
-      const state = this.primary.tle.toJ2000();
+      const state = this.primary.tle.propagate(startTime).toJ2000();
       const covariance =
         this.primary.covariance ??
         StateCovariance.fromSigmas([1.0, 1.0, 1.0, 0.001, 0.001, 0.001], CovarianceFrame.RIC);
 
       this.primaryCovSample = new CovarianceSample(state, covariance, this.primary.tle, fm, fm);
     } else if (this.primary.state && this.primary.covariance) {
-      this.primaryCovSample = new CovarianceSample(this.primary.state, this.primary.covariance, undefined, fm, fm);
+      this.primaryCovSample = new CovarianceSample(this.primary.state, this.primary.covariance, this.primary.tle, fm, fm);
     }
 
     // Secondary covariance
     if (this.secondary.tle) {
-      const state = this.secondary.tle.toJ2000();
+      const state = this.secondary.tle.propagate(startTime).toJ2000();
       const covariance =
         this.secondary.covariance ??
         StateCovariance.fromSigmas([1.0, 1.0, 1.0, 0.001, 0.001, 0.001], CovarianceFrame.RIC);
 
       this.secondaryCovSample = new CovarianceSample(state, covariance, this.secondary.tle, fm, fm);
     } else if (this.secondary.state && this.secondary.covariance) {
-      this.secondaryCovSample = new CovarianceSample(this.secondary.state, this.secondary.covariance, undefined, fm, fm);
+      this.secondaryCovSample = new CovarianceSample(this.secondary.state, this.secondary.covariance, this.secondary.tle, fm, fm);
     }
   }
 
@@ -384,7 +386,7 @@ export class ConjunctionAssessment {
    * @param velocity Velocity vector
    * @returns 3x3 RIC transformation matrix
    */
-  private createRICTransformMatrix(position: any, velocity: any): Matrix {
+  private createRICTransformMatrix(position: Vector3D, velocity: Vector3D): Matrix {
     const ru = position.normalize();
     const cu = position.cross(velocity).normalize();
     const iu = cu.cross(ru).normalize();
