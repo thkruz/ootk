@@ -16,3 +16,31 @@ Object {
   "epochYr": "21",
 }
 `;
+
+exports[`Epoch should handle century year not divisible by 400 1`] = `
+Object {
+  "epochDay": "001.00000000",
+  "epochYr": "00",
+}
+`;
+
+exports[`Epoch should handle leap year in toEpochYearAndDay 1`] = `
+Object {
+  "epochDay": "060.00000000",
+  "epochYr": "20",
+}
+`;
+
+exports[`Epoch should handle non-leap century year 1`] = `
+Object {
+  "epochDay": "060.00000000",
+  "epochYr": "00",
+}
+`;
+
+exports[`Epoch should identify non-leap year (not divisible by 4) 1`] = `
+Object {
+  "epochDay": "002.00000000",
+  "epochYr": "22",
+}
+`;

@@ -35,4 +35,43 @@ describe('EpochGPS', () => {
 
     expect(epoch.toUTC()).toMatchSnapshot();
   });
+
+  // Error handling
+  it('should throw an error if week is negative', () => {
+    expect(() => new EpochGPS(-1, 5, reference)).toThrow('GPS week must be non-negative.');
+  });
+
+  it('should throw an error if seconds is negative', () => {
+    expect(() => new EpochGPS(1, -1, reference)).toThrow('GPS seconds must be within a week.');
+  });
+
+  it('should throw an error if seconds is greater than or equal to seconds per week', () => {
+    expect(() => new EpochGPS(1, 604800, reference)).toThrow('GPS seconds must be within a week.');
+  });
+
+  // week10Bit rollover
+  it('should correctly calculate week10Bit for values exceeding 1024', () => {
+    const epoch = new EpochGPS(1024, 0, reference);
+
+    expect(epoch.week10Bit).toEqual(0);
+  });
+
+  it('should correctly calculate week10Bit for values below rollover', () => {
+    const epoch = new EpochGPS(500, 0, reference);
+
+    expect(epoch.week10Bit).toEqual(500);
+  });
+
+  // week13Bit rollover
+  it('should correctly calculate week13Bit for values exceeding 8192', () => {
+    const epoch = new EpochGPS(8192, 0, reference);
+
+    expect(epoch.week13Bit).toEqual(0);
+  });
+
+  it('should correctly calculate week13Bit for values below rollover', () => {
+    const epoch = new EpochGPS(5000, 0, reference);
+
+    expect(epoch.week13Bit).toEqual(5000);
+  });
 });

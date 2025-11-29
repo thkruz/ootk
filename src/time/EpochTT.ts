@@ -23,5 +23,54 @@
 
 import { Epoch } from './Epoch';
 
-/** Represents a Terrestrial Time (TT) epoch. */
+/**
+ * Represents an epoch in Terrestrial Time (TT).
+ *
+ * Terrestrial Time is the modern successor to Ephemeris Time (ET) and is the
+ * primary time scale used for geocentric (Earth-centered) astronomical
+ * calculations. It provides a uniform time scale tied to the Earth's geoid.
+ *
+ * ## Relationship to Other Time Scales
+ * ```
+ * TT = TAI + 32.184 seconds
+ * TT = UTC + leap_seconds + 32.184 seconds
+ * ```
+ *
+ * The 32.184 second offset is a fixed constant that was chosen to maintain
+ * continuity with Ephemeris Time when TT was introduced in 1991.
+ *
+ * ## When to Use EpochTT
+ * - **Earth-centered force models**: Precession, nutation, and polar motion
+ *   calculations typically require TT
+ * - **Astronomical almanacs**: Most published ephemerides for Earth-based
+ *   observations use TT
+ * - **High-precision Earth orientation**: IERS Earth Orientation Parameters
+ *   are referenced to TT
+ * - **Satellite orbit propagation**: When using force models that reference
+ *   Earth's orientation
+ *
+ * ## When NOT to Use EpochTT
+ * - For user-facing timestamps (use EpochUTC)
+ * - For solar system barycentric calculations (use EpochTDB)
+ * - For GPS applications (use EpochGPS)
+ *
+ * ## Creating Instances
+ * EpochTT is typically created by converting from EpochUTC:
+ * ```typescript
+ * const utc = EpochUTC.now();
+ * const tt = utc.toTT();
+ *
+ * // TT is used internally for Julian centuries calculations
+ * const julianCenturies = tt.toJulianCenturies();
+ * ```
+ *
+ * ## J2000.0 Epoch
+ * The standard astronomical epoch J2000.0 (January 1, 2000, 12:00:00 TT) is
+ * defined in Terrestrial Time. This is the reference point for many
+ * astronomical coordinate systems and ephemerides.
+ *
+ * @see EpochUTC - Primary time class, use toTT() to convert
+ * @see EpochTAI - TAI + 32.184s = TT
+ * @see EpochTDB - For solar system barycentric calculations
+ */
 export class EpochTT extends Epoch { }

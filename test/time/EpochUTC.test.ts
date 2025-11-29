@@ -100,4 +100,50 @@ describe('EpochGPS', () => {
 
     expect(epoch.gmstAngleDegrees()).toMatchSnapshot();
   });
+
+  // Test private methods through public interface
+  it('should handle leap year correctly in fromDate', () => {
+    const leapYear = EpochUTC.fromDate({ year: 2020, month: 2, day: 29 });
+    const nonLeapYear = EpochUTC.fromDate({ year: 2021, month: 3, day: 1 });
+
+    expect(leapYear).toMatchSnapshot();
+    expect(nonLeapYear).toMatchSnapshot();
+  });
+
+  it('should handle century leap year edge cases', () => {
+    const century2000 = EpochUTC.fromDate({ year: 2000, month: 2, day: 29 });
+
+    expect(century2000).toMatchSnapshot();
+  });
+
+  it('should handle full datetime in fromDate', () => {
+    const epoch = EpochUTC.fromDate({
+      year: 2021,
+      month: 6,
+      day: 15,
+      hour: 14,
+      minute: 30,
+      second: 45,
+    });
+
+    expect(epoch).toMatchSnapshot();
+  });
+
+  it('should handle fromDateTimeString without Z suffix', () => {
+    const epoch = EpochUTC.fromDateTimeString('2021-03-01T12:00:00');
+
+    expect(epoch).toMatchSnapshot();
+  });
+
+  it('should roll the epoch backward', () => {
+    const epoch = EpochUTC.fromDateTime(new Date(2021, 2, 1));
+
+    expect(epoch.roll(-60 as Seconds)).toMatchSnapshot();
+  });
+
+  it('should handle definitive string with different days', () => {
+    const epoch = EpochUTC.fromDefinitiveString('365/2021 23:59:59');
+
+    expect(epoch).toMatchSnapshot();
+  });
 });
