@@ -15,9 +15,42 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { CostFunction, SimplexEntry } from './SimplexEntry';
+import { CostFunction, SimplexEntry } from './internal/SimplexEntry';
 
-// / Derivative-free Nelder-Mead simplex optimizer.
+/**
+ * Derivative-free Nelder-Mead simplex optimizer (also called "downhill simplex" or "amoeba method").
+ *
+ * The algorithm maintains a "simplex" - a geometric shape with N+1 vertices in N-dimensional
+ * space (e.g., a triangle in 2D, tetrahedron in 3D). It iteratively transforms this simplex
+ * to "crawl" toward the minimum by:
+ *
+ * 1. **Reflection** - Flipping the worst point through the centroid
+ * 2. **Expansion** - If reflection found a good point, try going further
+ * 3. **Contraction** - If reflection was poor, try a point closer to the centroid
+ * 4. **Shrink** - If all else fails, shrink the entire simplex toward the best point
+ *
+ * This is useful for optimizing functions where you can't compute derivatives - common in
+ * orbital mechanics for things like fitting orbits to observations, finding closest approach
+ * times, or optimizing maneuvers.
+ *
+ * @example
+ * ```ts
+ * // Define a cost function to minimize
+ * const costFn = (x: Float64Array) => (x[0] - 3) ** 2 + (x[1] - 5) ** 2;
+ *
+ * // Generate initial simplex from a starting guess
+ * const initialGuess = new Float64Array([0, 0]);
+ * const simplex = DownhillSimplex.generateSimplex(initialGuess, 0.1);
+ *
+ * // Run optimization
+ * const result = DownhillSimplex.solveSimplex(costFn, simplex, {
+ *   xTolerance: 1e-10,
+ *   fTolerance: 1e-10,
+ *   maxIter: 1000,
+ * });
+ * // result ≈ [3, 5]
+ * ```
+ */
 export class DownhillSimplex {
   private constructor() {
     // disable constructor
@@ -30,7 +63,7 @@ export class DownhillSimplex {
    * @param xss Simplex entries
    * @returns The centroid.
    */
-  private static _centroid(f: CostFunction, xss: SimplexEntry[]): SimplexEntry {
+  private static centroid_(f: CostFunction, xss: SimplexEntry[]): SimplexEntry {
     const n = xss[0].points.length;
     const m = xss.length - 1;
     const output = new Float64Array(n);
@@ -47,7 +80,7 @@ export class DownhillSimplex {
     return new SimplexEntry(f, output);
   }
 
-  private static _shrink(s: number, xss: SimplexEntry[]): void {
+  private static shrink_(s: number, xss: SimplexEntry[]): void {
     const x1 = xss[0];
 
     for (let i = 1; i < xss.length; i++) {
@@ -141,7 +174,7 @@ export class DownhillSimplex {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       ordered.sort((x, y) => x.score - y.score);
-      const x0 = DownhillSimplex._centroid(f, ordered);
+      const x0 = DownhillSimplex.centroid_(f, ordered);
       // update exit criterea
       let xd = 0.0;
       let fd = 0.0;
@@ -190,7 +223,7 @@ export class DownhillSimplex {
           action = 'contract';
           continue;
         } else {
-          DownhillSimplex._shrink(s, ordered);
+          DownhillSimplex.shrink_(s, ordered);
           action = 'shrink';
           continue;
         }
@@ -202,7 +235,7 @@ export class DownhillSimplex {
           action = 'contract';
           continue;
         } else {
-          DownhillSimplex._shrink(s, ordered);
+          DownhillSimplex.shrink_(s, ordered);
           action = 'shrink';
           continue;
         }
