@@ -428,4 +428,23 @@ describe('wrapAngle edge cases', () => {
   it('should wrap -PI to PI', () => {
     expect(wrapAngle(-Math.PI as Radians)).toBe(Math.PI);
   });
+
+  // factorial
+  describe('factorial', () => {
+    it('should calculate factorial of positive numbers', () => {
+      expect(factorial(0)).toBe(1);
+      expect(factorial(1)).toBe(1);
+      expect(factorial(5)).toBe(120);
+      expect(factorial(10)).toBe(3628800);
+    });
+
+    it('should calculate factorial of negative numbers using absolute value', () => {
+      expect(factorial(-5)).toBe(120);
+      expect(factorial(-1)).toBe(1);
+    });
+
+    it('should handle large numbers', () => {
+      expect(factorial(20)).toBe(2432902008176640000);
+    });
+  });
 });
