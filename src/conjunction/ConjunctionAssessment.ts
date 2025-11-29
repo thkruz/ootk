@@ -222,7 +222,7 @@ export class ConjunctionAssessment {
       );
     }
 
-    return new ConjunctionEvent(
+    return new ConjunctionEvent({
       tca,
       primaryState,
       secondaryState,
@@ -234,9 +234,9 @@ export class ConjunctionAssessment {
       relativeVelocity,
       combinedCovariance,
       probabilityOfCollision,
-      this.primary.radius,
-      this.secondary.radius,
-    );
+      primaryRadius: this.primary.radius,
+      secondaryRadius: this.secondary.radius,
+    });
   }
 
   /**
