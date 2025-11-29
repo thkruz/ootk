@@ -95,7 +95,7 @@ exports[`Satellite should calculate and return range to an observer 1`] = `12650
 exports[`Satellite should instantiate Satellite with valid input parameters 1`] = `
 Satellite {
   "active": true,
-  "apogee": 427.1806416558675,
+  "apogee": 427.18064165586657,
   "argOfPerigee": 35.9781,
   "bstar": 0.000061583,
   "eccentricity": 0.0005168,
@@ -112,7 +112,7 @@ Satellite {
   "options": Object {
     "notes": "",
   },
-  "perigee": 420.1576716155696,
+  "perigee": 420.1576716155687,
   "period": 92.89920734635164,
   "position": Object {
     "x": 0,
@@ -236,8 +236,8 @@ Satellite {
   "sccNum": "25544",
   "sccNum5": "25544",
   "sccNum6": "25544",
-  "semiMajorAxis": 6794.6691566357185,
-  "semiMinorAxis": 6794.668249267928,
+  "semiMajorAxis": 6794.669156635718,
+  "semiMinorAxis": 6794.668249267927,
   "tle1": "1 25544U 98067A   22203.46960946  .00003068  00000+0  61583-4 0  9996",
   "tle2": "2 25544  51.6415 161.8339 0005168  35.9781  54.7009 15.50067047350657",
   "totalVelocity": 0,
