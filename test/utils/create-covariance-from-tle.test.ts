@@ -78,4 +78,13 @@ describe('createSampleCovarianceFromTle', () => {
     expect(covarianceRIC.frame).toBe(CovarianceFrame.RIC);
     expect(covarianceECI.frame).toBe(CovarianceFrame.ECI);
   });
+
+  it('should create realistic covariance with sample-based approach', () => {
+    const covariance = createSampleCovarianceFromTle(tleLine1, tleLine2);
+
+    expect(covariance).toBeInstanceOf(StateCovariance);
+    expect(covariance.matrix).toBeDefined();
+    expect(covariance.matrix.elements.length).toBe(6);
+    expect(covariance.matrix.elements[0].length).toBe(6);
+  });
 });
