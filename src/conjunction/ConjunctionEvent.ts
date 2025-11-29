@@ -15,12 +15,12 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { EpochUTC } from '../time/EpochUTC.js';
-import type { J2000 } from '../coordinate/J2000.js';
-import type { RIC } from '../coordinate/RIC.js';
-import type { StateCovariance } from '../covariance/StateCovariance.js';
-import type { Kilometers, KilometersPerSecond } from '../main.js';
-import { Matrix } from '../operations/Matrix.js';
+import type { J2000 } from '../coordinate/J2000';
+import type { RIC } from '../coordinate/RIC';
+import type { StateCovariance } from '../covariance/StateCovariance';
+import type { Kilometers, KilometersPerSecond } from '../main';
+import { Matrix } from '../operations/Matrix';
+import type { EpochUTC } from '../time/EpochUTC';
 
 /**
  * Represents the result of a conjunction assessment between two space objects.
