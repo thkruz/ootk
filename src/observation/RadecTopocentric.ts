@@ -78,9 +78,12 @@ export class RadecTopocentric {
       ? declinationRateDegrees * DEG2RAD as RadiansPerSecond
       : null;
 
+    // Normalize right ascension to [-pi, pi)
+    const normalizedRA = (((rightAscensionDegrees * DEG2RAD + Math.PI) % TAU + TAU) % TAU - Math.PI) as Radians;
+
     return new RadecTopocentric(
       epoch,
-      rightAscensionDegrees * DEG2RAD as Radians,
+      normalizedRA,
       declinationDegrees * DEG2RAD as Radians,
       range,
       rightAscensionRate,

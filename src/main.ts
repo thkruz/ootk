@@ -57,7 +57,7 @@ export * from './force/index';
 
 export * from './propagator/index';
 
-export * from './orbit_determination/index';
+export * from './orbit-determination/index';
 
 export * from './covariance/index.js';
 

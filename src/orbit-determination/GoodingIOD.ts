@@ -17,8 +17,8 @@
 
 import { ForceModel } from '../force/ForceModel';
 import { Earth, J2000, Kilometers, KilometersPerSecond, Seconds, TAU, Vector3D } from '../main';
+import { ObservationOptical } from '../observation/ObservationOptical';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
-import { ObservationOptical } from './../observation/ObservationOptical';
 import { GaussIOD } from './GaussIOD';
 import { GibbsIOD } from './GibbsIOD';
 import { LambertIOD } from './LambertIOD';

@@ -15,11 +15,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ForceModel } from '../force/ForceModel';
 import {
   DEG2RAD, Earth, EpochUTC, halfPi, J2000, Kilometers, KilometersPerSecond, Radians, Vector3D,
 } from '../main';
-import { ForceModel } from './../force/ForceModel';
-import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
+import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
 
 /**
  * Gibbs 3-position inital orbit determination.
