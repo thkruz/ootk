@@ -63,6 +63,48 @@ exports[`EpochGPS should convert to an MJD 1`] = `59274.20833333349`;
 
 exports[`EpochGPS should convert to an MJD GSFC 1`] = `29274.70833333349`;
 
+exports[`EpochGPS should handle century leap year edge cases 1`] = `
+EpochUTC {
+  "posix": 951782400,
+}
+`;
+
+exports[`EpochGPS should handle definitive string with different days 1`] = `
+EpochUTC {
+  "posix": 1640995199,
+}
+`;
+
+exports[`EpochGPS should handle fromDateTimeString without Z suffix 1`] = `
+EpochUTC {
+  "posix": 1614600000,
+}
+`;
+
+exports[`EpochGPS should handle full datetime in fromDate 1`] = `
+EpochUTC {
+  "posix": 1623767445,
+}
+`;
+
+exports[`EpochGPS should handle leap year correctly in fromDate 1`] = `
+EpochUTC {
+  "posix": 1582934400,
+}
+`;
+
+exports[`EpochGPS should handle leap year correctly in fromDate 2`] = `
+EpochUTC {
+  "posix": 1614556800,
+}
+`;
+
+exports[`EpochGPS should roll the epoch backward 1`] = `
+EpochUTC {
+  "posix": 1614574740,
+}
+`;
+
 exports[`EpochGPS should roll the epoch forward 1`] = `
 EpochUTC {
   "posix": 1614574860,

@@ -24,7 +24,43 @@
 import { Seconds } from '../main';
 import { secondsPerDay } from '../utils/constants';
 
-// / Base class for [Epoch] data.
+/**
+ * Base class for all Epoch time representations.
+ *
+ * The Epoch class hierarchy provides precise time handling for orbital mechanics
+ * calculations. Different astronomical time scales are required for different
+ * applications:
+ *
+ * ## Class Hierarchy
+ * ```
+ * Epoch (base class)
+ * ├── EpochUTC  - Coordinated Universal Time (primary user-facing class)
+ * ├── EpochTAI  - International Atomic Time
+ * ├── EpochTT   - Terrestrial Time
+ * └── EpochTDB  - Barycentric Dynamical Time
+ *
+ * EpochGPS      - GPS Time (standalone, week/seconds format)
+ * ```
+ *
+ * ## Time Scale Conversion Chain
+ * ```
+ * UTC ──(+leap seconds)──► TAI ──(+32.184s)──► TT ──(+relativistic)──► TDB
+ *  │
+ *  └──(week/seconds since 1980-01-06)──► GPS
+ * ```
+ *
+ * ## Internal Representation
+ * All Epoch subclasses store time as POSIX seconds (seconds since
+ * 1970-01-01T00:00:00.000 in their respective time scale). This provides
+ * a consistent internal representation while allowing conversions between
+ * time scales.
+ *
+ * @see EpochUTC - The primary entry point for time operations
+ * @see EpochTAI - For continuous atomic timekeeping
+ * @see EpochTT - For Earth-based astronomical observations
+ * @see EpochTDB - For planetary ephemerides and solar system calculations
+ * @see EpochGPS - For GPS/GNSS applications
+ */
 export class Epoch {
   /*
    * Create a new [Epoch] object given the number of seconds elapsed since the

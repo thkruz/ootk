@@ -25,7 +25,65 @@ import { DataHandler } from '../data/DataHandler';
 import { Seconds } from '../main';
 import { secondsPerWeek } from '../utils/constants';
 import type { EpochUTC } from './EpochUTC';
-// / Global Positioning System _(GPS)_ formatted epoch.
+
+/**
+ * Represents an epoch in GPS Time format.
+ *
+ * GPS Time uses a week number and seconds-into-week format, referenced to
+ * the GPS epoch of January 6, 1980, 00:00:00 UTC. Unlike UTC, GPS Time does
+ * **not** include leap seconds, so it runs ahead of UTC by the accumulated
+ * leap seconds since 1980 minus 19 seconds.
+ *
+ * ## GPS Time Structure
+ * GPS time is expressed as two components:
+ * - **Week number**: Weeks since January 6, 1980
+ * - **Seconds of week**: Seconds elapsed in the current week (0 to 604799)
+ *
+ * ## Relationship to Other Time Scales
+ * ```
+ * GPS = UTC + leap_seconds - 19
+ * GPS = TAI - 19
+ * ```
+ *
+ * The 19-second offset exists because GPS Time was synchronized with UTC
+ * when there were 19 leap seconds, and GPS Time has not added leap seconds
+ * since then.
+ *
+ * ## Week Number Rollover
+ * GPS receivers transmit week numbers with limited bits, causing rollover:
+ * - **10-bit rollover**: Every 1024 weeks (~19.7 years)
+ * - **13-bit rollover**: Every 8192 weeks (~157 years)
+ *
+ * Use `week10Bit` or `week13Bit` getters when interfacing with receivers
+ * that use these formats.
+ *
+ * ## When to Use EpochGPS
+ * - **GPS receiver data**: Parsing timestamps from GPS/GNSS receivers
+ * - **Navigation messages**: Working with GPS broadcast ephemerides
+ * - **GNSS applications**: Any Global Navigation Satellite System work
+ * - **Precise timing**: GPS provides nanosecond-level timing
+ *
+ * ## When NOT to Use EpochGPS
+ * - For general satellite tracking (use EpochUTC)
+ * - For astronomical calculations (use EpochTT or EpochTDB)
+ * - For user-facing timestamps (use EpochUTC)
+ *
+ * ## Creating and Converting Instances
+ * ```typescript
+ * // Convert from UTC to GPS
+ * const utc = EpochUTC.now();
+ * const gps = utc.toGPS();
+ *
+ * console.log(gps.week);      // Full week number
+ * console.log(gps.seconds);   // Seconds into week
+ * console.log(gps.week10Bit); // 10-bit week (for legacy receivers)
+ *
+ * // Convert back to UTC
+ * const utcAgain = gps.toUTC();
+ * ```
+ *
+ * @see EpochUTC - Primary time class, use toGPS() to convert
+ */
 export class EpochGPS {
   /**
    * Create a new GPS epoch given the [week] since reference epoch, and number

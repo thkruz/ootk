@@ -25,22 +25,55 @@ import type { EpochUTC } from './EpochUTC';
 
 export class TimeStamped<T> {
   /**
+   * Timestamped value.
+   */
+  private readonly value_: T;
+  /**
+   * Timestamp epoch.
+   */
+  readonly epoch_: EpochUTC;
+
+  /**
    * Create a new time stamped value container at the provided epoch.
    * @param epoch The timestamp epoch.
    * @param value The timestamped value.
    */
   constructor(epoch: EpochUTC, value: T) {
-    this.epoch = epoch;
-    this.value = value;
+    this.epoch_ = epoch;
+    this.value_ = value;
   }
 
   /**
-   * Timestamp epoch.
+   * Get the timestamped value.
+   * @returns The timestamped value.
    */
-  readonly epoch: EpochUTC;
+  get value(): T {
+    return this.value_;
+  }
 
   /**
-   * Timestamped value.
+   * Set the timestamped value.
+   * @param _ The timestamped value.
+   * @throws Cannot set value of TimeStamped object; it is readonly.
    */
-  readonly value: T;
+  set value(_: T) {
+    throw new Error('Cannot set value of TimeStamped object; it is readonly.');
+  }
+
+  /**
+   * Get the timestamp epoch.
+   * @returns The timestamp epoch.
+   */
+  get epoch(): EpochUTC {
+    return this.epoch_;
+  }
+
+  /**
+   * Set the timestamp epoch.
+   * @param _ The timestamp epoch.
+   * @throws Cannot set epoch of TimeStamped object; it is readonly.
+   */
+  set epoch(_: EpochUTC) {
+    throw new Error('Cannot set epoch of TimeStamped object; it is readonly.');
+  }
 }

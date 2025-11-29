@@ -1,5 +1,8 @@
 import {
-  DEG2RAD, Degrees, Kilometers, Radians, SpaceObjectType, RfSensor, azel2uv, rae2raeOffBoresight, uv2azel,
+  DEG2RAD, Degrees, Kilometers, Radians,
+  RfSensor,
+  SpaceObjectType,
+  azel2uv, calcIncFromAz, calcInertAz, rae2raeOffBoresight, uv2azel,
 } from '../../src/main.js';
 
 // uv2azel
@@ -64,3 +67,66 @@ it('should convert valid azimuth and elevation to unit vector', () => {
   expect(uvCoordinates.u).toMatchSnapshot();
   expect(uvCoordinates.v).toMatchSnapshot();
 });
+
+// calcInertAz
+it('should calculate the correct inertial azimuth for given latitude and inclination', () => {
+  const lat = 30 as Degrees; // Example latitude
+  const inc = 45 as Degrees; // Example inclination
+
+  const result = calcInertAz(lat, inc);
+  const azimuthExpectedValue = 54.735610317245346;
+
+  expect(result).toBeCloseTo(azimuthExpectedValue, 5); // Replace azimuthExpectedValue with the expected result
+});
+
+it('should handle edge case where latitude is 0', () => {
+  const lat = 0 as Degrees; // Equator
+  const inc = 45 as Degrees; // Example inclination
+
+  const result = calcInertAz(lat, inc);
+  const azimuthExpectedValue = 45.00000;
+
+
+  expect(result).toBeCloseTo(azimuthExpectedValue, 5); // Replace azimuthExpectedValue with the expected result
+});
+
+it('should throw RangeError when inclination is less than latitude', () => {
+  const lat = 30 as Degrees; // Example latitude
+  const inc = 0 as Degrees; // Example inclination
+
+  const func = () => calcInertAz(lat, inc);
+
+  expect(func).toThrow(RangeError);
+});
+
+// calcIncFromAz
+it('should calculate the correct inclination for given latitude and azimuth', () => {
+  const lat = 30 as Degrees; // Example latitude
+  const az = 60 as Degrees; // Example azimuth
+
+  const result = calcIncFromAz(lat, az);
+  const expectedInclination = 41.40962210927086; // Replace with the expected result
+
+  expect(result).toBeCloseTo(expectedInclination, 5);
+});
+
+it('should handle edge case where latitude is 0', () => {
+  const lat = 0 as Degrees; // Equator
+  const az = 45 as Degrees; // Example azimuth
+
+  const result = calcIncFromAz(lat, az);
+  const expectedInclination = 45.00000000000001; // Replace with the expected result
+
+  expect(result).toBeCloseTo(expectedInclination, 5);
+});
+
+it('should throw RangeError when azimuth is out of bounds', () => {
+  const lat = 30 as Degrees; // Example latitude
+  const az = 400 as Degrees; // Invalid azimuth
+
+  const func = () => calcIncFromAz(lat, az);
+
+  expect(func).toThrow(RangeError);
+});
+
+

@@ -453,6 +453,10 @@ export function eci2rae(now: Date, eci: EciVec3<Kilometers>, sensor: Sensor): Ra
  * @returns The inertial azimuth of the satellite in degrees.
  */
 export function calcInertAz(lat: Degrees, inc: Degrees): Degrees {
+  if (inc < lat) {
+    throw new RangeError(`Inclination (${inc}) must be greater than or equal to latitude (${lat}).`);
+  }
+
   const phi = lat * DEG2RAD;
   const i = inc * DEG2RAD;
 
@@ -468,6 +472,10 @@ export function calcInertAz(lat: Degrees, inc: Degrees): Degrees {
  * @returns The inclination angle of the satellite in degrees.
  */
 export function calcIncFromAz(lat: number, az: number): number {
+  if (az < 0 || az > 360) {
+    throw new RangeError(`Azimuth (${az}) must be between 0 and 360 degrees.`);
+  }
+
   const phi = lat * DEG2RAD;
   const beta = az * DEG2RAD;
 

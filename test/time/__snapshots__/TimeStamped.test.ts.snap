@@ -2,9 +2,9 @@
 
 exports[`TimeStamped should be constructed from an epoch 1`] = `
 TimeStamped {
-  "epoch": EpochUTC {
+  "epoch_": EpochUTC {
     "posix": 315964800,
   },
-  "value": "test",
+  "value_": "test",
 }
 `;
