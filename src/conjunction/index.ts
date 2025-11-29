@@ -15,10 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { ConjunctionEvent } from './ConjunctionEvent.js';
-export { ProbabilityOfCollision } from './ProbabilityOfCollision.js';
 export {
-  ConjunctionAssessment,
-  type SpaceObject,
-  type ConjunctionAssessmentOptions,
-} from './ConjunctionAssessment.js';
+  ConjunctionAssessment, type ConjunctionAssessmentOptions, type SpaceObject,
+} from './ConjunctionAssessment';
+export { ConjunctionEvent } from './ConjunctionEvent';
+export { ProbabilityOfCollision } from './ProbabilityOfCollision';
+
