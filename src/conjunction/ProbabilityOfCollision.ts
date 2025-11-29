@@ -15,10 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Matrix } from '../operations/Matrix.js';
-import { Vector3D } from '../operations/Vector3D.js';
-import type { StateCovariance } from '../covariance/StateCovariance.js';
-import type { Kilometers } from '../main.js';
+import type { StateCovariance } from '../covariance/StateCovariance';
+import type { Kilometers } from '../main';
+import { Matrix } from '../operations/Matrix';
+import { Vector3D } from '../operations/Vector3D';
 
 /**
  * Probability of Collision calculator using Chan's 2D method.
@@ -49,9 +49,11 @@ export class ProbabilityOfCollision {
     // Extract position covariance (first 3x3 block)
     const posCovariance = this.extractPositionCovariance(combinedCovariance.matrix);
 
-    // Create encounter plane coordinate system
-    // z-axis: along relative velocity (perpendicular to encounter plane)
-    // x-axis and y-axis: in the encounter plane
+    /*
+     * Create encounter plane coordinate system
+     * z-axis: along relative velocity (perpendicular to encounter plane)
+     * x-axis and y-axis: in the encounter plane
+     */
     const vMag = relativeVelocity.magnitude();
 
     if (vMag < 1e-9) {
@@ -186,7 +188,7 @@ export class ProbabilityOfCollision {
 
     // General case: use Chan's approximation
     const u = mahalanobisDistance;
-    const gamma = sigma1 / sigma2;
+    // const gamma = sigma1 / sigma2;
 
     // Foster's approximation (simplified Chan method)
     const pc = (eta * eta) / (2 * (u * u + eta * eta)) * Math.exp(-0.5 * u * u);

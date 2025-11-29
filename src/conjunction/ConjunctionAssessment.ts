@@ -15,21 +15,21 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { J2000 } from '../coordinate/J2000.js';
-import { RIC } from '../coordinate/RIC.js';
-import { Tle } from '../coordinate/Tle.js';
-import { CovarianceSample } from '../covariance/CovarianceSample.js';
-import { CovarianceFrame, StateCovariance } from '../covariance/StateCovariance.js';
-import { ForceModel } from '../force/ForceModel.js';
-import type { Kilometers, Seconds, Vector3D } from '../main.js';
-import { Matrix } from '../operations/Matrix.js';
-import { GoldenSection } from '../optimize/GoldenSection.js';
-import { Propagator } from '../propagator/Propagator.js';
-import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator.js';
-import { Sgp4Propagator } from '../propagator/Sgp4Propagator.js';
-import { EpochUTC } from '../time/EpochUTC.js';
-import { ConjunctionEvent } from './ConjunctionEvent.js';
-import { ProbabilityOfCollision } from './ProbabilityOfCollision.js';
+import { J2000 } from '../coordinate/J2000';
+import { RIC } from '../coordinate/RIC';
+import { Tle } from '../coordinate/Tle';
+import { CovarianceSample } from '../covariance/CovarianceSample';
+import { CovarianceFrame, StateCovariance } from '../covariance/StateCovariance';
+import { ForceModel } from '../force/ForceModel';
+import type { Kilometers, Seconds, Vector3D } from '../main';
+import { Matrix } from '../operations/Matrix';
+import { GoldenSection } from '../optimize/GoldenSection';
+import { Propagator } from '../propagator/Propagator';
+import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
+import { Sgp4Propagator } from '../propagator/Sgp4Propagator';
+import { EpochUTC } from '../time/EpochUTC';
+import { ConjunctionEvent } from './ConjunctionEvent';
+import { ProbabilityOfCollision } from './ProbabilityOfCollision';
 
 /**
  * Input for a space object in conjunction assessment.
