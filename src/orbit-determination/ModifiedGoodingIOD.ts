@@ -17,10 +17,10 @@
 
 import { ForceModel } from '../force/ForceModel';
 import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, RadecTopocentric, Vector3D } from '../main';
+import { ObservationOptical } from '../observation/ObservationOptical';
+import { DownhillSimplex } from '../optimize/DownhillSimplex';
+import { CostFunction } from '../optimize/SimplexEntry';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
-import { ObservationOptical } from './../observation/ObservationOptical';
-import { DownhillSimplex } from './../optimize/DownhillSimplex';
-import { CostFunction } from './../optimize/SimplexEntry';
 import { GoodingIOD } from './GoodingIOD';
 
 type SolveOptions = {

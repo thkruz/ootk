@@ -27,9 +27,9 @@ import {
   SecondsPerMeterPerSecond,
   Vector3D,
 } from '../main';
+import { LambertIOD } from '../orbit-determination/LambertIOD';
 import { ForceModel } from './../force/ForceModel';
 import { DownhillSimplex } from './../optimize/DownhillSimplex';
-import { LambertIOD } from './../orbit_determination/LambertIOD';
 import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
 
 // / Relative waypoint targeting.

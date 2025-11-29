@@ -11,7 +11,7 @@ import { ClassicalElements, DEG2RAD, Degrees, Earth, J2000, Kilometers, Kilomete
 import { Sensor } from '@src/objects';
 import { RadecTopocentric } from '@src/observation';
 import { ObservationOptical } from '@src/observation/ObservationOptical';
-import { GaussIOD } from '@src/orbit_determination/GaussIOD';
+import { GaussIOD } from '@src/orbit-determination/GaussIOD';
 import { KeplerPropagator } from '@src/propagator/KeplerPropagator';
 import { EpochUTC } from '@src/time';
 

@@ -15,19 +15,28 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { StateCovariance } from '../covariance/StateCovariance';
 import { J2000 } from '../main';
-import { StateCovariance } from './../covariance/StateCovariance';
 
-// / Batch least squares orbit determination result.
-export class BatchLeastSquaresResult {
+// / Levenberg-Marquardt orbit determination result.
+export class LevenbergMarquardtResult {
   /**
-   * Create a new [BatchLeastSquaresResult] object, containing the solved
-   * [state], [covariance], and root-mean-squared error [rms].
+   * Create a new [LevenbergMarquardtResult] object, containing the solved
+   * [state], [covariance], root-mean-squared error [rms], number of
+   * [iterations], and [converged] status.
    * @param state The solved state.
    * @param covariance The solved covariance.
    * @param rms The root-mean-squared error.
+   * @param iterations The number of iterations performed.
+   * @param converged Whether the solver converged.
    */
-  constructor(public state: J2000, public covariance: StateCovariance, public rms: number) {
+  constructor(
+    public state: J2000,
+    public covariance: StateCovariance,
+    public rms: number,
+    public iterations: number,
+    public converged: boolean,
+  ) {
     // Nothing to do here.
   }
 }
