@@ -6,14 +6,13 @@
 
 import {
   ConjunctionAssessment,
-  ConjunctionEvent,
+  CovarianceFrame,
   EpochUTC,
   J2000,
   Kilometers,
   KilometersPerSecond,
   ProbabilityOfCollision,
   StateCovariance,
-  CovarianceFrame,
   Tle,
   Vector3D,
 } from '../../src/main';

@@ -109,21 +109,13 @@ export class ConjunctionEvent {
 
     // Extract position-only covariance (first 3x3 block)
     const posCovariance = this.extractPositionCovariance(this.combinedCovariance.matrix);
-    const relativePosition = [
-      this.relativeState.position.x,
-      this.relativeState.position.y,
-      this.relativeState.position.z,
-    ];
+    const relPos = this.relativeState.position;
 
     try {
       // Compute Mahalanobis distance: sqrt(r^T * C^-1 * r)
       const covInv = posCovariance.inverse();
-      const temp = covInv.multiplyVector(relativePosition);
-      let mahalanobis = 0;
-
-      for (let i = 0; i < 3; i++) {
-        mahalanobis += relativePosition[i] * temp[i];
-      }
+      const temp = covInv.multiplyVector3D(relPos);
+      const mahalanobis = relPos.x * temp.x + relPos.y * temp.y + relPos.z * temp.z;
 
       return Math.sqrt(mahalanobis);
     } catch {
