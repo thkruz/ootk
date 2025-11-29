@@ -58,14 +58,14 @@ export class EarthGravity implements Force {
     this._asphericalFlag = degree >= 2;
   }
 
-  _spherical(state: J2000): Vector3D {
+  private spherical_(state: J2000): Vector3D {
     const rMag = state.position.magnitude();
 
     return state.position.scale(-Earth.mu / (rMag * rMag * rMag));
   }
 
   // eslint-disable-next-line max-statements
-  _aspherical(state: J2000): Vector3D {
+  private aspherical_(state: J2000): Vector3D {
     const posEcef = state.toITRF().position;
     const ri = 1.0 / posEcef.magnitude();
     const xor = posEcef.x * ri;
@@ -171,10 +171,10 @@ export class EarthGravity implements Force {
   }
 
   acceleration(state: J2000): Vector3D {
-    let accVec = this._spherical(state);
+    let accVec = this.spherical_(state);
 
     if (this._asphericalFlag) {
-      accVec = accVec.add(this._aspherical(state));
+      accVec = accVec.add(this.aspherical_(state));
     }
 
     return accVec;

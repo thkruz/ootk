@@ -36,7 +36,7 @@ export class Gravity implements Force {
    * @param state The J2000 state containing the position and velocity vectors.
    * @returns The gravitational force vector in spherical coordinates.
    */
-  private _spherical(state: J2000): Vector3D {
+  private spherical_(state: J2000): Vector3D {
     const rMag = state.position.magnitude();
 
     return state.position.scale(-this.mu / (rMag * rMag * rMag));
@@ -48,6 +48,6 @@ export class Gravity implements Force {
    * @returns The acceleration vector.
    */
   acceleration(state: J2000): Vector3D {
-    return this._spherical(state);
+    return this.spherical_(state);
   }
 }

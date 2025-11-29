@@ -31,22 +31,42 @@ import { Force } from './Force';
 
 /**
  * Harris-Priester atmospheric drag force model.
- * Atmospheric density model assumes mean solar flux.
+ *
+ * The F10.7 solar radio flux index can be provided to scale atmospheric
+ * density based on solar activity. Typical values:
+ * - Solar minimum: ~70 SFU
+ * - Mean solar activity: ~150 SFU (default)
+ * - Solar maximum: ~250 SFU
+ *
+ * F10.7 data is available from:
+ * - CelesTrak: https://celestrak.org/SpaceData/
+ * - NOAA SWPC: https://www.swpc.noaa.gov/
  */
 export class AtmosphericDrag implements Force {
   mass: number;
   area: number;
   dragCoeff: number;
   cosine: number;
+  /** F10.7 solar radio flux index in solar flux units (SFU). */
+  f107: number;
 
-  constructor(mass: number, area: number, dragCoeff: number, cosine: number) {
+  /**
+   * Creates an atmospheric drag force model.
+   * @param mass Spacecraft mass in kg.
+   * @param area Cross-sectional area in m².
+   * @param dragCoeff Drag coefficient (typically 2.0-2.5).
+   * @param cosine Cosine exponent for HP model (typically 2-6).
+   * @param f107 F10.7 solar radio flux in SFU (default: 150 for mean solar activity).
+   */
+  constructor(mass: number, area: number, dragCoeff: number, cosine: number, f107 = 150) {
     this.mass = mass;
     this.area = area;
     this.dragCoeff = dragCoeff;
     this.cosine = cosine;
+    this.f107 = f107;
   }
 
-  private static _getHPDensity(state: ITRF, n: number): number {
+  private static _getHPDensity(state: ITRF, n: number, f107: number): number {
     const hpa = DataHandler.getInstance().getHpAtmosphere(state.height);
 
     if (hpa === null) {
@@ -68,18 +88,19 @@ export class AtmosphericDrag implements Force {
     const [h1, min1, max1] = hpa.hp1;
     const dH = (h0 - altitude) / (h0 - h1);
     const rhoMin = min0 * (min1 / min0) ** dH;
-
-    if (cosPow === 0) {
-      return rhoMin;
-    }
     const rhoMax = max0 * (max1 / max0) ** dH;
 
-    return rhoMin + (rhoMax - rhoMin) * cosPow;
+    // Scale density based on F10.7 solar activity
+    // solarScale: 0 at solar minimum (F10.7=70), 1 at solar maximum (F10.7=250)
+    const solarScale = Math.max(0, Math.min(1, (f107 - 70) / 180));
+
+    // Combine solar activity scaling with diurnal variation (cosPow)
+    return rhoMin + (rhoMax - rhoMin) * solarScale * cosPow;
   }
 
   acceleration(state: J2000): Vector3D {
     const itrfState = state.toITRF();
-    const density = AtmosphericDrag._getHPDensity(itrfState, this.cosine);
+    const density = AtmosphericDrag._getHPDensity(itrfState, this.cosine, this.f107);
 
     if (density === 0) {
       return Vector3D.origin;

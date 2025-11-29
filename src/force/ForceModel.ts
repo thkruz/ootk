@@ -27,28 +27,28 @@ import { Thrust } from './Thrust';
 // / Force model for spacecraft propagation.
 
 export class ForceModel {
-  private _centralGravity?: Force;
-  private _thirdBodyGravity?: Force;
-  private _solarRadiationPressure?: Force;
-  private _atmosphericDrag?: Force;
-  private _maneuverThrust: Force | null = null;
+  private centralGravity_?: Force;
+  private thirdBodyGravity_?: Force;
+  private solarRadiationPressure_?: Force;
+  private atmosphericDrag_?: Force;
+  private maneuverThrust_: Force | null = null;
 
   setGravity(mu: number = Earth.mu): this {
-    this._centralGravity = new Gravity(mu);
+    this.centralGravity_ = new Gravity(mu);
 
     return this;
   }
 
   setEarthGravity(degree: number, order: number): void {
-    this._centralGravity = new EarthGravity(degree, order);
+    this.centralGravity_ = new EarthGravity(degree, order);
   }
 
   setThirdBodyGravity({ moon = false, sun = false }): void {
-    this._thirdBodyGravity = new ThirdBodyGravity(moon, sun);
+    this.thirdBodyGravity_ = new ThirdBodyGravity(moon, sun);
   }
 
   setSolarRadiationPressure(mass: number, area: number, coeff = 1.2): void {
-    this._solarRadiationPressure = new SolarRadiationPressure(mass, area, coeff);
+    this.solarRadiationPressure_ = new SolarRadiationPressure(mass, area, coeff);
   }
 
   /**
@@ -60,34 +60,34 @@ export class ForceModel {
    * @param cosine - The cosine of the angle between the object's velocity vector and the drag force vector.
    */
   setAtmosphericDrag(mass: number, area: number, coeff = 2.2, cosine = 4): void {
-    this._atmosphericDrag = new AtmosphericDrag(mass, area, coeff, cosine);
+    this.atmosphericDrag_ = new AtmosphericDrag(mass, area, coeff, cosine);
   }
 
   loadManeuver(maneuver: Thrust): void {
-    this._maneuverThrust = maneuver;
+    this.maneuverThrust_ = maneuver;
   }
 
   clearManeuver(): void {
-    this._maneuverThrust = null;
+    this.maneuverThrust_ = null;
   }
 
   acceleration(state: J2000): Vector3D {
     let accVec = Vector3D.origin;
 
-    if (this._centralGravity) {
-      accVec = accVec.add(this._centralGravity.acceleration(state));
+    if (this.centralGravity_) {
+      accVec = accVec.add(this.centralGravity_.acceleration(state));
     }
-    if (this._thirdBodyGravity) {
-      accVec = accVec.add(this._thirdBodyGravity.acceleration(state));
+    if (this.thirdBodyGravity_) {
+      accVec = accVec.add(this.thirdBodyGravity_.acceleration(state));
     }
-    if (this._solarRadiationPressure) {
-      accVec = accVec.add(this._solarRadiationPressure.acceleration(state));
+    if (this.solarRadiationPressure_) {
+      accVec = accVec.add(this.solarRadiationPressure_.acceleration(state));
     }
-    if (this._atmosphericDrag) {
-      accVec = accVec.add(this._atmosphericDrag.acceleration(state));
+    if (this.atmosphericDrag_) {
+      accVec = accVec.add(this.atmosphericDrag_.acceleration(state));
     }
-    if (this._maneuverThrust) {
-      accVec = accVec.add(this._maneuverThrust.acceleration(state));
+    if (this.maneuverThrust_) {
+      accVec = accVec.add(this.maneuverThrust_.acceleration(state));
     }
 
     return accVec;
