@@ -331,7 +331,7 @@ export class ConjunctionAssessment {
    * @param useHighFidelity Whether to use high-fidelity propagation
    * @param forceModel Optional force model
    */
-  private initializeCovarianceSamples(startTime: EpochUTC, useHighFidelity: boolean, forceModel?: ForceModel): void {
+  private initializeCovarianceSamples(startTime: EpochUTC, _useHighFidelity: boolean, forceModel?: ForceModel): void {
     const fm = forceModel ?? new ForceModel().setGravity();
 
     // Primary covariance
