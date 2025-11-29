@@ -27,34 +27,57 @@ import type { EpochUTC } from '../time/EpochUTC';
  * Contains all relevant information about the close approach event.
  */
 export class ConjunctionEvent {
+  /** Time of Closest Approach (TCA) */
+  public readonly tca: EpochUTC;
+  /** Primary object state at TCA in J2000 frame */
+  public readonly primaryState: J2000;
+  /** Secondary object state at TCA in J2000 frame */
+  public readonly secondaryState: J2000;
+  /** Relative state in RIC frame (relative to primary) */
+  public readonly relativeState: RIC;
+  /** Total miss distance at TCA (km) */
+  public readonly missDistance: Kilometers;
+  /** Radial component of miss distance (km) */
+  public readonly radialDistance: Kilometers;
+  /** Intrack component of miss distance (km) */
+  public readonly intrackDistance: Kilometers;
+  /** Crosstrack component of miss distance (km) */
+  public readonly crosstrackDistance: Kilometers;
+  /** Relative velocity magnitude at TCA (km/s) */
+  public readonly relativeVelocity: KilometersPerSecond;
+  /** Combined position covariance matrix in RIC frame (optional) */
+  public readonly combinedCovariance?: StateCovariance;
+  /** Probability of collision (optional, 0-1) */
+  public readonly probabilityOfCollision?: number;
+  /** Hard body radius for primary object (km, optional) */
+  public readonly primaryRadius?: Kilometers;
+  /** Hard body radius for secondary object (km, optional) */
+  public readonly secondaryRadius?: Kilometers;
+
   constructor(
-    /** Time of Closest Approach (TCA) */
-    public tca: EpochUTC,
-    /** Primary object state at TCA in J2000 frame */
-    public primaryState: J2000,
-    /** Secondary object state at TCA in J2000 frame */
-    public secondaryState: J2000,
-    /** Relative state in RIC frame (relative to primary) */
-    public relativeState: RIC,
-    /** Total miss distance at TCA (km) */
-    public missDistance: Kilometers,
-    /** Radial component of miss distance (km) */
-    public radialDistance: Kilometers,
-    /** Intrack component of miss distance (km) */
-    public intrackDistance: Kilometers,
-    /** Crosstrack component of miss distance (km) */
-    public crosstrackDistance: Kilometers,
-    /** Relative velocity magnitude at TCA (km/s) */
-    public relativeVelocity: KilometersPerSecond,
-    /** Combined position covariance matrix in RIC frame (optional) */
-    public combinedCovariance?: StateCovariance,
-    /** Probability of collision (optional, 0-1) */
-    public probabilityOfCollision?: number,
-    /** Hard body radius for primary object (km, optional) */
-    public primaryRadius?: Kilometers,
-    /** Hard body radius for secondary object (km, optional) */
-    public secondaryRadius?: Kilometers,
-  ) {}
+    params: {
+      tca: EpochUTC; primaryState: J2000; secondaryState: J2000;
+      relativeState: RIC; missDistance: Kilometers;
+      radialDistance: Kilometers; intrackDistance: Kilometers;
+      crosstrackDistance: Kilometers; relativeVelocity: KilometersPerSecond;
+      combinedCovariance?: StateCovariance; probabilityOfCollision?: number;
+      primaryRadius?: Kilometers; secondaryRadius?: Kilometers
+    },
+  ) {
+    this.tca = params.tca;
+    this.primaryState = params.primaryState;
+    this.secondaryState = params.secondaryState;
+    this.relativeState = params.relativeState;
+    this.missDistance = params.missDistance;
+    this.radialDistance = params.radialDistance;
+    this.intrackDistance = params.intrackDistance;
+    this.crosstrackDistance = params.crosstrackDistance;
+    this.relativeVelocity = params.relativeVelocity;
+    this.combinedCovariance = params.combinedCovariance;
+    this.probabilityOfCollision = params.probabilityOfCollision;
+    this.primaryRadius = params.primaryRadius;
+    this.secondaryRadius = params.secondaryRadius;
+  }
 
   /**
    * Returns a formatted string representation of the conjunction event.
