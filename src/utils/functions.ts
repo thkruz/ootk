@@ -27,7 +27,7 @@ export function factorial(n: number): number {
  * @returns The base 10 logarithm of the input number.
  */
 export function log10(x: number): number {
-  return Math.log(x) / Math.LN10;
+  return Math.log10(x);
 }
 
 /**
@@ -393,7 +393,7 @@ export function array2d<T>(rows: number, columns: number, value: T): T[][] {
   const output: T[][] = [];
 
   for (let i = 0; i < rows; i++) {
-    output.push(Array(columns).fill(value));
+    output.push(new Array(columns).fill(value));
   }
 
   return output;
@@ -537,7 +537,7 @@ export const dopplerFactor = (
     y: position.y - location.y,
     z: position.z - location.z,
   };
-  const distance = Math.sqrt(range.x ** 2 + range.y ** 2 + range.z ** 2);
+  const distance = Math.hypot(range.x, range.y, range.z);
   const rangeVel = <EcfVec3<KilometersPerSecond>>{
     x: velocity.x + angularVelocityOfEarth * location.y,
     y: velocity.y - angularVelocityOfEarth * location.x,
