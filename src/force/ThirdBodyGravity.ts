@@ -25,7 +25,7 @@ export class ThirdBodyGravity implements Force {
     // Nothing to do here.
   }
 
-  private static _moonGravity(state: J2000): Vector3D {
+  private static moonGravity_(state: J2000): Vector3D {
     const rMoon = Moon.eci(state.epoch);
     const aNum = rMoon.subtract(state.position);
     const aDen = aNum.magnitude() ** 3;
@@ -36,7 +36,7 @@ export class ThirdBodyGravity implements Force {
     return gravity.scale(Moon.mu);
   }
 
-  private static _sunGravity(state: J2000): Vector3D {
+  private static sunGravity_(state: J2000): Vector3D {
     const rSun = Sun.positionApparent(state.epoch);
     const aNum = rSun.subtract(state.position);
     const aDen = aNum.magnitude() ** 3;
@@ -51,10 +51,10 @@ export class ThirdBodyGravity implements Force {
     let accVec = Vector3D.origin;
 
     if (this.moon) {
-      accVec = accVec.add(ThirdBodyGravity._moonGravity(state));
+      accVec = accVec.add(ThirdBodyGravity.moonGravity_(state));
     }
     if (this.sun) {
-      accVec = accVec.add(ThirdBodyGravity._sunGravity(state));
+      accVec = accVec.add(ThirdBodyGravity.sunGravity_(state));
     }
 
     return accVec;
