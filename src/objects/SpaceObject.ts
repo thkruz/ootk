@@ -21,11 +21,11 @@ import type { J2000 } from '../coordinate/J2000';
 import {
   Degrees,
   EcfVec3,
-  EciVec3,
   Kilometers,
   KilometersPerSecond,
   LlaVec3,
   PosVel,
+  TemeVec3,
 } from '../types/types';
 import { BaseObject, BaseObjectParams } from './BaseObject';
 import { CommunicationDeviceInterface, SensorInterface } from './ObjectTypes';
@@ -34,8 +34,10 @@ import { CommunicationDeviceInterface, SensorInterface } from './ObjectTypes';
  * Parameters for constructing a SpaceObject.
  */
 export interface SpaceObjectParams extends BaseObjectParams {
-  position?: EciVec3;
-  velocity?: EciVec3<KilometersPerSecond>;
+  /** Initial position in TEME frame */
+  position?: TemeVec3;
+  /** Initial velocity in TEME frame */
+  velocity?: TemeVec3<KilometersPerSecond>;
 }
 
 /**
@@ -44,10 +46,16 @@ export interface SpaceObjectParams extends BaseObjectParams {
  * and component attachment capabilities.
  */
 export abstract class SpaceObject extends BaseObject {
-  /** Current ECI position (cache of last computed state) */
-  position: EciVec3;
-  /** Current ECI velocity (cache of last computed state) */
-  velocity: EciVec3<KilometersPerSecond>;
+  /**
+   * Current position in TEME (True Equator Mean Equinox) frame.
+   * This is a cache of the last computed state.
+   */
+  position: TemeVec3;
+  /**
+   * Current velocity in TEME (True Equator Mean Equinox) frame.
+   * This is a cache of the last computed state.
+   */
+  velocity: TemeVec3<KilometersPerSecond>;
 
   /** Sensors attached to this space object */
   sensors: SensorInterface[] = [];
@@ -78,18 +86,20 @@ export abstract class SpaceObject extends BaseObject {
    * Returns the total velocity magnitude in km/s.
    */
   get totalVelocity(): number {
-    return Math.sqrt(
-      this.velocity.x ** 2 +
-      this.velocity.y ** 2 +
-      this.velocity.z ** 2,
+    return Math.hypot(
+      this.velocity.x,
+      this.velocity.y,
+      this.velocity.z,
     );
   }
 
   // ==================== Abstract Position Methods ====================
 
   /**
-   * Returns the ECI position and velocity at the given time.
+   * Returns the position and velocity in TEME (True Equator Mean Equinox) frame at the given time.
+   * TEME is the native output frame of SGP4/SDP4 propagation.
    * @param date - The time to calculate position for (defaults to now)
+   * @returns Position and velocity in TEME frame, or null if propagation fails
    */
   abstract eci(date?: Date): PosVel | null;
 
