@@ -15,4 +15,6 @@ test/sgp4/sgp4prop
 **/**.out
 .qodo
 
+src/fetch
+
 CLAUDE.md

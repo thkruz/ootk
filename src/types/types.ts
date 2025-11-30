@@ -15,7 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { CommLink, PassType, Satellite, SatelliteParams, SensorParams, Vector3D } from '../main';
+import { CommLink, PassType, Satellite, SatelliteParams, Vector3D } from '../main';
+import { SensorParams as LegacySensorParamsFromInterfaces } from '../interfaces/SensorParams';
 import { Sgp4ErrorCode } from '../sgp4/sgp4-error';
 
 /**
@@ -852,7 +853,8 @@ export interface DetailedSatelliteParams extends SatelliteParams {
   status?: PayloadStatus;
 }
 
-export interface DetailedSensorParams extends SensorParams {
+/** @deprecated Use sensor module types instead */
+export interface DetailedSensorParams extends LegacySensorParamsFromInterfaces {
   /** The country that owns the sensor */
   country?: string;
   /** 3 Letter Designation */

@@ -22,12 +22,14 @@
  */
 
 import { Geodetic } from '../coordinate/Geodetic';
+import { J2000 } from '../coordinate/J2000';
 import {
   DEG2RAD,
   Degrees,
   EcfVec3,
   EciVec3,
   Kilometers,
+  KilometersPerSecond,
   LlaVec3,
   Radians,
   RaeVec3,
@@ -36,6 +38,8 @@ import {
   lla2eci,
   llaRad2ecf,
 } from '../main';
+import { Vector3D } from '../operations/Vector3D';
+import { EpochUTC } from '../time/EpochUTC';
 import { BaseObject, BaseObjectParams } from './BaseObject';
 import { CommunicationDeviceInterface, SensorInterface } from './ObjectTypes';
 import type { Satellite } from './Satellite';
@@ -147,6 +151,23 @@ export abstract class GroundObject extends BaseObject {
    */
   toGeodetic(): Geodetic {
     return Geodetic.fromDegrees(this.lat, this.lon, this.alt);
+  }
+
+  /**
+   * Converts the ground position to J2000 inertial coordinates.
+   * Ground objects have zero velocity in the inertial frame (ignoring Earth rotation).
+   * @param date - The date for the conversion (defaults to now)
+   * @returns J2000 state vector
+   */
+  toJ2000(date: Date = new Date()): J2000 {
+    const { gmst } = calcGmst(date);
+    const position = lla2eci(this.llaRad(), gmst);
+
+    return new J2000(
+      EpochUTC.fromDateTime(date),
+      new Vector3D(position.x, position.y, position.z),
+      new Vector3D(0 as KilometersPerSecond, 0 as KilometersPerSecond, 0 as KilometersPerSecond),
+    );
   }
 
   // ==================== Component Management ====================

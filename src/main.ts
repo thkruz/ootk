@@ -62,3 +62,5 @@ export * from './orbit-determination/index';
 export * from './covariance/index';
 
 export * from './conjunction/index';
+
+export * from './sensor/index';
