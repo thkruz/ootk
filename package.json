@@ -53,5 +53,8 @@
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
-  "homepage": "https://github.com/thkruz/ootk"
+  "homepage": "https://github.com/thkruz/ootk",
+  "dependencies": {
+    "astronomy-engine": "^2.1.19"
+  }
 }

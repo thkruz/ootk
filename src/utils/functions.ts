@@ -502,6 +502,7 @@ const spaceObjTypeStrMap_ = {
   [SpaceObjectType.NOTIONAL]: 'Notional',
   [SpaceObjectType.FRAGMENT]: 'Fragment',
   [SpaceObjectType.SHORT_TERM_FENCE]: 'Short Term Fence',
+  [SpaceObjectType.EPHEMERIS_SATELLITE]: 'Ephemeris Satellite',
   [SpaceObjectType.TERRESTRIAL_PLANET]: 'Terrestrial Planet',
   [SpaceObjectType.GAS_GIANT]: 'Gas Giant',
   [SpaceObjectType.ICE_GIANT]: 'Ice Giant',
