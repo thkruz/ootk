@@ -23,7 +23,7 @@ import {
   Sensor,
   Vec3,
 } from '../../main';
-import { transformsData } from '../transforms/transformsData';
+import { transformsData } from './transformsData';
 
 const numDigits = 6;
 
