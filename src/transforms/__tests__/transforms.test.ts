@@ -1,9 +1,7 @@
 import {
-  DEG2RAD, Degrees, Kilometers, Radians,
-  RfSensor,
-  SpaceObjectType,
+  DEG2RAD, Degrees, Kilometers, PhasedArrayRadar, Radians, SensorType,
   azel2uv, calcIncFromAz, calcInertAz, rae2raeOffBoresight, uv2azel,
-} from '../../main.js';
+} from '../../main';
 
 // uv2azel
 it('should convert valid unit vector to azimuth and elevation', () => {
@@ -24,23 +22,21 @@ it('should convert valid RAE coordinates to RAE Off Boresight', () => {
     el: 0 as Degrees,
   };
 
-  const senor = new RfSensor({
-    type: SpaceObjectType.PHASED_ARRAY_RADAR,
-    lat: 0 as Degrees,
-    lon: 0 as Degrees,
-    alt: 0 as Kilometers,
-    minAz: 0 as Degrees,
-    maxAz: 0 as Degrees,
-    minEl: 0 as Degrees,
-    maxEl: 0 as Degrees,
-    minRng: 0 as Kilometers,
-    maxRng: 0 as Kilometers,
+  const sensor = new PhasedArrayRadar({
+    id: 'test-radar',
+    name: 'Test Radar',
+    sensorType: SensorType.PHASED_ARRAY_RADAR,
     boresightAz: [0 as Degrees],
     boresightEl: [0 as Degrees],
-    beamwidth: 0 as Degrees,
+    beamwidth: 1 as Degrees,
+    fieldOfView: {
+      halfAngle: 60 as Degrees,
+      minRange: 100 as Kilometers,
+      maxRange: 40000 as Kilometers,
+    },
   });
 
-  const raeOffBoresightCoordinates = rae2raeOffBoresight(rae, senor, 0, 10 as Degrees);
+  const raeOffBoresightCoordinates = rae2raeOffBoresight(rae, sensor, 0, 10 as Degrees);
 
   expect(raeOffBoresightCoordinates).toMatchSnapshot();
 });
