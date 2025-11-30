@@ -9,6 +9,7 @@ Welcome to the OOTK (Orbital Object Toolkit) documentation!
 **[Getting Started Guide](./getting-started.md)** - Start here if you're new to OOTK!
 
 This guide covers:
+
 - Installation and setup
 - Your first satellite tracking program
 - Understanding coordinate systems
@@ -23,6 +24,7 @@ Perfect for: Beginners, developers new to orbital mechanics, quick start tutoria
 **[User Guide](./user-guide.md)** - Comprehensive reference for all OOTK features
 
 This guide covers:
+
 - All modules and their functionality
 - Detailed API documentation
 - Advanced features
@@ -32,9 +34,24 @@ This guide covers:
 
 Perfect for: Intermediate to advanced users, comprehensive feature documentation
 
+### Deep Dives
+
+**[Coordinate Systems Guide](../src/coordinate/README.md)** - In-depth guide to coordinate systems
+
+This guide covers:
+
+- All coordinate systems (J2000, TEME, ITRF, Geodetic, RIC, Hill)
+- Orbital element representations (Classical, Equinoctial)
+- When to use each system
+- Coordinate transformations
+- Common workflows and decision guides
+
+Perfect for: Understanding the differences between coordinate systems and choosing the right one
+
 ## Quick Links
 
 ### Getting Started
+
 - [Installation](./getting-started.md#installation)
 - [Your First Satellite](./getting-started.md#your-first-satellite)
 - [Understanding Coordinates](./getting-started.md#understanding-coordinates)
@@ -42,13 +59,15 @@ Perfect for: Intermediate to advanced users, comprehensive feature documentation
 - [Common Use Cases](./getting-started.md#common-use-cases)
 
 ### Core Features
+
 - [Satellite Operations](./user-guide.md#satellite-operations)
 - [Sensor Operations](./user-guide.md#sensor-operations)
-- [Coordinate Systems](./user-guide.md#coordinate-systems)
+- [Coordinate Systems](./coordinate-systems.md) - Comprehensive guide
 - [Orbit Propagation](./user-guide.md#orbit-propagation)
 - [Time Systems](./user-guide.md#time-systems)
 
 ### Advanced Features
+
 - [Force Models](./user-guide.md#force-models)
 - [Initial Orbit Determination](./user-guide.md#initial-orbit-determination)
 - [Interpolation](./user-guide.md#interpolation)
@@ -118,9 +137,9 @@ console.log(`Found ${passes.length} passes`);
 
 ## Support
 
-- **GitHub Repository**: https://github.com/thkruz/ootk
-- **Issues**: https://github.com/thkruz/ootk/issues
-- **NPM Package**: https://www.npmjs.com/package/ootk
+- **GitHub Repository**: <https://github.com/thkruz/ootk>
+- **Issues**: <https://github.com/thkruz/ootk/issues>
+- **NPM Package**: <https://www.npmjs.com/package/ootk>
 - **Examples**: Check the `/examples` directory
 
 ## License
