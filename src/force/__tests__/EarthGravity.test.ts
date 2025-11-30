@@ -1,5 +1,5 @@
-import { EarthGravity } from '../../src/force/EarthGravity';
-import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../../src/main';
+import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../../main';
+import { EarthGravity } from '../EarthGravity';
 
 describe('EarthGravity', () => {
   describe('constructor', () => {

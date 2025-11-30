@@ -1,4 +1,4 @@
-import { ClassicalElements, EpochUTC, Kilometers, Radians, Tle, TleLine1, TleLine2 } from '../../src/main';
+import { ClassicalElements, EpochUTC, Kilometers, Radians, Tle, TleLine1, TleLine2 } from '../../main';
 
 describe('Tle', () => {
   let tle: Tle;

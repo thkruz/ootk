@@ -1,4 +1,4 @@
-import { Matrix, Radians, Vector } from '../../src/main';
+import { Matrix, Radians, Vector } from '../../main';
 
 describe('Matrix', () => {
   // should create a matrix with the correct number of rows and columns

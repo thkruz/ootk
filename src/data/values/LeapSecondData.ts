@@ -96,7 +96,7 @@ class LeapSecondData {
     if (jd <= this.jdFirst_) {
       return this.offsetFirst_;
     }
-    for (let i = 0; i < this.offsets_.length - 2; i++) {
+    for (let i = 0; i < this.offsets_.length - 1; i++) {
       const currentLeapSecond = this.offsets_[i];
       const nextLeapSecond = this.offsets_[i + 1];
 

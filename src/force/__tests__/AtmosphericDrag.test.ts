@@ -1,5 +1,5 @@
-import { AtmosphericDrag } from '../../src/force/AtmosphericDrag';
-import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../../src/main';
+import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../../main';
+import { AtmosphericDrag } from '../AtmosphericDrag';
 
 describe('AtmosphericDrag', () => {
   // Low Earth orbit state where atmospheric drag is significant
@@ -136,8 +136,10 @@ describe('AtmosphericDrag', () => {
       const drag = new AtmosphericDrag(mass, area, dragCoeff, cosine, 200);
       const acc = drag.acceleration(state);
 
-      // Drag should oppose velocity (negative y component for positive y velocity)
-      // Note: The exact direction depends on Earth rotation effects
+      /*
+       * Drag should oppose velocity (negative y component for positive y velocity)
+       * Note: The exact direction depends on Earth rotation effects
+       */
       if (acc.magnitude() > 0) {
         // Drag acceleration should have a component opposing the velocity
         const velDotAcc = state.velocity.dot(acc);

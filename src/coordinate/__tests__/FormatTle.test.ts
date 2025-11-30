@@ -1,4 +1,4 @@
-import { FormatTle, TleParams } from '../../src/main';
+import { FormatTle, TleParams } from '../../main';
 
 describe('FormatTle', () => {
   // Should be able to create a TLE string based on provided TleParams

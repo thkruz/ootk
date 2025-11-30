@@ -1,4 +1,4 @@
-import { Kilometers, KilometersPerSecond, Vector, Vector3D } from '../../src/main';
+import { Kilometers, KilometersPerSecond, Vector, Vector3D } from '../../main';
 
 describe('Vector3D', () => {
   // fromVector
