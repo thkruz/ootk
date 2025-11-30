@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
-import { Gravity } from '../../src/force/Gravity';
-import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../../src/main';
+import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../../main';
+import { Gravity } from '../Gravity';
 
 describe('Gravity', () => {
   describe('constructor', () => {

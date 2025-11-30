@@ -1,4 +1,4 @@
-import { Geodetic, AngularDistanceMethod, Degrees, EpochUTC, Kilometers, Radians } from '../../src/main';
+import { AngularDistanceMethod, Degrees, EpochUTC, Geodetic, Kilometers, Radians } from '../../main';
 
 describe('Geodetic', () => {
   /*

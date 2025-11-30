@@ -1,4 +1,4 @@
-import { Random } from '../../src/main';
+import { Random } from '../../main';
 
 describe('Random', () => {
   // nextFloat

@@ -1,5 +1,4 @@
-import { ClassicalElements, EpochUTC, J2000, Kilometers, KilometersPerSecond, Radians, Vector3D }
-  from './../../src/main';
+import { ClassicalElements, EpochUTC, J2000, Kilometers, KilometersPerSecond, Radians, Vector3D } from '../../main';
 
 describe('ClassicalElements', () => {
   const epoch = EpochUTC.fromDateTime(new Date('2024-01-14T14:39:39.914Z'));

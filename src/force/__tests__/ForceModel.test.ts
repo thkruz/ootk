@@ -1,11 +1,11 @@
-import { AtmosphericDrag } from '../../src/force/AtmosphericDrag';
-import { EarthGravity } from '../../src/force/EarthGravity';
-import { ForceModel } from '../../src/force/ForceModel';
-import { Gravity } from '../../src/force/Gravity';
-import { SolarRadiationPressure } from '../../src/force/SolarRadiationPressure';
-import { ThirdBodyGravity } from '../../src/force/ThirdBodyGravity';
-import { Thrust } from '../../src/force/Thrust';
-import { Earth, EpochUTC, J2000, MetersPerSecond, Vector3D } from '../../src/main';
+import { Earth, EpochUTC, J2000, MetersPerSecond, Vector3D } from '../../main';
+import { AtmosphericDrag } from '../AtmosphericDrag';
+import { EarthGravity } from '../EarthGravity';
+import { ForceModel } from '../ForceModel';
+import { Gravity } from '../Gravity';
+import { SolarRadiationPressure } from '../SolarRadiationPressure';
+import { ThirdBodyGravity } from '../ThirdBodyGravity';
+import { Thrust } from '../Thrust';
 
 /**
  * @author Theodore Kruczek
@@ -14,12 +14,12 @@ import { Earth, EpochUTC, J2000, MetersPerSecond, Vector3D } from '../../src/mai
  */
 
 
-jest.mock('../../src/force/AtmosphericDrag');
-jest.mock('../../src/force/EarthGravity');
-jest.mock('../../src/force/Gravity');
-jest.mock('../../src/force/SolarRadiationPressure');
-jest.mock('../../src/force/ThirdBodyGravity');
-jest.mock('../../src/force/Thrust');
+jest.mock('../AtmosphericDrag');
+jest.mock('../EarthGravity');
+jest.mock('../Gravity');
+jest.mock('../SolarRadiationPressure');
+jest.mock('../ThirdBodyGravity');
+jest.mock('../Thrust');
 
 describe('ForceModel', () => {
   let forceModel: ForceModel;

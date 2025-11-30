@@ -1,4 +1,4 @@
-import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Matrix, RIC, Vector3D } from './../../src/main';
+import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Matrix, RIC, Vector3D } from '../../main';
 
 describe('RIC', () => {
   let stateVector: J2000;

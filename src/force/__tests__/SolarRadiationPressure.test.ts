@@ -1,5 +1,5 @@
-import { SolarRadiationPressure } from '../../src/force/SolarRadiationPressure';
-import { EpochUTC, J2000, Seconds, Sun, Vector3D } from '../../src/main';
+import { EpochUTC, J2000, Seconds, Sun, Vector3D } from '../../main';
+import { SolarRadiationPressure } from '../SolarRadiationPressure';
 
 describe('SolarRadiationPressure', () => {
   let srp: SolarRadiationPressure;

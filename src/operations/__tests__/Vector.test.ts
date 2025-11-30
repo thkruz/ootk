@@ -1,4 +1,4 @@
-import { DEG2RAD, Radians, Vector } from './../../src/main';
+import { DEG2RAD, Radians, Vector } from '../../main';
 
 describe('Vector', () => {
   // create a Vector with elements and get its length

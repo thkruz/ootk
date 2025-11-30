@@ -1,5 +1,4 @@
-import { ClassicalElements, EpochUTC, J2000, Kilometers, KilometersPerSecond, Radians, TEME, Vector3D }
-  from './../../src/main';
+import { ClassicalElements, EpochUTC, J2000, Kilometers, KilometersPerSecond, Radians, TEME, Vector3D } from '../../main';
 describe('TEME', () => {
   let stateVector: TEME;
 
