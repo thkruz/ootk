@@ -103,7 +103,8 @@ export class DownhillSimplex {
     for (let i = 0; i < x0.length; i++) {
       const tmp = x0.slice(0);
 
-      tmp[i] += tmp[i] * step;
+      // Use proportional step for non-zero values, absolute step for zero values
+      tmp[i] += tmp[i] === 0 ? step : tmp[i] * step;
       output.push(tmp);
     }
 
