@@ -1,7 +1,7 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Satellite should calculate and return ECF coordinates correctly 1`] = `
-Object {
+{
   "x": 2103.9414256471673,
   "y": 5645.057714165688,
   "z": -3117.140819332331,
@@ -9,13 +9,13 @@ Object {
 `;
 
 exports[`Satellite should calculate and return ECI coordinates 1`] = `
-Object {
-  "position": Object {
+{
+  "position": {
     "x": -5512.260085235448,
     "y": -2430.686090702759,
     "z": -3117.140819332331,
   },
-  "velocity": Object {
+  "velocity": {
     "x": 4.465372431076766,
     "y": -3.8849829704336245,
     "z": -4.87332392823815,
@@ -50,7 +50,7 @@ ITRF {
 `;
 
 exports[`Satellite should calculate and return LLA coordinates when given a date 1`] = `
-Object {
+{
   "alt": 409.4490107065576,
   "lat": -27.505811285213248,
   "lon": 69.5593222250588,
@@ -109,18 +109,18 @@ Satellite {
   "meanMoDev2": 0,
   "meanMotion": 15.50067047,
   "name": "Unknown",
-  "options": Object {
+  "options": {
     "notes": "",
   },
   "perigee": 420.1576716155687,
   "period": 92.89920734635164,
-  "position": Object {
+  "position": {
     "x": 0,
     "y": 0,
     "z": 0,
   },
   "rightAscension": 161.8339,
-  "satrec": Object {
+  "satrec": {
     "PInco": 0,
     "a": 1.0653855229682034,
     "alta": 0.06593611420647338,
@@ -242,7 +242,7 @@ Satellite {
   "tle2": "2 25544  51.6415 161.8339 0005168  35.9781  54.7009 15.50067047350657",
   "totalVelocity": 0,
   "type": 0,
-  "velocity": Object {
+  "velocity": {
     "x": 0,
     "y": 0,
     "z": 0,

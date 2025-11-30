@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Basic Star functionality should be able to get ECI coordinates 1`] = `255314.47433812887`;
 

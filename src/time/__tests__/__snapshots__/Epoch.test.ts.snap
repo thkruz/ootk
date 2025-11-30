@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Epoch should convert to Julian centuries 1`] = `0.21162217659137578`;
 
@@ -11,35 +11,35 @@ exports[`Epoch should convert to a string 1`] = `"2021-03-01T00:00:00.000Z"`;
 exports[`Epoch should convert to an Excel string 1`] = `"2021-03-01T00:00:00"`;
 
 exports[`Epoch should convert to an epoch year and day 1`] = `
-Object {
+{
   "epochDay": "060.00000000",
   "epochYr": "21",
 }
 `;
 
 exports[`Epoch should handle century year not divisible by 400 1`] = `
-Object {
+{
   "epochDay": "001.00000000",
   "epochYr": "00",
 }
 `;
 
 exports[`Epoch should handle leap year in toEpochYearAndDay 1`] = `
-Object {
+{
   "epochDay": "060.00000000",
   "epochYr": "20",
 }
 `;
 
 exports[`Epoch should handle non-leap century year 1`] = `
-Object {
+{
   "epochDay": "060.00000000",
   "epochYr": "00",
 }
 `;
 
 exports[`Epoch should identify non-leap year (not divisible by 4) 1`] = `
-Object {
+{
   "epochDay": "002.00000000",
   "epochYr": "22",
 }

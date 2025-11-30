@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Vector should add two Vectors and return a new Vector 1`] = `
 Vector {
-  "elements": Array [
+  "elements": [
     5,
     7,
     9,
@@ -17,7 +17,7 @@ exports[`Vector should calculate the angle between two Vectors in degrees 1`] = 
 
 exports[`Vector should calculate the bisect of two Vectors 1`] = `
 Vector {
-  "elements": Array [
+  "elements": [
     0.3638667954886596,
     0.5556981892812022,
     0.7475295830737448,
@@ -28,7 +28,7 @@ Vector {
 
 exports[`Vector should calculate the cross product of two Vectors 1`] = `
 Vector {
-  "elements": Array [
+  "elements": [
     -3,
     6,
     -3,
@@ -44,18 +44,18 @@ exports[`Vector should calculate the dot product of two Vectors 1`] = `32`;
 exports[`Vector should calculate the outer product of two Vectors 1`] = `
 Matrix {
   "columns": 3,
-  "elements": Array [
-    Array [
+  "elements": [
+    [
       4,
       5,
       6,
     ],
-    Array [
+    [
       8,
       10,
       12,
     ],
-    Array [
+    [
       12,
       15,
       18,
@@ -70,18 +70,18 @@ exports[`Vector should calculate the sight of a Vector 1`] = `true`;
 exports[`Vector should calculate the skew symmetric matrix of a Vector 1`] = `
 Matrix {
   "columns": 3,
-  "elements": Array [
-    Array [
+  "elements": [
+    [
       0,
       -3,
       2,
     ],
-    Array [
+    [
       3,
       0,
       -1,
     ],
-    Array [
+    [
       -2,
       1,
       0,
@@ -104,14 +104,14 @@ exports[`Vector should create a Vector with a negative length 1`] = `[Function]`
 exports[`Vector should get a column from a Vector 1`] = `
 Matrix {
   "columns": 1,
-  "elements": Array [
-    Array [
+  "elements": [
+    [
       1,
     ],
-    Array [
+    [
       2,
     ],
-    Array [
+    [
       3,
     ],
   ],
@@ -122,8 +122,8 @@ Matrix {
 exports[`Vector should get a row from a Vector 1`] = `
 Matrix {
   "columns": 3,
-  "elements": Array [
-    Array [
+  "elements": [
+    [
       1,
       2,
       3,
@@ -135,7 +135,7 @@ Matrix {
 
 exports[`Vector should join two Vectors 1`] = `
 Vector {
-  "elements": Array [
+  "elements": [
     1,
     2,
     3,
@@ -149,7 +149,7 @@ Vector {
 
 exports[`Vector should normalize a Vector and return a new Vector 1`] = `
 Vector {
-  "elements": Array [
+  "elements": [
     0.6000000000000001,
     0.8,
   ],
@@ -158,7 +158,7 @@ Vector {
 `;
 
 exports[`Vector should return a list representation of a Vector 1`] = `
-Array [
+[
   1,
   2,
   3,
@@ -177,7 +177,7 @@ Float64Array [
 
 exports[`Vector should rotate a Vector around the x-axis 1`] = `
 Vector {
-  "elements": Array [
+  "elements": [
     1,
     3,
     -1.9999999999999998,
@@ -188,7 +188,7 @@ Vector {
 
 exports[`Vector should rotate a Vector around the y-axis 1`] = `
 Vector {
-  "elements": Array [
+  "elements": [
     -3,
     2,
     1.0000000000000002,
@@ -199,7 +199,7 @@ Vector {
 
 exports[`Vector should rotate a Vector around the z-axis 1`] = `
 Vector {
-  "elements": Array [
+  "elements": [
     2,
     -0.9999999999999999,
     3,
@@ -210,7 +210,7 @@ Vector {
 
 exports[`Vector should slice a Vector 1`] = `
 Vector {
-  "elements": Array [
+  "elements": [
     2,
   ],
   "length": 1,

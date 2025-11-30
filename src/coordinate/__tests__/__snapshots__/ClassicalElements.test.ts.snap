@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`ClassicalElements should calculate argument of perigee in degrees 1`] = `145.4534258954243`;
 
@@ -50,7 +50,7 @@ EquinoctialElements {
 `;
 
 exports[`ClassicalElements should convert ClassicalElements to PositionVelocity 1`] = `
-Object {
+{
   "position": Vector3D {
     "x": -6935.3813042612455,
     "y": -146.1261328371035,

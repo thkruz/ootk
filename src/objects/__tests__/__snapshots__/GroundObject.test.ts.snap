@@ -1,7 +1,7 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`GroundObject should calculate ecf 1`] = `
-Object {
+{
   "x": 6378.137,
   "y": 0,
   "z": 0,
@@ -9,7 +9,7 @@ Object {
 `;
 
 exports[`GroundObject should calculate eci 1`] = `
-Object {
+{
   "x": -4444.532338535956,
   "y": 4564.633188736234,
   "z": 0,
@@ -17,7 +17,7 @@ Object {
 `;
 
 exports[`GroundObject should calculate llaRad 1`] = `
-Object {
+{
   "alt": 0,
   "lat": 0,
   "lon": 0,
@@ -40,14 +40,14 @@ GroundObject {
   "lat": 0,
   "lon": 0,
   "name": "Unknown Ground Object",
-  "position": Object {
+  "position": {
     "x": 0,
     "y": 0,
     "z": 0,
   },
   "totalVelocity": 0,
   "type": 0,
-  "velocity": Object {
+  "velocity": {
     "x": 0,
     "y": 0,
     "z": 0,

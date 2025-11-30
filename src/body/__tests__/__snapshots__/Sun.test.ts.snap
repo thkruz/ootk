@@ -1,9 +1,9 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Sun should handle cases where the observers position is the same as the suns position 1`] = `NaN`;
 
 exports[`Sun should handle cases where the satellite is directly above or below the earth 1`] = `
-Array [
+[
   3.141592653589793,
   NaN,
   NaN,
@@ -19,7 +19,7 @@ exports[`Sun should handle invalid dates 1`] = `NaN`;
 exports[`Sun should return the Julian date of the sunrise when the observers position, date, and time are provided 1`] = `2451533.314279268`;
 
 exports[`Sun should return the angles necessary to determine if a satellite is in the shadow of the earth 1`] = `
-Array [
+[
   3.141592653589793,
   NaN,
   NaN,
@@ -29,7 +29,7 @@ Array [
 exports[`Sun should return the angular diameter of the sun given the observers position and the suns position 1`] = `NaN`;
 
 exports[`Sun should return the azimuth and elevation of the sun given a date, latitude, and longitude 1`] = `
-Object {
+{
   "az": 4.284718248237755,
   "el": -0.06852341194048539,
 }
@@ -60,7 +60,7 @@ exports[`Sun should return the same shadow result given the same time and positi
 exports[`Sun should return the same sunlight result given the same positions 1`] = `1`;
 
 exports[`Sun should return the sunrise, sunset, and other event times when given a date, latitude, and longitude 1`] = `
-Object {
+{
   "amateurDawn": 2024-01-12T14:08:48.295Z,
   "amateurDusk": 2024-01-13T02:29:02.928Z,
   "astronomicalDawn": 2024-01-12T13:53:05.375Z,
