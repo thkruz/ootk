@@ -22,38 +22,107 @@
  */
 
 import { BaseObjectParams } from '../interfaces/BaseObjectParams';
-import { EciVec3, Kilometers, KilometersPerSecond, SpaceObjectType } from '../types/types';
+import { SpaceObjectType } from '../types/types';
+import { History, HistoryConfig } from './History';
+import { HistoricalState, SerializedObject } from './ObjectTypes';
 
-export class BaseObject {
-  id: number;
+// Re-export for convenience
+export type { BaseObjectParams } from '../interfaces/BaseObjectParams';
+
+/**
+ * Abstract base class for all objects in the ootk system.
+ * Provides common functionality for identification, type checking,
+ * history tracking, and serialization.
+ */
+export abstract class BaseObject {
+  /** Unique identifier for the object */
+  id: string;
+  /** Human-readable name */
   name: string;
+  /** Type classification of the object */
   type: SpaceObjectType;
-  position: EciVec3; // Where is the object
-  totalVelocity: number; // How fast is the object moving
-  velocity: EciVec3<KilometersPerSecond>; // How fast is the object moving
-  active = true; // Is the object active
+  /** Whether the object is currently active */
+  active: boolean;
+  /** Additional metadata for the object */
+  metadata?: Record<string, unknown>;
+
+  /** History tracking (null until enabled) */
+  private history_: History<HistoricalState> | null = null;
 
   constructor(info: BaseObjectParams) {
     this.type = info.type ?? SpaceObjectType.UNKNOWN;
     this.name = info.name ?? 'Unknown';
-    this.id = info.id ?? -1; // Default to -1 if no id is provided
+    this.id = info.id ?? '-1';
     this.active = info.active ?? true;
-
-    // Default to the center of the earth until position is calculated
-    this.position = info.position ?? {
-      x: <Kilometers>0,
-      y: <Kilometers>0,
-      z: <Kilometers>0,
-    };
-
-    // Default to 0 velocity until velocity is calculated
-    this.velocity = info.velocity ?? {
-      x: <KilometersPerSecond>0,
-      y: <KilometersPerSecond>0,
-      z: <KilometersPerSecond>0,
-    };
-    this.totalVelocity = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2 + this.velocity.z ** 2);
+    this.metadata = info.metadata;
   }
+
+  // ==================== History Methods ====================
+
+  /**
+   * Enables history tracking for this object.
+   * @param config - Optional configuration for history behavior
+   */
+  enableHistory(config?: HistoryConfig): void {
+    this.history_ ??= new History<HistoricalState>(config);
+  }
+
+  /**
+   * Disables history tracking and clears existing history.
+   */
+  disableHistory(): void {
+    this.history_ = null;
+  }
+
+  /**
+   * Returns the history object if enabled, null otherwise.
+   */
+  get history(): History<HistoricalState> | null {
+    return this.history_;
+  }
+
+  /**
+   * Returns true if history tracking is enabled.
+   */
+  get isHistoryEnabled(): boolean {
+    return this.history_ !== null;
+  }
+
+  /**
+   * Records a state to history if history tracking is enabled.
+   * @param time - The timestamp for this state
+   * @param state - The state to record
+   */
+  protected recordToHistory(time: Date, state: HistoricalState): void {
+    if (this.history_) {
+      this.history_.add(time, state);
+    }
+  }
+
+  // ==================== Serialization Methods ====================
+
+  /**
+   * Serializes the object to a plain object for persistence.
+   */
+  serialize(): SerializedObject {
+    return {
+      type: this.constructor.name,
+      id: this.id,
+      name: this.name,
+      objectType: this.type,
+      active: this.active,
+      metadata: this.metadata,
+      ...this.serializeSpecific(),
+    };
+  }
+
+  /**
+   * Returns type-specific serialization data.
+   * Subclasses must implement this to add their specific properties.
+   */
+  protected abstract serializeSpecific(): Record<string, unknown>;
+
+  // ==================== Type Checking Methods ====================
 
   /**
    * Checks if the object is a satellite.
@@ -92,7 +161,7 @@ export class BaseObject {
    * @returns True if the object is static, false otherwise.
    */
   isStatic(): boolean {
-    return this.velocity.x === 0 && this.velocity.y === 0 && this.velocity.z === 0;
+    return true; // Default to static; SpaceObject overrides to false
   }
 
   isPayload(): boolean {
@@ -153,6 +222,8 @@ export class BaseObject {
     return typeToStringMap[this.type] ?? 'Unknown';
   }
 
+  // ==================== Validation Helpers ====================
+
   /**
    * Validates a parameter value against a minimum and maximum value.
    * @param value - The value to be validated.
@@ -160,11 +231,11 @@ export class BaseObject {
    * @param maxValue - The maximum allowed value.
    * @param errorMessage - The error message to be thrown if the value is invalid.
    */
-  validateParameter<T>(value: T, minValue: T, maxValue: T, errorMessage: string): void {
-    if (typeof minValue !== 'undefined' && minValue !== null && (value as number) < (minValue as number)) {
+  validateParameter<T>(value: T, minValue: T | null, maxValue: T | null, errorMessage: string): void {
+    if (minValue !== null && minValue !== undefined && (value as number) < (minValue as number)) {
       throw new Error(errorMessage);
     }
-    if (typeof maxValue !== 'undefined' && maxValue !== null && (value as number) > (maxValue as number)) {
+    if (maxValue !== null && maxValue !== undefined && (value as number) > (maxValue as number)) {
       throw new Error(errorMessage);
     }
   }

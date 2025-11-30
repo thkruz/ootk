@@ -39,9 +39,24 @@ export class LandObject extends BaseObject {
     this.lat = info.lat;
     this.lon = info.lon;
     this.alt = info.alt;
+    this.country = info.country;
+    this.Code = info.Code;
   }
 
   isLandObject() {
     return true;
+  }
+
+  /**
+   * Returns type-specific serialization data.
+   */
+  protected serializeSpecific(): Record<string, unknown> {
+    return {
+      lat: this.lat,
+      lon: this.lon,
+      alt: this.alt,
+      country: this.country,
+      Code: this.Code,
+    };
   }
 }

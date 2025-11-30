@@ -16,7 +16,7 @@
  */
 
 export {
-  ConjunctionAssessment, type ConjunctionAssessmentOptions, type SpaceObject,
+  ConjunctionAssessment, type ConjunctionAssessmentOptions, type ConjunctionSpaceObjectInput,
 } from './ConjunctionAssessment';
 export { ConjunctionEvent } from './ConjunctionEvent';
 export { ProbabilityOfCollision } from './ProbabilityOfCollision';

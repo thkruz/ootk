@@ -22,7 +22,7 @@
  */
 
 import { Earth } from '../body/Earth';
-import { AngularDistanceMethod, Degrees, GroundObject, Kilometers, KilometersPerSecond, Radians } from '../main';
+import { AngularDistanceMethod, Degrees, GroundStation, Kilometers, KilometersPerSecond, Radians } from '../main';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { DEG2RAD, RAD2DEG } from '../utils/constants';
@@ -104,11 +104,11 @@ export class Geodetic {
   }
 
   /**
-   * Converts the geodetic coordinates to a ground position.
-   * @returns The ground position object.
+   * Converts the geodetic coordinates to a ground station.
+   * @returns The ground station object.
    */
-  toGroundObject(): GroundObject {
-    return new GroundObject({
+  toGroundStation(): GroundStation {
+    return new GroundStation({
       lat: this.latDeg as Degrees,
       lon: this.lonDeg as Degrees,
       alt: this.alt,

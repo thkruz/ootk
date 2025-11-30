@@ -773,7 +773,7 @@ export enum PayloadStatus {
 }
 
 export interface DetailedSatelliteParams extends SatelliteParams {
-  id: number;
+  id?: string;
   active?: boolean;
   configuration?: string;
   country?: string;

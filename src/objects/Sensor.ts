@@ -276,4 +276,27 @@ export class Sensor extends GroundObject {
     this.validateParameter(info.lon, -180, 180, 'Invalid longitude - must be between -180 and 180');
     this.validateParameter(info.alt, 0, null, 'Invalid altitude - must be greater than 0');
   }
+
+  /**
+   * Returns type-specific serialization data.
+   */
+  protected serializeSpecific(): Record<string, unknown> {
+    return {
+      lat: this.lat,
+      lon: this.lon,
+      alt: this.alt,
+      minRng: this.minRng,
+      minAz: this.minAz,
+      minEl: this.minEl,
+      maxRng: this.maxRng,
+      maxAz: this.maxAz,
+      maxEl: this.maxEl,
+      minRng2: this.minRng2,
+      minAz2: this.minAz2,
+      minEl2: this.minEl2,
+      maxRng2: this.maxRng2,
+      maxAz2: this.maxAz2,
+      maxEl2: this.maxEl2,
+    };
+  }
 }

@@ -57,4 +57,26 @@ export class DetailedSensor extends Sensor {
   isStatic(): boolean {
     return true;
   }
+
+  /**
+   * Returns type-specific serialization data.
+   */
+  protected override serializeSpecific(): Record<string, unknown> {
+    return {
+      ...super.serializeSpecific(),
+      sensorId: this.sensorId,
+      objName: this.objName,
+      shortName: this.shortName,
+      uiName: this.uiName,
+      country: this.country,
+      dwellTime: this.dwellTime,
+      freqBand: this.freqBand,
+      commLinks: this.commLinks,
+      isVolumetric: this.isVolumetric,
+      zoom: this.zoom,
+      system: this.system,
+      operator: this.operator,
+      url: this.url,
+    };
+  }
 }
