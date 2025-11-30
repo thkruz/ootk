@@ -20,9 +20,9 @@ import {
   rae2eci,
   rae2enu,
   rae2sez,
-  Sensor,
   Vec3,
 } from '../../main';
+import { Sensor } from '../../objects/Sensor';
 import { transformsData } from './transformsData';
 
 const numDigits = 6;

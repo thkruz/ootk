@@ -8,7 +8,7 @@
  */
 
 import { ClassicalElements, DEG2RAD, Degrees, Earth, J2000, Kilometers, KilometersPerSecond, Radians, Sgp4, Vector3D } from '@src/main';
-import { Sensor } from '@src/objects';
+import { Sensor } from '../../objects/Sensor';
 import { RadecTopocentric } from '@src/observation';
 import { ObservationOptical } from '@src/observation/ObservationOptical';
 import { GaussIOD } from '@src/orbit-determination/GaussIOD';

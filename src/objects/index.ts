@@ -26,15 +26,19 @@ export { Star } from './Star';
 
 // Legacy sensor exports - deprecated, use sensor module instead
 // These will be removed in a future version
+// Note: Sensor is exported from sensor module, use ObjectsSensor for legacy objects/Sensor class
 /**
  * @deprecated Use sensor classes from the sensor module (e.g., PhasedArrayRadar, OpticalSensor)
  */
+export { Sensor as ObjectsSensor } from './Sensor';
 export { Sensor as LegacySensor } from './Sensor';
 /**
  * @deprecated Use sensor classes from the sensor module
  */
+export { DetailedSensor as ObjectsDetailedSensor } from './DetailedSensor';
 export { DetailedSensor as LegacyDetailedSensor } from './DetailedSensor';
 /**
  * @deprecated Use PhasedArrayRadar from sensor module instead
  */
+export { RfSensor as ObjectsRfSensor } from './RfSensor';
 export { RfSensor as LegacyRfSensor } from './RfSensor';
