@@ -3,8 +3,12 @@ export type { ClassicalElementsParams } from './ClassicalElementsParams';
 export type { EquinoctialElementsParams } from './EquinoctialElementsParams';
 export type { GroundPositionParams } from './GroundPositionParams';
 export type { OptionsParams } from './OptionsParams';
-export type { RfSensorParams } from './RfSensorParams';
 export type { SatelliteParams } from './SatelliteParams';
-export type { SensorParams } from './SensorParams';
 export type { StarObjectParams } from './StarObjectParams';
+
+// Legacy sensor param types - use sensor module types instead
+/** @deprecated Use SensorParams from sensor module instead */
+export type { RfSensorParams } from './RfSensorParams';
+/** @deprecated Use SensorParams from sensor module instead */
+export type { SensorParams as LegacySensorParams } from './SensorParams';
 

@@ -14,14 +14,14 @@ import {
   RAD2DEG,
   Radians,
   RaeVec3,
-  RfSensor,
   RfVec3,
   RuvVec3,
-  Sensor,
   SezVec3,
   Sgp4,
   TAU,
 } from '../main';
+import type { GroundObject } from '../objects/GroundObject';
+import type { PhasedArrayRadar } from '../sensor/PhasedArrayRadar';
 
 /**
  * Converts ECF to ECI coordinates.
@@ -427,18 +427,22 @@ export function calcGmst(date: Date): { gmst: GreenwichMeanSiderealTime; j: numb
  * @variation cached - results are cached
  * @param now - Current date and time.
  * @param eci - ECI coordinates of the satellite.
- * @param sensor - Sensor object containing observer's geodetic coordinates.
+ * @param observer - Ground object or LLA coordinates of the observer.
  * @returns Object containing azimuth, elevation and range in degrees and kilometers respectively.
  */
-export function eci2rae(now: Date, eci: EciVec3<Kilometers>, sensor: Sensor): RaeVec3<Kilometers, Degrees> {
+export function eci2rae(
+  now: Date,
+  eci: EciVec3<Kilometers>,
+  observer: GroundObject | LlaVec3<Degrees, Kilometers>,
+): RaeVec3<Kilometers, Degrees> {
   now = new Date(now);
   const { gmst } = calcGmst(now);
 
   const positionEcf = eci2ecf(eci, gmst);
   const lla = {
-    lat: (sensor.lat * DEG2RAD) as Radians,
-    lon: (sensor.lon * DEG2RAD) as Radians,
-    alt: sensor.alt,
+    lat: (observer.lat * DEG2RAD) as Radians,
+    lon: (observer.lon * DEG2RAD) as Radians,
+    alt: observer.alt,
   };
 
   const rae = ecfRad2rae(lla, positionEcf);
@@ -518,14 +522,14 @@ export function azel2uv(az: Radians, el: Radians, coneHalfAngle: Radians): { u: 
 /**
  * Determine azimuth and elevation off of boresight based on sensor orientation and RAE.
  * @param rae Range, Azimuth, Elevation
- * @param sensor Radar sensor object
+ * @param sensor Phased array radar sensor object
  * @param face Face number of the sensor
  * @param maxSensorAz Maximum sensor azimuth
  * @returns Azimuth and Elevation off of boresight
  */
 export function rae2raeOffBoresight(
   rae: RaeVec3,
-  sensor: RfSensor,
+  sensor: PhasedArrayRadar,
   face: number,
   maxSensorAz: Degrees,
 ): { az: Radians; el: Radians } {
@@ -535,8 +539,8 @@ export function rae2raeOffBoresight(
   // Correct azimuth for sensor orientation.
   az = az > maxSensorAz * DEG2RAD ? ((az - TAU) as Radians) : az;
 
-  az = (az - sensor.boresightAz[face]) as Radians;
-  el = (el - sensor.boresightEl[face]) as Radians;
+  az = (az - (sensor.boresightAz[face] * DEG2RAD)) as Radians;
+  el = (el - (sensor.boresightEl[face] * DEG2RAD)) as Radians;
 
   return { az, el };
 }
@@ -544,12 +548,12 @@ export function rae2raeOffBoresight(
 /**
  * Converts Range Az El to Range U V.
  * @param rae Range, Azimuth, Elevation
- * @param sensor Radar sensor object
+ * @param sensor Phased array radar sensor object
  * @param face Face number of the sensor
  * @param maxSensorAz Maximum sensor azimuth
  * @returns Range, U, V
  */
-export function rae2ruv(rae: RaeVec3, sensor: RfSensor, face: number, maxSensorAz: Degrees): RuvVec3 {
+export function rae2ruv(rae: RaeVec3, sensor: PhasedArrayRadar, face: number, maxSensorAz: Degrees): RuvVec3 {
   const { az, el } = rae2raeOffBoresight(rae, sensor, face, maxSensorAz);
   const { u, v } = azel2uv(az, el, sensor.beamwidthRad);
 
