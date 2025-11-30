@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`ClassicalElements should return the ClassicalElements object 1`] = `
 ClassicalElements {
@@ -31,7 +31,7 @@ ClassicalElements {
 `;
 
 exports[`ClassicalElements should return the PositionVelocity object 1`] = `
-Object {
+{
   "position": Vector3D {
     "x": 1538.2233358428962,
     "y": 5102.261204021967,
@@ -46,7 +46,7 @@ Object {
 `;
 
 exports[`ClassicalElements should return the PositionVelocity object 2`] = `
-Object {
+{
   "position": Vector3D {
     "x": 3699.9682301219336,
     "y": -4340.514588573352,

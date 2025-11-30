@@ -1,12 +1,12 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`functions should be calculate acotch 1`] = `Infinity`;
 
 exports[`functions should be calculate acsch 1`] = `0.8813735870195429`;
 
 exports[`functions should be calculate array2d 1`] = `
-Array [
-  Array [
+[
+  [
     3,
     3,
   ],
@@ -37,7 +37,7 @@ exports[`functions should be calculate copySign 4`] = `-1`;
 exports[`functions should be calculate covariance 1`] = `0.6666666666666666`;
 
 exports[`functions should be calculate createVec 1`] = `
-Array [
+[
   1,
 ]
 `;
@@ -77,8 +77,8 @@ exports[`should be calculate derivative 1`] = `[Function]`;
 exports[`should be calculate jacobian 1`] = `
 Matrix {
   "columns": 3,
-  "elements": Array [
-    Array [
+  "elements": [
+    [
       1.000000000006551,
       0,
       0,

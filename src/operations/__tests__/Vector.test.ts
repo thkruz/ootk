@@ -73,15 +73,15 @@ describe('Vector', () => {
     const result = v1.subtract(v2);
 
     expect(result).toMatchInlineSnapshot(`
-      Vector {
-        "elements": Array [
-          -3,
-          -3,
-          -3,
-        ],
-        "length": 3,
-      }
-    `);
+Vector {
+  "elements": [
+    -3,
+    -3,
+    -3,
+  ],
+  "length": 3,
+}
+`);
   });
 
   // scale a Vector by a scalar and return a new Vector
@@ -90,15 +90,15 @@ describe('Vector', () => {
     const scaledVector = v.scale(2);
 
     expect(scaledVector).toMatchInlineSnapshot(`
-      Vector {
-        "elements": Array [
-          2,
-          4,
-          6,
-        ],
-        "length": 3,
-      }
-    `);
+Vector {
+  "elements": [
+    2,
+    4,
+    6,
+  ],
+  "length": 3,
+}
+`);
   });
 
   // negate a Vector and return a new Vector

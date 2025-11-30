@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Moon should be callable with an "EpochUTC" parameter and return a "Vector3D" object 1`] = `
 Vector3D {
@@ -11,7 +11,7 @@ Vector3D {
 exports[`Moon should be callable with two "Vector3D" parameters and return a number 1`] = `NaN`;
 
 exports[`Moon should call the private method 'moonCoords' with a number parameter and return a RaDec object 1`] = `
-Object {
+{
   "dec": -0.21428784368024154,
   "dist": 401235.63978571084,
   "ra": -0.7625969983284882,
@@ -19,7 +19,7 @@ Object {
 `;
 
 exports[`Moon should have a functioning getMoonTimes method 1`] = `
-Object {
+{
   "alwaysDown": false,
   "alwaysUp": false,
   "highest": 2024-01-12T21:42:31.618Z,
@@ -30,7 +30,7 @@ Object {
 `;
 
 exports[`Moon should have a functioning getMoonTimes method with timezone adjustment 1`] = `
-Object {
+{
   "alwaysDown": false,
   "alwaysUp": false,
   "highest": 2024-01-12T21:42:31.618Z,
@@ -41,7 +41,7 @@ Object {
 `;
 
 exports[`Moon should have a functioning rae method 1`] = `
-Object {
+{
   "az": 4.034314328077605,
   "el": 0.19547892013212267,
   "parallacticAngle": 0.7236664732665937,
@@ -52,31 +52,31 @@ Object {
 exports[`Moon should return 0.5 if the "origin" parameter is not provided 1`] = `0.03596620967759451`;
 
 exports[`Moon should return a MoonIlluminationData object when called with a number parameter 1`] = `
-Object {
+{
   "angle": 2.042516805424306,
   "fraction": 0.1878109225830057,
-  "next": Object {
+  "next": {
     "date": "2021-11-04T23:26:30.060Z",
-    "firstQuarter": Object {
+    "firstQuarter": {
       "date": "2021-11-12T08:37:30.754Z",
       "value": 1636706250754.5,
     },
-    "fullMoon": Object {
+    "fullMoon": {
       "date": "2021-11-19T17:48:31.449Z",
       "value": 1637344111449,
     },
-    "newMoon": Object {
+    "newMoon": {
       "date": "2021-11-04T23:26:30.060Z",
       "value": 1636068390060,
     },
-    "thirdQuarter": Object {
+    "thirdQuarter": {
       "date": "2021-11-27T02:59:32.143Z",
       "value": 1637981972143.5,
     },
     "type": "newMoon",
     "value": 1636068390060,
   },
-  "phase": Object {
+  "phase": {
     "code": ":waning_crescent_moon:",
     "css": "wi-moon-wan-cres",
     "emoji": "🌘",
@@ -91,7 +91,7 @@ Object {
 `;
 
 exports[`Moon should return an object with 'az', 'el', 'rng', and 'parallacticAngle' properties 1`] = `
-Object {
+{
   "az": 5.030114468719165,
   "el": -0.12433217612739415,
   "parallacticAngle": 0.8650448747993286,

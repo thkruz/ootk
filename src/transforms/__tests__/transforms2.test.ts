@@ -110,19 +110,19 @@ describe('Latitude & longitude conversions', () => {
 
   invalidLatitudes.forEach((item) => {
     it(`convert invalid latitude value (${item.radians} radians) to degrees`, () => {
-      expect(() => getDegLat(item.radians)).toThrowError(RangeError);
+      expect(() => getDegLat(item.radians)).toThrow(RangeError);
     });
     it(`convert invalid latitude value (${item.degrees} degrees) to radians`, () => {
-      expect(() => getRadLat(item.degrees)).toThrowError(RangeError);
+      expect(() => getRadLat(item.degrees)).toThrow(RangeError);
     });
   });
 
   invalidLongitudes.forEach((item) => {
     it(`convert invalid longitude value (${item.radians} radians) to degrees`, () => {
-      expect(() => getDegLon(item.radians)).toThrowError(RangeError);
+      expect(() => getDegLon(item.radians)).toThrow(RangeError);
     });
     it(`convert invalid longitude value (${item.degrees} degrees) to radians`, () => {
-      expect(() => getRadLon(item.degrees)).toThrowError(RangeError);
+      expect(() => getRadLon(item.degrees)).toThrow(RangeError);
     });
   });
 });

@@ -1,11 +1,11 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Celestial should calculate the atmospheric refraction when elevation is 0 1`] = `0.008446689093277518`;
 
 exports[`Celestial should calculate the atmospheric refraction when given a valid elevation 1`] = `0.0005363221501954175`;
 
 exports[`Celestial should calculate the azimuth and elevation when given valid inputs 1`] = `
-Object {
+{
   "az": 58.636843073419904,
   "el": 39.53055812197483,
 }

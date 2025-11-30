@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Tle should create a TLE from classical orbital elements 1`] = `
 Tle {
@@ -8,7 +8,7 @@ Tle {
   "line1": "1 00001U 58001A   24013.06111111 +.00000000 +00000+0 +00000-0 0 09990",
   "line2": "2 00001 043.0239 001.6180 0011236 145.4534 033.9125 15.00481387 00010",
   "satnum": 1,
-  "satrec_": Object {
+  "satrec_": {
     "PInco": 0,
     "a": 1.088949028290718,
     "alta": 0.09017257141890522,
