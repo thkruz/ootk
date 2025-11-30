@@ -7,6 +7,8 @@ export { GroundObject } from './GroundObject';
 export type { GroundObjectParams } from './GroundObject';
 export { GroundStation } from './GroundStation';
 export type { GroundStationParams } from './GroundStation';
+export { DynamicGroundObject } from './DynamicGroundObject';
+export type { DynamicGroundObjectParams, GroundInterpolationMethod, WaypointData } from './DynamicGroundObject';
 export { History } from './History';
 export type { HistoryConfig, HistoryEntry } from './History';
 export { DEFAULT_INTERPOLATOR, DEFAULT_LAGRANGE_ORDER, InterpolatorType } from './InterpolatorType';

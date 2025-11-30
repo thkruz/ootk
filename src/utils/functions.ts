@@ -508,6 +508,7 @@ const spaceObjTypeStrMap_ = {
   [SpaceObjectType.ICE_GIANT]: 'Ice Giant',
   [SpaceObjectType.DWARF_PLANET]: 'Dwarf Planet',
   [SpaceObjectType.MOON]: 'Moon',
+  [SpaceObjectType.DYNAMIC_GROUND_OBJECT]: 'Dynamic Ground Object',
   [SpaceObjectType.MAX_SPACE_OBJECT_TYPE]: 'Max Space Object Type',
 };
 
