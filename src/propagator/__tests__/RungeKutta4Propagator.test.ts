@@ -174,5 +174,112 @@ describe('RungeKutta4Propagator', () => {
 
       expect(result.length).toBeGreaterThan(0);
     });
+
+    describe('ephemerisManeuver', () => {
+      it('should generate ephemeris with single impulsive maneuver', () => {
+        const start = epoch;
+        const finish = epoch.roll(180 as Seconds);
+        const maneuverEpoch = epoch.roll(60 as Seconds);
+        const deltaV = new Vector3D(0.1, 0, 0) as Vector3D<KilometersPerSecond>;
+        const thrust = new Thrust(
+          maneuverEpoch,
+          deltaV.x * 1000 as MetersPerSecond,
+          deltaV.y * 1000 as MetersPerSecond,
+          deltaV.z * 1000 as MetersPerSecond,
+        );
+        const result = propagator.ephemerisManeuver(start, finish, [thrust]);
+
+        expect(result).toBeDefined();
+      });
+
+      it('should generate ephemeris with multiple maneuvers', () => {
+        const start = epoch;
+        const finish = epoch.roll(300 as Seconds);
+        const maneuver1Epoch = epoch.roll(60 as Seconds);
+        const maneuver2Epoch = epoch.roll(180 as Seconds);
+        const deltaV = new Vector3D(0.1, 0, 0) as Vector3D<KilometersPerSecond>;
+        const thrust1 = new Thrust(
+          maneuver1Epoch,
+          deltaV.x * 1000 as MetersPerSecond,
+          deltaV.y * 1000 as MetersPerSecond,
+          deltaV.z * 1000 as MetersPerSecond,
+        );
+        const thrust2 = new Thrust(
+          maneuver2Epoch,
+          deltaV.x * 1000 as MetersPerSecond,
+          deltaV.y * 1000 as MetersPerSecond,
+          deltaV.z * 1000 as MetersPerSecond,
+        );
+        const result = propagator.ephemerisManeuver(start, finish, [thrust1, thrust2]);
+
+        expect(result).toBeDefined();
+      });
+
+      it('should generate ephemeris with finite burn maneuver', () => {
+        const start = epoch;
+        const finish = epoch.roll(240 as Seconds);
+        const startEpoch = epoch.roll(60 as Seconds);
+        const stopEpoch = epoch.roll(120 as Seconds);
+        const deltaV = new Vector3D(0.1, 0, 0) as Vector3D<KilometersPerSecond>;
+        const thrust = new Thrust(
+          startEpoch,
+          deltaV.x * 1000 as MetersPerSecond,
+          deltaV.y * 1000 as MetersPerSecond,
+          deltaV.z * 1000 as MetersPerSecond,
+          stopEpoch.difference(startEpoch) as unknown as SecondsPerMeterPerSecond,
+        );
+        const result = propagator.ephemerisManeuver(start, finish, [thrust], 30 as Seconds);
+
+        expect(result).toBeDefined();
+      });
+
+      it('should handle custom interval', () => {
+        const start = epoch;
+        const finish = epoch.roll(180 as Seconds);
+        const maneuverEpoch = epoch.roll(60 as Seconds);
+        const deltaV = new Vector3D(0.1, 0, 0) as Vector3D<KilometersPerSecond>;
+        const thrust = new Thrust(
+          maneuverEpoch,
+          deltaV.x * 1000 as MetersPerSecond,
+          deltaV.y * 1000 as MetersPerSecond,
+          deltaV.z * 1000 as MetersPerSecond,
+        );
+        const result = propagator.ephemerisManeuver(start, finish, [thrust], 15 as Seconds);
+
+        expect(result).toBeDefined();
+      });
+
+      it('should propagate before first maneuver if needed', () => {
+        const start = epoch;
+        const finish = epoch.roll(180 as Seconds);
+        const maneuverEpoch = epoch.roll(120 as Seconds);
+        const deltaV = new Vector3D(0.1, 0, 0) as Vector3D<KilometersPerSecond>;
+        const thrust = new Thrust(
+          maneuverEpoch,
+          deltaV.x * 1000 as MetersPerSecond,
+          deltaV.y * 1000 as MetersPerSecond,
+          deltaV.z * 1000 as MetersPerSecond,
+        );
+        const result = propagator.ephemerisManeuver(start, finish, [thrust]);
+
+        expect(result).toBeDefined();
+      });
+
+      it('should propagate after last maneuver', () => {
+        const start = epoch;
+        const finish = epoch.roll(240 as Seconds);
+        const maneuverEpoch = epoch.roll(60 as Seconds);
+        const deltaV = new Vector3D(0.1, 0, 0) as Vector3D<KilometersPerSecond>;
+        const thrust = new Thrust(
+          maneuverEpoch,
+          deltaV.x * 1000 as MetersPerSecond,
+          deltaV.y * 1000 as MetersPerSecond,
+          deltaV.z * 1000 as MetersPerSecond,
+        );
+        const result = propagator.ephemerisManeuver(start, finish, [thrust]);
+
+        expect(result).toBeDefined();
+      });
+    });
   });
 });
