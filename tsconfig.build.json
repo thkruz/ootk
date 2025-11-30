@@ -15,7 +15,10 @@
     "./src/**/*.ts"
   ],
   "exclude": [
-    "./src/**/v2-docs/**"
+    "./src/**/v2-docs/**",
+    "./src/**/__tests__/**",
+    "./src/**/*.test.ts",
+    "./src/fetch/*.ts"
   ],
   "filesGlob": [
     "./src/**/*.ts"
