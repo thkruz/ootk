@@ -59,10 +59,10 @@ export class RungeKutta4Propagator extends Propagator {
     maneuvers: Thrust[],
     interval = 60.0 as Seconds,
   ): VerletBlendInterpolator {
-    const tMvr = maneuvers.slice(0).filter((mvr) => mvr.start >= start || mvr.stop <= finish);
+    const tMvr = maneuvers.slice(0).filter((mvr) => mvr.start <= finish && mvr.stop >= start);
     const ephemeris: J2000[] = [];
 
-    if (tMvr[0].start > start) {
+    if (tMvr.length === 0 || tMvr[0].start > start) {
       ephemeris.push(this.propagate(start));
     }
     for (const mvr of tMvr) {

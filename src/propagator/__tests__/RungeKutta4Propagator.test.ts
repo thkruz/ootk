@@ -218,15 +218,19 @@ describe('RungeKutta4Propagator', () => {
       it('should generate ephemeris with finite burn maneuver', () => {
         const start = epoch;
         const finish = epoch.roll(240 as Seconds);
-        const startEpoch = epoch.roll(60 as Seconds);
-        const stopEpoch = epoch.roll(120 as Seconds);
+        const maneuverStart = epoch.roll(60 as Seconds);
+        const maneuverStop = epoch.roll(120 as Seconds);
+        const centerEpoch = epoch.roll(90 as Seconds); // Midpoint of maneuver
         const deltaV = new Vector3D(0.1, 0, 0) as Vector3D<KilometersPerSecond>;
+        const magnitude = deltaV.magnitude() * 1000; // 100 m/s
+        const duration = maneuverStop.difference(maneuverStart); // 60 seconds
+        const durationRate = (duration / magnitude) as SecondsPerMeterPerSecond;
         const thrust = new Thrust(
-          startEpoch,
+          centerEpoch,
           deltaV.x * 1000 as MetersPerSecond,
           deltaV.y * 1000 as MetersPerSecond,
           deltaV.z * 1000 as MetersPerSecond,
-          stopEpoch.difference(startEpoch) as unknown as SecondsPerMeterPerSecond,
+          durationRate,
         );
         const result = propagator.ephemerisManeuver(start, finish, [thrust], 30 as Seconds);
 
