@@ -107,6 +107,17 @@ export type DegreesPerSecond = Distinct<number, 'DegreesPerSecond'>;
 export type MetersPerSecond = Distinct<number, 'MetersPerSecond'>;
 
 /**
+ * Reference frame type for coordinate systems.
+ * This is a phantom type - it exists only at compile time for type safety.
+ *
+ * - TEME: True Equator Mean Equinox (SGP4 output frame)
+ * - J2000: J2000 Earth-Centered Inertial (mean equator and equinox of J2000.0)
+ * - GCRF: Geocentric Celestial Reference Frame (ICRF aligned)
+ * - ITRF: International Terrestrial Reference Frame (Earth-fixed)
+ */
+export type ReferenceFrame = 'TEME' | 'J2000' | 'GCRF' | 'ITRF';
+
+/**
  * Represents a three-dimensional vector.
  *
  * This type is used to represent a point in space in terms of x, y, and z
@@ -115,6 +126,9 @@ export type MetersPerSecond = Distinct<number, 'MetersPerSecond'>;
  * @template Units The unit of measure used for the dimensions. This is
  * typically a type representing a distance, such as kilometers or meters. The
  * default is Kilometers.
+ * @template Frame The reference frame for the coordinates. This is a phantom type
+ * that exists only at compile time for type safety. Defaults to 'TEME' since
+ * SGP4 outputs TEME coordinates.
  * x The x dimension of the vector, representing the distance from the
  * origin to the point in the x direction.
  * y The y dimension of the vector, representing the distance from the
@@ -122,11 +136,36 @@ export type MetersPerSecond = Distinct<number, 'MetersPerSecond'>;
  * vector, representing the distance from the origin to the point in the z
  * direction.
  */
-export type Vec3<Units = Kilometers> = {
+export type Vec3<Units = Kilometers, Frame extends ReferenceFrame = 'TEME'> = {
   x: Units;
   y: Units;
   z: Units;
+  /** Phantom type for reference frame - not present at runtime */
+  readonly __frame?: Frame;
 };
+
+/**
+ * TEME (True Equator Mean Equinox) frame vector.
+ * This is the native output frame of SGP4/SDP4 propagation.
+ */
+export type TemeVec3<Units = Kilometers> = Vec3<Units, 'TEME'>;
+
+/**
+ * J2000 frame vector (Mean equator and equinox of J2000.0).
+ */
+export type J2000Vec3<Units = Kilometers> = Vec3<Units, 'J2000'>;
+
+/**
+ * GCRF (Geocentric Celestial Reference Frame) vector.
+ * This is aligned with the ICRF (International Celestial Reference Frame).
+ */
+export type GcrfVec3<Units = Kilometers> = Vec3<Units, 'GCRF'>;
+
+/**
+ * ITRF (International Terrestrial Reference Frame) vector.
+ * This is an Earth-fixed frame that rotates with the Earth.
+ */
+export type ItrfVec3<Units = Kilometers> = Vec3<Units, 'ITRF'>;
 
 /**
  * Represents a three-dimensional vector in Earth-Centered Inertial (ECI)
@@ -141,8 +180,12 @@ export type Vec3<Units = Kilometers> = {
  * origin to the point in the y direction. @property z The z dimension of the
  * vector, representing the distance from the origin to the point in the z
  * direction.
+ *
+ * @deprecated Use TemeVec3 instead for explicit TEME frame reference, or use the
+ * appropriate frame-specific type (J2000Vec3, GcrfVec3) for other ECI frames.
+ * EciVec3 is ambiguous as it doesn't specify which ECI frame is used.
  */
-export type EciVec3<Units = Kilometers> = Vec3<Units>;
+export type EciVec3<Units = Kilometers> = TemeVec3<Units>;
 
 /**
  * Represents a three-dimensional vector in Earth-Centered Fixed (ECF)
@@ -394,34 +437,37 @@ export interface SatelliteRecord {
  * function. It consists of two main properties: position and velocity, each of
  * which is a three-dimensional vector.
  *
+ * **IMPORTANT: Both position and velocity are in the TEME (True Equator Mean Equinox)
+ * reference frame.** TEME is the native output frame of the SGP4/SDP4 propagator.
+ *
  * The position and velocity vectors are represented as objects with x, y, and z
- * properties, each of which is a number. Alternatively, they can be a boolean
- * value.
+ * properties, each of which is a number. Alternatively, they can be false if
+ * propagation fails.
  *
  * This type is primarily used in the context of satellite tracking and
  * prediction, where it is crucial to know both the current position and
  * velocity of a satellite.
  */
 export type StateVectorSgp4 = {
-  position:
-  | {
-    x: Kilometers;
-    y: Kilometers;
-    z: Kilometers;
-  }
-  | false;
-  velocity:
-  | {
-    x: KilometersPerSecond;
-    y: KilometersPerSecond;
-    z: KilometersPerSecond;
-  }
-  | false;
+  /** Position in TEME (True Equator Mean Equinox) frame in kilometers */
+  position: TemeVec3<Kilometers> | false;
+  /** Velocity in TEME (True Equator Mean Equinox) frame in km/s */
+  velocity: TemeVec3<KilometersPerSecond> | false;
 };
 
-export type PosVel<T = Kilometers, T2 = KilometersPerSecond> = {
-  position: Vec3<T>;
-  velocity: Vec3<T2>;
+/**
+ * Position and velocity state vector.
+ * @template PosUnits Unit of measure for position (default: Kilometers)
+ * @template VelUnits Unit of measure for velocity (default: KilometersPerSecond)
+ * @template Frame Reference frame for the coordinates (default: 'TEME')
+ */
+export type PosVel<
+  PosUnits = Kilometers,
+  VelUnits = KilometersPerSecond,
+  Frame extends ReferenceFrame = 'TEME'
+> = {
+  position: Vec3<PosUnits, Frame>;
+  velocity: Vec3<VelUnits, Frame>;
 };
 
 /**
