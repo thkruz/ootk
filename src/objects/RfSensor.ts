@@ -123,4 +123,17 @@ export class RfSensor extends DetailedSensor {
   get beamwidthRad() {
     return (this.beamwidth * DEG2RAD) as Radians;
   }
+
+  /**
+   * Returns type-specific serialization data.
+   */
+  protected override serializeSpecific(): Record<string, unknown> {
+    return {
+      ...super.serializeSpecific(),
+      boresightAz: this.boresightAz,
+      boresightEl: this.boresightEl,
+      faces: this.faces,
+      beamwidth: this.beamwidth,
+    };
+  }
 }

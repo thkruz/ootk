@@ -35,7 +35,7 @@ import { ProbabilityOfCollision } from './ProbabilityOfCollision';
  * Input for a space object in conjunction assessment.
  * Can be specified as either a TLE or a state vector with optional covariance.
  */
-export interface SpaceObject {
+export interface ConjunctionSpaceObjectInput {
   /** Object identifier/name */
   name?: string;
 
@@ -118,8 +118,8 @@ export class ConjunctionAssessment {
   private secondaryCovSample?: CovarianceSample;
 
   constructor(
-    private primary: SpaceObject,
-    private secondary: SpaceObject,
+    private primary: ConjunctionSpaceObjectInput,
+    private secondary: ConjunctionSpaceObjectInput,
   ) {
     // Initialize propagators (will be replaced in assess() if needed)
     this.primaryProp = this.createPropagator(primary, false);
@@ -298,7 +298,7 @@ export class ConjunctionAssessment {
    * @param forceModel Optional force model for numerical propagation
    * @returns Propagator instance
    */
-  private createPropagator(obj: SpaceObject, useHighFidelity: boolean, forceModel?: ForceModel): Propagator {
+  private createPropagator(obj: ConjunctionSpaceObjectInput, useHighFidelity: boolean, forceModel?: ForceModel): Propagator {
     if (obj.tle) {
       if (useHighFidelity) {
         // Convert TLE to state and use RK89
