@@ -21,8 +21,40 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export { Celestial } from './Celestial';
+// Core Earth constants (unchanged)
 export { Earth } from './Earth';
-export { Moon } from './Moon';
-export { Sun } from './Sun';
 
+// Celestial body types
+export { CelestialBodyType, bodyTypeLookup } from './CelestialBodyType';
+
+// Celestial body base class
+export { CelestialBody } from './CelestialBody';
+export type { CelestialBodyParams, RiseSetTimes } from './CelestialBody';
+
+// Sun
+export { Sun, SunBody } from './SunBody';
+export type { SunTime } from './SunBody';
+
+// Moon
+export { Moon, MoonBody } from './MoonBody';
+export type { MoonPhaseInfo, MoonTimes, LibrationData } from './MoonBody';
+
+// Planets
+export {
+  PlanetBody,
+  Mercury,
+  Venus,
+  Mars,
+  Jupiter,
+  Saturn,
+  Uranus,
+  Neptune,
+  Pluto,
+} from './PlanetBody';
+
+// Ephemeris-based bodies
+export { EphemerisBody } from './EphemerisBody';
+export type { EphemerisDataPoint, EphemerisBodyParams, EphemerisInterpolationType } from './EphemerisBody';
+
+// Solar system registry
+export { SolarSystem } from './SolarSystem';
