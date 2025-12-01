@@ -1,8 +1,11 @@
 import * as ootk from '../src/main';
 
 describe('ootk', () => {
-  it('should export Celestial', () => {
-    expect(ootk.Celestial).toBeDefined();
+  it('should export CelestialBody', () => {
+    expect(ootk.CelestialBody).toBeDefined();
+  });
+  it('should export SolarSystem', () => {
+    expect(ootk.SolarSystem).toBeDefined();
   });
   it('should export Earth', () => {
     expect(ootk.Earth).toBeDefined();
