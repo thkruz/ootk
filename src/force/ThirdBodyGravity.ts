@@ -15,7 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { J2000, Moon, Sun, Vector3D } from '../main';
+import { J2000, Vector3D } from '../main';
+import { Moon, MoonBody } from '../body/MoonBody';
+import { Sun, SunBody } from '../body/SunBody';
 import { Force } from './Force';
 
 // / Third-body gravity model.
@@ -26,25 +28,25 @@ export class ThirdBodyGravity implements Force {
   }
 
   private static moonGravity_(state: J2000): Vector3D {
-    const rMoon = Moon.eci(state.epoch);
+    const rMoon = Moon.eci(state.epoch.toDateTime());
     const aNum = rMoon.subtract(state.position);
     const aDen = aNum.magnitude() ** 3;
     const bNum = rMoon;
     const bDen = rMoon.magnitude() ** 3;
     const gravity = aNum.scale(1 / aDen).add(bNum.scale(-1 / bDen));
 
-    return gravity.scale(Moon.mu);
+    return gravity.scale(MoonBody.MU);
   }
 
   private static sunGravity_(state: J2000): Vector3D {
-    const rSun = Sun.positionApparent(state.epoch);
+    const rSun = Sun.eciApparent(state.epoch.toDateTime());
     const aNum = rSun.subtract(state.position);
     const aDen = aNum.magnitude() ** 3;
     const bNum = rSun;
     const bDen = rSun.magnitude() ** 3;
     const gravity = aNum.scale(1 / aDen).add(bNum.scale(-1 / bDen));
 
-    return gravity.scale(Sun.mu);
+    return gravity.scale(SunBody.MU);
   }
 
   acceleration(state: J2000): Vector3D {

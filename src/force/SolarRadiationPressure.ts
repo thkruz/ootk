@@ -15,7 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { J2000, KM_PER_AU, Sun, Vector3D } from '../main';
+import { J2000, KM_PER_AU, Vector3D } from '../main';
+import { Sun } from '../body/SunBody';
 import { Force } from './Force';
 
 // / Solar radiation pressure model.
@@ -29,7 +30,7 @@ export class SolarRadiationPressure extends Force {
   private static readonly _kRef: number = 4.56e-6 * KM_PER_AU ** 2;
 
   acceleration(state: J2000): Vector3D {
-    const rSun = Sun.positionApparent(state.epoch);
+    const rSun = Sun.eciApparent(state.epoch.toDateTime());
     const r = state.position.subtract(rSun);
     const rMag = r.magnitude();
     const r2 = rMag * rMag;
