@@ -24,9 +24,9 @@ import {
   Kilometers,
   KilometersPerSecond,
   Radians,
-  Sun,
   Vector3D,
 } from '../main';
+import { Sun } from '../body/SunBody';
 import { Force } from './Force';
 
 /**
@@ -72,7 +72,7 @@ export class AtmosphericDrag implements Force {
     if (hpa === null) {
       return 0.0;
     }
-    const sunPos = Sun.positionApparent(state.epoch);
+    const sunPos = Sun.eciApparent(state.epoch.toDateTime());
     const sunVec = new J2000(
       state.epoch,
       sunPos,
