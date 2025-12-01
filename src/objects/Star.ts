@@ -21,8 +21,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Horizon, MakeTime, Observer } from 'astronomy-engine';
 import {
-  Celestial,
   Degrees,
   ecf2eci,
   EciVec3,
@@ -37,6 +37,7 @@ import {
   Sgp4,
   SpaceObjectType,
   StarObjectParams,
+  RAD2DEG,
 } from '../main';
 import { BaseObject } from './BaseObject';
 
@@ -73,9 +74,15 @@ export class Star extends BaseObject {
     lla: LlaVec3<Degrees, Kilometers> = { lat: <Degrees>180, lon: <Degrees>0, alt: <Kilometers>0 },
     date: Date = new Date(),
   ): RaeVec3 {
-    const starPos = Celestial.azEl(date, lla.lat, lla.lon, this.ra, this.dec);
+    // Convert RA from radians to sidereal hours (RA is in radians, need hours for astronomy-engine)
+    const raHours = (this.ra * RAD2DEG) / 15; // degrees / 15 = hours
+    const decDegrees = this.dec * RAD2DEG;
 
-    return { az: starPos.az, el: starPos.el, rng: <Kilometers>250000 };
+    const time = MakeTime(date);
+    const observer = new Observer(lla.lat, lla.lon, lla.alt * 1000); // Convert km to meters
+    const horizontal = Horizon(time, observer, raHours, decDegrees, 'normal');
+
+    return { az: horizontal.azimuth as Degrees, el: horizontal.altitude as Degrees, rng: <Kilometers>250000 };
   }
 
   /**
