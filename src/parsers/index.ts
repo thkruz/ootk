@@ -24,6 +24,13 @@ export type {
   ParsedOem,
 } from './OemTypes';
 
+export { HorizonsParser } from './HorizonsParser';
+export type {
+  HorizonsEphemerisData,
+  HorizonsVectorResult,
+  HorizonsObserverResult,
+} from './HorizonsParser';
+
 // TODO: Future parsers to add:
 // - Sp3Parser: GPS precise ephemerides (SP3 format)
 // - CdmParser: Conjunction Data Messages
