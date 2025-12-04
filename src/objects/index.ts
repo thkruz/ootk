@@ -1,11 +1,44 @@
 export { BaseObject } from './BaseObject';
+export { CenterBody, CenterBodyMu, parseCenterBody } from './CenterBody';
 export { DetailedSatellite } from './DetailedSatellite';
-export { DetailedSensor } from './DetailedSensor';
+export { EphemerisSatellite } from './EphemerisSatellite';
+export type { EphemerisSatelliteParams } from './EphemerisSatellite';
 export { GroundObject } from './GroundObject';
+export type { GroundObjectParams } from './GroundObject';
+export { GroundStation } from './GroundStation';
+export type { GroundStationParams } from './GroundStation';
+export { History } from './History';
+export type { HistoryConfig, HistoryEntry } from './History';
+export { DEFAULT_INTERPOLATOR, DEFAULT_LAGRANGE_ORDER, InterpolatorType } from './InterpolatorType';
 export { LandObject } from './LandObject';
 export { Marker } from './Marker';
-export { RfSensor } from './RfSensor';
+export type {
+  CommunicationDeviceInterface,
+  HistoricalState,
+  PropagatorType,
+  SensorInterface,
+  SerializedObject,
+} from './ObjectTypes';
 export { Satellite } from './Satellite';
-export { Sensor } from './Sensor';
+export { SpaceObject } from './SpaceObject';
+export type { SpaceObjectParams } from './SpaceObject';
 export { Star } from './Star';
 
+// Legacy sensor exports - deprecated, use sensor module instead
+// These will be removed in a future version
+// Note: Sensor is exported from sensor module, use ObjectsSensor for legacy objects/Sensor class
+/**
+ * @deprecated Use sensor classes from the sensor module (e.g., PhasedArrayRadar, OpticalSensor)
+ */
+export { Sensor as ObjectsSensor } from './Sensor';
+export { Sensor as LegacySensor } from './Sensor';
+/**
+ * @deprecated Use sensor classes from the sensor module
+ */
+export { DetailedSensor as ObjectsDetailedSensor } from './DetailedSensor';
+export { DetailedSensor as LegacyDetailedSensor } from './DetailedSensor';
+/**
+ * @deprecated Use PhasedArrayRadar from sensor module instead
+ */
+export { RfSensor as ObjectsRfSensor } from './RfSensor';
+export { RfSensor as LegacyRfSensor } from './RfSensor';

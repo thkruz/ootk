@@ -9,7 +9,7 @@
  */
 
 import { ClassicalElements, DEG2RAD, Degrees, Kilometers, RAD2DEG, Radians, Sgp4Propagator, Tle } from '@src/main';
-import { Sensor } from '@src/objects';
+import { Sensor } from '../../objects/Sensor';
 import { RadecTopocentric } from '@src/observation';
 import { ObservationOptical } from '@src/observation/ObservationOptical';
 import { GoodingIOD, ModifiedGoodingIOD } from '@src/orbit-determination';

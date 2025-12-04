@@ -78,6 +78,38 @@ export class Star extends BaseObject {
     return { az: starPos.az, el: starPos.el, rng: <Kilometers>250000 };
   }
 
+  /**
+   * Creates a deep copy of this star.
+   */
+  clone(): Star {
+    return new Star({
+      id: this.id,
+      name: this.name,
+      ra: this.ra,
+      dec: this.dec,
+      bf: this.bf,
+      h: this.h,
+      pname: this.pname,
+      vmag: this.vmag,
+      active: this.active,
+      metadata: this.metadata ? { ...this.metadata } : undefined,
+    });
+  }
+
+  /**
+   * Returns type-specific serialization data.
+   */
+  protected serializeSpecific(): Record<string, unknown> {
+    return {
+      ra: this.ra,
+      dec: this.dec,
+      bf: this.bf,
+      h: this.h,
+      pname: this.pname,
+      vmag: this.vmag,
+    };
+  }
+
   private static calculateTimeVariables_(date: Date): { gmst: GreenwichMeanSiderealTime; j: number } {
     const j =
       jday(
