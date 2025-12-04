@@ -587,6 +587,59 @@ export class Sun {
   }
 
   /**
+   * Calculates the angle at sat2 between sat1 and the Sun.
+   *
+   * This computes the angle between the vector from sat2 to the Sun
+   * and the vector from sat2 to sat1.
+   *
+   * @param sat1Pos - ECI position of the first satellite in km.
+   * @param sat2Pos - ECI position of the second satellite (vertex) in km.
+   * @param sunPos - ECI position of the Sun in km.
+   * @returns The angle in radians.
+   *
+   * @example
+   * ```ts
+   * const sunPos = Sun.position(epoch);
+   * const angle = Sun.angleBetweenSatellites(sat1.position, sat2.position, sunPos);
+   * const angleDeg = angle * RAD2DEG;
+   * ```
+   */
+  static angleBetweenSatellites(
+    sat1Pos: Vector3D<Kilometers>,
+    sat2Pos: Vector3D<Kilometers>,
+    sunPos: Vector3D<Kilometers>,
+  ): Radians {
+    const sat2ToSun = sunPos.subtract(sat2Pos);
+    const sat2ToSat1 = sat1Pos.subtract(sat2Pos);
+
+    return sat2ToSun.angle(sat2ToSat1);
+  }
+
+  /**
+   * Calculates the Sun-Satellite-Earth angle with vertex at the satellite.
+   *
+   * This computes the angle between the vector from the satellite to the Sun
+   * and the vector from the satellite to the Earth (Earth is at origin in ECI).
+   *
+   * @param satPos - ECI position of the satellite in km.
+   * @param sunPos - ECI position of the Sun in km.
+   * @returns The angle in degrees.
+   *
+   * @example
+   * ```ts
+   * const sunPos = Sun.position(epoch);
+   * const angle = Sun.sunSatEarthAngle(sat.position, sunPos);
+   * // angle is in degrees, useful for determining if satellite is between Earth and Sun
+   * ```
+   */
+  static sunSatEarthAngle(satPos: Vector3D<Kilometers>, sunPos: Vector3D<Kilometers>): Degrees {
+    const satToSun = sunPos.subtract(satPos);
+    const satToEarth = satPos.negate(); // Earth at origin
+
+    return (satToSun.angle(satToEarth) * RAD2DEG) as Degrees;
+  }
+
+  /**
    * The approximate transit time
    * @param Ht hourAngle
    * @param lw rad * -lng
