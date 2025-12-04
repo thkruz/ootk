@@ -6,7 +6,7 @@ describe('RfSensor', () => {
     const sensor = new RfSensor({
       objName: 'RAFFYL',
       shortName: 'FYL',
-      id: 0,
+      id: '0',
       name: 'RAF Fylingdales, United Kingdom',
       uiName: 'RAF Fylingdales',
       system: 'BMEWS UEWR',

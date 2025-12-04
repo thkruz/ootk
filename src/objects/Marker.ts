@@ -22,4 +22,11 @@ export class Marker extends BaseObject {
   isMarker() {
     return true;
   }
+
+  /**
+   * Returns type-specific serialization data.
+   */
+  protected serializeSpecific(): Record<string, unknown> {
+    return {};
+  }
 }

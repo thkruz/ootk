@@ -24,7 +24,7 @@ import {
   Seconds,
   Vector3D,
 } from '@src/main';
-import { Sensor } from '@src/objects';
+import { Sensor } from '../../objects/Sensor';
 import { Observation } from '@src/observation/Observation';
 import { ObservationOptical } from '@src/observation/ObservationOptical';
 import { ObservationRadar } from '@src/observation/ObservationRadar';
