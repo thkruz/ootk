@@ -111,6 +111,30 @@ export class VisualizationHelpers {
    * @param start - Start time for the orbit track
    * @param periods - Number of orbital periods to generate (default: 1)
    * @param samplesPerPeriod - Number of sample points per period (default: 90)
+   * @example
+   * ```typescript
+   * import { Satellite, VisualizationHelpers } from 'ootk';
+   *
+   * const satellite = new Satellite({ tle });
+   *
+   * // Generate one full orbit with 90 points
+   * const track = VisualizationHelpers.generateOrbitTrack(
+   *   satellite,
+   *   new Date(),
+   *   1,    // 1 orbital period
+   *   90    // 90 sample points (4-degree spacing)
+   * );
+   *
+   * // Use points for 3D visualization (e.g., Three.js, Cesium)
+   * track.forEach(point => {
+   *   console.log(`Time: ${point.time.toISOString()}`);
+   *   console.log(`  Position: [${point.position.x}, ${point.position.y}, ${point.position.z}] km`);
+   *   console.log(`  Altitude: ${point.altitude.toFixed(1)} km`);
+   * });
+   *
+   * // Generate 3 orbits for longer visualization
+   * const extendedTrack = VisualizationHelpers.generateOrbitTrack(satellite, new Date(), 3, 120);
+   * ```
    * @returns Array of orbit track points with position, velocity, and altitude
    */
   static generateOrbitTrack(

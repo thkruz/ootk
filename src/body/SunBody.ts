@@ -229,6 +229,31 @@ export class SunBody extends CelestialBody {
    * Determines if a satellite is in Earth's shadow.
    * @param epoch - The epoch for the calculation
    * @param satPos - The satellite's ECI position in kilometers
+   * @example
+   * ```typescript
+   * import { Sun, Satellite, EpochUTC, Vector3D, Kilometers, Seconds } from 'ootk';
+   *
+   * const satellite = new Satellite({ tle });
+   * const now = new Date();
+   * const epoch = new EpochUTC((now.getTime() / 1000) as Seconds);
+   *
+   * const pv = satellite.eci(now);
+   * if (pv) {
+   *   const satPos = new Vector3D<Kilometers>(
+   *     pv.position.x as Kilometers,
+   *     pv.position.y as Kilometers,
+   *     pv.position.z as Kilometers
+   *   );
+   *
+   *   const inShadow = Sun.shadow(epoch, satPos);
+   *   console.log(inShadow ? 'Satellite is in eclipse' : 'Satellite is sunlit');
+   *
+   *   // For more detail, use lightingRatio
+   *   const sunPos = Sun.eci(now);
+   *   const lighting = Sun.lightingRatio(satPos, sunPos);
+   *   console.log(`Lighting: ${(lighting * 100).toFixed(1)}%`);
+   * }
+   * ```
    * @returns True if satellite is in shadow (eclipse)
    */
   shadow(epoch: EpochUTC, satPos: Vector3D<Kilometers>): boolean {
@@ -325,6 +350,29 @@ export class SunBody extends CelestialBody {
    * @param lon - Longitude in degrees
    * @param alt - Altitude in meters (default 0)
    * @param isUtc - If true, treat date as UTC (default false)
+   * @example
+   * ```typescript
+   * import { Sun, Degrees, Meters } from 'ootk';
+   *
+   * // Get sun times for a ground station
+   * const times = Sun.getTimes(
+   *   new Date('2024-06-21'),
+   *   40.0 as Degrees,    // latitude
+   *   -75.0 as Degrees,   // longitude
+   *   100 as Meters       // altitude
+   * );
+   *
+   * console.log(`Sunrise: ${times.sunriseStart.toLocaleTimeString()}`);
+   * console.log(`Sunset: ${times.sunsetEnd.toLocaleTimeString()}`);
+   * console.log(`Solar noon: ${times.solarNoon.toLocaleTimeString()}`);
+   *
+   * // For optical satellite tracking, check astronomical twilight
+   * console.log(`Astronomical dawn: ${times.astronomicalDawn.toLocaleTimeString()}`);
+   * console.log(`Astronomical dusk: ${times.astronomicalDusk.toLocaleTimeString()}`);
+   *
+   * // Golden hour for photography
+   * console.log(`Golden hour starts: ${times.goldenHourDuskStart.toLocaleTimeString()}`);
+   * ```
    * @returns Object with all sun event times
    */
   getTimes(
