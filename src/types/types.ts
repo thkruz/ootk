@@ -15,8 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { CommLink, PassType, Satellite, SatelliteParams, Vector3D } from '../main';
-import { SensorParams as LegacySensorParamsFromInterfaces } from '../interfaces/SensorParams';
+import { PassType, Satellite, SatelliteParams, Vector3D } from '../main';
 import { Sgp4ErrorCode } from '../sgp4/sgp4-error';
 
 /**
@@ -189,7 +188,7 @@ export type ItrfVec3<Units = Kilometers> = Vec3<Units, 'ITRF'>;
 export type EciVec3<Units = Kilometers> = TemeVec3<Units>;
 
 /**
- * Represents a three-dimensional vector in Earth-Centered Fixed (ECF)
+ * Represents a three-dimensional vector in Earth-Centered Earth Fixed (ECEF)
  * coordinates.
  *
  * NOTE: ECF (Earth-Centered Fixed) and ECEF (Earth-Centered, Earth-Fixed) are
@@ -197,28 +196,11 @@ export type EciVec3<Units = Kilometers> = TemeVec3<Units>;
  * with respect to the Earth, meaning that the coordinates of a point in this
  * system do not change even as the Earth rotates.
  *
- * The difference between the two is that ECF is a Cartesian coordinate system,
- * while ECEF is a spherical coordinate system. The ECF system is used in this
- * library because it is easier to work with in the context of the SGP4
- * algorithm.
- *
  * This type is used to represent a point in space in terms of x, y, and z
  * coordinates. It is a generic type that allows for flexibility in the units of
  * measure used for each dimension. The default unit of measure is Kilometers.
- * x The x dimension of the vector, representing the distance from the
- * origin to the point in the x direction.
- * y The y dimension of the vector, representing the distance from the
- * origin to the point in the y direction. @property z The z dimension of the
- * vector, representing the distance from the origin to the point in the z
- * direction.
  */
-export type EcfVec3<Units = Kilometers> = Vec3<Units>;
-
-/**
- * Represents a three-dimensional vector in Earth-Centered Earth-Fixed (ECEF)
- * coordinates.
- */
-export type EcefVec3<Units = Kilometers> = EcfVec3<Units>;
+export type EcefVec3<Units = Kilometers> = Vec3<Units>;
 
 /**
  * Represents a three-dimensional vector in East, North, Up (ENU) coordinates.
@@ -821,65 +803,11 @@ export enum PayloadStatus {
   UNKNOWN = '?'
 }
 
-export interface DetailedSatelliteParams extends SatelliteParams {
-  id?: string;
-  active?: boolean;
-  configuration?: string;
-  country?: string;
-  dryMass?: string;
-  equipment?: string;
-  launchDate?: string;
-  launchMass?: string;
-  launchSite?: string;
-  launchVehicle?: string;
-  lifetime?: string | number;
-  maneuver?: string;
-  manufacturer?: string;
-  mission?: string;
-  motor?: string;
-  owner?: string;
-  bus?: string;
-  payload?: string;
-  power?: string;
-  purpose?: string;
-  length?: string;
-  diameter?: string;
-  shape?: string;
-  span?: string;
-  user?: string;
-  vmag?: number | null;
-  rcs?: number | null;
-  source?: string;
-  altId?: string;
-  altName?: string;
-  status?: PayloadStatus;
-}
+/**
+ * @deprecated Use SatelliteParams directly - all detailed properties have been merged into SatelliteParams
+ */
+export type DetailedSatelliteParams = SatelliteParams;
 
-/** @deprecated Use sensor module types instead */
-export interface DetailedSensorParams extends LegacySensorParamsFromInterfaces {
-  /** The country that owns the sensor */
-  country?: string;
-  /** 3 Letter Designation */
-  shortName?: string;
-  changeObjectInterval?: Milliseconds;
-  commLinks?: CommLink[];
-  freqBand?: string;
-  static?: boolean;
-  sensorId?: number;
-  url?: string;
-  /** Does this sensor use a volumetric search pattern? */
-  volume?: boolean;
-  /** How far away should we zoom when selecting this sensor? */
-  zoom?: ZoomValue;
-  /** This is the name of the object in the array */
-  objName?: string;
-  /** This is the name of the object in the UI */
-  uiName?: string;
-  /** This is the specific system (ex. AN/FPS-132) */
-  system?: string;
-  /** This is who operates the sensor */
-  operator?: string;
-}
 /**
  * The RUV coordinate system is a spherical coordinate system with the origin at
  * the radar. The RUV coordinate system is defined with respect to the radar

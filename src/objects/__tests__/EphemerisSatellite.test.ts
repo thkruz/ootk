@@ -379,8 +379,8 @@ describe('EphemerisSatellite', () => {
     });
   });
 
-  describe('ecf', () => {
-    it('should return ECF coordinates for valid time', () => {
+  describe('ecef', () => {
+    it('should return ECEF coordinates for valid time', () => {
       const sat = new EphemerisSatellite({
         id: 'test',
         name: 'Test',
@@ -388,12 +388,12 @@ describe('EphemerisSatellite', () => {
       });
 
       const date = new Date((baseEpoch + 600) * 1000);
-      const ecf = sat.ecf(date);
+      const ecef = sat.ecef(date);
 
-      expect(ecf).not.toBeNull();
-      expect(ecf?.x).toBeDefined();
-      expect(ecf?.y).toBeDefined();
-      expect(ecf?.z).toBeDefined();
+      expect(ecef).not.toBeNull();
+      expect(ecef?.x).toBeDefined();
+      expect(ecef?.y).toBeDefined();
+      expect(ecef?.z).toBeDefined();
     });
 
     it('should throw for time outside coverage', () => {
@@ -405,8 +405,8 @@ describe('EphemerisSatellite', () => {
 
       const date = new Date((baseEpoch + 10000) * 1000);
 
-      // ecf() uses toJ2000() internally which throws
-      expect(() => sat.ecf(date)).toThrow('outside ephemeris coverage window');
+      // ecef() uses toJ2000() internally which throws
+      expect(() => sat.ecef(date)).toThrow('outside ephemeris coverage window');
     });
   });
 

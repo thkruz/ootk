@@ -1,10 +1,10 @@
 import {
   calcGmst,
   Degrees,
-  ecf2eci,
-  ecf2enu,
-  ecf2rae,
-  eci2ecf,
+  ecef2eci,
+  ecef2enu,
+  ecef2rae,
+  eci2ecef,
   eci2lla,
   eci2rae,
   getDegLat,
@@ -13,16 +13,15 @@ import {
   getRadLon,
   Kilometers,
   lla2ecef,
-  lla2ecf,
   lla2eci,
   Radians,
-  rae2ecf,
+  rae2ecef,
   rae2eci,
   rae2enu,
   rae2sez,
   Vec3,
 } from '../../main';
-import { Sensor } from '../../objects/Sensor';
+import { GroundStation } from '../../objects/GroundStation';
 import { transformsData } from './transformsData';
 
 const numDigits = 6;
@@ -31,11 +30,11 @@ describe('Latitude & longitude conversions', () => {
   const {
     validLatitudes,
     validLongitudes,
-    validGeodeticToEcf,
+    validGeodeticToEcef,
     validEciToGeodetic,
-    validEciToEcf,
-    validEcfToEci,
-    validEcfToLookangles,
+    validEciToEcef,
+    validEcefToEci,
+    validEcefToLookangles,
     invalidLatitudes,
     invalidLongitudes,
   } = transformsData;
@@ -58,13 +57,13 @@ describe('Latitude & longitude conversions', () => {
     });
   });
 
-  validGeodeticToEcf.forEach((item) => {
-    it('convert valid LLA coordinates to ECF', () => {
-      const ecfCoordinates = lla2ecf(item.lla);
+  validGeodeticToEcef.forEach((item) => {
+    it('convert valid LLA coordinates to ECEF', () => {
+      const ecefCoordinates = lla2ecef(item.lla);
 
-      expect(ecfCoordinates.x).toBeCloseTo(item.ecf.x);
-      expect(ecfCoordinates.y).toBeCloseTo(item.ecf.y);
-      expect(ecfCoordinates.z).toBeCloseTo(item.ecf.z);
+      expect(ecefCoordinates.x).toBeCloseTo(item.ecef.x);
+      expect(ecefCoordinates.y).toBeCloseTo(item.ecef.y);
+      expect(ecefCoordinates.z).toBeCloseTo(item.ecef.z);
     });
   });
 
@@ -78,19 +77,19 @@ describe('Latitude & longitude conversions', () => {
     });
   });
 
-  validEciToEcf.forEach((item) => {
-    it('convert valid ECI coordinates to ECF', () => {
-      const ecfCoordinates = eci2ecf(item.eci, item.gmst);
+  validEciToEcef.forEach((item) => {
+    it('convert valid ECI coordinates to ECEF', () => {
+      const ecefCoordinates = eci2ecef(item.eci, item.gmst);
 
-      expect(ecfCoordinates.x).toBeCloseTo(item.ecf.x);
-      expect(ecfCoordinates.y).toBeCloseTo(item.ecf.y);
-      expect(ecfCoordinates.z).toBeCloseTo(item.ecf.z);
+      expect(ecefCoordinates.x).toBeCloseTo(item.ecef.x);
+      expect(ecefCoordinates.y).toBeCloseTo(item.ecef.y);
+      expect(ecefCoordinates.z).toBeCloseTo(item.ecef.z);
     });
   });
 
-  validEcfToEci.forEach((item) => {
-    it('convert valid ECF coordinates to ECI', () => {
-      const eciCoordinates = ecf2eci(item.ecf, item.gmst);
+  validEcefToEci.forEach((item) => {
+    it('convert valid ECEF coordinates to ECI', () => {
+      const eciCoordinates = ecef2eci(item.ecef, item.gmst);
 
       expect(eciCoordinates.x).toBeCloseTo(item.eci.x);
       expect(eciCoordinates.y).toBeCloseTo(item.eci.y);
@@ -98,9 +97,9 @@ describe('Latitude & longitude conversions', () => {
     });
   });
 
-  validEcfToLookangles.forEach((item) => {
-    it('convert valid ECF coordinates to RAE', () => {
-      const raeCoordinates = ecf2rae(item.lla, item.satelliteEcf);
+  validEcefToLookangles.forEach((item) => {
+    it('convert valid ECEF coordinates to RAE', () => {
+      const raeCoordinates = ecef2rae(item.lla, item.satelliteEcef);
 
       expect(raeCoordinates.rng).toBeCloseTo(item.rae.rng, 0);
       expect(raeCoordinates.az).toBeCloseTo(item.rae.az, 1);
@@ -150,10 +149,10 @@ describe('Rae2Sez', () => {
   });
 });
 
-describe('Rae2Ecf', () => {
-  it('should convert valid RAE coordinates to ECF', () => {
-    // const { rae, ecf, lla } = transformData.validRae2Ecf[0];
-    const ecf = {
+describe('Rae2Ecef', () => {
+  it('should convert valid RAE coordinates to ECEF', () => {
+    // const { rae, ecef, lla } = transformData.validRae2Ecef[0];
+    const ecef = {
       x: 4000,
       y: 4000,
       z: 4000,
@@ -163,18 +162,18 @@ describe('Rae2Ecf', () => {
       lat: 0 as Degrees,
       alt: 0 as Kilometers,
     };
-    const rae = ecf2rae(lla, ecf);
+    const rae = ecef2rae(lla, ecef);
 
-    const ecfCoordinates = rae2ecf(rae, lla);
+    const ecefCoordinates = rae2ecef(rae, lla);
 
-    expect(ecfCoordinates.x).toBeCloseTo(ecf.x);
-    expect(ecfCoordinates.y).toBeCloseTo(ecf.y);
-    expect(ecfCoordinates.z).toBeCloseTo(ecf.z);
+    expect(ecefCoordinates.x).toBeCloseTo(ecef.x);
+    expect(ecefCoordinates.y).toBeCloseTo(ecef.y);
+    expect(ecefCoordinates.z).toBeCloseTo(ecef.z);
   });
 
-  // ecf2enu
-  it('should convert valid ECF coordinates to ENU', () => {
-    const ecf = {
+  // ecef2enu
+  it('should convert valid ECEF coordinates to ENU', () => {
+    const ecef = {
       x: 4000,
       y: 4000,
       z: 4000,
@@ -185,14 +184,14 @@ describe('Rae2Ecf', () => {
       alt: 0 as Kilometers,
     };
 
-    const enuCoordinates = ecf2enu(ecf, lla);
+    const enuCoordinates = ecef2enu(ecef, lla);
 
     expect(enuCoordinates).toMatchSnapshot();
   });
 
   // enu2rf
   it('should convert valid ENU coordinates to RF', () => {
-    const ecf = {
+    const ecef = {
       x: 4000,
       y: 4000,
       z: 4000,
@@ -203,7 +202,7 @@ describe('Rae2Ecf', () => {
       alt: 0 as Kilometers,
     };
 
-    const enuCoordinates = ecf2enu(ecf, lla);
+    const enuCoordinates = ecef2enu(ecef, lla);
 
     expect(enuCoordinates).toMatchSnapshot();
   });
@@ -222,18 +221,6 @@ describe('Rae2Ecf', () => {
     expect(eciCoordinates).toMatchSnapshot();
   });
 
-  // lla2ecef
-  it('should convert valid LLA coordinates to ECF', () => {
-    const lla = {
-      lon: 0 as Degrees,
-      lat: 0 as Degrees,
-      alt: 0 as Kilometers,
-    };
-    const ecfCoordinates = lla2ecef(lla);
-
-    expect(ecfCoordinates).toMatchSnapshot();
-  });
-
   // rae2eci
   it('should convert valid RAE coordinates to ECI', () => {
     const rae = {
@@ -241,21 +228,15 @@ describe('Rae2Ecf', () => {
       az: 0 as Degrees,
       el: 0 as Degrees,
     };
-    const sensor = new Sensor({
+    const station = new GroundStation({
       lat: 0 as Degrees,
       lon: 0 as Degrees,
       alt: 0 as Kilometers,
-      minAz: 0 as Degrees,
-      maxAz: 0 as Degrees,
-      minEl: 0 as Degrees,
-      maxEl: 0 as Degrees,
-      minRng: 0 as Kilometers,
-      maxRng: 0 as Kilometers,
-    }) as Sensor;
+    });
     const exampleDate = new Date(1705109326817);
     const { gmst } = calcGmst(exampleDate);
 
-    const eciCoordinates = rae2eci(rae, sensor, gmst);
+    const eciCoordinates = rae2eci(rae, station, gmst);
 
     expect(eciCoordinates).toMatchSnapshot();
   });
@@ -279,20 +260,14 @@ describe('Rae2Ecf', () => {
       y: 4000,
       z: 4000,
     } as Vec3<Kilometers>;
-    const sensor = new Sensor({
+    const station = new GroundStation({
       lat: 0 as Degrees,
       lon: 0 as Degrees,
       alt: 0 as Kilometers,
-      minAz: 0 as Degrees,
-      maxAz: 0 as Degrees,
-      minEl: 0 as Degrees,
-      maxEl: 0 as Degrees,
-      minRng: 0 as Kilometers,
-      maxRng: 0 as Kilometers,
-    }) as Sensor;
+    });
 
     const exampleDate = new Date(1705109326817);
-    const raeCoordinates = eci2rae(exampleDate, eci, sensor);
+    const raeCoordinates = eci2rae(exampleDate, eci, station);
 
     expect(raeCoordinates).toMatchSnapshot();
   });

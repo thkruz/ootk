@@ -17,21 +17,21 @@
 
 import { Geodetic } from '../coordinate/Geodetic';
 import { J2000 } from '../coordinate/J2000';
+import {
+    Degrees,
+    EcefVec3,
+    EciVec3,
+    Kilometers,
+    KilometersPerSecond,
+    LlaVec3,
+    Radians,
+    SpaceObjectType,
+    calcGmst,
+    lla2eci,
+    llaRad2ecef,
+} from '../main';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
-import {
-  Degrees,
-  EcfVec3,
-  EciVec3,
-  Kilometers,
-  KilometersPerSecond,
-  LlaVec3,
-  Radians,
-  SpaceObjectType,
-  calcGmst,
-  lla2eci,
-  llaRad2ecf,
-} from '../main';
 import { DEG2RAD, RAD2DEG } from '../utils/constants';
 import { BaseObjectParams } from './BaseObject';
 import { GroundObject } from './GroundObject';
@@ -147,11 +147,11 @@ export class DynamicGroundObject extends GroundObject {
   }
 
   /**
-   * Throws an error - use getEcf(time) for DynamicGroundObject.
+   * Throws an error - use getEcef(time) for DynamicGroundObject.
    * @throws Error always
    */
-  override ecf(): EcfVec3<Kilometers> {
-    throw new Error('DynamicGroundObject position is time-dependent. Use getEcf(time) instead.');
+  override ecef(): EcefVec3<Kilometers> {
+    throw new Error('DynamicGroundObject position is time-dependent. Use getEcef(time) instead.');
   }
 
   /**
@@ -205,11 +205,11 @@ export class DynamicGroundObject extends GroundObject {
   }
 
   /**
-   * Gets the ECF (Earth-Centered Fixed) position at a specific time.
+   * Gets the ECEF (Earth-Centered Earth-Fixed) position at a specific time.
    * @param time - The time to get position for
-   * @returns ECF position vector, or null if time is outside waypoint range
+   * @returns ECEF position vector, or null if time is outside waypoint range
    */
-  getEcf(time: Date): EcfVec3<Kilometers> | null {
+  getEcef(time: Date): EcefVec3<Kilometers> | null {
     const lla = this.getLLA(time);
 
     if (!lla) {
@@ -218,7 +218,7 @@ export class DynamicGroundObject extends GroundObject {
 
     const geodetic = Geodetic.fromDegrees(lla.lat, lla.lon, lla.alt);
 
-    return llaRad2ecf(geodetic);
+    return llaRad2ecef(geodetic);
   }
 
   /**

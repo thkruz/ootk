@@ -1,4 +1,4 @@
-import { EcfVec3, Kilometers, KilometersPerSecond, linearDistance, RADIUS_OF_EARTH, Vec3 } from '../../main';
+import { EcefVec3, Kilometers, KilometersPerSecond, linearDistance, RADIUS_OF_EARTH, Vec3 } from '../../main';
 import { dopplerFactor, getDayOfYear } from '../functions';
 
 const sincos45deg = Math.sqrt(2) / 2;
@@ -6,109 +6,109 @@ const sincos45deg = Math.sqrt(2) / 2;
 describe('Doppler factor', () => {
   it('works without observer movement and object moving away', () => {
     // North Pole
-    const observerEcf = {
+    const observerEcef = {
       x: 0,
       y: 0,
       z: RADIUS_OF_EARTH,
-    } as EcfVec3;
-    const positionEcf = {
+    } as EcefVec3;
+    const positionEcef = {
       x: 0,
       y: 0,
       z: RADIUS_OF_EARTH + 500,
-    } as EcfVec3;
-    const velocityEcf = {
+    } as EcefVec3;
+    const velocityEcef = {
       x: 0,
       y: 0,
       z: 1,
-    } as EcfVec3<KilometersPerSecond>;
-    const dopFactor = dopplerFactor(observerEcf, positionEcf, velocityEcf);
+    } as EcefVec3<KilometersPerSecond>;
+    const dopFactor = dopplerFactor(observerEcef, positionEcef, velocityEcef);
 
     expect(dopFactor).toBeLessThan(1);
   });
 
   it('works without observer movement and object moving towards', () => {
     // North Pole
-    const observerEcf = {
+    const observerEcef = {
       x: 0,
       y: 0,
       z: RADIUS_OF_EARTH,
-    } as EcfVec3;
-    const positionEcf = {
+    } as EcefVec3;
+    const positionEcef = {
       x: 0,
       y: 0,
       z: RADIUS_OF_EARTH + 500,
-    } as EcfVec3;
-    const velocityEcf = {
+    } as EcefVec3;
+    const velocityEcef = {
       x: 0,
       y: 0,
       z: -1,
-    } as EcfVec3<KilometersPerSecond>;
-    const dopFactor = dopplerFactor(observerEcf, positionEcf, velocityEcf);
+    } as EcefVec3<KilometersPerSecond>;
+    const dopFactor = dopplerFactor(observerEcef, positionEcef, velocityEcef);
 
     expect(dopFactor).toBeGreaterThan(1);
   });
 
   it('calculates earth rotation the same as before #1', () => {
-    const observerEcf = {
+    const observerEcef = {
       x: RADIUS_OF_EARTH,
       y: 0,
       z: 0,
-    } as EcfVec3;
-    const positionEcf = {
+    } as EcefVec3;
+    const positionEcef = {
       x: (RADIUS_OF_EARTH + 500) * sincos45deg, // z*sin(45)
       y: (RADIUS_OF_EARTH + 500) * sincos45deg, // z*cos(45)
       z: 0,
-    } as EcfVec3;
-    const velocityEcf = {
+    } as EcefVec3;
+    const velocityEcef = {
       x: 0,
       y: 0,
       z: 0,
-    } as EcfVec3<KilometersPerSecond>;
-    const dopFactor = dopplerFactor(observerEcf, positionEcf, velocityEcf);
+    } as EcefVec3<KilometersPerSecond>;
+    const dopFactor = dopplerFactor(observerEcef, positionEcef, velocityEcef);
 
     expect(dopFactor).toMatchSnapshot();
   });
 
   it('works without observer movement and a stationary object', () => {
     // North Pole
-    const observerEcf = {
+    const observerEcef = {
       x: 0,
       y: 0,
       z: RADIUS_OF_EARTH,
-    } as EcfVec3;
-    const positionEcf = {
+    } as EcefVec3;
+    const positionEcef = {
       x: 0,
       y: 0,
       z: RADIUS_OF_EARTH + 500,
-    } as EcfVec3;
-    const velocityEcf = {
+    } as EcefVec3;
+    const velocityEcef = {
       x: 0,
       y: 0,
       z: 0,
-    } as EcfVec3<KilometersPerSecond>;
-    const dopFactor = dopplerFactor(observerEcf, positionEcf, velocityEcf);
+    } as EcefVec3<KilometersPerSecond>;
+    const dopFactor = dopplerFactor(observerEcef, positionEcef, velocityEcef);
 
     expect(dopFactor).toEqual(1);
   });
 
   it('calculates earth rotation the same as before #2', () => {
     // North Pole
-    const observerEcf = {
+    const observerEcef = {
       x: RADIUS_OF_EARTH,
       y: 0,
       z: 0,
-    } as EcfVec3;
-    const positionEcf = {
+    } as EcefVec3;
+    const positionEcef = {
       x: RADIUS_OF_EARTH + 500,
       y: 0,
       z: 0,
-    } as EcfVec3;
-    const velocityEcf = {
+    } as EcefVec3;
+    const velocityEcef = {
       x: 0,
       y: 0,
       z: 1,
-    } as EcfVec3<KilometersPerSecond>;
-    const dopFactor = dopplerFactor(observerEcf, positionEcf, velocityEcf);
+    } as EcefVec3<KilometersPerSecond>;
+    const dopFactor = dopplerFactor(observerEcef, positionEcef, velocityEcef);
 
     expect(dopFactor).toMatchSnapshot();
   });

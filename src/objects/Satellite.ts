@@ -21,12 +21,14 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { FormatTle } from '../coordinate/FormatTle';
 import { Geodetic } from '../coordinate/Geodetic';
 import type { ClassicalElements } from '../coordinate/index';
 import { ITRF } from '../coordinate/ITRF';
 import { J2000 } from '../coordinate/J2000';
 import { RIC } from '../coordinate/RIC';
 import { Tle } from '../coordinate/Tle';
+import { CatalogSource } from '../enums/CatalogSource';
 import { OmmDataFormat, OmmParsedDataFormat } from '../interfaces/OmmFormat';
 import { OptionsParams } from '../interfaces/OptionsParams';
 import { SatelliteParams } from '../interfaces/SatelliteParams';
@@ -34,21 +36,23 @@ import { Sgp4 } from '../main';
 import { RAE } from '../observation/RAE';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
-import { ecf2rae, eci2ecf, eci2lla, jday } from '../transforms/index';
+import { ecef2rae, eci2ecef, eci2lla, jday } from '../transforms/index';
 import {
   Degrees,
-  EcfVec3,
-  EciVec3,
+  EcefVec3,
   GreenwichMeanSiderealTime,
   Kilometers,
-  KilometersPerSecond,
+  LaunchDetails,
   LlaVec3,
   Minutes,
+  OperationsDetails,
+  PayloadStatus,
   PosVel,
   Radians,
   RaeVec3,
   SatelliteRecord,
   Seconds,
+  SpaceCraftDetails,
   TleLine1,
   TleLine2,
 } from '../types/types';
@@ -92,7 +96,84 @@ export class Satellite extends SpaceObject {
   /** The semi-minor axis of the satellite's orbit. */
   semiMinorAxis!: Kilometers;
 
+  // ==================== Detailed Properties (merged from DetailedSatellite) ====================
+
+  // Launch details
+  /** Launch date (ISO string or human-readable) */
+  launchDate: string = '';
+  /** Launch mass in kg */
+  launchMass: string = '';
+  /** Launch site name/code */
+  launchSite: string = '';
+  /** Launch pad identifier */
+  launchPad: string = '';
+  /** Launch vehicle name */
+  launchVehicle: string = '';
+
+  // Spacecraft details
+  /** Satellite bus/platform */
+  bus: string = '';
+  /** Satellite configuration */
+  configuration: string = '';
+  /** Dry mass in kg */
+  dryMass: string = '';
+  /** Equipment list */
+  equipment: string = '';
+  /** Expected lifetime */
+  lifetime: string | number = '';
+  /** Maneuver capability */
+  maneuver: string = '';
+  /** Manufacturer name */
+  manufacturer: string = '';
+  /** Propulsion motor */
+  motor: string = '';
+  /** Payload description */
+  payload: string = '';
+  /** Power system description */
+  power: string = '';
+  /** Primary purpose/mission type */
+  purpose: string = '';
+  /** Physical shape */
+  shape: string = '';
+  /** Solar panel span */
+  span: string = '';
+
+  // Physical dimensions
+  /** Length in meters */
+  length: string = '';
+  /** Diameter in meters */
+  diameter: string = '';
+
+  // Operations details
+  /** Mission name */
+  mission: string = '';
+  /** Operating user/agency */
+  user: string = '';
+  /** Owner organization */
+  owner: string = '';
+  /** Country of origin/registration */
+  country: string = '';
+
+  // Catalog details
+  /** Catalog source (e.g., VIMPEL) */
+  source: string = '';
+  /** Alternate catalog ID */
+  altId: string = '';
+  /** Alternate name */
+  altName: string = '';
+  /** Visual magnitude */
+  vmag: number | null = null;
+  /** Radar cross-section */
+  rcs: number | null = null;
+  /** Operational status */
+  status: PayloadStatus = PayloadStatus.UNKNOWN;
+
   constructor(info: SatelliteParams, options?: OptionsParams) {
+    // Handle VIMPEL source - zero out SCC number in TLE
+    if (info.source === CatalogSource.VIMPEL && info.tle1 && info.tle2) {
+      info = Satellite.setSccNumTo0_(info);
+    }
+
     super(info);
 
     if (info.tle1 && info.tle2) {
@@ -105,6 +186,79 @@ export class Satellite extends SpaceObject {
 
     this.options = options ?? {
       notes: '',
+    };
+
+    // Initialize detailed properties
+    this.initDetailedProperties_(info);
+  }
+
+  /**
+   * Initializes detailed properties from params.
+   */
+  private initDetailedProperties_(info: SatelliteParams): void {
+    // Launch details
+    this.launchDate = info.launchDate ?? '';
+    this.launchMass = info.launchMass ?? '';
+    this.launchSite = info.launchSite ?? '';
+    this.launchPad = info.launchPad ?? '';
+    this.launchVehicle = info.launchVehicle ?? '';
+
+    // Spacecraft details
+    this.bus = info.bus ?? '';
+    this.configuration = info.configuration ?? '';
+    this.dryMass = info.dryMass ?? '';
+    this.equipment = info.equipment ?? '';
+    this.lifetime = info.lifetime ?? '';
+    this.maneuver = info.maneuver ?? '';
+    this.manufacturer = info.manufacturer ?? '';
+    this.motor = info.motor ?? '';
+    this.payload = info.payload ?? '';
+    this.power = info.power ?? '';
+    this.purpose = info.purpose ?? '';
+    this.shape = info.shape ?? '';
+    this.span = info.span ?? '';
+
+    // Physical dimensions
+    this.length = info.length ?? '';
+    this.diameter = info.diameter ?? '';
+
+    // Operations details
+    this.mission = info.mission ?? '';
+    this.user = info.user ?? '';
+    this.owner = info.owner ?? '';
+    this.country = info.country ?? '';
+
+    // Catalog details
+    this.source = info.source ?? '';
+    this.altId = info.altId ?? '';
+    this.altName = info.altName ?? '';
+    this.vmag = info.vmag ?? null;
+    this.rcs = info.rcs ?? null;
+    this.status = info.status ?? PayloadStatus.UNKNOWN;
+  }
+
+  /**
+   * Zeroes out the SCC number in TLE for VIMPEL sources.
+   */
+  private static setSccNumTo0_(info: SatelliteParams): SatelliteParams {
+    let tle1 = info.tle1 as string;
+    let tle2 = info.tle2 as string;
+
+    tle1 = FormatTle.setCharAt(tle1, 2, '0');
+    tle1 = FormatTle.setCharAt(tle1, 3, '0');
+    tle1 = FormatTle.setCharAt(tle1, 4, '0');
+    tle1 = FormatTle.setCharAt(tle1, 5, '0');
+    tle1 = FormatTle.setCharAt(tle1, 6, '0');
+    tle2 = FormatTle.setCharAt(tle2, 2, '0');
+    tle2 = FormatTle.setCharAt(tle2, 3, '0');
+    tle2 = FormatTle.setCharAt(tle2, 4, '0');
+    tle2 = FormatTle.setCharAt(tle2, 5, '0');
+    tle2 = FormatTle.setCharAt(tle2, 6, '0');
+
+    return {
+      ...info,
+      tle1: tle1 as TleLine1,
+      tle2: tle2 as TleLine2,
     };
   }
 
@@ -327,12 +481,12 @@ export class Satellite extends SpaceObject {
   }
 
   /**
-   * Calculates ECF position at a given time.
+   * Calculates ECEF position at a given time.
    * @variation optimized
-   * @param date - The date at which to calculate the ECF position. Optional, defaults to the current date.
-   * @returns The ECF position at the specified date.
+   * @param date - The date at which to calculate the ECEF position. Optional, defaults to the current date.
+   * @returns The ECEF position at the specified date.
    */
-  override ecf(date: Date = new Date()): EcfVec3<Kilometers> | null {
+  override ecef(date: Date = new Date()): EcefVec3<Kilometers> | null {
     const { gmst } = Satellite.calculateTimeVariables_(date);
     const eci = this.eci(date);
 
@@ -340,7 +494,7 @@ export class Satellite extends SpaceObject {
       return null;
     }
 
-    return eci2ecf(eci.position, gmst);
+    return eci2ecef(eci.position, gmst);
   }
 
   /**
@@ -382,11 +536,11 @@ export class Satellite extends SpaceObject {
     }
     const pv = Sgp4.propagate(this.satrec, m);
 
-    if (!pv.position) {
+    if (!pv.position || !pv.velocity) {
       throw new Error('Propagation failed!');
     }
-    const p = pv.position as EciVec3;
-    const v = pv.velocity as EciVec3<KilometersPerSecond>;
+    const p = pv.position;
+    const v = pv.velocity;
 
     const epoch = new EpochUTC((date.getTime() / 1000) as Seconds);
     const pos = new Vector3D(p.x, p.y, p.z);
@@ -500,9 +654,9 @@ export class Satellite extends SpaceObject {
       return null;
     }
 
-    const ecf = eci2ecf(eci.position, gmst);
+    const ecef = eci2ecef(eci.position, gmst);
 
-    return ecf2rae(observer, ecf);
+    return ecef2rae(observer, ecef);
   }
 
   /**
@@ -557,6 +711,57 @@ export class Satellite extends SpaceObject {
     return dopplerFactor(observer.eci(date), position.position, position.velocity);
   }
 
+  // ==================== Detailed Property Getters ====================
+
+  /**
+   * Returns the launch details of the satellite.
+   * @returns An object containing the launch date, launch mass, launch site, launch pad, and launch vehicle.
+   */
+  getLaunchDetails(): LaunchDetails {
+    return {
+      launchDate: this.launchDate,
+      launchMass: this.launchMass,
+      launchSite: this.launchSite,
+      launchPad: this.launchPad,
+      launchVehicle: this.launchVehicle,
+    };
+  }
+
+  /**
+   * Returns the operations details of the satellite.
+   * @returns An object containing the user, mission, owner, and country details.
+   */
+  getOperationsDetails(): OperationsDetails {
+    return {
+      user: this.user,
+      mission: this.mission,
+      owner: this.owner,
+      country: this.country,
+    };
+  }
+
+  /**
+   * Returns the spacecraft details.
+   * @returns An object containing spacecraft configuration and physical details.
+   */
+  getSpaceCraftDetails(): SpaceCraftDetails {
+    return {
+      lifetime: this.lifetime,
+      maneuver: this.maneuver,
+      manufacturer: this.manufacturer,
+      motor: this.motor,
+      power: this.power,
+      payload: this.payload,
+      purpose: this.purpose,
+      shape: this.shape,
+      span: this.span,
+      configuration: this.configuration,
+      equipment: this.equipment,
+      dryMass: this.dryMass,
+      bus: this.bus,
+    };
+  }
+
   // ==================== Clone ====================
 
   /**
@@ -569,6 +774,18 @@ export class Satellite extends SpaceObject {
         tle2: this.tle2,
         name: this.name,
         sccNum: this.sccNum,
+        // Include detailed properties
+        ...this.getLaunchDetails(),
+        ...this.getOperationsDetails(),
+        ...this.getSpaceCraftDetails(),
+        length: this.length,
+        diameter: this.diameter,
+        source: this.source,
+        altId: this.altId,
+        altName: this.altName,
+        vmag: this.vmag,
+        rcs: this.rcs,
+        status: this.status,
       },
       { ...this.options },
     );
@@ -595,6 +812,18 @@ export class Satellite extends SpaceObject {
       options: this.options,
       sensorIds: this.sensors.map((s) => s.id),
       commDeviceIds: this.commDevices.map((d) => d.id),
+      // Detailed properties
+      ...this.getLaunchDetails(),
+      ...this.getOperationsDetails(),
+      ...this.getSpaceCraftDetails(),
+      length: this.length,
+      diameter: this.diameter,
+      source: this.source,
+      altId: this.altId,
+      altName: this.altName,
+      vmag: this.vmag,
+      rcs: this.rcs,
+      status: this.status,
     };
   }
 

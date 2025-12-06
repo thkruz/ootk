@@ -9,7 +9,7 @@
  */
 
 import { ClassicalElements, DEG2RAD, Degrees, Kilometers, RAD2DEG, Radians, Sgp4Propagator, Tle } from '@src/main';
-import { Sensor } from '../../objects/Sensor';
+import { GroundStation } from '../../objects/GroundStation';
 import { RadecTopocentric } from '@src/observation';
 import { ObservationOptical } from '@src/observation/ObservationOptical';
 import { GoodingIOD, ModifiedGoodingIOD } from '@src/orbit-determination';
@@ -39,16 +39,10 @@ describe('GoodingIOD', () => {
       const stationLon = 76.971667 as Degrees;
       const stationAlt = 2.735 as Kilometers; // 2735 meters
 
-      const sensor = new Sensor({
+      const sensor = new GroundStation({
         lat: stationLat,
         lon: stationLon,
         alt: stationAlt,
-        minEl: 0 as Degrees,
-        maxEl: 90 as Degrees,
-        minAz: 0 as Degrees,
-        maxAz: 360 as Degrees,
-        minRng: 0 as Kilometers,
-        maxRng: 100_000 as Kilometers,
       });
 
       // Observation times
@@ -113,16 +107,10 @@ describe('GoodingIOD', () => {
         trueAnomaly: 0.0 * DEG2RAD as Radians,
       }));
 
-      const sensor = new Sensor({
+      const sensor = new GroundStation({
         lat: 41.75 as Degrees,
         lon: -70.54 as Degrees,
         alt: 0.1 as Kilometers,
-        minEl: 0 as Degrees,
-        maxEl: 90 as Degrees,
-        minAz: 0 as Degrees,
-        maxAz: 360 as Degrees,
-        minRng: 0 as Kilometers,
-        maxRng: 50_000 as Kilometers,
       });
 
       const t1 = EpochUTC.fromDateTimeString('2025-11-22T02:00:00.000Z');
@@ -173,16 +161,10 @@ describe('GoodingIOD', () => {
         trueAnomaly: 0.0 * DEG2RAD as Radians,
       }));
 
-      const sensor = new Sensor({
+      const sensor = new GroundStation({
         lat: 41.958076 as Degrees,
         lon: -70.662182 as Degrees,
         alt: 0.0 as Kilometers,
-        minEl: 0 as Degrees,
-        maxEl: 90 as Degrees,
-        minAz: 0 as Degrees,
-        maxAz: 360 as Degrees,
-        minRng: 0 as Kilometers,
-        maxRng: 60_000 as Kilometers,
       });
 
       const t1 = EpochUTC.fromDateTimeString('2025-11-22T02:00:00.000Z');
@@ -221,16 +203,10 @@ describe('GoodingIOD', () => {
         trueAnomaly: 0.0 * DEG2RAD as Radians,
       }));
 
-      const sensor = new Sensor({
+      const sensor = new GroundStation({
         lat: 40.0 as Degrees,
         lon: -75.0 as Degrees,
         alt: 0.1 as Kilometers,
-        minEl: 0 as Degrees,
-        maxEl: 90 as Degrees,
-        minAz: 0 as Degrees,
-        maxAz: 360 as Degrees,
-        minRng: 0 as Kilometers,
-        maxRng: 50_000 as Kilometers,
       });
 
       const t1 = EpochUTC.fromDateTimeString('2025-01-01T00:00:00.000Z');
@@ -274,16 +250,10 @@ describe('GoodingIOD', () => {
       // Create a known LEO orbit
       const propagator = new Sgp4Propagator(originalTle);
 
-      const sensor = new Sensor({
+      const sensor = new GroundStation({
         lat: 41.75 as Degrees,
         lon: -70.54 as Degrees,
         alt: 0.1 as Kilometers,
-        minEl: 0 as Degrees,
-        maxEl: 90 as Degrees,
-        minAz: 0 as Degrees,
-        maxAz: 360 as Degrees,
-        minRng: 0 as Kilometers,
-        maxRng: 50_000 as Kilometers,
       });
 
       const t1 = EpochUTC.fromDateTimeString('2025-11-22T05:48:00.000Z');
@@ -343,16 +313,10 @@ describe('GoodingIOD', () => {
       // Create a known LEO orbit
       const propagator = new Sgp4Propagator(originalTle);
 
-      const sensor = new Sensor({
+      const sensor = new GroundStation({
         lat: 41.75 as Degrees,
         lon: -70.54 as Degrees,
         alt: 0.1 as Kilometers,
-        minEl: 0 as Degrees,
-        maxEl: 90 as Degrees,
-        minAz: 0 as Degrees,
-        maxAz: 360 as Degrees,
-        minRng: 0 as Kilometers,
-        maxRng: 50_000 as Kilometers,
       });
 
       const t1 = EpochUTC.fromDateTimeString('2025-11-22T16:00:00.000Z');

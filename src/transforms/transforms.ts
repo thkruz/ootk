@@ -3,7 +3,6 @@ import {
   Degrees,
   Earth,
   EcefVec3,
-  EcfVec3,
   EciVec3,
   EnuVec3,
   GreenwichMeanSiderealTime,
@@ -19,37 +18,38 @@ import {
   SezVec3,
   Sgp4,
   TAU,
+  TemeVec3
 } from '../main';
 import type { GroundObject } from '../objects/GroundObject';
 import type { PhasedArrayRadar } from '../sensor/PhasedArrayRadar';
 
 /**
- * Converts ECF to ECI coordinates.
+ * Converts ECEF to ECI coordinates.
  *
  * [X]     [C -S  0][X]
  * [Y]  =  [S  C  0][Y]
- * [Z]eci  [0  0  1][Z]ecf
- * @param ecf takes xyz coordinates
+ * [Z]eci  [0  0  1][Z]ecef
+ * @param ecef takes xyz coordinates
  * @param gmst takes a number in gmst time
  * @returns array containing eci coordinates
  */
-export function ecf2eci<T extends number>(ecf: EcfVec3<T>, gmst: number): EciVec3<T> {
-  const X = (ecf.x * Math.cos(gmst) - ecf.y * Math.sin(gmst)) as T;
-  const Y = (ecf.x * Math.sin(gmst) + ecf.y * Math.cos(gmst)) as T;
-  const Z = ecf.z;
+export function ecef2eci<T extends number>(ecef: EcefVec3<T>, gmst: number): EciVec3<T> {
+  const X = (ecef.x * Math.cos(gmst) - ecef.y * Math.sin(gmst)) as T;
+  const Y = (ecef.x * Math.sin(gmst) + ecef.y * Math.cos(gmst)) as T;
+  const Z = ecef.z;
 
   return { x: X, y: Y, z: Z };
 }
 
 /**
  * Converts ECEF coordinates to ENU coordinates.
- * @param ecf - The ECEF coordinates.
+ * @param ecef - The ECEF coordinates.
  * @param lla - The LLA coordinates.
  * @returns The ENU coordinates.
  */
-export function ecf2enu<T extends number>(ecf: EcefVec3<T>, lla: LlaVec3): EnuVec3<T> {
+export function ecef2enu<T extends number>(ecef: EcefVec3<T>, lla: LlaVec3): EnuVec3<T> {
   const { lat, lon } = lla;
-  const { x, y, z } = ecf;
+  const { x, y, z } = ecef;
   const e = (-Math.sin(lon) * x + Math.cos(lon) * y) as T;
   const n = (-Math.sin(lat) * Math.cos(lon) * x - Math.sin(lat) * Math.sin(lon) * y + Math.cos(lat) * z) as T;
   const u = (Math.cos(lat) * Math.cos(lon) * x + Math.cos(lat) * Math.sin(lon) * y + Math.sin(lat) * z) as T;
@@ -58,21 +58,21 @@ export function ecf2enu<T extends number>(ecf: EcefVec3<T>, lla: LlaVec3): EnuVe
 }
 
 /**
- * Converts ECI to ECF coordinates.
+ * Converts ECI to ECEF coordinates.
  *
  * [X]     [C -S  0][X]
  * [Y]  =  [S  C  0][Y]
- * [Z]eci  [0  0  1][Z]ecf
+ * [Z]eci  [0  0  1][Z]ecef
  *
  * Inverse:
  * [X]     [C  S  0][X]
  * [Y]  =  [-S C  0][Y]
- * [Z]ecf  [0  0  1][Z]eci
+ * [Z]ecef  [0  0  1][Z]eci
  * @param eci takes xyz coordinates
  * @param gmst takes a number in gmst time
- * @returns array containing ecf coordinates
+ * @returns array containing ecef coordinates
  */
-export function eci2ecf<T extends number>(eci: EciVec3<T>, gmst: number): EcfVec3<T> {
+export function eci2ecef<T extends number>(eci: TemeVec3<T>, gmst: number): EcefVec3<T> {
   const x = <T>(eci.x * Math.cos(gmst) + eci.y * Math.sin(gmst));
   const y = <T>(eci.x * -Math.sin(gmst) + eci.y * Math.cos(gmst));
   const z = eci.z;
@@ -127,22 +127,21 @@ export function eci2lla(eci: EciVec3, gmst: number): LlaVec3<Degrees, Kilometers
 }
 
 /**
- * Converts geodetic coordinates (longitude, latitude, altitude) to Earth-Centered Earth-Fixed (ECF) coordinates.
+ * Converts geodetic coordinates (longitude, latitude, altitude) to Earth-Centered Earth-Fixed (ECEF) coordinates.
  * @param lla The geodetic coordinates in radians and meters.
- * @returns The ECF coordinates in meters.
+ * @returns The ECEF coordinates in meters.
  */
-export function llaRad2ecf<AltitudeUnits extends number>(lla: LlaVec3<Radians, AltitudeUnits>): EcfVec3<AltitudeUnits> {
+export function llaRad2ecef<AltitudeUnits extends number>(lla: LlaVec3<Radians, AltitudeUnits>): EcefVec3<AltitudeUnits> {
   const { lon, lat, alt } = lla;
 
-  const a = 6378.137;
-  const b = 6356.7523142;
-  const f = (a - b) / a;
+  const a = 6378.137 as Kilometers;
+  const f = 1 / 298.257223563;
   const e2 = 2 * f - f * f;
-  const normal = a / Math.sqrt(1 - e2 * Math.sin(lat) ** 2);
+  const N = a / Math.sqrt(1 - e2 * Math.sin(lat) ** 2);
 
-  const x = (normal + alt) * Math.cos(lat) * Math.cos(lon);
-  const y = (normal + alt) * Math.cos(lat) * Math.sin(lon);
-  const z = (normal * (1 - e2) + alt) * Math.sin(lat);
+  const x = (N + alt) * Math.cos(lat) * Math.cos(lon);
+  const y = (N + alt) * Math.cos(lat) * Math.sin(lon);
+  const z = (N * (1 - e2) + alt) * Math.sin(lat);
 
   return {
     x: <AltitudeUnits>x,
@@ -152,17 +151,17 @@ export function llaRad2ecf<AltitudeUnits extends number>(lla: LlaVec3<Radians, A
 }
 
 /**
- * Converts geodetic coordinates (longitude, latitude, altitude) to Earth-Centered Earth-Fixed (ECF) coordinates.
+ * Converts geodetic coordinates (longitude, latitude, altitude) to Earth-Centered Earth-Fixed (ECEF) coordinates.
  * @param lla The geodetic coordinates in degrees and meters.
- * @returns The ECF coordinates in meters.
+ * @returns The ECEF coordinates in meters.
  */
-export function lla2ecf<AltitudeUnits extends number>(lla: LlaVec3<Degrees, AltitudeUnits>): EcfVec3<AltitudeUnits> {
+export function lla2ecef<AltitudeUnits extends number>(lla: LlaVec3<Degrees, AltitudeUnits>): EcefVec3<AltitudeUnits> {
   const { lon, lat, alt } = lla;
 
   const lonRad = lon * DEG2RAD;
   const latRad = lat * DEG2RAD;
 
-  return llaRad2ecf({
+  return llaRad2ecef({
     lon: lonRad as Radians,
     lat: latRad as Radians,
     alt,
@@ -191,44 +190,25 @@ export function lla2eci(lla: LlaVec3<Radians, Kilometers>, gmst: GreenwichMeanSi
 }
 
 /**
- * Calculates Geodetic Lat Lon Alt to ECEF coordinates.
- * @deprecated This needs to be validated.
- * @param lla The geodetic coordinates in degrees and meters.
- * @returns The ECEF coordinates in meters.
- */
-export function lla2ecef<D extends number>(lla: LlaVec3<Degrees, D>): EcefVec3<D> {
-  const { lat, lon, alt } = lla;
-  const a = 6378.137; // semi-major axis length in meters according to the WGS84
-  const b = 6356.752314245; // semi-minor axis length in meters according to the WGS84
-  const e = Math.sqrt(1 - b ** 2 / a ** 2); // eccentricity
-  const N = a / Math.sqrt(1 - e ** 2 * Math.sin(lat) ** 2); // radius of curvature in the prime vertical
-  const x = ((N + alt) * Math.cos(lat) * Math.cos(lon)) as D;
-  const y = ((N + alt) * Math.cos(lat) * Math.sin(lon)) as D;
-  const z = ((N * (1 - e ** 2) + alt) * Math.sin(lat)) as D;
-
-  return { x, y, z };
-}
-
-/**
  * Converts LLA to SEZ coordinates.
  * @see http://www.celestrak.com/columns/v02n02/
  * @param lla The LLA coordinates.
- * @param ecf The ECF coordinates.
+ * @param ecef The ECEF coordinates.
  * @returns The SEZ coordinates.
  */
-export function lla2sez<D extends number>(lla: LlaVec3<Radians, D>, ecf: EcfVec3<D>): SezVec3<D> {
+export function lla2sez<D extends number>(lla: LlaVec3<Radians, D>, ecef: EcefVec3<D>): SezVec3<D> {
   const lon = lla.lon;
   const lat = lla.lat;
 
-  const observerEcf = llaRad2ecf({
+  const observerEcef = llaRad2ecef({
     lat,
     lon,
     alt: <Kilometers>0,
   });
 
-  const rx = ecf.x - observerEcf.x;
-  const ry = ecf.y - observerEcf.y;
-  const rz = ecf.z - observerEcf.z;
+  const rx = ecef.x - observerEcef.x;
+  const ry = ecef.y - observerEcef.y;
+  const rz = ecef.z - observerEcef.z;
 
   // Top is short for topocentric
   const south = Math.sin(lat) * Math.cos(lon) * rx + Math.sin(lat) * Math.sin(lon) * ry - Math.cos(lat) * rz;
@@ -260,14 +240,14 @@ export function rae2sez<D extends number>(rae: RaeVec3<D, Radians>): SezVec3<D> 
 
 /**
  * Converts a vector in Right Ascension, Elevation, and Range (RAE) coordinate system
- * to Earth-Centered Fixed (ECF) coordinate system.
+ * to Earth-Centered Earth-Fixed (ECEF) coordinate system.
  * @template D - The dimension of the RAE vector.
  * @template A - The dimension of the LLA vector.
  * @param rae - The vector in RAE coordinate system.
  * @param lla - The vector in LLA coordinate system.
- * @returns The vector in ECF coordinate system.
+ * @returns The vector in ECEF coordinate system.
  */
-export function rae2ecf<D extends number>(rae: RaeVec3<D, Degrees>, lla: LlaVec3<Degrees, D>): EcfVec3<D> {
+export function rae2ecef<D extends number>(rae: RaeVec3<D, Degrees>, lla: LlaVec3<Degrees, D>): EcefVec3<D> {
   const llaRad = {
     lat: (lla.lat * DEG2RAD) as Radians,
     lon: (lla.lon * DEG2RAD) as Radians,
@@ -279,7 +259,7 @@ export function rae2ecf<D extends number>(rae: RaeVec3<D, Degrees>, lla: LlaVec3
     rng: rae.rng,
   };
 
-  const obsEcf = llaRad2ecf(llaRad);
+  const obsEcef = llaRad2ecef(llaRad);
   const sez = rae2sez(raeRad);
 
   // Some needed calculations
@@ -288,11 +268,11 @@ export function rae2ecf<D extends number>(rae: RaeVec3<D, Degrees>, lla: LlaVec3
   const clat = Math.cos(llaRad.lat);
   const clon = Math.cos(llaRad.lon);
 
-  const x = slat * clon * sez.s + -slon * sez.e + clat * clon * sez.z + obsEcf.x;
-  const y = slat * slon * sez.s + clon * sez.e + clat * slon * sez.z + obsEcf.y;
-  const z = -clat * sez.s + slat * sez.z + obsEcf.z;
+  const x = slat * clon * sez.s + -slon * sez.e + clat * clon * sez.z + obsEcef.x;
+  const y = slat * slon * sez.s + clon * sez.e + clat * slon * sez.z + obsEcef.y;
+  const z = -clat * sez.s + slat * sez.z + obsEcef.z;
 
-  return { x, y, z } as EcfVec3<D>;
+  return { x, y, z } as EcefVec3<D>;
 }
 
 /**
@@ -308,8 +288,8 @@ export function rae2eci<D extends number>(
   lla: LlaVec3<Degrees, D>,
   gmst: number,
 ): EciVec3<D> {
-  const ecf = rae2ecf(rae, lla);
-  const eci = ecf2eci(ecf, gmst);
+  const ecef = rae2ecef(rae, lla);
+  const eci = ecef2eci(ecef, gmst);
 
   return eci;
 }
@@ -341,32 +321,32 @@ export function sez2rae<D extends number>(sez: SezVec3<D>): RaeVec3<D, Radians> 
 }
 
 /**
- * Converts Earth-Centered Fixed (ECF) coordinates to Right Ascension (RA),
+ * Converts Earth-Centered Earth-Fixed (ECEF) coordinates to Right Ascension (RA),
  * Elevation (E), and Azimuth (A) coordinates.
  * @param lla The Latitude, Longitude, and Altitude (LLA) coordinates.
- * @param ecf The Earth-Centered Fixed (ECF) coordinates.
+ * @param ecef The Earth-Centered Earth-Fixed (ECEF) coordinates.
  * @returns The Right Ascension (RA), Elevation (E), and Azimuth (A) coordinates.
  */
-export function ecfRad2rae<D extends number>(lla: LlaVec3<Radians, D>, ecf: EcfVec3<D>): RaeVec3<D, Degrees> {
-  const sezCoords = lla2sez(lla, ecf);
+export function ecefRad2rae<D extends number>(lla: LlaVec3<Radians, D>, ecef: EcefVec3<D>): RaeVec3<D, Degrees> {
+  const sezCoords = lla2sez(lla, ecef);
   const rae = sez2rae(sezCoords);
 
   return { rng: rae.rng, az: (rae.az * RAD2DEG) as Degrees, el: (rae.el * RAD2DEG) as Degrees };
 }
 
 /**
- * Converts Earth-Centered Fixed (ECF) coordinates to Right Ascension (RA),
+ * Converts Earth-Centered Earth-Fixed (ECEF) coordinates to Right Ascension (RA),
  * Elevation (E), and Azimuth (A) coordinates.
  * @variation cached - results are cached
  * @param lla The Latitude, Longitude, and Altitude (LLA) coordinates.
- * @param ecf The Earth-Centered Fixed (ECF) coordinates.
+ * @param ecef The Earth-Centered Earth-Fixed (ECEF) coordinates.
  * @returns The Right Ascension (RA), Elevation (E), and Azimuth (A) coordinates.
  */
-export function ecf2rae<D extends number>(lla: LlaVec3<Degrees, D>, ecf: EcfVec3<D>): RaeVec3<D, Degrees> {
+export function ecef2rae<D extends number>(lla: LlaVec3<Degrees, D>, ecef: EcefVec3<D>): RaeVec3<D, Degrees> {
   const { lat, lon } = lla;
   const latRad = (lat * DEG2RAD) as Radians;
   const lonRad = (lon * DEG2RAD) as Radians;
-  const rae = ecfRad2rae({ lat: latRad, lon: lonRad, alt: lla.alt }, ecf);
+  const rae = ecefRad2rae({ lat: latRad, lon: lonRad, alt: lla.alt }, ecef);
 
   return rae;
 }
@@ -438,14 +418,14 @@ export function eci2rae(
   now = new Date(now);
   const { gmst } = calcGmst(now);
 
-  const positionEcf = eci2ecf(eci, gmst);
+  const positionEcef = eci2ecef(eci, gmst);
   const lla = {
     lat: (observer.lat * DEG2RAD) as Radians,
     lon: (observer.lon * DEG2RAD) as Radians,
     alt: observer.alt,
   };
 
-  const rae = ecfRad2rae(lla, positionEcf);
+  const rae = ecefRad2rae(lla, positionEcef);
 
   return rae;
 }

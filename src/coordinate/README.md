@@ -11,7 +11,7 @@ This guide provides a comprehensive overview of the coordinate systems available
 3. [Inertial Reference Frames (ECI)](#inertial-reference-frames-eci)
    - [J2000](#j2000)
    - [TEME](#teme)
-4. [Earth-Fixed Reference Frames (ECF)](#earth-fixed-reference-frames-ecf)
+4. [Earth-Fixed Reference Frames (ECEF)](#earth-fixed-reference-frames-ecef)
    - [ITRF](#itrf)
    - [Geodetic](#geodetic)
 5. [Relative Motion Frames](#relative-motion-frames)
@@ -46,7 +46,7 @@ OOTK provides multiple coordinate systems to represent positions and velocities 
 |--------|------|----------|-------------|
 | **J2000** | ECI | Yes | General orbit propagation, high-precision calculations |
 | **TEME** | ECI | Yes | SGP4 propagation, TLE-based tracking |
-| **ITRF** | ECF | No | Ground station calculations, Earth-fixed applications |
+| **ITRF** | ECEF | No | Ground station calculations, Earth-fixed applications |
 | **Geodetic** | Geographic | No | Location data (lat/lon/alt) |
 | **RIC** | Relative | No | Conjunction analysis, relative motion |
 | **Hill** | Relative | No | Proximity operations, rendezvous planning |
@@ -139,9 +139,9 @@ const j2000 = teme.toJ2000();
 
 ---
 
-## Earth-Fixed Reference Frames (ECF)
+## Earth-Fixed Reference Frames (ECEF)
 
-Earth-Centered Earth-Fixed (ECF/ECEF) frames rotate with Earth. These are essential for ground-based applications.
+Earth-Centered Earth-Fixed (ECEF) frames rotate with Earth. These are essential for ground-based applications.
 
 ### ITRF
 
@@ -494,10 +494,10 @@ const pv = equinoctial.toPositionVelocity();
 ### Common Conversions
 
 ```typescript
-// ECI to ECF
+// ECI to ECEF
 const itrf = j2000.toITRF();
 
-// ECF to ECI
+// ECEF to ECI
 const j2000 = itrf.toJ2000();
 
 // ECI to Geographic

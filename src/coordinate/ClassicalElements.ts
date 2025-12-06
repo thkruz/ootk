@@ -26,6 +26,7 @@ import { ClassicalElementsParams } from '../interfaces/ClassicalElementsParams';
 import {
   Degrees,
   Earth,
+  J2000,
   Kilometers,
   KilometersPerSecond,
   Minutes, PositionVelocity,
@@ -267,6 +268,16 @@ export class ClassicalElements {
       .rotZ(-this.rightAscension as Radians) as Vector3D<KilometersPerSecond>;
 
     return { position, velocity };
+  }
+
+  /**
+   * Converts the classical elements to J2000 state vector.
+   * @return The J2000 state vector.
+   */
+  toJ2000(): J2000 {
+    const { position, velocity } = this.toPositionVelocity();
+
+    return new J2000(this.epoch, position, velocity);
   }
 
   /**
