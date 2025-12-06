@@ -15,21 +15,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { J2000 } from '../coordinate/J2000';
-import { RIC } from '../coordinate/RIC';
-import { Tle } from '../coordinate/Tle';
-import { CovarianceSample } from '../covariance/CovarianceSample';
-import { CovarianceFrame, StateCovariance } from '../covariance/StateCovariance';
-import { ForceModel } from '../force/ForceModel';
-import type { Kilometers, Seconds, Vector3D } from '../main';
-import { Matrix } from '../operations/Matrix';
-import { GoldenSection } from '../optimize/GoldenSection';
-import { Propagator } from '../propagator/Propagator';
-import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
-import { Sgp4Propagator } from '../propagator/Sgp4Propagator';
-import { EpochUTC } from '../time/EpochUTC';
-import { ConjunctionEvent } from './ConjunctionEvent';
-import { ProbabilityOfCollision } from './ProbabilityOfCollision';
+import {
+  ConjunctionEvent, CovarianceFrame, CovarianceSample, EpochUTC, ForceModel, GoldenSection, J2000, Matrix,
+  ProbabilityOfCollision, Propagator, RIC, RungeKutta89Propagator, Sgp4Propagator, StateCovariance, Tle,
+  type Kilometers, type Seconds, type Vector3D
+} from '../main';
 
 /**
  * Input for a space object in conjunction assessment.

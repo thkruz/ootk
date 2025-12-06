@@ -20,10 +20,9 @@ import type { GroundObject } from './GroundObject';
 import type { SpaceObject } from './SpaceObject';
 
 /**
- * Represents a single access window (visibility period) between
- * a ground observer and a space object.
+ * Parameters for constructing an AccessWindow.
  */
-export interface AccessWindow {
+export interface AccessWindowParams {
   /** Start time of the access window */
   start: Date;
   /** End time of the access window */
@@ -40,6 +39,64 @@ export interface AccessWindow {
   observer: GroundObject;
   /** The observed space object */
   target: SpaceObject;
+}
+
+/**
+ * Represents a single access window (visibility period) between
+ * a ground observer and a space object.
+ */
+export class AccessWindow {
+  /** Start time of the access window */
+  readonly start: Date;
+  /** End time of the access window */
+  readonly end: Date;
+  /** Duration in milliseconds */
+  readonly duration: number;
+  /** Maximum elevation achieved during the pass */
+  readonly maxElevation: Degrees;
+  /** Time of maximum elevation */
+  readonly maxElevationTime: Date;
+  /** Range at maximum elevation */
+  readonly rangeAtMaxEl: Kilometers;
+  /** The observing ground object */
+  readonly observer: GroundObject;
+  /** The observed space object */
+  readonly target: SpaceObject;
+
+  constructor(params: AccessWindowParams) {
+    this.start = params.start;
+    this.end = params.end;
+    this.duration = params.duration;
+    this.maxElevation = params.maxElevation;
+    this.maxElevationTime = params.maxElevationTime;
+    this.rangeAtMaxEl = params.rangeAtMaxEl;
+    this.observer = params.observer;
+    this.target = params.target;
+  }
+
+  /**
+   * Formats a Date as HH:MM:SS.
+   */
+  private static formatTime_(date: Date): string {
+    const h = date.getUTCHours().toString().padStart(2, '0');
+    const m = date.getUTCMinutes().toString().padStart(2, '0');
+    const s = date.getUTCSeconds().toString().padStart(2, '0');
+
+    return `${h}:${m}:${s}`;
+  }
+
+  toString(): string {
+    const startTime = AccessWindow.formatTime_(this.start);
+    const endTime = AccessWindow.formatTime_(this.end);
+    const observerName = this.observer.name || this.observer.id;
+    const targetName = this.target.name || this.target.id;
+
+    return [
+      `Pass: ${startTime} - ${endTime} (max el: ${this.maxElevation.toFixed(1)}°, range: ${this.rangeAtMaxEl.toFixed(1)} km)`,
+      `  Observer: ${observerName}`,
+      `  Target: ${targetName}`,
+    ].join('\n');
+  }
 }
 
 /**

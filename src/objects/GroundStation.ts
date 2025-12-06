@@ -95,4 +95,15 @@ export class GroundStation extends GroundObject {
       commDeviceIds: this.commDevices.map((d) => d.id),
     };
   }
+
+  toString(): string {
+    return [
+      '[GroundStation]',
+      `  ID: ${this.id}`,
+      `  Name: ${this.name}`,
+      `  Location: ${this.lat.toFixed(4)}°, ${this.lon.toFixed(4)}°, ${this.alt.toFixed(3)} km`,
+      `  Sensors: ${this.sensors.length}`,
+      `  Comm Devices: ${this.commDevices.length}`,
+    ].join('\n');
+  }
 }

@@ -176,4 +176,30 @@ export class History<T> {
 
     return last - first;
   }
+
+  toString(): string {
+    const lines = [
+      '[History]',
+      `  Entries: ${this.entries_.length}`,
+    ];
+
+    if (this.entries_.length >= 2) {
+      const first = this.entries_[0].time.toISOString();
+      const last = this.entries_[this.entries_.length - 1].time.toISOString();
+
+      lines.push(`  Time Span: ${first} - ${last}`);
+    } else if (this.entries_.length === 1) {
+      lines.push(`  Time: ${this.entries_[0].time.toISOString()}`);
+    }
+
+    if (this.config_.maxLength !== undefined) {
+      lines.push(`  Max Length: ${this.config_.maxLength}`);
+    }
+
+    if (this.config_.samplingInterval && this.config_.samplingInterval > 0) {
+      lines.push(`  Sampling Interval: ${this.config_.samplingInterval} ms`);
+    }
+
+    return lines.join('\n');
+  }
 }

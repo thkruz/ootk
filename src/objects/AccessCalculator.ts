@@ -20,7 +20,8 @@ import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { ecef2rae } from '../transforms/transforms';
 import { Degrees, Kilometers, Meters, RaeVec3 } from '../types/types';
-import type { AccessConstraints, AccessState, AccessWindow } from './AccessWindow';
+import { AccessWindow } from './AccessWindow';
+import type { AccessConstraints, AccessState } from './AccessWindow';
 import type { GroundObject } from './GroundObject';
 import type { SpaceObject } from './SpaceObject';
 
@@ -318,7 +319,7 @@ export class AccessCalculator {
     const start = state.windowStart!;
     const duration = endTime.getTime() - start.getTime();
 
-    return {
+    return new AccessWindow({
       start,
       end: endTime,
       duration,
@@ -327,7 +328,7 @@ export class AccessCalculator {
       rangeAtMaxEl: state.rangeAtMaxEl,
       observer,
       target,
-    };
+    });
   }
 
   /**
