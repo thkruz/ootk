@@ -20,7 +20,7 @@ import { J2000 } from '../coordinate/J2000';
 import {
     Degrees,
     EcefVec3,
-    EciVec3,
+    TemeVec3,
     Kilometers,
     KilometersPerSecond,
     LlaVec3,
@@ -158,7 +158,7 @@ export class DynamicGroundObject extends GroundObject {
    * Throws an error - use getEci(time) for DynamicGroundObject.
    * @throws Error always
    */
-  override eci(): EciVec3<Kilometers> {
+  override eci(): TemeVec3<Kilometers> {
     throw new Error('DynamicGroundObject position is time-dependent. Use getEci(time) instead.');
   }
 
@@ -226,7 +226,7 @@ export class DynamicGroundObject extends GroundObject {
    * @param time - The time to get position for
    * @returns ECI position vector, or null if time is outside waypoint range
    */
-  getEci(time: Date): EciVec3<Kilometers> | null {
+  getEci(time: Date): TemeVec3<Kilometers> | null {
     const lla = this.getLLA(time);
 
     if (!lla) {
@@ -293,7 +293,7 @@ export class DynamicGroundObject extends GroundObject {
    * Gets the current ECI position (using system time).
    * @returns Current ECI position, or null if current time is outside waypoint range
    */
-  getCurrentEci(): EciVec3<Kilometers> | null {
+  getCurrentEci(): TemeVec3<Kilometers> | null {
     return this.getEci(new Date());
   }
 

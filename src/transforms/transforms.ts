@@ -3,7 +3,6 @@ import {
   Degrees,
   Earth,
   EcefVec3,
-  EciVec3,
   EnuVec3,
   GreenwichMeanSiderealTime,
   Kilometers,
@@ -33,7 +32,7 @@ import type { PhasedArrayRadar } from '../sensor/PhasedArrayRadar';
  * @param gmst takes a number in gmst time
  * @returns array containing eci coordinates
  */
-export function ecef2eci<T extends number>(ecef: EcefVec3<T>, gmst: number): EciVec3<T> {
+export function ecef2eci<T extends number>(ecef: EcefVec3<T>, gmst: number): TemeVec3<T> {
   const X = (ecef.x * Math.cos(gmst) - ecef.y * Math.sin(gmst)) as T;
   const Y = (ecef.x * Math.sin(gmst) + ecef.y * Math.cos(gmst)) as T;
   const Z = ecef.z;
@@ -91,7 +90,7 @@ export function eci2ecef<T extends number>(eci: TemeVec3<T>, gmst: number): Ecef
  * @param gmst takes a number in gmst time
  * @returns array containing lla coordinates
  */
-export function eci2lla(eci: EciVec3, gmst: number): LlaVec3<Degrees, Kilometers> {
+export function eci2lla(eci: TemeVec3, gmst: number): LlaVec3<Degrees, Kilometers> {
   // http://www.celestrak.com/columns/v02n03/
   const a = 6378.137;
   const b = 6356.7523142;
@@ -175,7 +174,7 @@ export function lla2ecef<AltitudeUnits extends number>(lla: LlaVec3<Degrees, Alt
  * @param gmst The Greenwich Mean Sidereal Time in seconds.
  * @returns The ECI coordinates in meters.
  */
-export function lla2eci(lla: LlaVec3<Radians, Kilometers>, gmst: GreenwichMeanSiderealTime): EciVec3<Kilometers> {
+export function lla2eci(lla: LlaVec3<Radians, Kilometers>, gmst: GreenwichMeanSiderealTime): TemeVec3<Kilometers> {
   const { lat, lon, alt } = lla;
 
   const cosLat = Math.cos(lat);
@@ -186,7 +185,7 @@ export function lla2eci(lla: LlaVec3<Radians, Kilometers>, gmst: GreenwichMeanSi
   const y = (Earth.radiusMean + alt) * cosLat * sinLon;
   const z = (Earth.radiusMean + alt) * sinLat;
 
-  return { x, y, z } as EciVec3<Kilometers>;
+  return { x, y, z } as TemeVec3<Kilometers>;
 }
 
 /**
@@ -287,7 +286,7 @@ export function rae2eci<D extends number>(
   rae: RaeVec3<D, Degrees>,
   lla: LlaVec3<Degrees, D>,
   gmst: number,
-): EciVec3<D> {
+): TemeVec3<D> {
   const ecef = rae2ecef(rae, lla);
   const eci = ecef2eci(ecef, gmst);
 
@@ -412,7 +411,7 @@ export function calcGmst(date: Date): { gmst: GreenwichMeanSiderealTime; j: numb
  */
 export function eci2rae(
   now: Date,
-  eci: EciVec3<Kilometers>,
+  eci: TemeVec3<Kilometers>,
   observer: GroundObject | LlaVec3<Degrees, Kilometers>,
 ): RaeVec3<Kilometers, Degrees> {
   now = new Date(now);

@@ -27,7 +27,7 @@ import {
     DEG2RAD,
     Degrees,
     EcefVec3,
-    EciVec3,
+    TemeVec3,
     Kilometers,
     KilometersPerSecond,
     LlaVec3,
@@ -105,7 +105,7 @@ export abstract class GroundObject extends BaseObject {
    * @param date The date for which to calculate the ECI position vector. Defaults to the current date.
    * @returns The ECI position vector of the ground object.
    */
-  eci(date: Date = new Date()): EciVec3<Kilometers> {
+  eci(date: Date = new Date()): TemeVec3<Kilometers> {
     const { gmst } = calcGmst(date);
 
     return lla2eci(this.toGeodetic(), gmst);

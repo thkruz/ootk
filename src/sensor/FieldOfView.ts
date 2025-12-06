@@ -427,14 +427,6 @@ export class FieldOfView {
   }
 
   /**
-   * @deprecated Use angularCoverage instead.
-   * Gets the azimuth coverage (equivalent to 2 * halfAngle for boresight-centric FOV).
-   */
-  get azimuthCoverage(): Degrees {
-    return this.angularCoverage;
-  }
-
-  /**
    * Checks if this FOV is configured for deep space observation.
    * Deep space is defined as max range > 6000 km.
    */
