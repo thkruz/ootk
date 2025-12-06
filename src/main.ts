@@ -68,3 +68,12 @@ export * from './sensor/index';
 export * from './parsers/index';
 
 export * from './comm/index';
+
+export * from './interpolator/index';
+
+export * from './maneuver/index';
+
+// Note: fetch module not exported - HorizonsAPI uses browser fetch which isn't available in Node.js
+// export * from './fetch/index';
+
+export * from './optimize/index';
