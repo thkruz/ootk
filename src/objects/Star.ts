@@ -24,7 +24,7 @@
 import { Horizon, MakeTime, Observer } from 'astronomy-engine';
 import {
   Degrees,
-  ecf2eci,
+  ecef2eci,
   EciVec3,
   GreenwichMeanSiderealTime,
   jday,
@@ -32,7 +32,7 @@ import {
   LlaVec3,
   MILLISECONDS_TO_DAYS,
   Radians,
-  rae2ecf,
+  rae2ecef,
   RaeVec3,
   Sgp4,
   SpaceObjectType,
@@ -67,7 +67,7 @@ export class Star extends BaseObject {
     const { gmst } = Star.calculateTimeVariables_(date);
 
     // Arbitrary distance to enable using ECI coordinates
-    return ecf2eci(rae2ecf(rae, { lat: <Degrees>0, lon: <Degrees>0, alt: <Kilometers>0 }), gmst);
+    return ecef2eci(rae2ecef(rae, { lat: <Degrees>0, lon: <Degrees>0, alt: <Kilometers>0 }), gmst);
   }
 
   rae(

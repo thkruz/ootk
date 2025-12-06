@@ -1,4 +1,5 @@
 import { CatalogSource } from '../enums/CatalogSource';
+import { HistoryConfig } from '../objects/History';
 import {
   EciVec3,
   LaunchDetails,
@@ -49,4 +50,8 @@ export interface SatelliteParams extends LaunchDetails, SpaceCraftDetails, Opera
   altName?: string;
   /** Operational status */
   status?: PayloadStatus;
+
+  // History tracking
+  /** Configuration for tracking position/velocity history during propagation */
+  historyConfig?: HistoryConfig;
 }
