@@ -340,4 +340,55 @@ export class ClassicalElements {
       mu: this.mu,
     });
   }
+
+  /**
+   * Calculates the J2 nodal precession rate (RAAN drift rate).
+   *
+   * The nodal precession is caused by Earth's oblateness (J2 perturbation) and
+   * causes the right ascension of the ascending node to drift over time.
+   *
+   * @returns Precession rate in radians per second.
+   *
+   * @example
+   * ```ts
+   * const elements = ClassicalElements.fromStateVector(state);
+   * const raanDriftPerDay = elements.nodalPrecessionRate * 86400; // rad/day
+   * const raanDriftDegreesPerDay = raanDriftPerDay * RAD2DEG; // deg/day
+   * ```
+   */
+  get nodalPrecessionRate(): number {
+    const Re = Earth.radiusEquator; // km
+    const a = this.semimajorAxis; // km
+    const e = this.eccentricity;
+    const i = this.inclination; // radians
+    const n = this.meanMotion; // rad/s
+
+    // J2 nodal precession: Ω̇ = -3/2 * (Re/a)² * (1-e²)^-2 * J2 * n * cos(i)
+    return (-3 / 2) * (Re / a) ** 2 / (1 - e * e) ** 2 * Earth.j2 * n * Math.cos(i);
+  }
+
+  /**
+   * Returns the RAAN normalized for J2 precession since the epoch.
+   *
+   * This accounts for the secular drift of the right ascension due to
+   * Earth's oblateness, allowing comparison of RAAN values across different epochs.
+   *
+   * @param targetEpoch - The epoch to normalize the RAAN to.
+   * @returns The normalized RAAN in radians, wrapped to [0, 2π).
+   *
+   * @example
+   * ```ts
+   * const elements = ClassicalElements.fromStateVector(state);
+   * const futureEpoch = elements.epoch.roll(86400); // 1 day later
+   * const normalizedRaan = elements.normalizedRaan(futureEpoch);
+   * ```
+   */
+  normalizedRaan(targetEpoch: EpochUTC): Radians {
+    const deltaSeconds = targetEpoch.difference(this.epoch);
+    const precessionRad = this.nodalPrecessionRate * deltaSeconds;
+    const newRaan = this.rightAscension + precessionRad;
+
+    // Wrap to [0, 2π)
+    return (((newRaan % TAU) + TAU) % TAU) as Radians;
+  }
 }
