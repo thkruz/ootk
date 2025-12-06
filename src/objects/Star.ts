@@ -25,7 +25,7 @@ import { Horizon, MakeTime, Observer } from 'astronomy-engine';
 import {
   Degrees,
   ecef2eci,
-  EciVec3,
+  TemeVec3,
   GreenwichMeanSiderealTime,
   jday,
   Kilometers,
@@ -62,7 +62,7 @@ export class Star extends BaseObject {
     this.vmag = info.vmag;
   }
 
-  eci(lla: LlaVec3 = { lat: <Degrees>180, lon: <Degrees>0, alt: <Kilometers>0 }, date: Date = new Date()): EciVec3 {
+  eci(lla: LlaVec3 = { lat: <Degrees>180, lon: <Degrees>0, alt: <Kilometers>0 }, date: Date = new Date()): TemeVec3 {
     const rae = this.rae(lla, date);
     const { gmst } = Star.calculateTimeVariables_(date);
 

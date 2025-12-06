@@ -88,7 +88,7 @@ export class MechanicalRadar extends RadarSensor {
       return undefined;
     }
 
-    const azCoverage = this.fieldOfView.azimuthCoverage;
+    const azCoverage = this.fieldOfView.angularCoverage;
 
     return azCoverage / this.scanRate;
   }

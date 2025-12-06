@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PassType, Satellite, SatelliteParams, Vector3D } from '../main';
+import { PassType, Satellite, Vector3D } from '../main';
 import { Sgp4ErrorCode } from '../sgp4/sgp4-error';
 
 /**
@@ -166,26 +166,6 @@ export type GcrfVec3<Units = Kilometers> = Vec3<Units, 'GCRF'>;
  * This is an Earth-fixed frame that rotates with the Earth.
  */
 export type ItrfVec3<Units = Kilometers> = Vec3<Units, 'ITRF'>;
-
-/**
- * Represents a three-dimensional vector in Earth-Centered Inertial (ECI)
- * coordinates.
- *
- * This type is used to represent a point in space in terms of x, y, and z
- * coordinates. It is a generic type that allows for flexibility in the units of
- * measure used for each dimension. The default unit of measure is Kilometers.
- * x The x dimension of the vector, representing the distance from the
- * origin to the point in the x direction.
- * y The y dimension of the vector, representing the distance from the
- * origin to the point in the y direction. @property z The z dimension of the
- * vector, representing the distance from the origin to the point in the z
- * direction.
- *
- * @deprecated Use TemeVec3 instead for explicit TEME frame reference, or use the
- * appropriate frame-specific type (J2000Vec3, GcrfVec3) for other ECI frames.
- * EciVec3 is ambiguous as it doesn't specify which ECI frame is used.
- */
-export type EciVec3<Units = Kilometers> = TemeVec3<Units>;
 
 /**
  * Represents a three-dimensional vector in Earth-Centered Earth Fixed (ECEF)
@@ -802,11 +782,6 @@ export enum PayloadStatus {
   DECAYED = 'D',
   UNKNOWN = '?'
 }
-
-/**
- * @deprecated Use SatelliteParams directly - all detailed properties have been merged into SatelliteParams
- */
-export type DetailedSatelliteParams = SatelliteParams;
 
 /**
  * The RUV coordinate system is a spherical coordinate system with the origin at

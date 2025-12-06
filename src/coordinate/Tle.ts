@@ -28,7 +28,7 @@ import { Sgp4GravConstants } from '../sgp4/sgp4';
 import { EpochUTC } from '../time/EpochUTC';
 import {
   Degrees,
-  EciVec3,
+  TemeVec3,
   Kilometers,
   KilometersPerSecond,
   Line1Data,
@@ -298,8 +298,8 @@ export class Tle {
    * @param v - The array to store the velocity values.
    */
   private static sv2rv_(stateVector: StateVectorSgp4, r: Float64Array, v: Float64Array) {
-    const pos = stateVector.position as EciVec3;
-    const vel = stateVector.velocity as EciVec3<KilometersPerSecond>;
+    const pos = stateVector.position as TemeVec3;
+    const vel = stateVector.velocity as TemeVec3<KilometersPerSecond>;
 
     r[0] = pos.x;
     r[1] = pos.y;

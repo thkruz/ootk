@@ -15,14 +15,14 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EciVec3, KilometersPerSecond } from '../types/types';
+import { TemeVec3, KilometersPerSecond } from '../types/types';
 
 /**
  * State data that can be recorded in history.
  */
 export interface HistoricalState {
-  position: EciVec3;
-  velocity: EciVec3<KilometersPerSecond>;
+  position: TemeVec3;
+  velocity: TemeVec3<KilometersPerSecond>;
 }
 
 /**

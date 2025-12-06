@@ -1,7 +1,7 @@
 import { CatalogSource } from '../enums/CatalogSource';
 import { HistoryConfig } from '../objects/History';
 import {
-  EciVec3,
+  TemeVec3,
   LaunchDetails,
   OperationsDetails,
   PayloadStatus,
@@ -25,7 +25,7 @@ export interface SatelliteParams extends LaunchDetails, SpaceCraftDetails, Opera
   vmag?: number | null;
   sccNum?: string;
   intlDes?: string;
-  position?: EciVec3;
+  position?: TemeVec3;
   time?: Date;
 
   // ==================== Detailed Properties (merged from DetailedSatellite) ====================

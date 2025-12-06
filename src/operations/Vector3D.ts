@@ -76,25 +76,6 @@ export class Vector3D<T extends number = number> {
     return new Float64Array([this.x, this.y, this.z]);
   }
 
-  /**
-   * Return the Vector3D element at the provided index.
-   * @deprecated don't do this
-   * @param index The index of the element to return.
-   * @returns The element at the provided index.
-   */
-  public getElement(index: number): number {
-    switch (index) {
-      case 0:
-        return this.x;
-      case 1:
-        return this.y;
-      case 2:
-        return this.z;
-      default:
-        throw new Error(`Index ${index} outside 3D vector bounds.`);
-    }
-  }
-
   // / Convert this to a [Vector] object.
   toVector() {
     return new Vector(this.toList());

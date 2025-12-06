@@ -15,15 +15,6 @@ describe('Vector3D', () => {
     expect(v.toArray()).toMatchSnapshot();
   });
 
-  // getElement
-  it('should get an element from a Vector3D', () => {
-    const v = new Vector3D(1, 2, 3);
-
-    expect(v.getElement(0)).toBe(1);
-    expect(v.getElement(1)).toBe(2);
-    expect(v.getElement(2)).toBe(3);
-  });
-
   // toVector
   it('should return a Vector3D as a Vector', () => {
     const v = new Vector3D(1, 2, 3);

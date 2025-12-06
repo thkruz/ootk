@@ -25,7 +25,7 @@ import { DEG2RAD, RAD2DEG } from '../utils/constants';
 import {
   Degrees,
   EcefVec3,
-  EciVec3,
+  TemeVec3,
   Kilometers,
   KilometersPerSecond,
   Radians,
@@ -39,8 +39,8 @@ import { Satellite } from './Satellite';
  */
 export interface OrbitTrackPoint {
   time: Date;
-  position: EciVec3;
-  velocity: EciVec3<KilometersPerSecond>;
+  position: TemeVec3;
+  velocity: TemeVec3<KilometersPerSecond>;
   altitude: Kilometers;
 }
 
