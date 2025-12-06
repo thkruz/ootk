@@ -24,6 +24,8 @@ export { Satellite } from './Satellite';
 export { SpaceObject } from './SpaceObject';
 export type { SpaceObjectParams } from './SpaceObject';
 export { Star } from './Star';
+export { VisualizationHelpers } from './VisualizationHelpers';
+export type { FovBoundaryPoint, GroundTrackPoint, OrbitTrackPoint } from './VisualizationHelpers';
 
 // Backward compatibility - DetailedSatellite is now just Satellite
 // All detailed properties have been merged into Satellite
