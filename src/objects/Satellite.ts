@@ -508,6 +508,26 @@ export class Satellite extends SpaceObject {
    * @param date - The date at which to calculate the ECI position. Optional, defaults to the current date.
    * @param j - Julian date. Optional, defaults to null.
    * @param gmst - Greenwich Mean Sidereal Time. Optional, defaults to null.
+   * @example
+   * ```typescript
+   * import { Satellite, Tle } from 'ootk';
+   *
+   * const tle = new Tle(
+   *   '1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9002',
+   *   '2 25544  51.6400 208.9163 0006730 358.5720 122.3372 15.50104550 10001'
+   * );
+   * const satellite = new Satellite({ tle });
+   *
+   * // Get current position
+   * const pv = satellite.eci();
+   * if (pv) {
+   *   console.log(`Position: ${pv.position.x.toFixed(2)}, ${pv.position.y.toFixed(2)}, ${pv.position.z.toFixed(2)} km`);
+   *   console.log(`Velocity: ${pv.velocity.x.toFixed(4)} km/s`);
+   * }
+   *
+   * // Get position at specific time
+   * const futurePos = satellite.eci(new Date('2024-06-15T12:00:00Z'));
+   * ```
    * @returns The ECI position at the specified date.
    */
   override eci(date?: Date, j?: number, gmst?: GreenwichMeanSiderealTime): PosVel | null {
@@ -653,6 +673,33 @@ export class Satellite extends SpaceObject {
    * @param date - The date at which to calculate the RAE vector. Optional, defaults to the current date.
    * @param j - Julian date. Optional, defaults to null.
    * @param gmst - Greenwich Mean Sidereal Time. Optional, defaults to null.
+   * @example
+   * ```typescript
+   * import { Satellite, GroundObject, Tle, Degrees, Kilometers } from 'ootk';
+   *
+   * const tle = new Tle(line1, line2);
+   * const satellite = new Satellite({ tle });
+   *
+   * // Define ground observer
+   * const observer = new GroundObject({
+   *   lat: 40.0 as Degrees,
+   *   lon: -75.0 as Degrees,
+   *   alt: 0.1 as Kilometers,
+   * });
+   *
+   * // Get look angles
+   * const rae = satellite.rae(observer);
+   * if (rae) {
+   *   console.log(`Range: ${rae.rng.toFixed(1)} km`);
+   *   console.log(`Azimuth: ${rae.az.toFixed(2)}°`);
+   *   console.log(`Elevation: ${rae.el.toFixed(2)}°`);
+   *
+   *   // Check if above horizon
+   *   if (rae.el > 0) {
+   *     console.log('Satellite is visible!');
+   *   }
+   * }
+   * ```
    * @returns The RAE vector for the given sensor and time.
    */
   rae(observer: GroundObject, date?: Date, j?: number, gmst?: GreenwichMeanSiderealTime): RaeVec3<Kilometers, Degrees> | null {

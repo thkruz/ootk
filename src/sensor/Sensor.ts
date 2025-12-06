@@ -254,6 +254,42 @@ export abstract class Sensor {
    * @param target - The satellite to track
    * @param planningInterval - Duration in seconds to plan
    * @param date - Start time (defaults to now)
+   * @example
+   * ```typescript
+   * import { Sensor, Satellite, GroundObject, FieldOfView, PassType, Degrees, Kilometers } from 'ootk';
+   *
+   * // Create ground station with sensor
+   * const station = new GroundObject({
+   *   lat: 40.0 as Degrees,
+   *   lon: -75.0 as Degrees,
+   *   alt: 0.1 as Kilometers,
+   * });
+   *
+   * const sensor = new Sensor({
+   *   id: 'radar-1',
+   *   name: 'Tracking Radar',
+   *   fov: new FieldOfView({
+   *     boresightEl: 45 as Degrees,
+   *     halfAngle: 30 as Degrees,
+   *     maxRange: 5000 as Kilometers,
+   *   }),
+   * });
+   * sensor.setParent(station);
+   *
+   * // Find all passes in next 24 hours (86400 seconds)
+   * const passes = sensor.calculatePasses(satellite, 86400);
+   *
+   * // Process pass events
+   * passes.forEach(event => {
+   *   if (event.type === PassType.ENTER) {
+   *     console.log(`Pass starts at ${event.time.toISOString()}`);
+   *     console.log(`  AOS Az/El: ${event.az.toFixed(1)}° / ${event.el.toFixed(1)}°`);
+   *   } else if (event.type === PassType.EXIT) {
+   *     console.log(`Pass ends at ${event.time.toISOString()}`);
+   *     console.log(`  Max elevation: ${event.maxElPass?.toFixed(1)}°`);
+   *   }
+   * });
+   * ```
    * @returns Array of lookangle events (ENTER/EXIT with RAE data)
    */
   calculatePasses(
