@@ -24,14 +24,6 @@ exports[`Rae2Ecf should convert valid ENU coordinates to RF 1`] = `
 }
 `;
 
-exports[`Rae2Ecf should convert valid LLA coordinates to ECF 1`] = `
-{
-  "x": 6378.137,
-  "y": 0,
-  "z": 0,
-}
-`;
-
 exports[`Rae2Ecf should convert valid LLA coordinates to ECI 1`] = `
 {
   "x": -4444.532338535956,

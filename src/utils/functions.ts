@@ -2,7 +2,7 @@ import { DifferentiableFunction } from '../main';
 /* eslint-disable require-jsdoc */
 import { AngularDiameterMethod } from '../enums/AngularDiameterMethod';
 import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';
-import { EcfVec3, Kilometers, KilometersPerSecond, Radians, SpaceObjectType } from '../types/types';
+import { EcefVec3, Kilometers, KilometersPerSecond, Radians, SpaceObjectType } from '../types/types';
 import { angularVelocityOfEarth, cKmPerSec } from './constants';
 
 /**
@@ -530,17 +530,17 @@ export const spaceObjType2Str = (spaceObjType: SpaceObjectType): string =>
  * @returns The calculated Doppler factor.
  */
 export const dopplerFactor = (
-  location: EcfVec3<Kilometers>,
-  position: EcfVec3<Kilometers>,
-  velocity: EcfVec3<KilometersPerSecond>,
+  location: EcefVec3<Kilometers>,
+  position: EcefVec3<Kilometers>,
+  velocity: EcefVec3<KilometersPerSecond>,
 ): number => {
-  const range = <EcfVec3>{
+  const range = <EcefVec3>{
     x: position.x - location.x,
     y: position.y - location.y,
     z: position.z - location.z,
   };
   const distance = Math.hypot(range.x, range.y, range.z);
-  const rangeVel = <EcfVec3<KilometersPerSecond>>{
+  const rangeVel = <EcefVec3<KilometersPerSecond>>{
     x: velocity.x + angularVelocityOfEarth * location.y,
     y: velocity.y - angularVelocityOfEarth * location.x,
     z: velocity.z,

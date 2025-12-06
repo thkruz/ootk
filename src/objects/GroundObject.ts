@@ -24,19 +24,19 @@
 import { Geodetic } from '../coordinate/Geodetic';
 import { J2000 } from '../coordinate/J2000';
 import {
-  DEG2RAD,
-  Degrees,
-  EcfVec3,
-  EciVec3,
-  Kilometers,
-  KilometersPerSecond,
-  LlaVec3,
-  Radians,
-  RaeVec3,
-  SpaceObjectType,
-  calcGmst,
-  lla2eci,
-  llaRad2ecf,
+    DEG2RAD,
+    Degrees,
+    EcefVec3,
+    EciVec3,
+    Kilometers,
+    KilometersPerSecond,
+    LlaVec3,
+    Radians,
+    RaeVec3,
+    SpaceObjectType,
+    calcGmst,
+    lla2eci,
+    llaRad2ecef,
 } from '../main';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
@@ -91,12 +91,12 @@ export abstract class GroundObject extends BaseObject {
   }
 
   /**
-   * Calculates ECF position at a given time.
+   * Calculates ECEF position at a given time.
    * @variation optimized version of this.toGeodetic().toITRF().position;
-   * @returns The ECF position vector of the ground object.
+   * @returns The ECEF position vector of the ground object.
    */
-  ecf(): EcfVec3<Kilometers> {
-    return llaRad2ecf(this.toGeodetic());
+  ecef(): EcefVec3<Kilometers> {
+    return llaRad2ecef(this.toGeodetic());
   }
 
   /**

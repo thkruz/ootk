@@ -24,7 +24,7 @@ import {
   Seconds,
   Vector3D,
 } from '@src/main';
-import { Sensor } from '../../objects/Sensor';
+import { GroundStation } from '../../objects/GroundStation';
 import { Observation } from '@src/observation/Observation';
 import { ObservationOptical } from '@src/observation/ObservationOptical';
 import { ObservationRadar } from '@src/observation/ObservationRadar';
@@ -102,7 +102,7 @@ function createHeoOrbit(epoch: EpochUTC): ClassicalElements {
 /**
  * Create a sensor at a specified location
  */
-function createSensor(location: 'eastCoast' | 'westCoast' | 'hawaii' = 'eastCoast'): Sensor {
+function createSensor(location: 'eastCoast' | 'westCoast' | 'hawaii' = 'eastCoast'): GroundStation {
   const locations = {
     eastCoast: { lat: 41.75 as Degrees, lon: -70.54 as Degrees, alt: 0.1 as Kilometers },
     westCoast: { lat: 34.0 as Degrees, lon: -118.0 as Degrees, alt: 0.3 as Kilometers },
@@ -111,16 +111,10 @@ function createSensor(location: 'eastCoast' | 'westCoast' | 'hawaii' = 'eastCoas
 
   const loc = locations[location];
 
-  return new Sensor({
+  return new GroundStation({
     lat: loc.lat,
     lon: loc.lon,
     alt: loc.alt,
-    minEl: 0 as Degrees,
-    maxEl: 90 as Degrees,
-    minAz: 0 as Degrees,
-    maxAz: 360 as Degrees,
-    minRng: 0 as Kilometers,
-    maxRng: 100_000 as Kilometers,
   });
 }
 
@@ -142,7 +136,7 @@ function generateEpochs(startEpoch: EpochUTC, count: number, intervalSeconds: nu
  */
 function generateOpticalObservations(
   propagator: Propagator,
-  sensor: Sensor,
+  sensor: GroundStation,
   epochs: EpochUTC[],
 ): ObservationOptical[] {
   return epochs.map((epoch) => {
@@ -159,7 +153,7 @@ function generateOpticalObservations(
  */
 function generateRadarObservations(
   propagator: Propagator,
-  sensor: Sensor,
+  sensor: GroundStation,
   epochs: EpochUTC[],
 ): ObservationRadar[] {
   return epochs.map((epoch) => {

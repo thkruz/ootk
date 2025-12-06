@@ -1,4 +1,4 @@
-import { Degrees, EcfVec3, EciVec3, Kilometers, RAD2DEG, Radians } from '../../main';
+import { Degrees, EcefVec3, Kilometers, RAD2DEG, Radians, TemeVec3 } from '../../main';
 
 export const transformsData = {
   validLatitudes: [
@@ -53,14 +53,14 @@ export const transformsData = {
       degrees: -180 as Degrees,
     },
   ],
-  validGeodeticToEcf: [
+  validGeodeticToEcef: [
     {
       lla: {
         lon: 0 as Degrees,
         lat: 0 as Degrees,
         alt: 0 as Kilometers,
       },
-      ecf: {
+      ecef: {
         x: 6378.137 as Kilometers,
         y: 0 as Kilometers,
         z: 0 as Kilometers,
@@ -72,7 +72,7 @@ export const transformsData = {
         lat: 40 as Degrees,
         alt: 1 as Kilometers,
       },
-      ecf: {
+      ecef: {
         x: 4598.36107377528 as Kilometers,
         y: 1673.6665572625757 as Kilometers,
         z: 4078.628359764023 as Kilometers,
@@ -84,7 +84,7 @@ export const transformsData = {
         lat: 80 as Degrees,
         alt: 2 as Kilometers,
       },
-      ecf: {
+      ecef: {
         x: 851.4677191220125 as Kilometers,
         y: -714.4662490746402 as Kilometers,
         z: 6261.512576488877 as Kilometers,
@@ -97,7 +97,7 @@ export const transformsData = {
         x: 6400,
         y: 100,
         z: 0,
-      } as EciVec3,
+      } as TemeVec3,
       gmst: 0,
       lla: {
         lon: (0.015623 * RAD2DEG) as Degrees,
@@ -110,7 +110,7 @@ export const transformsData = {
         x: 5000,
         y: 45000,
         z: 0,
-      } as EciVec3,
+      } as TemeVec3,
       gmst: 10,
       lla: {
         lon: (-2.256675587199412 * RAD2DEG) as Degrees,
@@ -123,7 +123,7 @@ export const transformsData = {
         x: 5000,
         y: 45000,
         z: 0,
-      } as EciVec3,
+      } as TemeVec3,
       gmst: -10,
       lla: {
         lon: (-1.1062315087381709 * RAD2DEG) as Degrees,
@@ -132,7 +132,7 @@ export const transformsData = {
       },
     },
   ],
-  validEciToEcf: [
+  validEciToEcef: [
     {
       eci: {
         x: 6400,
@@ -140,7 +140,7 @@ export const transformsData = {
         z: 0,
       },
       gmst: 10,
-      ecf: {
+      ecef: {
         x: -5370.057786089295,
         y: 3481.7351096919665,
         z: 0,
@@ -153,7 +153,7 @@ export const transformsData = {
         z: 8000,
       },
       gmst: 10,
-      ecf: {
+      ecef: {
         x: -6712.572232611619,
         y: 4352.168887114958,
         z: 8000,
@@ -166,16 +166,16 @@ export const transformsData = {
         z: -8000,
       },
       gmst: -30,
-      ecf: {
+      ecef: {
         x: -2718.114897270775,
         y: -8521.25879229323,
         z: -8000,
       },
     },
   ],
-  validEcfToEci: [
+  validEcefToEci: [
     {
-      ecf: {
+      ecef: {
         x: 5555,
         y: 3000,
         z: 0,
@@ -188,7 +188,7 @@ export const transformsData = {
       },
     },
     {
-      ecf: {
+      ecef: {
         x: 12000,
         y: 0,
         z: 9999,
@@ -201,7 +201,7 @@ export const transformsData = {
       },
     },
     {
-      ecf: {
+      ecef: {
         x: 54321,
         y: 12345,
         z: 12345,
@@ -214,18 +214,18 @@ export const transformsData = {
       },
     },
   ],
-  validEcfToLookangles: [
+  validEcefToLookangles: [
     {
       lla: {
         lat: (0.7287584767123405 * RAD2DEG) as Degrees,
         lon: (-1.2311404365114507 * RAD2DEG) as Degrees,
         alt: 0.060966 as Kilometers,
       },
-      satelliteEcf: {
+      satelliteEcef: {
         x: 1838.5578358534067,
         y: -4971.972919387344,
         z: 4466.101983887215,
-      } as EcfVec3<Kilometers>,
+      } as EcefVec3<Kilometers>,
       rae: {
         az: 156.45929778422533 as Degrees,
         el: 70.9805298041814 as Degrees,
@@ -259,7 +259,7 @@ export const transformsData = {
         lat: 41 as Degrees,
         alt: 1 as Kilometers,
       },
-      ecf: {
+      ecef: {
         x: 4000 as Kilometers,
         y: 7000 as Kilometers,
         z: 3000 as Kilometers,

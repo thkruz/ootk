@@ -1,6 +1,5 @@
 export { BaseObject } from './BaseObject';
 export { CenterBody, CenterBodyMu, parseCenterBody } from './CenterBody';
-export { DetailedSatellite } from './DetailedSatellite';
 export { EphemerisSatellite } from './EphemerisSatellite';
 export type { EphemerisSatelliteParams } from './EphemerisSatellite';
 export { GroundObject } from './GroundObject';
@@ -26,21 +25,9 @@ export { SpaceObject } from './SpaceObject';
 export type { SpaceObjectParams } from './SpaceObject';
 export { Star } from './Star';
 
-// Legacy sensor exports - deprecated, use sensor module instead
-// These will be removed in a future version
-// Note: Sensor is exported from sensor module, use ObjectsSensor for legacy objects/Sensor class
+// Backward compatibility - DetailedSatellite is now just Satellite
+// All detailed properties have been merged into Satellite
 /**
- * @deprecated Use sensor classes from the sensor module (e.g., PhasedArrayRadar, OpticalSensor)
+ * @deprecated Use Satellite directly - DetailedSatellite properties have been merged into Satellite
  */
-export { Sensor as ObjectsSensor } from './Sensor';
-export { Sensor as LegacySensor } from './Sensor';
-/**
- * @deprecated Use sensor classes from the sensor module
- */
-export { DetailedSensor as ObjectsDetailedSensor } from './DetailedSensor';
-export { DetailedSensor as LegacyDetailedSensor } from './DetailedSensor';
-/**
- * @deprecated Use PhasedArrayRadar from sensor module instead
- */
-export { RfSensor as ObjectsRfSensor } from './RfSensor';
-export { RfSensor as LegacyRfSensor } from './RfSensor';
+export { Satellite as DetailedSatellite } from './Satellite';

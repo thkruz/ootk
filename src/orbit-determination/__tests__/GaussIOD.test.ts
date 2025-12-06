@@ -8,7 +8,7 @@
  */
 
 import { ClassicalElements, DEG2RAD, Degrees, Earth, J2000, Kilometers, KilometersPerSecond, Radians, Sgp4, Vector3D } from '@src/main';
-import { Sensor } from '../../objects/Sensor';
+import { GroundStation } from '../../objects/GroundStation';
 import { RadecTopocentric } from '@src/observation';
 import { ObservationOptical } from '@src/observation/ObservationOptical';
 import { GaussIOD } from '@src/orbit-determination/GaussIOD';
@@ -147,16 +147,10 @@ describe('GaussIOD', () => {
       const stationLon = 76.971667 as Degrees;
       const stationAlt = 2.735 as Kilometers;
 
-      const sensor = new Sensor({
+      const sensor = new GroundStation({
         lat: stationLat,
         lon: stationLon,
         alt: stationAlt,
-        minEl: 0 as Degrees,
-        maxEl: 90 as Degrees,
-        minAz: 0 as Degrees,
-        maxAz: 360 as Degrees,
-        minRng: 0 as Kilometers,
-        maxRng: 100_000 as Kilometers,
       });
 
       // Observation times (roughly 6-minute intervals)
@@ -212,16 +206,10 @@ describe('GaussIOD', () => {
       const stationLon = -118.0 as Degrees;
       const stationAlt = 0.3 as Kilometers;
 
-      const sensor = new Sensor({
+      const sensor = new GroundStation({
         lat: stationLat,
         lon: stationLon,
         alt: stationAlt,
-        minEl: 0 as Degrees,
-        maxEl: 90 as Degrees,
-        minAz: 0 as Degrees,
-        maxAz: 360 as Degrees,
-        minRng: 0 as Kilometers,
-        maxRng: 100_000 as Kilometers,
       });
 
       // Shorter time intervals for MEO (3-minute intervals)
@@ -275,16 +263,10 @@ describe('GaussIOD', () => {
       const stationLon = -80.5 as Degrees;
       const stationAlt = 0.01 as Kilometers;
 
-      const sensor = new Sensor({
+      const sensor = new GroundStation({
         lat: stationLat,
         lon: stationLon,
         alt: stationAlt,
-        minEl: 0 as Degrees,
-        maxEl: 90 as Degrees,
-        minAz: 0 as Degrees,
-        maxAz: 360 as Degrees,
-        minRng: 0 as Kilometers,
-        maxRng: 10_000 as Kilometers,
       });
 
       // Very short intervals for LEO (1-minute intervals)
@@ -333,16 +315,10 @@ describe('GaussIOD', () => {
         }),
       );
 
-      const sensor = new Sensor({
+      const sensor = new GroundStation({
         lat: 43.05722 as Degrees,
         lon: 76.971667 as Degrees,
         alt: 2.735 as Kilometers,
-        minEl: 0 as Degrees,
-        maxEl: 90 as Degrees,
-        minAz: 0 as Degrees,
-        maxAz: 360 as Degrees,
-        minRng: 0 as Kilometers,
-        maxRng: 100_000 as Kilometers,
       });
 
       // Observations too close together (1 second apart)
@@ -383,16 +359,10 @@ describe('GaussIOD', () => {
         }),
       );
 
-      const sensor = new Sensor({
+      const sensor = new GroundStation({
         lat: 60.0 as Degrees,
         lon: 30.0 as Degrees,
         alt: 0.1 as Kilometers,
-        minEl: 0 as Degrees,
-        maxEl: 90 as Degrees,
-        minAz: 0 as Degrees,
-        maxAz: 360 as Degrees,
-        minRng: 0 as Kilometers,
-        maxRng: 100_000 as Kilometers,
       });
 
       const t1 = EpochUTC.fromDateTimeString('2023-01-01T00:00:00.000Z');

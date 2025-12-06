@@ -6,9 +6,3 @@ export type { OptionsParams } from './OptionsParams';
 export type { SatelliteParams } from './SatelliteParams';
 export type { StarObjectParams } from './StarObjectParams';
 
-// Legacy sensor param types - use sensor module types instead
-/** @deprecated Use SensorParams from sensor module instead */
-export type { RfSensorParams } from './RfSensorParams';
-/** @deprecated Use SensorParams from sensor module instead */
-export type { SensorParams as LegacySensorParams } from './SensorParams';
-

@@ -3,7 +3,7 @@
  * Example demonstrating coordinate transformations.
  *
  * This example shows:
- * - Converting between different coordinate frames (ECI, ECF, LLA)
+ * - Converting between different coordinate frames (ECI, ECEF, LLA)
  * - Working with different state vector representations (J2000, TEME, ITRF)
  * - Relative coordinates (RIC, Hill)
  * - Observation coordinates (RAE, SEZ)
@@ -12,14 +12,14 @@
 import {
   calcGmst,
   Degrees,
-  ecf2eci,
-  eci2ecf,
+  ecef2eci,
+  eci2ecef,
   eci2lla,
   EpochUTC,
   J2000,
   Kilometers,
   KilometersPerSecond,
-  lla2ecf,
+  lla2ecef,
   lla2eci,
   Radians,
   Satellite,
@@ -29,8 +29,8 @@ import {
   Vector3D,
 } from '../dist/main.js';
 
-// Example 1: ECI ↔ ECF transformations
-console.log('=== Example 1: ECI ↔ ECF Transformations ===\n');
+// Example 1: ECI ↔ ECEF transformations
+console.log('=== Example 1: ECI ↔ ECEF Transformations ===\n');
 
 const date = new Date('2024-01-28T12:00:00.000Z');
 const gmst = calcGmst(date);
@@ -47,16 +47,16 @@ console.log(`  X: ${eciPos.x.toFixed(2)} km`);
 console.log(`  Y: ${eciPos.y.toFixed(2)} km`);
 console.log(`  Z: ${eciPos.z.toFixed(2)} km`);
 
-// Convert to ECF
-const ecfPos = eci2ecf(eciPos, gmst.gmst);
+// Convert to ECEF
+const ecefPos = eci2ecef(eciPos, gmst.gmst);
 
-console.log('\nECF Position:');
-console.log(`  X: ${ecfPos.x.toFixed(2)} km`);
-console.log(`  Y: ${ecfPos.y.toFixed(2)} km`);
-console.log(`  Z: ${ecfPos.z.toFixed(2)} km`);
+console.log('\nECEF Position:');
+console.log(`  X: ${ecefPos.x.toFixed(2)} km`);
+console.log(`  Y: ${ecefPos.y.toFixed(2)} km`);
+console.log(`  Z: ${ecefPos.z.toFixed(2)} km`);
 
 // Convert back to ECI
-const eciPos2 = ecf2eci(ecfPos, gmst.gmst);
+const eciPos2 = ecef2eci(ecefPos, gmst.gmst);
 
 console.log('\nConverted back to ECI:');
 console.log(`  X: ${eciPos2.x.toFixed(2)} km`);
@@ -211,8 +211,8 @@ console.log('\nTEME converted to J2000:');
 console.log(`  Position: [${temeToJ2000.position.x.toFixed(2)}, ${temeToJ2000.position.y.toFixed(2)}, ${temeToJ2000.position.z.toFixed(2)}] km`);
 console.log(`  Velocity: [${temeToJ2000.velocity.x.toFixed(6)}, ${temeToJ2000.velocity.y.toFixed(6)}, ${temeToJ2000.velocity.z.toFixed(6)}] km/s`);
 
-// Example 6: LLA to ECF transformation
-console.log('\n=== Example 6: Geodetic to ECF ===\n');
+// Example 6: LLA to ECEF transformation
+console.log('\n=== Example 6: Geodetic to ECEF ===\n');
 
 const observerLla = {
   lat: 41.754785 as Degrees,
@@ -225,17 +225,17 @@ console.log(`  Latitude:  ${observerLla.lat}°`);
 console.log(`  Longitude: ${observerLla.lon}°`);
 console.log(`  Altitude:  ${observerLla.alt} km`);
 
-const observerEcf = lla2ecf(observerLla);
+const observerEcef = lla2ecef(observerLla);
 
-console.log('\nECF Position:');
-console.log(`  X: ${observerEcf.x.toFixed(4)} km`);
-console.log(`  Y: ${observerEcf.y.toFixed(4)} km`);
-console.log(`  Z: ${observerEcf.z.toFixed(4)} km`);
+console.log('\nECEF Position:');
+console.log(`  X: ${observerEcef.x.toFixed(4)} km`);
+console.log(`  Y: ${observerEcef.y.toFixed(4)} km`);
+console.log(`  Z: ${observerEcef.z.toFixed(4)} km`);
 
 const distance = Math.sqrt(
-  observerEcf.x * observerEcf.x +
-  observerEcf.y * observerEcf.y +
-  observerEcf.z * observerEcf.z,
+  observerEcef.x * observerEcef.x +
+  observerEcef.y * observerEcef.y +
+  observerEcef.z * observerEcef.z,
 );
 
 console.log(`\nDistance from Earth center: ${distance.toFixed(4)} km`);

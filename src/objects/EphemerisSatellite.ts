@@ -28,14 +28,14 @@ import type { ParsedOem } from '../parsers/OemTypes';
 import { EpochUTC } from '../time/EpochUTC';
 import type { EpochWindow } from '../time/EpochWindow';
 import {
-  Degrees,
-  EcfVec3,
-  Kilometers,
-  KilometersPerSecond,
-  LlaVec3,
-  PosVel,
-  Seconds,
-  SpaceObjectType,
+    Degrees,
+    EcefVec3,
+    Kilometers,
+    KilometersPerSecond,
+    LlaVec3,
+    PosVel,
+    Seconds,
+    SpaceObjectType,
 } from '../types/types';
 import { linearInterpolate } from '../utils/functions';
 import { CenterBody, CenterBodyMu, parseCenterBody } from './CenterBody';
@@ -227,10 +227,10 @@ export class EphemerisSatellite extends SpaceObject {
   }
 
   /**
-   * Returns the ECF position at the given time.
+   * Returns the ECEF position at the given time.
    * @param date - The time to calculate position for (defaults to now)
    */
-  override ecf(date?: Date): EcfVec3<Kilometers> | null {
+  override ecef(date?: Date): EcefVec3<Kilometers> | null {
     const j2000 = this.toJ2000(date);
 
     if (!j2000) {

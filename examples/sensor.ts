@@ -3,8 +3,8 @@ import {
   calcGmst,
   DEG2RAD,
   Degrees,
-  ecf2eci,
-  ecf2rae,
+  ecef2eci,
+  ecef2rae,
   eci2lla,
   eci2rae,
   Kilometers,
@@ -44,18 +44,18 @@ const sat = new Satellite({
 
 const date = new Date('2023-12-31T20:51:19.934Z');
 
-const ecf = {
+const ecef = {
   x: 4000 as Kilometers,
   y: 7000 as Kilometers,
   z: 3000 as Kilometers,
 };
-// const ecf2 = { x: 982.8336640053099, y: -6779.137352354403, z: 3813.7284924837254 } as EcfVec3<Kilometers>;
+// const ecef2 = { x: 982.8336640053099, y: -6779.137352354403, z: 3813.7284924837254 } as EcefVec3<Kilometers>;
 
-const rae = ecf2rae(testSensor.lla(), ecf);
+const rae = ecef2rae(testSensor.lla(), ecef);
 
 const { gmst } = calcGmst(date);
-const rae2 = eci2rae(date, ecf2eci(ecf, gmst), testSensor);
-const lla = eci2lla(ecf2eci(ecf, gmst), gmst);
+const rae2 = eci2rae(date, ecef2eci(ecef, gmst), testSensor);
+const lla = eci2lla(ecef2eci(ecef, gmst), gmst);
 
 console.log(rae);
 console.log(rae2);

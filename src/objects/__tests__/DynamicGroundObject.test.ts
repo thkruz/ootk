@@ -202,7 +202,7 @@ describe('DynamicGroundObject', () => {
     });
   });
 
-  describe('getEci and getEcf', () => {
+  describe('getEci and getEcef', () => {
     let obj: DynamicGroundObject;
 
     beforeEach(() => {
@@ -222,18 +222,18 @@ describe('DynamicGroundObject', () => {
       expect(typeof eci!.z).toBe('number');
     });
 
-    it('should return ECF position at valid time', () => {
-      const ecf = obj.getEcf(new Date('2025-12-24T01:00:00Z'));
+    it('should return ECEF position at valid time', () => {
+      const ecef = obj.getEcef(new Date('2025-12-24T01:00:00Z'));
 
-      expect(ecf).not.toBeNull();
-      expect(typeof ecf!.x).toBe('number');
-      expect(typeof ecf!.y).toBe('number');
-      expect(typeof ecf!.z).toBe('number');
+      expect(ecef).not.toBeNull();
+      expect(typeof ecef!.x).toBe('number');
+      expect(typeof ecef!.y).toBe('number');
+      expect(typeof ecef!.z).toBe('number');
     });
 
     it('should return null for invalid time', () => {
       expect(obj.getEci(new Date('2025-12-23T00:00:00Z'))).toBeNull();
-      expect(obj.getEcf(new Date('2025-12-23T00:00:00Z'))).toBeNull();
+      expect(obj.getEcef(new Date('2025-12-23T00:00:00Z'))).toBeNull();
     });
   });
 
@@ -277,14 +277,14 @@ describe('DynamicGroundObject', () => {
       expect(() => obj.lla()).toThrow('DynamicGroundObject position is time-dependent');
     });
 
-    it('should throw error when calling ecf() without time', () => {
+    it('should throw error when calling ecef() without time', () => {
       const obj = new DynamicGroundObject({
         id: 'test-1',
         name: 'Test Object',
         waypoints: testWaypoints,
       });
 
-      expect(() => obj.ecf()).toThrow('DynamicGroundObject position is time-dependent');
+      expect(() => obj.ecef()).toThrow('DynamicGroundObject position is time-dependent');
     });
 
     it('should throw error when calling eci() without time', () => {

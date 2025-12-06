@@ -20,7 +20,7 @@ import type { ITRF } from '../coordinate/ITRF';
 import type { J2000 } from '../coordinate/J2000';
 import {
   Degrees,
-  EcfVec3,
+  EcefVec3,
   Kilometers,
   KilometersPerSecond,
   LlaVec3,
@@ -104,10 +104,10 @@ export abstract class SpaceObject extends BaseObject {
   abstract eci(date?: Date): PosVel | null;
 
   /**
-   * Returns the ECF (Earth-Centered Fixed) position at the given time.
+   * Returns the ECEF (Earth-Centered Earth Fixed) position at the given time.
    * @param date - The time to calculate position for (defaults to now)
    */
-  abstract ecf(date?: Date): EcfVec3<Kilometers> | null;
+  abstract ecef(date?: Date): EcefVec3<Kilometers> | null;
 
   /**
    * Returns the geodetic position (lat/lon/alt) at the given time.
