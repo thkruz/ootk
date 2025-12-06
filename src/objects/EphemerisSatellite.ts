@@ -80,6 +80,7 @@ export interface EphemerisSatelliteParams extends Omit<SpaceObjectParams, 'posit
  */
 export class EphemerisSatellite extends SpaceObject {
   private readonly interpolator_: StateInterpolator;
+  private readonly interpolatorType_: InterpolatorType;
   private readonly ephemeris_: J2000[];
   private readonly centerBody_: CenterBody;
   private readonly referenceFrame_: 'J2000' | 'TEME';
@@ -114,9 +115,10 @@ export class EphemerisSatellite extends SpaceObject {
     this.centerBody_ = params.centerBody ?? CenterBody.EARTH;
     this.referenceFrame_ = params.referenceFrame ?? 'J2000';
     this.metadata = params.metadata;
+    this.interpolatorType_ = params.interpolatorType ?? DEFAULT_INTERPOLATOR;
 
     this.interpolator_ = this.createInterpolator_(
-      params.interpolatorType ?? DEFAULT_INTERPOLATOR,
+      this.interpolatorType_,
       params.interpolatorOrder ?? DEFAULT_LAGRANGE_ORDER,
     );
   }
@@ -585,6 +587,23 @@ export class EphemerisSatellite extends SpaceObject {
       coverageStart: new Date(window.start.posix * 1000).toISOString(),
       coverageEnd: new Date(window.end.posix * 1000).toISOString(),
     };
+  }
+
+  toString(): string {
+    const window = this.coverageWindow;
+    const coverageStart = new Date(window.start.posix * 1000).toISOString();
+    const coverageEnd = new Date(window.end.posix * 1000).toISOString();
+
+    return [
+      '[EphemerisSatellite]',
+      `  ID: ${this.id}`,
+      `  Name: ${this.name}`,
+      `  Center Body: ${this.centerBody_}`,
+      `  Reference Frame: ${this.referenceFrame_}`,
+      `  Interpolator: ${this.interpolatorType_}`,
+      `  Ephemeris Points: ${this.ephemeris_.length}`,
+      `  Coverage: ${coverageStart} - ${coverageEnd}`,
+    ].join('\n');
   }
 
   // ==================== Private Methods ====================
