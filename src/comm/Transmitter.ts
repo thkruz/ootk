@@ -15,6 +15,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Earth } from '../body/Earth';
+import { GroundObject } from '../objects/GroundObject';
+import { SpaceObject } from '../objects/SpaceObject';
+import { ecef2rae } from '../transforms/transforms';
+import { Kilometers } from '../types/types';
 import { Antenna } from './Antenna';
 import {
   calculateFspl,
@@ -185,22 +190,82 @@ export class Transmitter extends CommunicationDevice {
 
   /**
    * Checks if this transmitter has line of sight to a receiver.
-   * Currently a simplified check - returns true if both devices have parents.
-   * Future: Could check for Earth obstruction.
+   * Checks for Earth obstruction between ground-space and space-space links.
    *
    * @param receiver - The target receiver
-   * @param _date - Time for calculation (defaults to now)
-   * @returns True if line of sight exists
+   * @param date - Time for calculation (defaults to now)
+   * @returns True if line of sight exists (Earth does not block the path)
    */
-  isVisible(receiver: Receiver, _date: Date = new Date()): boolean {
+  isVisible(receiver: Receiver, date: Date = new Date()): boolean {
     // Basic check: both must have parents
     if (!this.hasParent() || !receiver.hasParent()) {
       return false;
     }
 
-    // TODO: Add Earth obstruction check
-    // For now, assume visibility if both have valid positions
-    return true;
+    const txParent = this.parent;
+    const rxParent = receiver.parent;
+
+    // Ground-to-Space or Space-to-Ground: check elevation above horizon
+    if (txParent instanceof GroundObject || rxParent instanceof GroundObject) {
+      const ground = (txParent instanceof GroundObject ? txParent : rxParent) as GroundObject;
+      const space = (txParent instanceof SpaceObject ? txParent : rxParent) as SpaceObject;
+
+      const spaceEcef = space.ecef(date);
+
+      if (!spaceEcef) {
+        return false;
+      }
+
+      const rae = ecef2rae(ground.lla(), spaceEcef);
+
+      // Visible if elevation is above horizon (0 degrees)
+      return rae.el > 0;
+    }
+
+    // Space-to-Space: check if line segment intersects Earth
+    const pos1 = this.getJ2000(date).position;
+    const pos2 = receiver.getJ2000(date).position;
+
+    return !this.lineIntersectsEarth_(pos1, pos2);
+  }
+
+  /**
+   * Checks if a line segment between two points intersects Earth.
+   * Uses ray-sphere intersection test with Earth's mean radius.
+   *
+   * @param pos1 - First position in km (J2000/ECI)
+   * @param pos2 - Second position in km (J2000/ECI)
+   * @returns True if the line segment passes through Earth
+   */
+  private lineIntersectsEarth_(
+    pos1: { x: Kilometers; y: Kilometers; z: Kilometers },
+    pos2: { x: Kilometers; y: Kilometers; z: Kilometers },
+  ): boolean {
+    // Direction vector from pos1 to pos2
+    const dx = pos2.x - pos1.x;
+    const dy = pos2.y - pos1.y;
+    const dz = pos2.z - pos1.z;
+
+    // Coefficients for quadratic equation: |pos1 + t*d|^2 = R^2
+    // a*t^2 + b*t + c = 0
+    const a = dx * dx + dy * dy + dz * dz;
+    const b = 2 * (pos1.x * dx + pos1.y * dy + pos1.z * dz);
+    const c = pos1.x * pos1.x + pos1.y * pos1.y + pos1.z * pos1.z - Earth.radiusMean * Earth.radiusMean;
+
+    const discriminant = b * b - 4 * a * c;
+
+    // No intersection with Earth sphere
+    if (discriminant < 0) {
+      return false;
+    }
+
+    // Check if intersection points are within the line segment [0, 1]
+    const sqrtDisc = Math.sqrt(discriminant);
+    const t1 = (-b - sqrtDisc) / (2 * a);
+    const t2 = (-b + sqrtDisc) / (2 * a);
+
+    // Line intersects Earth if either intersection point is within segment
+    return (t1 >= 0 && t1 <= 1) || (t2 >= 0 && t2 <= 1) || (t1 < 0 && t2 > 1);
   }
 
   // ==================== Serialization ====================

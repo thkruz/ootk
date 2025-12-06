@@ -24,7 +24,7 @@
 import { DataHandler } from '../data/DataHandler';
 import { Seconds } from '../main';
 import { secondsPerWeek } from '../utils/constants';
-import type { EpochUTC } from './EpochUTC';
+import { EpochUTC } from './EpochUTC';
 
 /**
  * Represents an epoch in GPS Time format.
@@ -90,22 +90,28 @@ export class EpochGPS {
    * of [seconds] into the [week].
    * @param week Number of weeks since the GPS reference epoch.
    * @param seconds Number of seconds into the week.
-   * @param reference Reference should always be EpochUTC.fromDateTimeString('1980-01-06T00:00:00.000Z').
    */
-  constructor(public week: number, public seconds: number, reference: EpochUTC) {
+  constructor(public week: number, public seconds: number) {
     if (week < 0) {
       throw new Error('GPS week must be non-negative.');
     }
     if (seconds < 0 || seconds >= secondsPerWeek) {
       throw new Error('GPS seconds must be within a week.');
     }
-
-    // TODO: Set EpochGPS.reference statically without circular dependency.
-    EpochGPS.reference = reference;
   }
 
-  // / Number of weeks since the GPS reference epoch.
-  static reference: EpochUTC;
+  /** Cached GPS reference epoch (1980-01-06T00:00:00.000Z) */
+  private static reference_: EpochUTC | null = null;
+
+  /**
+   * Gets the GPS reference epoch (1980-01-06T00:00:00.000Z).
+   * Uses lazy initialization to avoid circular dependency issues.
+   */
+  static getReference(): EpochUTC {
+    EpochGPS.reference_ ??= EpochUTC.fromDateTimeString('1980-01-06T00:00:00.000Z');
+
+    return EpochGPS.reference_;
+  }
 
   // / GPS leap second difference from TAI/UTC offsets.
   static readonly offset = 19 as Seconds;
@@ -124,9 +130,9 @@ export class EpochGPS {
     return `${this.week}:${this.seconds.toFixed(3)}`;
   }
 
-  // / Convert this to a UTC epoch.
+  /** Convert this to a UTC epoch. */
   toUTC(): EpochUTC {
-    const init = EpochGPS.reference.roll((this.week * secondsPerWeek + this.seconds) as Seconds);
+    const init = EpochGPS.getReference().roll((this.week * secondsPerWeek + this.seconds) as Seconds);
     const ls = DataHandler.getInstance().getLeapSeconds(init.toJulianDate());
 
     return init.roll(-(ls - EpochGPS.offset) as Seconds);

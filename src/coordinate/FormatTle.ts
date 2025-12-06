@@ -39,8 +39,8 @@ export abstract class FormatTle {
   static createTle(tleParams: TleParams): { tle1: TleLine1; tle2: TleLine2 } {
     const { inc, meanmo, rasc, argPe, meana, ecen, epochyr, epochday, intl } = tleParams;
     const scc = Tle.convert6DigitToA5(tleParams.scc);
-    const epochYrStr = epochyr.padStart(2, '0');
-    const epochdayStr = parseFloat(epochday).toFixed(8).padStart(12, '0');
+    const epochYrStr = String(epochyr).padStart(2, '0');
+    const epochdayStr = parseFloat(String(epochday)).toFixed(8).padStart(12, '0');
     const incStr = FormatTle.inclination(inc);
     const meanmoStr = FormatTle.meanMotion(meanmo);
     const rascStr = FormatTle.rightAscension(rasc);
@@ -86,12 +86,16 @@ export abstract class FormatTle {
   }
 
   /**
-   * Returns the eccentricity value of a given string.
-   * @param ecen - The string representing the eccentricity.
-   * @returns The eccentricity value.
+   * Returns the eccentricity value formatted for TLE.
+   * @param ecen - The eccentricity value (string or number).
+   * @returns The eccentricity value formatted as 7 digits without leading "0.".
    * @throws Error if the length of the eccentricity string is not 7.
    */
-  static eccentricity(ecen: string): string {
+  static eccentricity(ecen: string | number): string {
+    if (typeof ecen === 'number') {
+      ecen = ecen.toFixed(7);
+    }
+
     let ecen0 = ecen.padEnd(9, '0');
 
     if (ecen0[1] === '.') {

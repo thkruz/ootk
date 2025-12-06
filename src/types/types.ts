@@ -727,8 +727,6 @@ export type StringifiedNumber = `${number}.${number}`;
 
 /**
  * Represents a set of data containing both Line 1 and Line 2 TLE information.
- *
- * TODO: TleParams types should be more consistent.
  */
 export type TleParams = {
   sat?: Satellite;
@@ -737,9 +735,9 @@ export type TleParams = {
   rasc: string | number;
   argPe: string | number;
   meana: string | number;
-  ecen: string;
-  epochyr: string;
-  epochday: string;
+  ecen: string | number;
+  epochyr: string | number;
+  epochday: string | number;
   /** COSPAR International Designator */
   intl: string;
   /** alpha 5 satellite number */
