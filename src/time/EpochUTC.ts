@@ -185,14 +185,14 @@ export class EpochUTC extends Epoch {
   }
 
   toGPS(): EpochGPS {
-    const referenceTime = EpochUTC.fromDateTimeString('1980-01-06T00:00:00.000Z');
+    const referenceTime = EpochGPS.getReference();
     const ls = DataHandler.getInstance().getLeapSeconds(this.toJulianDate());
     const delta = this.roll(ls - EpochGPS.offset as Seconds).difference(referenceTime);
     const week = delta / secondsPerWeek;
     const weekFloor = Math.floor(week);
     const seconds = (week - weekFloor) * secondsPerWeek;
 
-    return new EpochGPS(weekFloor, seconds, referenceTime);
+    return new EpochGPS(weekFloor, seconds);
   }
 
   gmstAngle(): number {

@@ -152,12 +152,15 @@ const moonPosition = ephemeris.getMoonPosition(tdb);
 
 ```typescript
 // Convert GPS week/seconds to UTC
-const gps = new EpochGPS(week, seconds, referenceEpoch);
+const gps = new EpochGPS(week, seconds);
 const utc = gps.toUTC();
 
 // Or convert UTC to GPS format
 const gpsTime = EpochUTC.now().toGPS();
 console.log(`Week: ${gpsTime.week}, Seconds: ${gpsTime.seconds}`);
+
+// Access the GPS reference epoch (1980-01-06T00:00:00Z)
+const reference = EpochGPS.getReference();
 ```
 
 ## Julian Date Conversions
