@@ -22,4 +22,6 @@
  */
 
 export { Sgp4 } from './sgp4';
+export { Sgp4Error, Sgp4ErrorCode } from './sgp4-error';
+export type { Sgp4Result } from './sgp4-error';
 
