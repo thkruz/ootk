@@ -190,6 +190,11 @@ export class Satellite extends SpaceObject {
 
     // Initialize detailed properties
     this.initDetailedProperties_(info);
+
+    // Enable history tracking if config provided
+    if (info.historyConfig) {
+      this.enableHistory(info.historyConfig);
+    }
   }
 
   /**
@@ -516,6 +521,11 @@ export class Satellite extends SpaceObject {
 
     if (!pv.position || !pv.velocity) {
       return null;
+    }
+
+    // Record to history if enabled
+    if (this.isHistoryEnabled) {
+      this.recordToHistory(date, { position: pv.position, velocity: pv.velocity });
     }
 
     return pv as PosVel;
