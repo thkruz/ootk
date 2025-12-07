@@ -11,6 +11,7 @@ import {
   Hertz,
   ModulationType,
   Transmitter,
+  ValidationError,
   Watts,
   wattsToDbw,
 } from '../../main';
@@ -52,18 +53,18 @@ describe('Transmitter', () => {
     });
 
     it('should throw on non-positive power', () => {
-      expect(() => createTestTransmitter({ power: 0 as Watts })).toThrow(RangeError);
-      expect(() => createTestTransmitter({ power: -10 as Watts })).toThrow(RangeError);
+      expect(() => createTestTransmitter({ power: 0 as Watts })).toThrow(ValidationError);
+      expect(() => createTestTransmitter({ power: -10 as Watts })).toThrow(ValidationError);
     });
 
     it('should throw on non-positive frequency', () => {
-      expect(() => createTestTransmitter({ frequency: 0 as Hertz })).toThrow(RangeError);
-      expect(() => createTestTransmitter({ frequency: -1e9 as Hertz })).toThrow(RangeError);
+      expect(() => createTestTransmitter({ frequency: 0 as Hertz })).toThrow(ValidationError);
+      expect(() => createTestTransmitter({ frequency: -1e9 as Hertz })).toThrow(ValidationError);
     });
 
     it('should throw on non-positive bandwidth', () => {
-      expect(() => createTestTransmitter({ bandwidth: 0 as Hertz })).toThrow(RangeError);
-      expect(() => createTestTransmitter({ bandwidth: -1e6 as Hertz })).toThrow(RangeError);
+      expect(() => createTestTransmitter({ bandwidth: 0 as Hertz })).toThrow(ValidationError);
+      expect(() => createTestTransmitter({ bandwidth: -1e6 as Hertz })).toThrow(ValidationError);
     });
   });
 

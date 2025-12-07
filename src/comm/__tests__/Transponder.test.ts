@@ -10,6 +10,7 @@ import {
   Decibels,
   Hertz,
   Transponder,
+  ValidationError,
   Watts,
 } from '../../main';
 
@@ -63,17 +64,17 @@ describe('Transponder', () => {
     });
 
     it('should throw on non-positive power', () => {
-      expect(() => createTestTransponder({ power: 0 as Watts })).toThrow(RangeError);
-      expect(() => createTestTransponder({ power: -10 as Watts })).toThrow(RangeError);
+      expect(() => createTestTransponder({ power: 0 as Watts })).toThrow(ValidationError);
+      expect(() => createTestTransponder({ power: -10 as Watts })).toThrow(ValidationError);
     });
 
     it('should throw on non-positive frequencies', () => {
-      expect(() => createTestTransponder({ uplinkFrequency: 0 as Hertz })).toThrow(RangeError);
-      expect(() => createTestTransponder({ downlinkFrequency: 0 as Hertz })).toThrow(RangeError);
+      expect(() => createTestTransponder({ uplinkFrequency: 0 as Hertz })).toThrow(ValidationError);
+      expect(() => createTestTransponder({ downlinkFrequency: 0 as Hertz })).toThrow(ValidationError);
     });
 
     it('should throw on non-positive bandwidth', () => {
-      expect(() => createTestTransponder({ bandwidth: 0 as Hertz })).toThrow(RangeError);
+      expect(() => createTestTransponder({ bandwidth: 0 as Hertz })).toThrow(ValidationError);
     });
   });
 

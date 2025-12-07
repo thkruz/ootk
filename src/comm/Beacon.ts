@@ -15,6 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ValidationError } from '../errors';
 import { Antenna } from './Antenna';
 import { CommDeviceType, Decibels, Hertz, ModulationType, Watts } from './CommTypes';
 import { Transmitter, TransmitterParams } from './Transmitter';
@@ -83,13 +84,17 @@ export class Beacon extends Transmitter {
     super(params);
 
     if (params.transmitInterval <= 0) {
-      throw new RangeError('Beacon transmit interval must be positive');
+      throw new ValidationError('Beacon transmit interval must be positive', 'transmitInterval', params.transmitInterval);
     }
     if (params.transmitDuration <= 0) {
-      throw new RangeError('Beacon transmit duration must be positive');
+      throw new ValidationError('Beacon transmit duration must be positive', 'transmitDuration', params.transmitDuration);
     }
     if (params.transmitDuration > params.transmitInterval) {
-      throw new RangeError('Beacon transmit duration cannot exceed transmit interval');
+      throw new ValidationError(
+        'Beacon transmit duration cannot exceed transmit interval',
+        'transmitDuration',
+        params.transmitDuration,
+      );
     }
 
     this.transmitInterval = params.transmitInterval;

@@ -16,6 +16,7 @@
  */
 
 import { SensorType } from '../enums/SensorType';
+import { ValidationError } from '../errors';
 import { Degrees, Kilometers, Radians, RaeVec3, RuvVec3 } from '../types/types';
 import { DEG2RAD, RAD2DEG } from '../utils/constants';
 import { azel2uv, uv2azel } from '../transforms/transforms';
@@ -313,7 +314,11 @@ export class PhasedArrayRadar extends RadarSensor {
    */
   private validateFace_(face: number): void {
     if (face < 0 || face >= this.faceCount) {
-      throw new RangeError(`Face ${face} is out of range. Valid range: 0-${this.faceCount - 1}`);
+      throw new ValidationError(
+        `Face index must be between 0 and ${this.faceCount - 1}`,
+        'face',
+        face,
+      );
     }
   }
 }

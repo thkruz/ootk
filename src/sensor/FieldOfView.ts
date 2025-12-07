@@ -16,6 +16,7 @@
  */
 
 import { FovFrame, FovShape } from '../enums';
+import { ValidationError } from '../errors';
 import { Vector3D } from '../operations/Vector3D';
 import { Degrees, Kilometers, Radians, RaeVec3 } from '../types/types';
 
@@ -573,45 +574,65 @@ export class FieldOfView {
   private validate(params: FieldOfViewParams): void {
     // Validate half angle
     if (params.halfAngle <= 0 || params.halfAngle > 90) {
-      throw new RangeError('Invalid half angle - must be between 0 and 90 degrees');
+      throw new ValidationError('Half angle must be between 0 and 90 degrees', 'halfAngle', params.halfAngle);
     }
 
     // Validate minor half angle if provided
     if (params.minorHalfAngle !== undefined) {
       if (params.minorHalfAngle <= 0 || params.minorHalfAngle > 90) {
-        throw new RangeError('Invalid minor half angle - must be between 0 and 90 degrees');
+        throw new ValidationError(
+          'Minor half angle must be between 0 and 90 degrees',
+          'minorHalfAngle',
+          params.minorHalfAngle,
+        );
       }
     }
 
     // Validate boresight azimuth
     if (params.boresightAz !== undefined) {
       if (params.boresightAz < 0 || params.boresightAz >= 360) {
-        throw new RangeError('Invalid boresight azimuth - must be between 0 and 360 degrees');
+        throw new ValidationError(
+          'Boresight azimuth must be between 0 and 360 degrees',
+          'boresightAz',
+          params.boresightAz,
+        );
       }
     }
 
     // Validate boresight elevation
     if (params.boresightEl !== undefined) {
       if (params.boresightEl < -90 || params.boresightEl > 90) {
-        throw new RangeError('Invalid boresight elevation - must be between -90 and 90 degrees');
+        throw new ValidationError(
+          'Boresight elevation must be between -90 and 90 degrees',
+          'boresightEl',
+          params.boresightEl,
+        );
       }
     }
 
     // Validate range
     if (params.minRange < 0) {
-      throw new RangeError('Invalid minimum range - must be greater than or equal to 0');
+      throw new ValidationError('Minimum range must be greater than or equal to 0', 'minRange', params.minRange);
     }
     if (params.maxRange <= 0) {
-      throw new RangeError('Invalid maximum range - must be greater than 0');
+      throw new ValidationError('Maximum range must be greater than 0', 'maxRange', params.maxRange);
     }
     if (params.minRange > params.maxRange) {
-      throw new RangeError('Minimum range cannot exceed maximum range');
+      throw new ValidationError(
+        'Minimum range cannot exceed maximum range',
+        'minRange',
+        { min: params.minRange, max: params.maxRange },
+      );
     }
 
     // Validate minimum elevation
     if (params.minElevation !== undefined) {
       if (params.minElevation < -90 || params.minElevation > 90) {
-        throw new RangeError('Invalid minimum elevation - must be between -90 and 90 degrees');
+        throw new ValidationError(
+          'Minimum elevation must be between -90 and 90 degrees',
+          'minElevation',
+          params.minElevation,
+        );
       }
     }
 
@@ -619,13 +640,25 @@ export class FieldOfView {
     if (params.elevationMasks) {
       for (const mask of params.elevationMasks) {
         if (mask.startAz < 0 || mask.startAz >= 360) {
-          throw new RangeError('Invalid elevation mask start azimuth - must be between 0 and 360');
+          throw new ValidationError(
+            'Elevation mask start azimuth must be between 0 and 360',
+            'elevationMasks.startAz',
+            mask.startAz,
+          );
         }
         if (mask.stopAz < 0 || mask.stopAz >= 360) {
-          throw new RangeError('Invalid elevation mask stop azimuth - must be between 0 and 360');
+          throw new ValidationError(
+            'Elevation mask stop azimuth must be between 0 and 360',
+            'elevationMasks.stopAz',
+            mask.stopAz,
+          );
         }
         if (mask.minEl < -90 || mask.minEl > 90) {
-          throw new RangeError('Invalid elevation mask minimum elevation - must be between -90 and 90');
+          throw new ValidationError(
+            'Elevation mask minimum elevation must be between -90 and 90',
+            'elevationMasks.minEl',
+            mask.minEl,
+          );
         }
       }
     }

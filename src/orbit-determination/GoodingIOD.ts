@@ -15,6 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { OrbitDeterminationError } from '../errors';
 import { ForceModel } from '../force/ForceModel';
 import { Earth, J2000, Kilometers, KilometersPerSecond, Seconds, TAU, Vector3D } from '../main';
 import { ObservationOptical } from '../observation/ObservationOptical';
@@ -160,7 +161,7 @@ export class GoodingIOD {
       orbit = gaussIod.estimate(o1, o2, o3);
 
       if (orbit === null) {
-        throw new Error('Gauss IOD failed to provide initial estimate for Gooding IOD.');
+        throw new OrbitDeterminationError('Gauss IOD failed to provide initial estimate for Gooding IOD', 'Gooding');
       }
 
       /*
@@ -229,9 +230,10 @@ export class GoodingIOD {
     });
 
     if (!converged) {
-      throw new Error(
+      throw new OrbitDeterminationError(
         `Gooding IOD failed to converge after ${GoodingIOD.MAX_ITERATIONS} iterations. ` +
           'Try different initial range estimates or check observation quality.',
+        'Gooding',
       );
     }
 
@@ -347,7 +349,7 @@ export class GoodingIOD {
 
         // Check for singular Jacobian matrix
         if (Math.abs(detj) < GoodingIOD.MIN_DETERMINANT) {
-          throw new Error('Jacobian determinant is near zero - system is ill-conditioned.');
+          throw new OrbitDeterminationError('Jacobian determinant is near zero - system is ill-conditioned', 'Gooding');
         }
 
         /**
@@ -465,7 +467,7 @@ export class GoodingIOD {
     });
 
     if (pm1 === null) {
-      throw new Error('Lambert solver failed during derivative computation (x-dx).');
+      throw new OrbitDeterminationError('Lambert solver failed during derivative computation (x-dx)', 'Gooding');
     }
     const cm1 = pm1.subtract(this.vObserverPosition2_);
     const fm1 = p.dot(cm1);
@@ -483,7 +485,7 @@ export class GoodingIOD {
     });
 
     if (pp1 === null) {
-      throw new Error('Lambert solver failed during derivative computation (x+dx).');
+      throw new OrbitDeterminationError('Lambert solver failed during derivative computation (x+dx)', 'Gooding');
     }
     const cp1 = pp1.subtract(this.vObserverPosition2_);
     const fp1 = p.dot(cp1);
@@ -504,7 +506,7 @@ export class GoodingIOD {
     });
 
     if (pm3 === null) {
-      throw new Error('Lambert solver failed during derivative computation (y-dy).');
+      throw new OrbitDeterminationError('Lambert solver failed during derivative computation (y-dy)', 'Gooding');
     }
     const cm3 = pm3.subtract(this.vObserverPosition2_);
     const fm3 = p.dot(cm3);
@@ -522,7 +524,7 @@ export class GoodingIOD {
     });
 
     if (pp3 === null) {
-      throw new Error('Lambert solver failed during derivative computation (y+dy).');
+      throw new OrbitDeterminationError('Lambert solver failed during derivative computation (y+dy)', 'Gooding');
     }
     const cp3 = pp3.subtract(this.vObserverPosition2_);
     const fp3 = p.dot(cp3);
@@ -560,7 +562,7 @@ export class GoodingIOD {
       });
 
       if (pp13 === null) {
-        throw new Error('Lambert solver failed during Halley derivative computation (x+dx, y+dy).');
+        throw new OrbitDeterminationError('Lambert solver failed during Halley derivative computation (x+dx, y+dy)', 'Gooding');
       }
 
       const cp13 = pp13.subtract(this.vObserverPosition2_);
@@ -579,7 +581,7 @@ export class GoodingIOD {
       });
 
       if (pm13 === null) {
-        throw new Error('Lambert solver failed during Halley derivative computation (x-dx, y-dy).');
+        throw new OrbitDeterminationError('Lambert solver failed during Halley derivative computation (x-dx, y-dy)', 'Gooding');
       }
 
       const cm13 = pm13.subtract(this.vObserverPosition2_);

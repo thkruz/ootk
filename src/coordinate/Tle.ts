@@ -23,6 +23,7 @@
  */
 
 import { Sgp4OpsMode } from '../enums/Sgp4OpsMode';
+import { ParseError, PropagationError } from '../errors';
 import { Sgp4, Vector3D } from '../main';
 import { Sgp4GravConstants } from '../sgp4/sgp4';
 import { EpochUTC } from '../time/EpochUTC';
@@ -279,7 +280,7 @@ export class Tle {
     const stateVector = Sgp4.propagate(this.satrec_, epoch.difference(this.epoch) / 60.0);
 
     if (!stateVector) {
-      throw new Error('Propagation failed');
+      throw new PropagationError('TLE propagation failed', epoch.toDateTime());
     }
 
     Tle.sv2rv_(stateVector, r, v);
@@ -402,7 +403,7 @@ export class Tle {
     const argPe = parseFloat(tleLine2.substring(Tle.argPerigee_.start, Tle.argPerigee_.stop));
 
     if (!(argPe >= 0 && argPe <= 360)) {
-      throw new Error(`Invalid argument of perigee: ${argPe}`);
+      throw new ParseError(`Invalid argument of perigee: ${argPe}`, 'TLE');
     }
 
     return toPrecision(argPe, 4) as Degrees;
@@ -430,7 +431,7 @@ export class Tle {
     if (exponentSymbol === '-') {
       exponent *= -1;
     } else if (exponentSymbol !== '+') {
-      throw new Error(`Invalid BSTAR symbol: ${bstarSymbol}`);
+      throw new ParseError(`Invalid BSTAR exponent symbol: ${exponentSymbol}`, 'TLE');
     }
 
     bstar1 *= 10 ** exponent;
@@ -440,7 +441,7 @@ export class Tle {
     } else if (bstarSymbol === '+' || bstarSymbol === ' ') {
       // Do nothing
     } else {
-      throw new Error(`Invalid BSTAR symbol: ${bstarSymbol}`);
+      throw new ParseError(`Invalid BSTAR symbol: ${bstarSymbol}`, 'TLE');
     }
 
     return toPrecision(bstar1, 14);
@@ -485,7 +486,7 @@ export class Tle {
     const ecc = parseFloat(`0.${tleLine2.substring(Tle.eccentricity_.start, Tle.eccentricity_.stop)}`);
 
     if (!(ecc >= 0 && ecc <= 1)) {
-      throw new Error(`Invalid eccentricity: ${ecc}`);
+      throw new ParseError(`Invalid eccentricity: ${ecc}`, 'TLE');
     }
 
     return toPrecision(ecc, 7);
@@ -516,11 +517,11 @@ export class Tle {
     const ephemerisType = parseInt(tleLine1.substring(Tle.ephemerisType_.start, Tle.ephemerisType_.stop));
 
     if (ephemerisType !== 0 && ephemerisType !== 4) {
-      throw new Error('Invalid ephemeris type');
+      throw new ParseError(`Invalid ephemeris type: ${ephemerisType}`, 'TLE');
     }
 
     if (ephemerisType === 4) {
-      throw new Error('SGP4-XP is not supported');
+      throw new ParseError('SGP4-XP ephemeris type is not supported', 'TLE');
     }
 
     return ephemerisType;
@@ -536,7 +537,7 @@ export class Tle {
     const epochDay = parseFloat(tleLine1.substring(Tle.epochDay_.start, Tle.epochDay_.stop));
 
     if (epochDay < 1 || epochDay > 366.99999999) {
-      throw new Error('Invalid epoch day');
+      throw new ParseError(`Invalid epoch day: ${epochDay}`, 'TLE');
     }
 
     return toPrecision(epochDay, 8);
@@ -552,7 +553,7 @@ export class Tle {
     const epochYear = parseInt(tleLine1.substring(Tle.epochYear_.start, Tle.epochYear_.stop));
 
     if (epochYear < 0 || epochYear > 99) {
-      throw new Error('Invalid epoch year');
+      throw new ParseError(`Invalid epoch year: ${epochYear}`, 'TLE');
     }
 
     return epochYear;
@@ -568,7 +569,7 @@ export class Tle {
     const epochYear = parseInt(tleLine1.substring(Tle.epochYear_.start, Tle.epochYear_.stop));
 
     if (epochYear < 0 || epochYear > 99) {
-      throw new Error('Invalid epoch year');
+      throw new ParseError(`Invalid epoch year: ${epochYear}`, 'TLE');
     }
 
     if (epochYear < 57) {
@@ -589,7 +590,7 @@ export class Tle {
     const inc = parseFloat(tleLine2.substring(Tle.inclination_.start, Tle.inclination_.stop));
 
     if (inc < 0 || inc > 180) {
-      throw new Error(`Invalid inclination: ${inc}`);
+      throw new ParseError(`Invalid inclination: ${inc}`, 'TLE');
     }
 
     return toPrecision(inc, 4) as Degrees;
@@ -656,7 +657,7 @@ export class Tle {
     const lineNum = parseInt(tleLine.substring(Tle.lineNumber_.start, Tle.lineNumber_.stop));
 
     if (lineNum !== 1 && lineNum !== 2) {
-      throw new Error('Invalid line number');
+      throw new ParseError(`Invalid TLE line number: ${lineNum}`, 'TLE');
     }
 
     return lineNum;
@@ -673,7 +674,7 @@ export class Tle {
     const meanA = parseFloat(tleLine2.substring(Tle.meanAnom_.start, Tle.meanAnom_.stop));
 
     if (!(meanA >= 0 && meanA <= 360)) {
-      throw new Error(`Invalid mean anomaly: ${meanA}`);
+      throw new ParseError(`Invalid mean anomaly: ${meanA}`, 'TLE');
     }
 
     return toPrecision(meanA, 4) as Degrees;
@@ -691,7 +692,7 @@ export class Tle {
     const meanMoDev1 = parseFloat(tleLine1.substring(Tle.meanMoDev1_.start, Tle.meanMoDev1_.stop));
 
     if (isNaN(meanMoDev1)) {
-      throw new Error('Invalid first derivative of mean motion.');
+      throw new ParseError('Invalid first derivative of mean motion', 'TLE');
     }
 
     return toPrecision(meanMoDev1, 8);
@@ -711,7 +712,7 @@ export class Tle {
     const meanMoDev2 = parseFloat(tleLine1.substring(Tle.meanMoDev2_.start, Tle.meanMoDev2_.stop));
 
     if (isNaN(meanMoDev2)) {
-      throw new Error('Invalid second derivative of mean motion.');
+      throw new ParseError('Invalid second derivative of mean motion', 'TLE');
     }
 
     // NOTE: Should this limit to a specific number of decimals?
@@ -729,7 +730,7 @@ export class Tle {
     const meanMo = parseFloat(tleLine2.substring(Tle.meanMo_.start, Tle.meanMo_.stop));
 
     if (!(meanMo > 0 && meanMo <= 18)) {
-      throw new Error(`Invalid mean motion: ${meanMo}`);
+      throw new ParseError(`Invalid mean motion: ${meanMo}`, 'TLE');
     }
 
     return toPrecision(meanMo, 8);
@@ -758,7 +759,7 @@ export class Tle {
     const rightAscension = parseFloat(tleLine2.substring(Tle.rightAscension_.start, Tle.rightAscension_.stop));
 
     if (!(rightAscension >= 0 && rightAscension <= 360)) {
-      throw new Error(`Invalid Right Ascension: ${rightAscension}`);
+      throw new ParseError(`Invalid right ascension: ${rightAscension}`, 'TLE');
     }
 
     return toPrecision(rightAscension, 4) as Degrees;
@@ -895,19 +896,19 @@ export class Tle {
     const line2 = Tle.parseLine2(tleLine2);
 
     if (line1.satNum !== line2.satNum) {
-      throw new Error('Satellite numbers do not match');
+      throw new ParseError('Satellite numbers do not match between TLE lines', 'TLE');
     }
 
     if (line1.satNumRaw !== line2.satNumRaw) {
-      throw new Error('Raw satellite numbers do not match');
+      throw new ParseError('Raw satellite numbers do not match between TLE lines', 'TLE');
     }
 
     if (line1.lineNumber1 !== 1) {
-      throw new Error('First line number must be 1');
+      throw new ParseError('First TLE line number must be 1', 'TLE');
     }
 
     if (line2.lineNumber2 !== 2) {
-      throw new Error('Second line number must be 2');
+      throw new ParseError('Second TLE line number must be 2', 'TLE');
     }
 
     return {
@@ -941,19 +942,19 @@ export class Tle {
     const line2 = Tle.parseLine2(tleLine2);
 
     if (line1.satNum !== line2.satNum) {
-      throw new Error('Satellite numbers do not match');
+      throw new ParseError('Satellite numbers do not match between TLE lines', 'TLE');
     }
 
     if (line1.satNumRaw !== line2.satNumRaw) {
-      throw new Error('Raw satellite numbers do not match');
+      throw new ParseError('Raw satellite numbers do not match between TLE lines', 'TLE');
     }
 
     if (line1.lineNumber1 !== 1) {
-      throw new Error('First line number must be 1');
+      throw new ParseError('First TLE line number must be 1', 'TLE');
     }
 
     if (line2.lineNumber2 !== 2) {
-      throw new Error('Second line number must be 2');
+      throw new ParseError('Second TLE line number must be 2', 'TLE');
     }
 
     return { ...line1, ...line2 };
@@ -971,7 +972,7 @@ export class Tle {
     }
 
     if (typeof sccNum[0] !== 'string') {
-      throw new Error('Invalid SCC number');
+      throw new ParseError('Invalid SCC number format', 'TLE');
     }
 
     // Already an alpha 5 number
@@ -1010,7 +1011,7 @@ export class Tle {
     const values = sccNum.toUpperCase().split('');
 
     if (!values[0]) {
-      throw new Error('Invalid SCC number');
+      throw new ParseError('Invalid SCC number format', 'TLE');
     }
 
     if (values[0] in Tle.alpha5_) {

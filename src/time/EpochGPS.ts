@@ -22,6 +22,7 @@
  */
 
 import { DataHandler } from '../data/DataHandler';
+import { ValidationError } from '../errors';
 import { Seconds } from '../main';
 import { secondsPerWeek } from '../utils/constants';
 import { EpochUTC } from './EpochUTC';
@@ -93,10 +94,10 @@ export class EpochGPS {
    */
   constructor(public week: number, public seconds: number) {
     if (week < 0) {
-      throw new Error('GPS week must be non-negative.');
+      throw new ValidationError('GPS week must be non-negative', 'week', week);
     }
     if (seconds < 0 || seconds >= secondsPerWeek) {
-      throw new Error('GPS seconds must be within a week.');
+      throw new ValidationError('GPS seconds must be between 0 and 604799', 'seconds', seconds);
     }
   }
 

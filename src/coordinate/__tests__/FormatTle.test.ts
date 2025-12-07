@@ -46,7 +46,7 @@ describe('FormatTle', () => {
 
     expect(() => {
       FormatTle.eccentricity(ecen);
-    }).toThrow('ecen length is not 7');
+    }).toThrow('Eccentricity must be 7 characters');
   });
 
   /*

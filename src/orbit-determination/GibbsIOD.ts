@@ -15,6 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { OrbitDeterminationError } from '../errors';
 import { ForceModel } from '../force/ForceModel';
 import {
   DEG2RAD, Earth, EpochUTC, halfPi, J2000, Kilometers, KilometersPerSecond, Radians, Vector3D,
@@ -54,7 +55,7 @@ export class GibbsIOD {
     const alpha = halfPi - Math.acos(num);
 
     if (Math.abs(alpha) > GibbsIOD.coplanarThreshold_) {
-      throw new Error('Orbits are not coplanar.');
+      throw new OrbitDeterminationError('Orbits are not coplanar', 'Gibbs');
     }
 
     const r1m = r1.magnitude();

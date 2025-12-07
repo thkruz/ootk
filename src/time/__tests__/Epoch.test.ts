@@ -118,7 +118,7 @@ describe('Epoch', () => {
 
   // Test negative posix timestamp
   it('should throw an error for negative POSIX timestamp', () => {
-    expect(() => new Epoch(-1 as Seconds)).toThrow('Epoch cannot be negative');
+    expect(() => new Epoch(-1 as Seconds)).toThrow('Epoch posix time must be non-negative');
   });
 
   // Test equals with same epoch

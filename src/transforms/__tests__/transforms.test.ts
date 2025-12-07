@@ -1,6 +1,6 @@
 import {
   DEG2RAD, Degrees, Kilometers, PhasedArrayRadar, Radians, SensorType,
-  azel2uv, calcIncFromAz, calcInertAz, rae2raeOffBoresight, uv2azel,
+  ValidationError, azel2uv, calcIncFromAz, calcInertAz, rae2raeOffBoresight, uv2azel,
 } from '../../main';
 
 // uv2azel
@@ -92,7 +92,7 @@ it('should throw RangeError when inclination is less than latitude', () => {
 
   const func = () => calcInertAz(lat, inc);
 
-  expect(func).toThrow(RangeError);
+  expect(func).toThrow(ValidationError);
 });
 
 // calcIncFromAz
@@ -122,7 +122,7 @@ it('should throw RangeError when azimuth is out of bounds', () => {
 
   const func = () => calcIncFromAz(lat, az);
 
-  expect(func).toThrow(RangeError);
+  expect(func).toThrow(ValidationError);
 });
 
 

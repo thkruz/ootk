@@ -22,6 +22,7 @@
  */
 
 import { Earth } from '../body/Earth';
+import { ValidationError } from '../errors';
 import { AngularDistanceMethod, Degrees, GroundStation, Kilometers, KilometersPerSecond, Radians } from '../main';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
@@ -45,15 +46,19 @@ export class Geodetic {
 
   constructor(latitude: Radians, longitude: Radians, altitude: Kilometers) {
     if (Math.abs(latitude) > Math.PI / 2) {
-      throw new RangeError('Latitude must be between -90° and 90° in Radians.');
+      throw new ValidationError('Latitude must be between -90° and 90° in Radians', 'latitude', latitude);
     }
 
     if (Math.abs(longitude) > Math.PI) {
-      throw new RangeError('Longitude must be between -180° and 180° in Radians.');
+      throw new ValidationError('Longitude must be between -180° and 180° in Radians', 'longitude', longitude);
     }
 
     if (altitude < -Earth.radiusMean) {
-      throw new RangeError(`Altitude must be greater than ${-Earth.radiusMean} km. Got ${altitude} km.`);
+      throw new ValidationError(
+        `Altitude must be greater than ${-Earth.radiusMean} km`,
+        'altitude',
+        altitude,
+      );
     }
 
     this.lat = latitude;

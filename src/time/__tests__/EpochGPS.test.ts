@@ -32,15 +32,15 @@ describe('EpochGPS', () => {
 
   // Error handling
   it('should throw an error if week is negative', () => {
-    expect(() => new EpochGPS(-1, 5)).toThrow('GPS week must be non-negative.');
+    expect(() => new EpochGPS(-1, 5)).toThrow('GPS week must be non-negative');
   });
 
   it('should throw an error if seconds is negative', () => {
-    expect(() => new EpochGPS(1, -1)).toThrow('GPS seconds must be within a week.');
+    expect(() => new EpochGPS(1, -1)).toThrow('GPS seconds must be between 0 and 604799');
   });
 
   it('should throw an error if seconds is greater than or equal to seconds per week', () => {
-    expect(() => new EpochGPS(1, 604800)).toThrow('GPS seconds must be within a week.');
+    expect(() => new EpochGPS(1, 604800)).toThrow('GPS seconds must be between 0 and 604799');
   });
 
   // week10Bit rollover

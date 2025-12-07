@@ -21,6 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ValidationError } from '../errors';
 import type { EpochUTC } from './EpochUTC';
 
 export class TimeStamped<T> {
@@ -57,7 +58,7 @@ export class TimeStamped<T> {
    * @throws Cannot set value of TimeStamped object; it is readonly.
    */
   set value(_: T) {
-    throw new Error('Cannot set value of TimeStamped object; it is readonly.');
+    throw new ValidationError('Cannot set value of TimeStamped object; it is readonly', 'value');
   }
 
   /**
@@ -74,6 +75,6 @@ export class TimeStamped<T> {
    * @throws Cannot set epoch of TimeStamped object; it is readonly.
    */
   set epoch(_: EpochUTC) {
-    throw new Error('Cannot set epoch of TimeStamped object; it is readonly.');
+    throw new ValidationError('Cannot set epoch of TimeStamped object; it is readonly', 'epoch');
   }
 }

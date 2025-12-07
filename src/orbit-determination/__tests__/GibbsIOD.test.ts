@@ -246,7 +246,7 @@ describe('GibbsIOD', () => {
 
       const iod = new GibbsIOD();
 
-      expect(() => iod.solve(r1, r2, r3, t2, t3)).toThrow('Orbits are not coplanar.');
+      expect(() => iod.solve(r1, r2, r3, t2, t3)).toThrow('Orbits are not coplanar');
     });
 
     it('should accept positions within coplanarity threshold', () => {
