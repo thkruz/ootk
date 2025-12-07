@@ -25,8 +25,11 @@ import {
   KilometersPerSecond,
   LlaVec3,
   PosVel,
+  RaeVec3,
   TemeVec3,
 } from '../types/types';
+import { ecef2rae } from '../transforms/transforms';
+import { GroundObject } from './GroundObject';
 import { BaseObject, BaseObjectParams } from './BaseObject';
 import { CommunicationDeviceInterface, SensorInterface } from './ObjectTypes';
 
@@ -114,6 +117,54 @@ export abstract class SpaceObject extends BaseObject {
    * @param date - The time to calculate position for (defaults to now)
    */
   abstract lla(date?: Date): LlaVec3<Degrees, Kilometers> | null;
+
+  // ==================== Observer Methods ====================
+
+  /**
+   * Returns the Range, Azimuth, and Elevation from a ground observer.
+   * @param observer - The ground observer's position
+   * @param date - The time to calculate for (defaults to now)
+   * @returns RAE coordinates (range in km, az/el in degrees), or null if position cannot be calculated
+   */
+  rae(observer: GroundObject, date?: Date): RaeVec3<Kilometers, Degrees> | null {
+    const ecef = this.ecef(date);
+
+    if (!ecef) {
+      return null;
+    }
+
+    return ecef2rae(observer.lla(), ecef);
+  }
+
+  /**
+   * Returns the azimuth angle from a ground observer.
+   * @param observer - The ground observer's position
+   * @param date - The time to calculate for (defaults to now)
+   * @returns Azimuth in degrees (0-360), or null if position cannot be calculated
+   */
+  az(observer: GroundObject, date?: Date): Degrees | null {
+    return this.rae(observer, date)?.az ?? null;
+  }
+
+  /**
+   * Returns the elevation angle from a ground observer.
+   * @param observer - The ground observer's position
+   * @param date - The time to calculate for (defaults to now)
+   * @returns Elevation in degrees (-90 to 90), or null if position cannot be calculated
+   */
+  el(observer: GroundObject, date?: Date): Degrees | null {
+    return this.rae(observer, date)?.el ?? null;
+  }
+
+  /**
+   * Returns the range (distance) from a ground observer.
+   * @param observer - The ground observer's position
+   * @param date - The time to calculate for (defaults to now)
+   * @returns Range in kilometers, or null if position cannot be calculated
+   */
+  rng(observer: GroundObject, date?: Date): Kilometers | null {
+    return this.rae(observer, date)?.rng ?? null;
+  }
 
   // ==================== Abstract Coordinate Conversions ====================
 
