@@ -286,7 +286,7 @@ export class Beacon extends Transmitter {
    */
   static override deserialize(data: Record<string, unknown>): Beacon {
     return new Beacon({
-      id: data.id as string,
+      id: data.id as number,
       name: data.name as string,
       frequency: data.frequency as Hertz,
       power: data.power as Watts,

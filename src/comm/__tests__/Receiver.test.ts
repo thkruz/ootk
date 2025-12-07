@@ -15,7 +15,7 @@ import {
 
 describe('Receiver', () => {
   const createTestReceiver = (overrides = {}): Receiver => new Receiver({
-    id: 'test-rx',
+    id: 1002,
     name: 'Test Receiver',
     frequency: 12e9 as Hertz,
     bandwidth: 36e6 as Hertz,
@@ -29,7 +29,7 @@ describe('Receiver', () => {
     it('should create a receiver with required parameters', () => {
       const rx = createTestReceiver();
 
-      expect(rx.id).toBe('test-rx');
+      expect(rx.id).toBe(1002);
       expect(rx.name).toBe('Test Receiver');
       expect(rx.frequency).toBe(12e9);
       expect(rx.bandwidth).toBe(36e6);
@@ -168,7 +168,7 @@ describe('Receiver', () => {
       const serialized = rx.serialize();
 
       expect(serialized.type).toBe('Receiver');
-      expect(serialized.id).toBe('test-rx');
+      expect(serialized.id).toBe(1002);
       expect(serialized.name).toBe('Test Receiver');
       expect(serialized.deviceType).toBe(CommDeviceType.RECEIVER);
       expect(serialized.frequency).toBe(12e9);
@@ -205,7 +205,7 @@ describe('Receiver', () => {
       const str = rx.toString();
 
       expect(str).toContain('[Receiver]');
-      expect(str).toContain('test-rx');
+      expect(str).toContain('1002');
       expect(str).toContain('12.000 GHz');
       expect(str).toContain('36.0 MHz');
       expect(str).toContain('1.5 dB'); // noise figure

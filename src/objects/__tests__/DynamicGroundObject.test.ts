@@ -18,13 +18,13 @@ describe('DynamicGroundObject', () => {
   describe('constructor', () => {
     it('should create a DynamicGroundObject with valid waypoints', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
 
       expect(obj).toBeDefined();
-      expect(obj.id).toBe('test-1');
+      expect(obj.id).toBe(5001);
       expect(obj.name).toBe('Test Object');
       expect(obj.type).toBe(SpaceObjectType.DYNAMIC_GROUND_OBJECT);
       expect(obj.waypointCount).toBe(3);
@@ -35,7 +35,7 @@ describe('DynamicGroundObject', () => {
       expect(
         () =>
           new DynamicGroundObject({
-            id: 'test-1',
+            id: 5001,
             name: 'Test Object',
             waypoints: [],
           }),
@@ -50,7 +50,7 @@ describe('DynamicGroundObject', () => {
       ];
 
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: unsortedWaypoints,
       });
@@ -64,7 +64,7 @@ describe('DynamicGroundObject', () => {
 
     it('should accept custom interpolation method', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
         interpolationMethod: 'linear',
@@ -79,7 +79,7 @@ describe('DynamicGroundObject', () => {
 
     beforeEach(() => {
       obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
         interpolationMethod: 'linear',
@@ -135,7 +135,7 @@ describe('DynamicGroundObject', () => {
 
     it('linear interpolation should take direct lat/lon path', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: antipodalWaypoints,
         interpolationMethod: 'linear',
@@ -150,7 +150,7 @@ describe('DynamicGroundObject', () => {
 
     it('greatCircle interpolation should follow great circle path', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: antipodalWaypoints,
         interpolationMethod: 'greatCircle',
@@ -165,7 +165,7 @@ describe('DynamicGroundObject', () => {
 
     it('spline interpolation should produce smooth path', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
         interpolationMethod: 'spline',
@@ -188,7 +188,7 @@ describe('DynamicGroundObject', () => {
       ];
 
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: wrappingWaypoints,
         interpolationMethod: 'linear',
@@ -207,7 +207,7 @@ describe('DynamicGroundObject', () => {
 
     beforeEach(() => {
       obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -242,7 +242,7 @@ describe('DynamicGroundObject', () => {
 
     beforeEach(() => {
       obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -269,7 +269,7 @@ describe('DynamicGroundObject', () => {
   describe('time-dependent base class method overrides', () => {
     it('should throw error when calling lla() without time', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -279,7 +279,7 @@ describe('DynamicGroundObject', () => {
 
     it('should throw error when calling ecef() without time', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -289,7 +289,7 @@ describe('DynamicGroundObject', () => {
 
     it('should throw error when calling eci() without time', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -301,7 +301,7 @@ describe('DynamicGroundObject', () => {
   describe('waypoint management', () => {
     it('should add waypoint and keep sorted order', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: [
           { time: new Date('2025-12-24T00:00:00Z'), lat: 90 as Degrees, lon: 0 as Degrees, alt: 10 as Kilometers },
@@ -324,7 +324,7 @@ describe('DynamicGroundObject', () => {
 
     it('should validate waypoint coordinates on add', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -359,7 +359,7 @@ describe('DynamicGroundObject', () => {
 
     it('should remove waypoint by time', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -372,7 +372,7 @@ describe('DynamicGroundObject', () => {
 
     it('should return false when removing non-existent waypoint', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -385,7 +385,7 @@ describe('DynamicGroundObject', () => {
 
     it('should throw error when removing last waypoint', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: [{ time: new Date('2025-12-24T00:00:00Z'), lat: 90 as Degrees, lon: 0 as Degrees, alt: 10 as Kilometers }],
       });
@@ -399,7 +399,7 @@ describe('DynamicGroundObject', () => {
 
     beforeEach(() => {
       obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -429,7 +429,7 @@ describe('DynamicGroundObject', () => {
   describe('history tracking', () => {
     it('should not track history by default', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -439,7 +439,7 @@ describe('DynamicGroundObject', () => {
 
     it('should track history when enabled via constructor', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
         historyConfig: { maxLength: 100 },
@@ -456,7 +456,7 @@ describe('DynamicGroundObject', () => {
 
     it('should enable history after construction', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -471,7 +471,7 @@ describe('DynamicGroundObject', () => {
 
     it('should disable history', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
         historyConfig: { maxLength: 100 },
@@ -487,7 +487,7 @@ describe('DynamicGroundObject', () => {
   describe('getTrail', () => {
     it('should return all waypoints when count is less than maxPoints', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -511,7 +511,7 @@ describe('DynamicGroundObject', () => {
       }
 
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: manyWaypoints,
       });
@@ -523,7 +523,7 @@ describe('DynamicGroundObject', () => {
 
     it('should return history entries when history is enabled', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
         historyConfig: { maxLength: 100 },
@@ -547,7 +547,7 @@ describe('DynamicGroundObject', () => {
   describe('clone', () => {
     it('should create a deep copy', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
         interpolationMethod: 'spline',
@@ -577,7 +577,7 @@ describe('DynamicGroundObject', () => {
   describe('serialization', () => {
     it('should serialize to JSON-compatible format', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
         interpolationMethod: 'linear',
@@ -586,7 +586,7 @@ describe('DynamicGroundObject', () => {
       const serialized = obj.serialize();
 
       expect(serialized.type).toBe('DynamicGroundObject');
-      expect(serialized.id).toBe('test-1');
+      expect(serialized.id).toBe(5001);
       expect(serialized.name).toBe('Test Object');
       expect((serialized as Record<string, unknown>).waypoints).toBeDefined();
       expect((serialized as Record<string, unknown>).interpolationMethod).toBe('linear');
@@ -596,7 +596,7 @@ describe('DynamicGroundObject', () => {
   describe('isGroundObject', () => {
     it('should return true', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -618,7 +618,7 @@ describe('DynamicGroundObject', () => {
       ];
 
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints,
       });
@@ -636,7 +636,7 @@ describe('DynamicGroundObject', () => {
   describe('single waypoint', () => {
     it('should work with single waypoint', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: [{ time: new Date('2025-12-24T01:00:00Z'), lat: 45 as Degrees, lon: -75 as Degrees, alt: 5 as Kilometers }],
       });
@@ -662,7 +662,7 @@ describe('DynamicGroundObject', () => {
       ];
 
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints,
       });
@@ -681,7 +681,7 @@ describe('DynamicGroundObject', () => {
       ];
 
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints,
         interpolationMethod: 'spline',
@@ -699,7 +699,7 @@ describe('DynamicGroundObject', () => {
   describe('interpolation method change', () => {
     it('should allow changing interpolation method after construction', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
         interpolationMethod: 'linear',
@@ -735,7 +735,7 @@ describe('DynamicGroundObject', () => {
       ];
 
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints,
       });
@@ -750,7 +750,7 @@ describe('DynamicGroundObject', () => {
   describe('history API consistency', () => {
     it('should provide isHistoryEnabled getter', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -766,7 +766,7 @@ describe('DynamicGroundObject', () => {
 
     it('should provide history getter as alias for positionHistory', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
         historyConfig: { maxLength: 100 },
@@ -778,7 +778,7 @@ describe('DynamicGroundObject', () => {
 
     it('should return null for both getters when history is disabled', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });
@@ -792,7 +792,7 @@ describe('DynamicGroundObject', () => {
   describe('clone with history options', () => {
     it('should preserve history config but start empty by default', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
         historyConfig: { maxLength: 100 },
@@ -810,7 +810,7 @@ describe('DynamicGroundObject', () => {
 
     it('should clone history entries when cloneHistory is true', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
         historyConfig: { maxLength: 100 },
@@ -826,7 +826,7 @@ describe('DynamicGroundObject', () => {
 
     it('should have independent history after cloning with cloneHistory', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
         historyConfig: { maxLength: 100 },
@@ -846,7 +846,7 @@ describe('DynamicGroundObject', () => {
 
     it('should not have history enabled if original had no history', () => {
       const obj = new DynamicGroundObject({
-        id: 'test-1',
+        id: 5001,
         name: 'Test Object',
         waypoints: testWaypoints,
       });

@@ -49,13 +49,13 @@ describe('EphemerisSatellite', () => {
   describe('constructor', () => {
     it('should create instance with valid ephemeris', () => {
       const sat = new EphemerisSatellite({
-        id: 'test-sat',
+        id: 6001,
         name: 'Test Satellite',
         ephemeris: testEphemeris,
       });
 
       expect(sat).toBeInstanceOf(EphemerisSatellite);
-      expect(sat.id).toBe('test-sat');
+      expect(sat.id).toBe(6001);
       expect(sat.name).toBe('Test Satellite');
       expect(sat.type).toBe(SpaceObjectType.EPHEMERIS_SATELLITE);
     });
@@ -63,7 +63,7 @@ describe('EphemerisSatellite', () => {
     it('should throw error for empty ephemeris', () => {
       expect(() => {
         new EphemerisSatellite({
-          id: 'test',
+          id: 6002,
           name: 'Test',
           ephemeris: [],
         });
@@ -72,7 +72,7 @@ describe('EphemerisSatellite', () => {
 
     it('should use default center body (EARTH)', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -82,7 +82,7 @@ describe('EphemerisSatellite', () => {
 
     it('should accept custom center body', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
         centerBody: CenterBody.MOON,
@@ -94,7 +94,7 @@ describe('EphemerisSatellite', () => {
 
     it('should store metadata', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
         metadata: { source: 'JPL', mission: 'Apollo' },
@@ -114,12 +114,12 @@ describe('EphemerisSatellite', () => {
 
     it('should accept options', () => {
       const sat = EphemerisSatellite.fromEphemeris('Test Sat', testEphemeris, {
-        id: 'custom-id',
+        id: 6004,
         centerBody: CenterBody.MARS,
         interpolatorType: InterpolatorType.CUBIC_SPLINE,
       });
 
-      expect(sat.id).toBe('custom-id');
+      expect(sat.id).toBe(6004);
       expect(sat.centerBody).toBe(CenterBody.MARS);
     });
   });
@@ -127,7 +127,7 @@ describe('EphemerisSatellite', () => {
   describe('eci', () => {
     it('should return interpolated state for valid time', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -142,7 +142,7 @@ describe('EphemerisSatellite', () => {
 
     it('should return null for time outside coverage', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -157,7 +157,7 @@ describe('EphemerisSatellite', () => {
   describe('getJ2000', () => {
     it('should return J2000 state for valid epoch', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -171,7 +171,7 @@ describe('EphemerisSatellite', () => {
 
     it('should return null for epoch outside coverage', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -186,7 +186,7 @@ describe('EphemerisSatellite', () => {
   describe('getTEME', () => {
     it('should return TEME state for valid epoch', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -203,7 +203,7 @@ describe('EphemerisSatellite', () => {
   describe('coverageWindow', () => {
     it('should reflect ephemeris bounds', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -218,7 +218,7 @@ describe('EphemerisSatellite', () => {
   describe('inCoverage', () => {
     it('should return true for epoch within window', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -229,7 +229,7 @@ describe('EphemerisSatellite', () => {
 
     it('should return false for epoch outside window', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -243,7 +243,7 @@ describe('EphemerisSatellite', () => {
   describe('getOrbitPath', () => {
     it('should return Float32Array with correct format', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -256,7 +256,7 @@ describe('EphemerisSatellite', () => {
 
     it('should interpolate between ephemeris points', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -273,7 +273,7 @@ describe('EphemerisSatellite', () => {
   describe('getEphemerisAsFloat32', () => {
     it('should return raw ephemeris points', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -288,7 +288,7 @@ describe('EphemerisSatellite', () => {
   describe('getNearestEphemerisPoint', () => {
     it('should find closest ephemeris point', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -302,7 +302,7 @@ describe('EphemerisSatellite', () => {
 
     it('should return first point for very early epoch', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -318,7 +318,7 @@ describe('EphemerisSatellite', () => {
   describe('clone', () => {
     it('should create independent copy', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
         centerBody: CenterBody.MOON,
@@ -341,7 +341,7 @@ describe('EphemerisSatellite', () => {
   describe('interpolator types', () => {
     it('should work with Lagrange interpolator (default)', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
         interpolatorType: InterpolatorType.LAGRANGE,
@@ -354,7 +354,7 @@ describe('EphemerisSatellite', () => {
 
     it('should work with CubicSpline interpolator', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
         interpolatorType: InterpolatorType.CUBIC_SPLINE,
@@ -367,7 +367,7 @@ describe('EphemerisSatellite', () => {
 
     it('should work with VerletBlend interpolator', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
         interpolatorType: InterpolatorType.VERLET_BLEND,
@@ -382,7 +382,7 @@ describe('EphemerisSatellite', () => {
   describe('ecef', () => {
     it('should return ECEF coordinates for valid time', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -398,7 +398,7 @@ describe('EphemerisSatellite', () => {
 
     it('should throw for time outside coverage', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -413,7 +413,7 @@ describe('EphemerisSatellite', () => {
   describe('lla', () => {
     it('should return geodetic coordinates for valid time', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -433,7 +433,7 @@ describe('EphemerisSatellite', () => {
   describe('toJ2000', () => {
     it('should return J2000 for valid date', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -448,7 +448,7 @@ describe('EphemerisSatellite', () => {
 
     it('should throw for date outside coverage', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -462,7 +462,7 @@ describe('EphemerisSatellite', () => {
   describe('toITRF', () => {
     it('should return ITRF for valid date', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -478,7 +478,7 @@ describe('EphemerisSatellite', () => {
   describe('toClassicalElements', () => {
     it('should return classical elements for valid date', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -496,7 +496,7 @@ describe('EphemerisSatellite', () => {
   describe('getLinearInterpolatedState', () => {
     it('should return linear interpolated state', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -512,7 +512,7 @@ describe('EphemerisSatellite', () => {
 
     it('should return null for epoch before coverage', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -526,7 +526,7 @@ describe('EphemerisSatellite', () => {
 
     it('should return last point for epoch at end', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -542,7 +542,7 @@ describe('EphemerisSatellite', () => {
   describe('ephemerisLength', () => {
     it('should return number of state vectors', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -554,7 +554,7 @@ describe('EphemerisSatellite', () => {
   describe('interpolatorSizeBytes', () => {
     it('should return size in bytes', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
       });
@@ -566,7 +566,7 @@ describe('EphemerisSatellite', () => {
   describe('mu (gravitational parameter)', () => {
     it('should return correct mu for Earth', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
         centerBody: CenterBody.EARTH,
@@ -577,7 +577,7 @@ describe('EphemerisSatellite', () => {
 
     it('should return correct mu for Moon', () => {
       const sat = new EphemerisSatellite({
-        id: 'test',
+        id: 6003,
         name: 'Test',
         ephemeris: testEphemeris,
         centerBody: CenterBody.MOON,

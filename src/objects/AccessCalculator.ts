@@ -205,8 +205,8 @@ export class AccessCalculator {
     start: Date,
     end: Date,
     constraints: AccessConstraints = {},
-  ): Map<string, AccessWindow[]> {
-    const results = new Map<string, AccessWindow[]>();
+  ): Map<number, AccessWindow[]> {
+    const results = new Map<number, AccessWindow[]>();
 
     for (const target of targets) {
       const windows = AccessCalculator.calculateAccess(observer, target, start, end, constraints);

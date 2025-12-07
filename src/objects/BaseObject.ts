@@ -36,7 +36,7 @@ export type { BaseObjectParams } from '../interfaces/BaseObjectParams';
  */
 export abstract class BaseObject {
   /** Unique identifier for the object */
-  id: string;
+  id: number;
   /** Human-readable name */
   name: string;
   /** Type classification of the object */
@@ -52,7 +52,7 @@ export abstract class BaseObject {
   constructor(info: BaseObjectParams) {
     this.type = info.type ?? SpaceObjectType.UNKNOWN;
     this.name = info.name ?? 'Unknown';
-    this.id = info.id ?? '-1';
+    this.id = info.id ?? -1;
     this.active = info.active ?? true;
     this.metadata = info.metadata;
   }

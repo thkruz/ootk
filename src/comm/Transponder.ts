@@ -115,7 +115,7 @@ export class Transponder extends CommunicationDevice {
 
     // Create internal receiver
     this.receiver = new Receiver({
-      id: `${params.id}-rx`,
+      id: params.id * 1000 + 1,
       name: `${params.name} Receiver`,
       frequency: params.uplinkFrequency,
       bandwidth: params.bandwidth,
@@ -126,7 +126,7 @@ export class Transponder extends CommunicationDevice {
 
     // Create internal transmitter
     this.transmitter = new Transmitter({
-      id: `${params.id}-tx`,
+      id: params.id * 1000 + 2,
       name: `${params.name} Transmitter`,
       frequency: params.downlinkFrequency,
       power: params.power,
@@ -324,7 +324,7 @@ export class Transponder extends CommunicationDevice {
    */
   static deserialize(data: Record<string, unknown>): Transponder {
     return new Transponder({
-      id: data.id as string,
+      id: data.id as number,
       name: data.name as string,
       uplinkFrequency: data.uplinkFrequency as Hertz,
       downlinkFrequency: data.downlinkFrequency as Hertz,

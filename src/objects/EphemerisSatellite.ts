@@ -134,7 +134,7 @@ export class EphemerisSatellite extends SpaceObject {
   static fromParsedOem(
     oem: ParsedOem,
     options?: {
-      id?: string;
+      id?: number;
       interpolatorType?: InterpolatorType;
     },
   ): EphemerisSatellite {
@@ -153,7 +153,7 @@ export class EphemerisSatellite extends SpaceObject {
     const order = OemParser.getInterpolationOrder(firstBlock.metadata);
 
     return new EphemerisSatellite({
-      id: options?.id ?? firstBlock.metadata.OBJECT_ID ?? 'unknown',
+      id: options?.id ?? -1,
       name: firstBlock.metadata.OBJECT_NAME ?? 'Unnamed',
       ephemeris: allEphemeris,
       centerBody: parseCenterBody(firstBlock.metadata.CENTER_NAME),
@@ -179,13 +179,13 @@ export class EphemerisSatellite extends SpaceObject {
     name: string,
     ephemeris: J2000[],
     options?: {
-      id?: string;
+      id?: number;
       centerBody?: CenterBody;
       interpolatorType?: InterpolatorType;
     },
   ): EphemerisSatellite {
     return new EphemerisSatellite({
-      id: options?.id ?? `ephemeris-${Date.now()}`,
+      id: options?.id ?? -1,
       name,
       ephemeris,
       centerBody: options?.centerBody,

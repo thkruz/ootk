@@ -25,7 +25,7 @@ import { CommDeviceType, CommPlatform, SerializedCommDevice } from './CommTypes'
  */
 export interface CommunicationDeviceParams {
   /** Unique identifier for the device */
-  id: string;
+  id: number;
   /** Human-readable name */
   name: string;
   /** Additional metadata */
@@ -56,7 +56,7 @@ export interface CommunicationDeviceParams {
  */
 export abstract class CommunicationDevice implements CommunicationDeviceInterface {
   /** Unique identifier */
-  readonly id: string;
+  readonly id: number;
   /** Human-readable name */
   name: string;
   /** Additional metadata */

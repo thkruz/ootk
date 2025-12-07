@@ -95,7 +95,7 @@ export class SolarSystem {
    * @param body - The body to register
    */
   static register(body: CelestialBody): void {
-    const idKey = body.id.toLowerCase();
+    const idKey = String(body.id);
     const nameKey = body.name.toLowerCase();
 
     SolarSystem.bodies_.set(idKey, body);
@@ -107,12 +107,12 @@ export class SolarSystem {
    * @param idOrName - ID or name of the body to remove
    * @returns True if the body was found and removed
    */
-  static unregister(idOrName: string): boolean {
-    const key = idOrName.toLowerCase();
+  static unregister(idOrName: string | number): boolean {
+    const key = typeof idOrName === 'number' ? String(idOrName) : idOrName.toLowerCase();
     const body = SolarSystem.bodies_.get(key) ?? SolarSystem.bodiesByName_.get(key);
 
     if (body) {
-      SolarSystem.bodies_.delete(body.id.toLowerCase());
+      SolarSystem.bodies_.delete(String(body.id));
       SolarSystem.bodiesByName_.delete(body.name.toLowerCase());
 
       return true;
@@ -128,10 +128,10 @@ export class SolarSystem {
    * @param idOrName - ID or name of the body (case-insensitive)
    * @returns The body, or undefined if not found
    */
-  static get(idOrName: string): CelestialBody | undefined {
+  static get(idOrName: string | number): CelestialBody | undefined {
     SolarSystem.ensureInitialized_();
 
-    const key = idOrName.toLowerCase();
+    const key = typeof idOrName === 'number' ? String(idOrName) : idOrName.toLowerCase();
 
     return SolarSystem.bodies_.get(key) ?? SolarSystem.bodiesByName_.get(key);
   }
@@ -162,10 +162,10 @@ export class SolarSystem {
    * @param idOrName - ID or name to check
    * @returns True if the body is registered
    */
-  static has(idOrName: string): boolean {
+  static has(idOrName: string | number): boolean {
     SolarSystem.ensureInitialized_();
 
-    const key = idOrName.toLowerCase();
+    const key = typeof idOrName === 'number' ? String(idOrName) : idOrName.toLowerCase();
 
     return SolarSystem.bodies_.has(key) || SolarSystem.bodiesByName_.has(key);
   }

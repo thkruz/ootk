@@ -22,7 +22,7 @@ describe('Sensor parent validation', () => {
 
   const createOrphanSensor = () =>
     new OpticalSensor({
-      id: 'test-sensor',
+      id: 2001,
       name: 'Test Sensor',
       sensorType: SensorType.OPTICAL,
       fieldOfView: {

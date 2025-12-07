@@ -265,7 +265,7 @@ export class EphemerisBody extends CelestialBody {
    * @param options - Additional options
    */
   static fromData(
-    id: string,
+    id: number,
     name: string,
     bodyType: CelestialBodyType,
     data: Array<{

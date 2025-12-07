@@ -11,7 +11,7 @@ describe('SpaceObject.rae()', () => {
   const tle2 = '2 25544  51.6415 161.8339 0005168  35.9781  54.7009 15.50067047350657' as TleLine2;
 
   const testStation = new GroundStation({
-    id: 'test-gs',
+    id: 8001,
     name: 'Test Ground Station',
     lat: 38.9 as Degrees,
     lon: -77.0 as Degrees,
@@ -68,7 +68,7 @@ describe('SpaceObject.rae()', () => {
 
     it('should return valid RAE values (inherited method works)', () => {
       const sat = new EphemerisSatellite({
-        id: 'test-ephem',
+        id: 8002,
         name: 'Test Ephemeris Satellite',
         ephemeris: testEphemeris,
       });
@@ -87,7 +87,7 @@ describe('SpaceObject.rae()', () => {
 
     it('should throw when date is outside ephemeris range', () => {
       const sat = new EphemerisSatellite({
-        id: 'test-ephem',
+        id: 8003,
         name: 'Test Ephemeris Satellite',
         ephemeris: testEphemeris,
       });

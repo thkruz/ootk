@@ -173,44 +173,44 @@ describe('SolarSystem', () => {
 
     it('should register a new body', () => {
       const mockBody = new MockBody({
-        id: 'test-body',
+        id: 9901,
         name: 'Test Body',
         bodyType: CelestialBodyType.ASTEROID,
       });
 
       SolarSystem.register(mockBody);
 
-      expect(SolarSystem.get('test-body')).toBe(mockBody);
+      expect(SolarSystem.get('Test Body')).toBe(mockBody);
 
       // Clean up
-      SolarSystem.unregister('test-body');
+      SolarSystem.unregister(9901);
     });
 
     it('should unregister a body', () => {
       const mockBody = new MockBody({
-        id: 'test-body-2',
+        id: 9902,
         name: 'Test Body 2',
         bodyType: CelestialBodyType.COMET,
       });
 
       SolarSystem.register(mockBody);
-      SolarSystem.unregister('test-body-2');
+      SolarSystem.unregister(9902);
 
-      expect(SolarSystem.get('test-body-2')).toBeUndefined();
+      expect(SolarSystem.get('Test Body 2')).toBeUndefined();
     });
 
     it('should allow registering custom bodies', () => {
       const mockBody = new MockBody({
-        id: 'custom-asteroid',
+        id: 9903,
         name: 'Custom Asteroid',
         bodyType: CelestialBodyType.ASTEROID,
       });
 
       SolarSystem.register(mockBody);
-      expect(SolarSystem.get('custom-asteroid')).toBe(mockBody);
+      expect(SolarSystem.get('Custom Asteroid')).toBe(mockBody);
 
       // Clean up
-      SolarSystem.unregister('custom-asteroid');
+      SolarSystem.unregister(9903);
     });
   });
 

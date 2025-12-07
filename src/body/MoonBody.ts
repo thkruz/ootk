@@ -238,7 +238,7 @@ export class MoonBody extends CelestialBody {
 
   private constructor() {
     super({
-      id: 'moon',
+      id: 10,
       name: 'Moon',
       type: SpaceObjectType.MOON,
       bodyType: CelestialBodyType.MOON,
