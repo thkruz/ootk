@@ -28,9 +28,9 @@ export interface LandObjectParams extends BaseObjectParams {
 }
 
 export class LandObject extends BaseObject {
-  lat: Degrees;
-  lon: Degrees;
-  alt: Kilometers;
+  readonly lat: Degrees;
+  readonly lon: Degrees;
+  readonly alt: Kilometers;
   country?: string;
   Code?: string;
 

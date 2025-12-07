@@ -40,9 +40,9 @@ import { ITRF } from './ITRF';
  * class, which is used to represent an object on the surface of the Earth.
  */
 export class Geodetic {
-  lat: Radians;
-  lon: Radians;
-  alt: Kilometers;
+  readonly lat: Radians;
+  readonly lon: Radians;
+  readonly alt: Kilometers;
 
   constructor(latitude: Radians, longitude: Radians, altitude: Kilometers) {
     if (Math.abs(latitude) > Math.PI / 2) {
