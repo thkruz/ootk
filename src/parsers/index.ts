@@ -31,7 +31,19 @@ export type {
   HorizonsObserverResult,
 } from './HorizonsParser';
 
+export { CdmParser } from './CdmParser';
+export { CdmExporter } from './CdmExporter';
+export type {
+  CdmHeader,
+  CdmRelativeData,
+  CdmObjectMetadata,
+  CdmObjectData,
+  CdmObjectType,
+  CdmManeuverableStatus,
+  ParsedCdm,
+  CdmExportOptions,
+} from './CdmTypes';
+
 // TODO: Future parsers to add:
 // - Sp3Parser: GPS precise ephemerides (SP3 format)
-// - CdmParser: Conjunction Data Messages
 // - TdmParser: Tracking Data Messages

@@ -20,4 +20,16 @@ export {
 } from './ConjunctionAssessment';
 export { ConjunctionEvent } from './ConjunctionEvent';
 export { ProbabilityOfCollision } from './ProbabilityOfCollision';
+export {
+  CatalogScreener, type CatalogObject, type CatalogScreeningOptions, type ScreeningResult,
+} from './CatalogScreener';
+export { ScreeningFilter, type OrbitalShell } from './ScreeningFilter';
+export {
+  CovarianceRealism,
+  type CovarianceRealismResult,
+  type MahalanobisResult,
+  type ConsistencyRatioResult,
+  type EigenvalueAnalysisResult,
+  type ScaleFactorResult,
+} from './CovarianceRealism';
 
