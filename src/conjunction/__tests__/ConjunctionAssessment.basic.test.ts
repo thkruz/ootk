@@ -1,7 +1,6 @@
 /**
- * @author Theodore Kruczek
- * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @file ConjunctionAssessment basic test suite
+ * @description Tests for basic conjunction assessment, state vectors, and event formatting
  */
 
 import {
@@ -17,7 +16,7 @@ import {
   Vector3D,
 } from '../../main';
 
-describe('ConjunctionAssessment', () => {
+describe('ConjunctionAssessment - Basic', () => {
   // Sample TLE data for testing (ISS and a close approach satellite)
   const tleLine1Primary = '1 25544U 98067A   25019.50000000  .00016717  00000-0  10270-3 0  9005';
   const tleLine2Primary = '2 25544  51.6400 339.8000 0002571  90.5000 269.6000 15.50000000000000';
@@ -86,52 +85,6 @@ describe('ConjunctionAssessment', () => {
       );
 
       expect(computedMiss).toBeCloseTo(event.missDistance, 6);
-    });
-  });
-
-  describe('High-Fidelity Propagation', () => {
-    it('should use high-fidelity propagation when requested', () => {
-      const assessment = new ConjunctionAssessment(
-        { tle: primaryTle, radius: 0.01 as Kilometers },
-        { tle: secondaryTle, radius: 0.01 as Kilometers },
-      );
-
-      const startTime = EpochUTC.fromDateTimeString('2025-01-19T12:00:00.000Z');
-      const endTime = EpochUTC.fromDateTimeString('2025-01-19T13:00:00.000Z');
-
-      const event = assessment.assess({
-        startTime,
-        endTime,
-        useHighFidelity: true,
-      });
-
-      expect(event).toBeDefined();
-      expect(event.tca).toBeDefined();
-    });
-  });
-
-  describe('Covariance Propagation', () => {
-    it('should propagate covariances and compute Pc', () => {
-      const assessment = new ConjunctionAssessment(
-        { tle: primaryTle, radius: 0.01 as Kilometers },
-        { tle: secondaryTle, radius: 0.01 as Kilometers },
-      );
-
-      const startTime = EpochUTC.fromDateTimeString('2025-01-19T12:00:00.000Z');
-      const endTime = EpochUTC.fromDateTimeString('2025-01-19T13:00:00.000Z');
-
-      const event = assessment.assess({
-        startTime,
-        endTime,
-        useHighFidelity: true,
-        propagateCovariance: true,
-      });
-
-      expect(event).toBeDefined();
-      expect(event.combinedCovariance).toBeDefined();
-      expect(event.probabilityOfCollision).toBeDefined();
-      expect(event.probabilityOfCollision).toBeGreaterThanOrEqual(0);
-      expect(event.probabilityOfCollision).toBeLessThanOrEqual(1);
     });
   });
 

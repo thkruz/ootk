@@ -1,5 +1,6 @@
 const jestConfig = {
   testEnvironment: 'node',
+  maxWorkers: '75%',
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
