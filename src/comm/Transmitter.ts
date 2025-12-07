@@ -124,6 +124,25 @@ export class Transmitter extends CommunicationDevice {
   }
 
   /**
+   * Creates a deep copy of this transmitter.
+   * The cloned transmitter will not have a parent assigned.
+   * @returns A new Transmitter instance with the same properties
+   */
+  clone(): Transmitter {
+    return new Transmitter({
+      id: this.id,
+      name: this.name,
+      frequency: this.frequency,
+      power: this.power,
+      bandwidth: this.bandwidth,
+      antenna: this.antenna.clone(),
+      modulation: this.modulation,
+      lineLoss: this.lineLoss,
+      metadata: this.metadata ? { ...this.metadata } : undefined,
+    });
+  }
+
+  /**
    * Gets the Effective Isotropic Radiated Power (EIRP) in dBW.
    * EIRP = Power(dBW) + Antenna Gain(dB) - Line Loss(dB)
    */

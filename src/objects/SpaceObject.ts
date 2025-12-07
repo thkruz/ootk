@@ -139,8 +139,9 @@ export abstract class SpaceObject extends BaseObject {
 
   /**
    * Creates a deep copy of this object.
+   * @param options - Optional clone options (implementation-specific)
    */
-  abstract clone(): SpaceObject;
+  abstract clone(options?: Record<string, unknown>): SpaceObject;
 
   // ==================== Component Management ====================
 

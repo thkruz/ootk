@@ -57,9 +57,19 @@ import {
   TleLine2,
 } from '../types/types';
 import { DEG2RAD, MILLISECONDS_TO_DAYS, MINUTES_PER_DAY, RAD2DEG } from '../utils/constants';
+import { CommunicationDevice } from '../comm/CommunicationDevice';
+import { Sensor } from '../sensor/Sensor';
 import { dopplerFactor } from './../utils/functions';
 import { GroundObject } from './GroundObject';
 import { SpaceObject } from './SpaceObject';
+
+/**
+ * Options for the Satellite.clone() method.
+ */
+export interface SatelliteCloneOptions {
+  /** If true, clone history entries. If false (default), start with empty history but same config. */
+  cloneHistory?: boolean;
+}
 
 /**
  * Represents a satellite object with orbital information and methods for
@@ -823,8 +833,17 @@ export class Satellite extends SpaceObject {
 
   /**
    * Creates a deep copy of this satellite.
+   *
+   * By default, history configuration is preserved but starts empty.
+   * Pass `{ cloneHistory: true }` to also clone the history entries.
+   *
+   * Sensors and communication devices are deep cloned with their
+   * parent references updated to point to the cloned satellite.
+   *
+   * @param options - Clone options
+   * @returns A new Satellite instance
    */
-  override clone(): Satellite {
+  override clone(options?: SatelliteCloneOptions): Satellite {
     const cloned = new Satellite(
       {
         tle1: this.tle1,
@@ -843,6 +862,8 @@ export class Satellite extends SpaceObject {
         vmag: this.vmag,
         rcs: this.rcs,
         status: this.status,
+        // Preserve history config if enabled (starts with empty history)
+        historyConfig: this.isHistoryEnabled ? this.history!.config : undefined,
       },
       { ...this.options },
     );
@@ -850,8 +871,31 @@ export class Satellite extends SpaceObject {
     cloned.id = this.id;
     cloned.active = this.active;
     cloned.metadata = this.metadata ? { ...this.metadata } : undefined;
-    cloned.sensors = [...this.sensors];
-    cloned.commDevices = [...this.commDevices];
+
+    // Deep clone sensors with updated parent reference
+    cloned.sensors = this.sensors.map((sensor) => {
+      const clonedSensor = (sensor as Sensor).clone();
+
+      clonedSensor.setParent(cloned);
+
+      return clonedSensor;
+    });
+
+    // Deep clone comm devices with updated parent reference
+    cloned.commDevices = this.commDevices.map((device) => {
+      const clonedDevice = (device as CommunicationDevice).clone();
+
+      clonedDevice.setParent(cloned);
+
+      return clonedDevice;
+    });
+
+    // Clone history data if requested
+    if (options?.cloneHistory && this.history) {
+      cloned.disableHistory();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (cloned as any).history_ = this.history.clone();
+    }
 
     return cloned;
   }

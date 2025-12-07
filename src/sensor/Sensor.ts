@@ -360,6 +360,13 @@ export abstract class Sensor {
    */
   abstract observe(target: SpaceObject, date?: Date): unknown | null;
 
+  /**
+   * Creates a deep copy of this sensor.
+   * The cloned sensor will not have a parent assigned.
+   * @returns A new Sensor instance with the same properties
+   */
+  abstract clone(): Sensor;
+
   // ==================== Convenience Methods ====================
 
   /**

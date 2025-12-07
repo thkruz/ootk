@@ -140,4 +140,11 @@ export abstract class RadarSensor extends Sensor {
       peakPower: this.peakPower,
     };
   }
+
+  /**
+   * Creates a deep copy of this radar sensor.
+   * The cloned sensor will not have a parent assigned.
+   * @returns A new RadarSensor instance with the same properties
+   */
+  abstract override clone(): RadarSensor;
 }
