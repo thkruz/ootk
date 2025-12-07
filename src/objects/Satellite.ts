@@ -56,7 +56,7 @@ import {
   TleLine1,
   TleLine2,
 } from '../types/types';
-import { DEG2RAD, MILLISECONDS_TO_DAYS, MINUTES_PER_DAY, RAD2DEG } from '../utils/constants';
+import { DEG2RAD, MILLISECONDS_TO_DAYS, MINUTES_PER_DAY } from '../utils/constants';
 import { CommunicationDevice } from '../comm/CommunicationDevice';
 import { Sensor } from '../sensor/Sensor';
 import { dopplerFactor } from './../utils/functions';
@@ -448,14 +448,14 @@ export class Satellite extends SpaceObject {
    * @param date - The date at which to calculate the azimuth angle. Optional, defaults to the current date.
    * @returns The azimuth angle of the satellite relative to the given sensor at the specified date.
    */
-  az(observer: GroundObject, date: Date = new Date()): Degrees | null {
+  override az(observer: GroundObject, date: Date = new Date()): Degrees | null {
     const rae = this.rae(observer, date);
 
     if (!rae) {
       return null;
     }
 
-    return (rae.az * RAD2DEG) as Degrees;
+    return rae.az;
   }
 
   /**
@@ -596,14 +596,14 @@ export class Satellite extends SpaceObject {
    * @param date - The date at which to calculate the elevation angle. Optional, defaults to the current date.
    * @returns The elevation angle of the satellite as seen by the given sensor at the specified time.
    */
-  el(observer: GroundObject, date: Date = new Date()): Degrees | null {
+  override el(observer: GroundObject, date: Date = new Date()): Degrees | null {
     const rae = this.rae(observer, date);
 
     if (!rae) {
       return null;
     }
 
-    return (rae.el * RAD2DEG) as Degrees;
+    return rae.el;
   }
 
   /**
@@ -712,7 +712,7 @@ export class Satellite extends SpaceObject {
    * ```
    * @returns The RAE vector for the given sensor and time.
    */
-  rae(observer: GroundObject, date?: Date, j?: number, gmst?: GreenwichMeanSiderealTime): RaeVec3<Kilometers, Degrees> | null {
+  override rae(observer: GroundObject, date?: Date, j?: number, gmst?: GreenwichMeanSiderealTime): RaeVec3<Kilometers, Degrees> | null {
     date ??= new Date();
     gmst ??= Satellite.calculateTimeVariables_(date, this.satrec).gmst;
     const eci = this.eci(date, j, gmst);
@@ -733,7 +733,7 @@ export class Satellite extends SpaceObject {
    * @param date - The date at which to calculate the range. Optional, defaults to the current date.
    * @returns The range of the satellite from the given sensor at the specified time.
    */
-  rng(observer: GroundObject, date: Date = new Date()): Kilometers | null {
+  override rng(observer: GroundObject, date: Date = new Date()): Kilometers | null {
     const rae = this.rae(observer, date);
 
     if (!rae) {
