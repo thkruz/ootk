@@ -18,6 +18,7 @@
 import type { J2000 } from '../coordinate/J2000';
 import { PassType } from '../enums/PassType';
 import { SensorType } from '../enums/SensorType';
+import { ValidationError } from '../errors';
 import type { GroundObject } from '../objects/GroundObject';
 import type { Satellite } from '../objects/Satellite';
 import type { SpaceObject } from '../objects/SpaceObject';
@@ -163,11 +164,15 @@ export abstract class Sensor {
 
   /**
    * Gets the parent platform this sensor is attached to.
-   * @throws Error if sensor has no parent assigned
+   * @throws {ValidationError} If sensor has no parent assigned
    */
   get parent(): SensorPlatform {
     if (!this.parent_) {
-      throw new Error(`Sensor "${this.name}" has no parent platform assigned`);
+      throw new ValidationError(
+        `Sensor "${this.name}" has no parent platform assigned. Call setParent() first.`,
+        'parent',
+        undefined,
+      );
     }
 
     return this.parent_;
@@ -188,6 +193,24 @@ export abstract class Sensor {
     return this.parent_ !== undefined;
   }
 
+  /**
+   * Validates that this sensor has a parent platform.
+   * Call at the start of methods that require a parent.
+   * @param methodName - Name of the calling method (for error context)
+   * @throws {ValidationError} If no parent is assigned
+   */
+  protected requireParent(methodName: string): SensorPlatform {
+    if (!this.parent_) {
+      throw new ValidationError(
+        `Cannot call ${methodName}() on sensor "${this.name}" without a parent platform. Call setParent() first.`,
+        'parent',
+        undefined,
+      );
+    }
+
+    return this.parent_;
+  }
+
   // ==================== Position Methods ====================
 
   /**
@@ -195,10 +218,12 @@ export abstract class Sensor {
    * Delegates to the parent platform.
    * @param date - Time for position calculation (defaults to now)
    * @returns J2000 state vector
-   * @throws Error if no parent platform assigned
+   * @throws {ValidationError} If sensor has no parent platform assigned
    */
   getJ2000(date: Date = new Date()): J2000 {
-    return this.parent.toJ2000(date);
+    const parent = this.requireParent('getJ2000');
+
+    return parent.toJ2000(date);
   }
 
   // ==================== FOV Methods ====================
@@ -233,11 +258,14 @@ export abstract class Sensor {
    * @param target - The space object to observe
    * @param date - Time for the calculation (defaults to now)
    * @returns RAE coordinates or null if calculation fails
+   * @throws {ValidationError} If sensor has no parent platform assigned
    */
   getRae(target: SpaceObject, date: Date = new Date()): RaeVec3<Kilometers, Degrees> | null {
+    const parent = this.requireParent('getRae');
+
     // Use Satellite's rae method if parent is a GroundObject
-    if ('lat' in this.parent && 'rae' in target) {
-      return (target as Satellite).rae(this.parent as GroundObject, date);
+    if ('lat' in parent && 'rae' in target) {
+      return (target as Satellite).rae(parent as GroundObject, date);
     }
 
     // For space-based sensors, would need different calculation
@@ -291,6 +319,7 @@ export abstract class Sensor {
    * });
    * ```
    * @returns Array of lookangle events (ENTER/EXIT with RAE data)
+   * @throws {ValidationError} If sensor has no parent platform assigned
    */
   calculatePasses(
     target: Satellite,

@@ -18,6 +18,7 @@
  */
 
 import { Earth } from '../body/Earth';
+import { ValidationError } from '../errors';
 import { Sensor } from '../sensor/Sensor';
 import { boresightFrameFromAzElRoll } from '../sensor/FieldOfView';
 import { rae2ecef } from '../transforms/transforms';
@@ -249,7 +250,11 @@ export class VisualizationHelpers {
     atRange?: Kilometers,
   ): FovBoundaryPoint[] {
     if (!sensor.hasParent()) {
-      throw new Error('Sensor must have a parent platform to compute ECEF coordinates');
+      throw new ValidationError(
+        'Sensor must have a parent platform to compute FOV boundary',
+        'sensor.parent',
+        undefined,
+      );
     }
 
     if (samples <= 0) {
