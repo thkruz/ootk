@@ -675,6 +675,110 @@ const j2000Recovered = ric.toJ2000(reference);
 
 ---
 
+## API Method Reference: Which Frame Does Each Method Return?
+
+Understanding which coordinate frame each method returns is critical for correct calculations. This section provides a quick reference.
+
+### SpaceObject / Satellite Methods
+
+| Method | Returns | Frame | Notes |
+|--------|---------|-------|-------|
+| `eci()` | `PosVel` | **TEME** | Native SGP4 output. Use for visualization, quick calculations |
+| `ecef()` | `EcefVec3` | **pseudo-ECEF** | Simplified GMST rotation only. Use for quick Earth-fixed |
+| `lla()` | `LlaVec3` | **Geodetic** | Via simplified ECEF. Use for ground track display |
+| `toJ2000()` | `J2000` | **J2000** | Full transformation. Use for precise calculations |
+| `toITRF()` | `ITRF` | **ITRF** | Full transformation. Use for precise Earth-fixed |
+| `toGeodetic()` | `Geodetic` | **Geodetic** | Via J2000→ITRF. More precise than `lla()` |
+| `toClassicalElements()` | `ClassicalElements` | **J2000-based** | Keplerian elements |
+
+### Important: `eci()` Returns TEME, Not Generic ECI
+
+The `eci()` method returns coordinates in the **TEME (True Equator Mean Equinox)** frame, which is the native output of SGP4/SDP4 propagation. This is an Earth-Centered Inertial frame, but it differs from J2000:
+
+```typescript
+// eci() returns TEME frame
+const teme = satellite.eci(date);  // TemeVec3 position/velocity
+
+// toJ2000() returns J2000 frame
+const j2000 = satellite.toJ2000(date);  // J2000 state vector
+
+// The difference matters for precise calculations
+// TEME and J2000 can differ by hundreds of meters
+```
+
+### Simplified vs Precise Earth-Fixed Transformations
+
+OOTK provides two levels of Earth-fixed coordinate transformations:
+
+#### Simplified (GMST-only)
+
+```typescript
+// Quick transformation using GMST rotation only
+const ecef = satellite.ecef(date);    // pseudo-ECEF
+const lla = satellite.lla(date);       // via pseudo-ECEF
+```
+
+- Uses simple rotation by Greenwich Mean Sidereal Time
+- Does NOT account for: precession, nutation, polar motion
+- Accuracy: ~1 km for typical applications
+- Speed: Faster computation
+
+#### Precise (Full IAU transformation)
+
+```typescript
+// Full transformation via J2000 → ITRF
+const itrf = satellite.toITRF(date);           // precise ITRF
+const geodetic = satellite.toGeodetic(date);   // via precise ITRF
+```
+
+- Full transformation chain: TEME → J2000 → ITRF
+- Accounts for: precession, nutation, Earth rotation (GMST + equation of equinoxes)
+- Accuracy: Sub-meter for most applications
+- Speed: Slower (more matrix operations)
+
+### Low-Level Transform Functions
+
+The `transforms.ts` module provides low-level functions that work with **TEME** coordinates:
+
+| Function | Input Frame | Output Frame | Notes |
+|----------|-------------|--------------|-------|
+| `eci2ecef()` | TEME | pseudo-ECEF | GMST rotation only |
+| `ecef2eci()` | pseudo-ECEF | TEME | GMST rotation only |
+| `eci2lla()` | TEME | Geodetic | Via GMST rotation |
+| `lla2eci()` | Geodetic | TEME | Via GMST rotation |
+| `ecef2rae()` | pseudo-ECEF | RAE | Topocentric |
+| `rae2ecef()` | RAE | pseudo-ECEF | Topocentric |
+
+For precise transformations, use the class methods (`J2000.toITRF()`, `ITRF.toJ2000()`, etc.) instead of these low-level functions.
+
+### Conversion Chain Summary
+
+```text
+┌────────────────────────────────────────────────────────────────┐
+│ SGP4 Propagation Output                                        │
+│                                                                 │
+│  satellite.eci() ──► TEME (position/velocity)                  │
+│        │                                                        │
+│        │ .toJ2000() (precession + nutation)                    │
+│        ▼                                                        │
+│      J2000 ◄──────────────────────────────────────────────────►│
+│        │                                                        │
+│        │ .toITRF() (precession + nutation + Earth rotation)    │
+│        ▼                                                        │
+│      ITRF                                                       │
+│        │                                                        │
+│        │ .toGeodetic() (ellipsoidal conversion)                │
+│        ▼                                                        │
+│    Geodetic (lat/lon/alt)                                      │
+└────────────────────────────────────────────────────────────────┘
+
+SIMPLIFIED PATH (less accurate but faster):
+  satellite.eci() ──► TEME ──► ecef() ──► pseudo-ECEF ──► lla() ──► Geodetic
+                           (GMST only)              (GMST only)
+```
+
+---
+
 ## Further Reading
 
 - [User Guide](./user-guide.md) - Complete API documentation
