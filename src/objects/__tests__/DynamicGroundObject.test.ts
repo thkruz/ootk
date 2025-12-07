@@ -746,4 +746,114 @@ describe('DynamicGroundObject', () => {
       expect(retrievedWaypoints[1].metadata).toEqual({ stop: 'Iceland', gifts: 1000 });
     });
   });
+
+  describe('history API consistency', () => {
+    it('should provide isHistoryEnabled getter', () => {
+      const obj = new DynamicGroundObject({
+        id: 'test-1',
+        name: 'Test Object',
+        waypoints: testWaypoints,
+      });
+
+      expect(obj.isHistoryEnabled).toBe(false);
+
+      obj.enableHistory({ maxLength: 50 });
+      expect(obj.isHistoryEnabled).toBe(true);
+
+      obj.disableHistory();
+      expect(obj.isHistoryEnabled).toBe(false);
+    });
+
+    it('should provide history getter as alias for positionHistory', () => {
+      const obj = new DynamicGroundObject({
+        id: 'test-1',
+        name: 'Test Object',
+        waypoints: testWaypoints,
+        historyConfig: { maxLength: 100 },
+      });
+
+      expect(obj.history).toBe(obj.positionHistory);
+      expect(obj.history).not.toBeNull();
+    });
+
+    it('should return null for both getters when history is disabled', () => {
+      const obj = new DynamicGroundObject({
+        id: 'test-1',
+        name: 'Test Object',
+        waypoints: testWaypoints,
+      });
+
+      expect(obj.history).toBeNull();
+      expect(obj.positionHistory).toBeNull();
+      expect(obj.isHistoryEnabled).toBe(false);
+    });
+  });
+
+  describe('clone with history options', () => {
+    it('should preserve history config but start empty by default', () => {
+      const obj = new DynamicGroundObject({
+        id: 'test-1',
+        name: 'Test Object',
+        waypoints: testWaypoints,
+        historyConfig: { maxLength: 100 },
+      });
+
+      obj.getLLA(new Date('2025-12-24T01:00:00Z'));
+      expect(obj.positionHistory!.length).toBe(1);
+
+      const cloned = obj.clone();
+
+      expect(cloned.isHistoryEnabled).toBe(true);
+      expect(cloned.positionHistory!.config.maxLength).toBe(100);
+      expect(cloned.positionHistory!.length).toBe(0);
+    });
+
+    it('should clone history entries when cloneHistory is true', () => {
+      const obj = new DynamicGroundObject({
+        id: 'test-1',
+        name: 'Test Object',
+        waypoints: testWaypoints,
+        historyConfig: { maxLength: 100 },
+      });
+
+      obj.getLLA(new Date('2025-12-24T01:00:00Z'));
+      obj.getLLA(new Date('2025-12-24T01:30:00Z'));
+
+      const cloned = obj.clone({ cloneHistory: true });
+
+      expect(cloned.positionHistory!.length).toBe(2);
+    });
+
+    it('should have independent history after cloning with cloneHistory', () => {
+      const obj = new DynamicGroundObject({
+        id: 'test-1',
+        name: 'Test Object',
+        waypoints: testWaypoints,
+        historyConfig: { maxLength: 100 },
+      });
+
+      obj.getLLA(new Date('2025-12-24T01:00:00Z'));
+
+      const cloned = obj.clone({ cloneHistory: true });
+
+      // Add to original
+      obj.getLLA(new Date('2025-12-24T01:30:00Z'));
+
+      // Cloned should still have 1 entry
+      expect(obj.positionHistory!.length).toBe(2);
+      expect(cloned.positionHistory!.length).toBe(1);
+    });
+
+    it('should not have history enabled if original had no history', () => {
+      const obj = new DynamicGroundObject({
+        id: 'test-1',
+        name: 'Test Object',
+        waypoints: testWaypoints,
+      });
+
+      const cloned = obj.clone();
+
+      expect(cloned.isHistoryEnabled).toBe(false);
+    });
+  });
 });
