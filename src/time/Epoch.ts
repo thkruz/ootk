@@ -21,6 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ValidationError } from '../errors';
 import { Seconds } from '../main';
 import { secondsPerDay } from '../utils/constants';
 
@@ -68,7 +69,7 @@ export class Epoch {
    */
   constructor(public posix: Seconds = Date.now() / 1000 as Seconds) {
     if (posix < 0) {
-      throw new Error('Epoch cannot be negative');
+      throw new ValidationError('Epoch posix time must be non-negative', 'posix', posix);
     }
   }
 

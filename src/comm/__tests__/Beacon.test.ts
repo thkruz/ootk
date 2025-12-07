@@ -11,6 +11,7 @@ import {
   Decibels,
   Hertz,
   ModulationType,
+  ValidationError,
   Watts,
 } from '../../main';
 
@@ -57,20 +58,20 @@ describe('Beacon', () => {
     });
 
     it('should throw on non-positive transmit interval', () => {
-      expect(() => createTestBeacon({ transmitInterval: 0 })).toThrow(RangeError);
-      expect(() => createTestBeacon({ transmitInterval: -60 })).toThrow(RangeError);
+      expect(() => createTestBeacon({ transmitInterval: 0 })).toThrow(ValidationError);
+      expect(() => createTestBeacon({ transmitInterval: -60 })).toThrow(ValidationError);
     });
 
     it('should throw on non-positive transmit duration', () => {
-      expect(() => createTestBeacon({ transmitDuration: 0 })).toThrow(RangeError);
-      expect(() => createTestBeacon({ transmitDuration: -5 })).toThrow(RangeError);
+      expect(() => createTestBeacon({ transmitDuration: 0 })).toThrow(ValidationError);
+      expect(() => createTestBeacon({ transmitDuration: -5 })).toThrow(ValidationError);
     });
 
     it('should throw when duration exceeds interval', () => {
       expect(() => createTestBeacon({
         transmitInterval: 10,
         transmitDuration: 20,
-      })).toThrow(RangeError);
+      })).toThrow(ValidationError);
     });
   });
 

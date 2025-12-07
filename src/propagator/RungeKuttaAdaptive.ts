@@ -15,6 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ValidationError } from '../errors';
 import {
   EpochUTC, ForceModel, J2000, Kilometers, KilometersPerSecond, RkCheckpoint, RkResult, Seconds,
   Thrust, Vector, Vector3D, VerletBlendInterpolator
@@ -102,10 +103,10 @@ export abstract class RungeKuttaAdaptive extends Propagator {
   private integrate_(state: J2000, step: Seconds): RkResult {
     // Check for NaN in input
     if (!Number.isFinite(step)) {
-      throw new RangeError(`Invalid step size: ${step}`);
+      throw new ValidationError('Step size must be a finite number', 'step', step);
     }
     if (!Number.isFinite(state.epoch.posix)) {
-      throw new RangeError(`Invalid epoch: ${state.epoch.posix}`);
+      throw new ValidationError('Epoch must be a finite number', 'epoch', state.epoch.posix);
     }
 
     const k: Vector[] = new Array(this.a.length).fill(Vector.origin3);
@@ -136,7 +137,7 @@ export abstract class RungeKuttaAdaptive extends Propagator {
 
     // Guard against division by zero or very small errors
     if (!Number.isFinite(teVal) || teVal === 0) {
-      throw new RangeError(`Invalid error value in integration: ${teVal}`);
+      throw new ValidationError('Integration error value must be finite and non-zero', 'error', teVal);
     }
 
     const hOld = Math.abs(step);
@@ -147,13 +148,13 @@ export abstract class RungeKuttaAdaptive extends Propagator {
 
     // Verify step size is valid
     if (!Number.isFinite(hNew)) {
-      throw new RangeError(`Computed step size is invalid: ${hNew}`);
+      throw new ValidationError('Computed step size must be finite', 'stepSize', hNew);
     }
 
     const newEpoch = state.epoch.roll(step);
 
     if (!Number.isFinite(newEpoch.posix)) {
-      throw new RangeError(`Computed epoch is invalid: ${newEpoch.posix}`);
+      throw new ValidationError('Computed epoch must be finite', 'epoch', newEpoch.posix);
     }
 
     return new RkResult(
@@ -188,17 +189,17 @@ export abstract class RungeKuttaAdaptive extends Propagator {
       consecutiveFailures = 0;
       // Validate result.state before assigning
       if (!Number.isFinite(result.state.epoch.posix)) {
-        throw new RangeError(`Invalid propagated epoch: ${result.state.epoch.posix}`);
+        throw new ValidationError('Propagated epoch must be finite', 'epoch', result.state.epoch.posix);
       }
       if (!Number.isFinite(result.state.position.x) ||
           !Number.isFinite(result.state.position.y) ||
           !Number.isFinite(result.state.position.z)) {
-        throw new RangeError(`Invalid propagated position: ${result.state.position}`);
+        throw new ValidationError('Propagated position must be finite', 'position', result.state.position);
       }
       if (!Number.isFinite(result.state.velocity.x) ||
           !Number.isFinite(result.state.velocity.y) ||
           !Number.isFinite(result.state.velocity.z)) {
-        throw new RangeError(`Invalid propagated velocity: ${result.state.velocity}`);
+        throw new ValidationError('Propagated velocity must be finite', 'velocity', result.state.velocity);
       }
       this._cacheState = result.state;
       delta = epoch.difference(this._cacheState.epoch);

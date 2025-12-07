@@ -10,6 +10,7 @@ import {
   Decibels,
   Hertz,
   Receiver,
+  ValidationError,
 } from '../../main';
 
 describe('Receiver', () => {
@@ -49,17 +50,17 @@ describe('Receiver', () => {
     });
 
     it('should throw on non-positive frequency', () => {
-      expect(() => createTestReceiver({ frequency: 0 as Hertz })).toThrow(RangeError);
-      expect(() => createTestReceiver({ frequency: -1e9 as Hertz })).toThrow(RangeError);
+      expect(() => createTestReceiver({ frequency: 0 as Hertz })).toThrow(ValidationError);
+      expect(() => createTestReceiver({ frequency: -1e9 as Hertz })).toThrow(ValidationError);
     });
 
     it('should throw on non-positive bandwidth', () => {
-      expect(() => createTestReceiver({ bandwidth: 0 as Hertz })).toThrow(RangeError);
-      expect(() => createTestReceiver({ bandwidth: -1e6 as Hertz })).toThrow(RangeError);
+      expect(() => createTestReceiver({ bandwidth: 0 as Hertz })).toThrow(ValidationError);
+      expect(() => createTestReceiver({ bandwidth: -1e6 as Hertz })).toThrow(ValidationError);
     });
 
     it('should throw on negative noise figure', () => {
-      expect(() => createTestReceiver({ noiseFigure: -1 as Decibels })).toThrow(RangeError);
+      expect(() => createTestReceiver({ noiseFigure: -1 as Decibels })).toThrow(ValidationError);
     });
 
     it('should allow zero noise figure', () => {

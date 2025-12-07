@@ -21,6 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ValidationError } from '../errors';
 import { DEG2RAD, Degrees, PI, RAD2DEG, Radians } from '../main';
 
 /**
@@ -49,7 +50,7 @@ export function deg2rad(degrees: Degrees): Radians {
  */
 export function getDegLat(radians: Radians): Degrees {
   if (radians < -PI / 2 || radians > PI / 2) {
-    throw new RangeError('Latitude radians must be in range [-PI/2; PI/2].');
+    throw new ValidationError('Latitude radians must be in range [-PI/2; PI/2]', 'radians', radians);
   }
 
   return (radians * RAD2DEG) as Degrees;
@@ -63,7 +64,7 @@ export function getDegLat(radians: Radians): Degrees {
  */
 export function getDegLon(radians: Radians): Degrees {
   if (radians < -PI || radians > PI) {
-    throw new RangeError('Longitude radians must be in range [-PI; PI].');
+    throw new ValidationError('Longitude radians must be in range [-PI; PI]', 'radians', radians);
   }
 
   return (radians * RAD2DEG) as Degrees;
@@ -77,7 +78,7 @@ export function getDegLon(radians: Radians): Degrees {
  */
 export function getRadLat(degrees: Degrees): Radians {
   if (degrees < -90 || degrees > 90) {
-    throw new RangeError('Latitude degrees must be in range [-90; 90].');
+    throw new ValidationError('Latitude degrees must be in range [-90; 90]', 'degrees', degrees);
   }
 
   return (degrees * DEG2RAD) as Radians;
@@ -91,7 +92,7 @@ export function getRadLat(degrees: Degrees): Radians {
  */
 export function getRadLon(degrees: Degrees): Radians {
   if (degrees < -180 || degrees > 180) {
-    throw new RangeError('Longitude degrees must be in range [-180; 180].');
+    throw new ValidationError('Longitude degrees must be in range [-180; 180]', 'degrees', degrees);
   }
 
   return (degrees * DEG2RAD) as Radians;

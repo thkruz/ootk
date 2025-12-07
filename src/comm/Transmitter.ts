@@ -16,6 +16,7 @@
  */
 
 import { Earth } from '../body/Earth';
+import { ValidationError } from '../errors';
 import { GroundObject } from '../objects/GroundObject';
 import { SpaceObject } from '../objects/SpaceObject';
 import { ecef2rae } from '../transforms/transforms';
@@ -99,13 +100,13 @@ export class Transmitter extends CommunicationDevice {
     super(params);
 
     if (params.power <= 0) {
-      throw new RangeError('Transmitter power must be positive');
+      throw new ValidationError('Transmitter power must be positive', 'power', params.power);
     }
     if (params.frequency <= 0) {
-      throw new RangeError('Transmitter frequency must be positive');
+      throw new ValidationError('Transmitter frequency must be positive', 'frequency', params.frequency);
     }
     if (params.bandwidth <= 0) {
-      throw new RangeError('Transmitter bandwidth must be positive');
+      throw new ValidationError('Transmitter bandwidth must be positive', 'bandwidth', params.bandwidth);
     }
 
     this.frequency = params.frequency;

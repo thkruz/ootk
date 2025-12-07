@@ -4,7 +4,7 @@
  * @copyright (c) 2025 Kruczek Labs LLC
  */
 
-import { Antenna, Decibels } from '../../main';
+import { Antenna, Decibels, ValidationError } from '../../main';
 
 describe('Antenna', () => {
   describe('constructor', () => {
@@ -34,12 +34,12 @@ describe('Antenna', () => {
       expect(() => new Antenna({
         gain: 30 as Decibels,
         efficiency: -0.1,
-      })).toThrow(RangeError);
+      })).toThrow(ValidationError);
 
       expect(() => new Antenna({
         gain: 30 as Decibels,
         efficiency: 1.5,
-      })).toThrow(RangeError);
+      })).toThrow(ValidationError);
     });
   });
 

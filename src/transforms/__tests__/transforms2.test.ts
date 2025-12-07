@@ -19,6 +19,7 @@ import {
   rae2eci,
   rae2enu,
   rae2sez,
+  ValidationError,
   Vec3,
 } from '../../main';
 import { GroundStation } from '../../objects/GroundStation';
@@ -109,19 +110,19 @@ describe('Latitude & longitude conversions', () => {
 
   invalidLatitudes.forEach((item) => {
     it(`convert invalid latitude value (${item.radians} radians) to degrees`, () => {
-      expect(() => getDegLat(item.radians)).toThrow(RangeError);
+      expect(() => getDegLat(item.radians)).toThrow(ValidationError);
     });
     it(`convert invalid latitude value (${item.degrees} degrees) to radians`, () => {
-      expect(() => getRadLat(item.degrees)).toThrow(RangeError);
+      expect(() => getRadLat(item.degrees)).toThrow(ValidationError);
     });
   });
 
   invalidLongitudes.forEach((item) => {
     it(`convert invalid longitude value (${item.radians} radians) to degrees`, () => {
-      expect(() => getDegLon(item.radians)).toThrow(RangeError);
+      expect(() => getDegLon(item.radians)).toThrow(ValidationError);
     });
     it(`convert invalid longitude value (${item.degrees} degrees) to radians`, () => {
-      expect(() => getRadLon(item.degrees)).toThrow(RangeError);
+      expect(() => getRadLon(item.degrees)).toThrow(ValidationError);
     });
   });
 });

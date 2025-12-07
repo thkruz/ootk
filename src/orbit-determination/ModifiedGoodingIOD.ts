@@ -15,6 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { OrbitDeterminationError } from '../errors';
 import { ForceModel } from '../force/ForceModel';
 import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, RadecTopocentric, Vector3D } from '../main';
 import { ObservationOptical } from '../observation/ObservationOptical';
@@ -99,7 +100,7 @@ export class ModifiedGoodingIOD {
   ): J2000 {
     this.observations_ = observations;
     if (this.observations_.length < 3) {
-      throw new Error('At least 3 observations required for Gooding IOD.');
+      throw new OrbitDeterminationError('At least 3 observations required for Gooding IOD', 'ModifiedGooding');
     }
     const init = this.createInitial_(r0 ?? null, rN ?? null, nRev, direction);
     const guess = Float64Array.from([...init.position.toArray(), ...init.velocity.toArray()]);

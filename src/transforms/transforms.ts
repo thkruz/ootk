@@ -1,3 +1,4 @@
+import { ValidationError } from '../errors';
 import {
   DEG2RAD,
   Degrees,
@@ -437,7 +438,11 @@ export function eci2rae(
  */
 export function calcInertAz(lat: Degrees, inc: Degrees): Degrees {
   if (inc < lat) {
-    throw new RangeError(`Inclination (${inc}) must be greater than or equal to latitude (${lat}).`);
+    throw new ValidationError(
+      `Inclination must be greater than or equal to latitude`,
+      'inclination',
+      { inclination: inc, latitude: lat },
+    );
   }
 
   const phi = lat * DEG2RAD;
@@ -456,7 +461,7 @@ export function calcInertAz(lat: Degrees, inc: Degrees): Degrees {
  */
 export function calcIncFromAz(lat: number, az: number): number {
   if (az < 0 || az > 360) {
-    throw new RangeError(`Azimuth (${az}) must be between 0 and 360 degrees.`);
+    throw new ValidationError('Azimuth must be between 0 and 360 degrees', 'azimuth', az);
   }
 
   const phi = lat * DEG2RAD;
@@ -480,11 +485,11 @@ export function calcIncFromAz(lat: number, az: number): number {
  */
 export function azel2uv(az: Radians, el: Radians, coneHalfAngle: Radians): { u: number; v: number } {
   if (az > coneHalfAngle && az < coneHalfAngle) {
-    throw new RangeError(`Azimuth is out of bounds: ${az}`);
+    throw new ValidationError('Azimuth is out of bounds', 'azimuth', az);
   }
 
   if (el > coneHalfAngle && el < coneHalfAngle) {
-    throw new RangeError(`Elevation is out of bounds: ${el}`);
+    throw new ValidationError('Elevation is out of bounds', 'elevation', el);
   }
 
   const alpha = (az / (coneHalfAngle * RAD2DEG)) * 90;
@@ -548,11 +553,11 @@ export function rae2ruv(rae: RaeVec3, sensor: PhasedArrayRadar, face: number, ma
  */
 export function uv2azel(u: number, v: number, coneHalfAngle: Radians): { az: Radians; el: Radians } {
   if (u > 1 || u < -1) {
-    throw new RangeError(`u is out of bounds: ${u}`);
+    throw new ValidationError('u must be between -1 and 1', 'u', u);
   }
 
   if (v > 1 || v < -1) {
-    throw new RangeError(`v is out of bounds: ${v}`);
+    throw new ValidationError('v must be between -1 and 1', 'v', v);
   }
 
   const alpha = Math.asin(u) as Radians;

@@ -15,6 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ValidationError } from '../errors';
 import { Decibels, SerializedAntenna } from './CommTypes';
 
 /**
@@ -65,7 +66,7 @@ export class Antenna {
 
   constructor(params: AntennaParams) {
     if (params.efficiency !== undefined && (params.efficiency < 0 || params.efficiency > 1)) {
-      throw new RangeError('Antenna efficiency must be between 0 and 1');
+      throw new ValidationError('Antenna efficiency must be between 0 and 1', 'efficiency', params.efficiency);
     }
 
     this.gain = params.gain;

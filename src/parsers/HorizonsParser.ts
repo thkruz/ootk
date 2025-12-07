@@ -15,6 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ParseError } from '../errors';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { Kilometers, KilometersPerSecond } from '../types/types';
@@ -126,7 +127,20 @@ export class HorizonsParser {
    * @returns Parsed ephemeris data
    */
   static parseVectors(data: string): HorizonsVectorResult {
+    if (!data || data.trim().length === 0) {
+      throw new ParseError('Horizons data is empty', 'HORIZONS');
+    }
+
     const lines = data.split('\n');
+
+    // Validate required markers exist
+    const hasSOE = lines.some((l) => l.trim() === '$$SOE');
+    const hasEOE = lines.some((l) => l.trim() === '$$EOE');
+
+    if (!hasSOE || !hasEOE) {
+      throw new ParseError('Missing $$SOE or $$EOE markers in Horizons data', 'HORIZONS');
+    }
+
     const metadata: Record<string, string> = {};
     const ephemeris: HorizonsEphemerisData[] = [];
     let inData = false;
@@ -175,6 +189,11 @@ export class HorizonsParser {
           i = parsed.nextIndex - 1; // -1 because loop will increment
         }
       }
+    }
+
+    // Validate we found some data
+    if (ephemeris.length === 0) {
+      throw new ParseError('No valid ephemeris data found between $$SOE and $$EOE markers', 'HORIZONS');
     }
 
     // Determine if heliocentric

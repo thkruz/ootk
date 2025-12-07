@@ -21,6 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ValidationError } from '../errors';
 import { StringifiedNumber, Tle, TleLine1, TleLine2, TleParams } from '../main';
 
 /**
@@ -79,7 +80,7 @@ export abstract class FormatTle {
     const argPe0 = argPeNum.padStart(8, '0');
 
     if (argPe0.length !== 8) {
-      throw new Error('argPe length is not 8');
+      throw new ValidationError('Argument of perigee must be 8 characters', 'argPe', argPe0);
     }
 
     return argPe0 as StringifiedNumber;
@@ -104,7 +105,7 @@ export abstract class FormatTle {
       ecen0 = ecen0.substring(0, 7);
     }
     if (ecen0.length !== 7) {
-      throw new Error('ecen length is not 7');
+      throw new ValidationError('Eccentricity must be 7 characters', 'eccentricity', ecen0);
     }
 
     return ecen0;
@@ -125,7 +126,7 @@ export abstract class FormatTle {
     const inc0 = incNum.padStart(8, '0');
 
     if (inc0.length !== 8) {
-      throw new Error('inc length is not 8');
+      throw new ValidationError('Inclination must be 8 characters', 'inclination', inc0);
     }
 
     return inc0 as StringifiedNumber;
@@ -146,7 +147,7 @@ export abstract class FormatTle {
     const meana0 = meanaNum.padStart(8, '0');
 
     if (meana0.length !== 8) {
-      throw new Error('meana length is not 8');
+      throw new ValidationError('Mean anomaly must be 8 characters', 'meanAnomaly', meana0);
     }
 
     return meana0 as StringifiedNumber;
@@ -174,7 +175,7 @@ export abstract class FormatTle {
     const meanmo0 = meanmoNum.padStart(11, '0');
 
     if (meanmo0.length !== 11) {
-      throw new Error('meanmo length is not 11');
+      throw new ValidationError('Mean motion must be 11 characters', 'meanMotion', meanmo0);
     }
 
     return meanmo0 as StringifiedNumber;
@@ -195,7 +196,7 @@ export abstract class FormatTle {
     const rasc0 = rascNum.padStart(8, '0');
 
     if (rasc0.length !== 8) {
-      throw new Error('rasc length is not 8');
+      throw new ValidationError('Right ascension must be 8 characters', 'rightAscension', rasc0);
     }
 
     return rasc0 as StringifiedNumber;

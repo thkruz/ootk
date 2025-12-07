@@ -1,4 +1,4 @@
-import { Degrees, PI, Radians } from '../../main';
+import { Degrees, PI, Radians, ValidationError } from '../../main';
 import { deg2rad, getDegLat, getDegLon, getRadLat, getRadLon, rad2deg } from '../conversions';
 
 describe('conversions', () => {
@@ -30,9 +30,9 @@ describe('conversions', () => {
     });
 
     it('should throw RangeError for values outside [-PI/2; PI/2]', () => {
-      expect(() => getDegLat(PI as Radians)).toThrow(RangeError);
-      expect(() => getDegLat((-PI) as Radians)).toThrow(RangeError);
-      expect(() => getDegLat((PI / 2 + 0.1) as Radians)).toThrow('Latitude radians must be in range [-PI/2; PI/2].');
+      expect(() => getDegLat(PI as Radians)).toThrow(ValidationError);
+      expect(() => getDegLat((-PI) as Radians)).toThrow(ValidationError);
+      expect(() => getDegLat((PI / 2 + 0.1) as Radians)).toThrow('Latitude radians must be in range [-PI/2; PI/2]');
     });
   });
 
@@ -44,9 +44,9 @@ describe('conversions', () => {
     });
 
     it('should throw RangeError for values outside [-PI; PI]', () => {
-      expect(() => getDegLon((PI + 0.1) as Radians)).toThrow(RangeError);
-      expect(() => getDegLon((-PI - 0.1) as Radians)).toThrow(RangeError);
-      expect(() => getDegLon((2 * PI) as Radians)).toThrow('Longitude radians must be in range [-PI; PI].');
+      expect(() => getDegLon((PI + 0.1) as Radians)).toThrow(ValidationError);
+      expect(() => getDegLon((-PI - 0.1) as Radians)).toThrow(ValidationError);
+      expect(() => getDegLon((2 * PI) as Radians)).toThrow('Longitude radians must be in range [-PI; PI]');
     });
   });
 
@@ -58,9 +58,9 @@ describe('conversions', () => {
     });
 
     it('should throw RangeError for values outside [-90; 90]', () => {
-      expect(() => getRadLat(91 as Degrees)).toThrow(RangeError);
-      expect(() => getRadLat(-91 as Degrees)).toThrow(RangeError);
-      expect(() => getRadLat(180 as Degrees)).toThrow('Latitude degrees must be in range [-90; 90].');
+      expect(() => getRadLat(91 as Degrees)).toThrow(ValidationError);
+      expect(() => getRadLat(-91 as Degrees)).toThrow(ValidationError);
+      expect(() => getRadLat(180 as Degrees)).toThrow('Latitude degrees must be in range [-90; 90]');
     });
   });
 
@@ -72,9 +72,9 @@ describe('conversions', () => {
     });
 
     it('should throw RangeError for values outside [-180; 180]', () => {
-      expect(() => getRadLon(181 as Degrees)).toThrow(RangeError);
-      expect(() => getRadLon(-181 as Degrees)).toThrow(RangeError);
-      expect(() => getRadLon(360 as Degrees)).toThrow('Longitude degrees must be in range [-180; 180].');
+      expect(() => getRadLon(181 as Degrees)).toThrow(ValidationError);
+      expect(() => getRadLon(-181 as Degrees)).toThrow(ValidationError);
+      expect(() => getRadLon(360 as Degrees)).toThrow('Longitude degrees must be in range [-180; 180]');
     });
   });
 });

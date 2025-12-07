@@ -15,6 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ValidationError } from '../errors';
 import { Antenna } from './Antenna';
 import { CommDeviceType, Decibels, Hertz } from './CommTypes';
 import { CommunicationDevice, CommunicationDeviceParams } from './CommunicationDevice';
@@ -84,13 +85,13 @@ export class Receiver extends CommunicationDevice {
     super(params);
 
     if (params.frequency <= 0) {
-      throw new RangeError('Receiver frequency must be positive');
+      throw new ValidationError('Receiver frequency must be positive', 'frequency', params.frequency);
     }
     if (params.bandwidth <= 0) {
-      throw new RangeError('Receiver bandwidth must be positive');
+      throw new ValidationError('Receiver bandwidth must be positive', 'bandwidth', params.bandwidth);
     }
     if (params.noiseFigure < 0) {
-      throw new RangeError('Receiver noise figure must be non-negative');
+      throw new ValidationError('Receiver noise figure must be non-negative', 'noiseFigure', params.noiseFigure);
     }
 
     this.frequency = params.frequency;

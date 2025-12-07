@@ -21,6 +21,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+export * from './errors/index';
+
 export * from './enums/index';
 
 export * from './types/types';

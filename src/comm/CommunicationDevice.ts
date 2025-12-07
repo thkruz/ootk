@@ -16,6 +16,7 @@
  */
 
 import type { J2000 } from '../coordinate/J2000';
+import { ValidationError } from '../errors';
 import type { CommunicationDeviceInterface } from '../objects/ObjectTypes';
 import { CommDeviceType, CommPlatform, SerializedCommDevice } from './CommTypes';
 
@@ -85,7 +86,11 @@ export abstract class CommunicationDevice implements CommunicationDeviceInterfac
    */
   get parent(): CommPlatform {
     if (!this.parent_) {
-      throw new Error(`Communication device "${this.name}" has no parent platform assigned`);
+      throw new ValidationError(
+        `Communication device "${this.name}" has no parent platform assigned`,
+        'parent',
+        undefined,
+      );
     }
 
     return this.parent_;

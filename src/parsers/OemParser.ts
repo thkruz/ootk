@@ -16,6 +16,7 @@
  */
 
 import { J2000 } from '../coordinate/J2000';
+import { ParseError } from '../errors';
 import { InterpolatorType } from '../objects/InterpolatorType';
 import { EpochUTC } from '../time/EpochUTC';
 import { Kilometers, KilometersPerSecond, Vector3D } from '../main';
@@ -51,7 +52,7 @@ export class OemParser {
     const dataBlocks = OemParser.parseDataBlocks_(lines);
 
     if (dataBlocks.length === 0) {
-      throw new Error('OEM file contains no data blocks');
+      throw new ParseError('OEM file contains no data blocks', 'OEM');
     }
 
     return { header, dataBlocks };

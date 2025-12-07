@@ -4,7 +4,7 @@
  * @copyright (c) 2025 Kruczek Labs LLC
  */
 
-import { HorizonsParser } from '../../main';
+import { HorizonsParser, ParseError } from '../../main';
 
 describe('HorizonsParser', () => {
   describe('parseVectors', () => {
@@ -111,17 +111,16 @@ $$EOE
   });
 
   describe('edge cases', () => {
-    it('should return empty array for empty input', () => {
-      const result = HorizonsParser.parseVectors('');
-
-      expect(result.ephemeris).toEqual([]);
+    it('should throw ParseError for empty input', () => {
+      expect(() => HorizonsParser.parseVectors('')).toThrow(ParseError);
+      expect(() => HorizonsParser.parseVectors('')).toThrow('Horizons data is empty');
     });
 
-    it('should handle missing $$SOE/$$EOE markers', () => {
+    it('should throw ParseError for missing $$SOE/$$EOE markers', () => {
       const invalidData = 'No markers here';
-      const result = HorizonsParser.parseVectors(invalidData);
 
-      expect(result.ephemeris).toEqual([]);
+      expect(() => HorizonsParser.parseVectors(invalidData)).toThrow(ParseError);
+      expect(() => HorizonsParser.parseVectors(invalidData)).toThrow('Missing $$SOE or $$EOE markers');
     });
   });
 });

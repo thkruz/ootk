@@ -15,6 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ValidationError } from '../errors';
 import { Antenna } from './Antenna';
 import {
   calculatePropagationDelay,
@@ -99,13 +100,17 @@ export class Transponder extends CommunicationDevice {
     super(params);
 
     if (params.power <= 0) {
-      throw new RangeError('Transponder power must be positive');
+      throw new ValidationError('Transponder power must be positive', 'power', params.power);
     }
     if (params.uplinkFrequency <= 0 || params.downlinkFrequency <= 0) {
-      throw new RangeError('Transponder frequencies must be positive');
+      throw new ValidationError(
+        'Transponder frequencies must be positive',
+        'frequency',
+        { uplink: params.uplinkFrequency, downlink: params.downlinkFrequency },
+      );
     }
     if (params.bandwidth <= 0) {
-      throw new RangeError('Transponder bandwidth must be positive');
+      throw new ValidationError('Transponder bandwidth must be positive', 'bandwidth', params.bandwidth);
     }
 
     // Create internal receiver
