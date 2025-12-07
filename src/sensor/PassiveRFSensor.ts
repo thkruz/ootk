@@ -174,4 +174,32 @@ export class PassiveRFSensor extends Sensor {
       antennaGain: this.antennaGain,
     };
   }
+
+  /**
+   * Creates a deep copy of this passive RF sensor.
+   * The cloned sensor will not have a parent assigned.
+   * @returns A new PassiveRFSensor instance with the same properties
+   */
+  override clone(): PassiveRFSensor {
+    return new PassiveRFSensor({
+      id: this.id,
+      name: this.name,
+      sensorType: this.sensorType,
+      fieldOfView: this.fieldOfView.serialize(),
+      frequencyBands: [...this.frequencyBands],
+      minFrequency: this.minFrequency,
+      maxFrequency: this.maxFrequency,
+      sensitivity: this.sensitivity,
+      antennaGain: this.antennaGain,
+      shortName: this.shortName,
+      system: this.system,
+      country: this.country,
+      operator: this.operator,
+      dwellTime: this.dwellTime,
+      freqBand: this.freqBand,
+      isVolumetric: this.isVolumetric,
+      url: this.url,
+      metadata: this.metadata ? { ...this.metadata } : undefined,
+    });
+  }
 }

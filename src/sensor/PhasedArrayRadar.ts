@@ -298,6 +298,34 @@ export class PhasedArrayRadar extends RadarSensor {
     };
   }
 
+  /**
+   * Creates a deep copy of this phased array radar.
+   * The cloned sensor will not have a parent assigned.
+   * @returns A new PhasedArrayRadar instance with the same properties
+   */
+  override clone(): PhasedArrayRadar {
+    return new PhasedArrayRadar({
+      id: this.id,
+      name: this.name,
+      sensorType: this.sensorType,
+      fieldOfView: this.fieldOfView.serialize(),
+      beamwidth: this.beamwidth,
+      frequency: this.frequency,
+      peakPower: this.peakPower,
+      boresightAz: [...this.boresightAz],
+      boresightEl: [...this.boresightEl],
+      shortName: this.shortName,
+      system: this.system,
+      country: this.country,
+      operator: this.operator,
+      dwellTime: this.dwellTime,
+      freqBand: this.freqBand,
+      isVolumetric: this.isVolumetric,
+      url: this.url,
+      metadata: this.metadata ? { ...this.metadata } : undefined,
+    });
+  }
+
   override toString(): string {
     const base = super.toString();
     const faceInfo = this.boresightAz.map((az, i) =>

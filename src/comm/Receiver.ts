@@ -109,6 +109,25 @@ export class Receiver extends CommunicationDevice {
   }
 
   /**
+   * Creates a deep copy of this receiver.
+   * The cloned receiver will not have a parent assigned.
+   * @returns A new Receiver instance with the same properties
+   */
+  clone(): Receiver {
+    return new Receiver({
+      id: this.id,
+      name: this.name,
+      frequency: this.frequency,
+      bandwidth: this.bandwidth,
+      noiseFigure: this.noiseFigure,
+      minimumSnr: this.minimumSnr,
+      antenna: this.antenna.clone(),
+      lineLoss: this.lineLoss,
+      metadata: this.metadata ? { ...this.metadata } : undefined,
+    });
+  }
+
+  /**
    * Gets the noise floor in dBW.
    * Noise Floor = kTB + Noise Figure
    * = -228.6 dBW/K/Hz + 10*log10(290K) + 10*log10(BW) + NF

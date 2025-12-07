@@ -167,4 +167,32 @@ export class OpticalSensor extends Sensor {
       ccdFov: this.ccdFov,
     };
   }
+
+  /**
+   * Creates a deep copy of this optical sensor.
+   * The cloned sensor will not have a parent assigned.
+   * @returns A new OpticalSensor instance with the same properties
+   */
+  override clone(): OpticalSensor {
+    return new OpticalSensor({
+      id: this.id,
+      name: this.name,
+      sensorType: this.sensorType,
+      fieldOfView: this.fieldOfView.serialize(),
+      aperture: this.aperture,
+      focalLength: this.focalLength,
+      limitingMagnitude: this.limitingMagnitude,
+      wavelength: this.wavelength,
+      ccdFov: this.ccdFov,
+      shortName: this.shortName,
+      system: this.system,
+      country: this.country,
+      operator: this.operator,
+      dwellTime: this.dwellTime,
+      freqBand: this.freqBand,
+      isVolumetric: this.isVolumetric,
+      url: this.url,
+      metadata: this.metadata ? { ...this.metadata } : undefined,
+    });
+  }
 }

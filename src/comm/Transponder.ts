@@ -145,6 +145,28 @@ export class Transponder extends CommunicationDevice {
   }
 
   /**
+   * Creates a deep copy of this transponder.
+   * The cloned transponder will not have a parent assigned.
+   * @returns A new Transponder instance with the same properties
+   */
+  clone(): Transponder {
+    return new Transponder({
+      id: this.id,
+      name: this.name,
+      uplinkFrequency: this.receiver.frequency,
+      downlinkFrequency: this.transmitter.frequency,
+      power: this.transmitter.power,
+      bandwidth: this.receiver.bandwidth,
+      uplinkAntenna: this.receiver.antenna.clone(),
+      downlinkAntenna: this.transmitter.antenna.clone(),
+      noiseFigure: this.receiver.noiseFigure,
+      delay: this.delay,
+      transponderGain: this.transponderGain,
+      metadata: this.metadata ? { ...this.metadata } : undefined,
+    });
+  }
+
+  /**
    * Gets the uplink frequency in Hz.
    */
   get uplinkFrequency(): Hertz {

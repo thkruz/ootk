@@ -124,4 +124,33 @@ export class MechanicalRadar extends RadarSensor {
       antennaDiameter: this.antennaDiameter,
     };
   }
+
+  /**
+   * Creates a deep copy of this mechanical radar.
+   * The cloned sensor will not have a parent assigned.
+   * @returns A new MechanicalRadar instance with the same properties
+   */
+  override clone(): MechanicalRadar {
+    return new MechanicalRadar({
+      id: this.id,
+      name: this.name,
+      sensorType: this.sensorType,
+      fieldOfView: this.fieldOfView.serialize(),
+      beamwidth: this.beamwidth,
+      frequency: this.frequency,
+      peakPower: this.peakPower,
+      scanRate: this.scanRate,
+      hasTracking: this.hasTracking,
+      antennaDiameter: this.antennaDiameter,
+      shortName: this.shortName,
+      system: this.system,
+      country: this.country,
+      operator: this.operator,
+      dwellTime: this.dwellTime,
+      freqBand: this.freqBand,
+      isVolumetric: this.isVolumetric,
+      url: this.url,
+      metadata: this.metadata ? { ...this.metadata } : undefined,
+    });
+  }
 }

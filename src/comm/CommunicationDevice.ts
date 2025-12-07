@@ -78,6 +78,15 @@ export abstract class CommunicationDevice implements CommunicationDeviceInterfac
    */
   abstract get deviceType(): CommDeviceType;
 
+  // ==================== Abstract Methods ====================
+
+  /**
+   * Creates a deep copy of this communication device.
+   * The cloned device will not have a parent assigned.
+   * @returns A new CommunicationDevice instance with the same properties
+   */
+  abstract clone(): CommunicationDevice;
+
   // ==================== Platform Reference ====================
 
   /**

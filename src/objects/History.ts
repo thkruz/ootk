@@ -142,6 +142,29 @@ export class History<T> {
   }
 
   /**
+   * Creates a deep copy of this history.
+   * @returns A new History instance with cloned entries
+   */
+  clone(): History<T> {
+    const cloned = new History<T>(this.config);
+
+    for (const entry of this.entries_) {
+      // Deep copy the entry data (for objects like HistoricalState: {position, velocity})
+      const clonedData = typeof entry.data === 'object' && entry.data !== null
+        ? { ...entry.data } as T
+        : entry.data;
+
+      cloned.entries_.push({
+        time: new Date(entry.time),
+        data: clonedData,
+      });
+    }
+    cloned.lastSampleTime_ = this.lastSampleTime_;
+
+    return cloned;
+  }
+
+  /**
    * Returns the number of entries in the history.
    */
   get length(): number {

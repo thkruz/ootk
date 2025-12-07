@@ -110,6 +110,29 @@ export class Beacon extends Transmitter {
   }
 
   /**
+   * Creates a deep copy of this beacon.
+   * The cloned beacon will not have a parent assigned.
+   * @returns A new Beacon instance with the same properties
+   */
+  override clone(): Beacon {
+    return new Beacon({
+      id: this.id,
+      name: this.name,
+      frequency: this.frequency,
+      power: this.power,
+      bandwidth: this.bandwidth,
+      antenna: this.antenna.clone(),
+      modulation: this.modulation,
+      lineLoss: this.lineLoss,
+      transmitInterval: this.transmitInterval,
+      transmitDuration: this.transmitDuration,
+      epoch: new Date(this.epoch),
+      messageFormat: this.messageFormat,
+      metadata: this.metadata ? { ...this.metadata } : undefined,
+    });
+  }
+
+  /**
    * Gets the duty cycle of the beacon (0-1).
    */
   get dutyCycle(): number {

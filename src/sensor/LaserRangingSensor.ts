@@ -179,4 +179,32 @@ export class LaserRangingSensor extends Sensor {
       timingPrecision: this.timingPrecision,
     };
   }
+
+  /**
+   * Creates a deep copy of this laser ranging sensor.
+   * The cloned sensor will not have a parent assigned.
+   * @returns A new LaserRangingSensor instance with the same properties
+   */
+  override clone(): LaserRangingSensor {
+    return new LaserRangingSensor({
+      id: this.id,
+      name: this.name,
+      sensorType: this.sensorType,
+      fieldOfView: this.fieldOfView.serialize(),
+      wavelength: this.wavelength,
+      pulseEnergy: this.pulseEnergy,
+      pulseRate: this.pulseRate,
+      aperture: this.aperture,
+      timingPrecision: this.timingPrecision,
+      shortName: this.shortName,
+      system: this.system,
+      country: this.country,
+      operator: this.operator,
+      dwellTime: this.dwellTime,
+      freqBand: this.freqBand,
+      isVolumetric: this.isVolumetric,
+      url: this.url,
+      metadata: this.metadata ? { ...this.metadata } : undefined,
+    });
+  }
 }

@@ -155,6 +155,18 @@ export class Antenna {
     return (this.gain + loss) as Decibels;
   }
 
+  /**
+   * Creates a deep copy of this antenna.
+   * @returns A new Antenna instance with the same properties
+   */
+  clone(): Antenna {
+    return new Antenna({
+      gain: this.gain,
+      beamwidth: this.beamwidth,
+      efficiency: this.efficiency,
+    });
+  }
+
   // ==================== Serialization ====================
 
   /**

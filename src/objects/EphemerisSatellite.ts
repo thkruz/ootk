@@ -563,8 +563,9 @@ export class EphemerisSatellite extends SpaceObject {
 
   /**
    * Creates a deep copy of this satellite.
+   * @param _options - Unused, provided for compatibility with base class
    */
-  override clone(): EphemerisSatellite {
+  override clone(_options?: Record<string, unknown>): EphemerisSatellite {
     return new EphemerisSatellite({
       id: this.id,
       name: this.name,
