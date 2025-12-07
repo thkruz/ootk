@@ -59,9 +59,9 @@ export interface GroundObjectParams extends BaseObjectParams {
  */
 export abstract class GroundObject extends BaseObject {
   override name = 'Unknown Ground Object';
-  lat: Degrees;
-  lon: Degrees;
-  alt: Kilometers;
+  readonly lat: Degrees;
+  readonly lon: Degrees;
+  readonly alt: Kilometers;
 
   /** Sensors attached to this ground object */
   sensors: SensorInterface[] = [];

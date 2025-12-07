@@ -77,6 +77,27 @@ export class GroundStation extends GroundObject {
   }
 
   /**
+   * Creates a new GroundStation at a different position.
+   * The original instance remains unchanged.
+   * @param lat - New latitude in degrees
+   * @param lon - New longitude in degrees
+   * @param alt - Optional new altitude in kilometers (defaults to current altitude)
+   * @returns A new GroundStation at the specified position
+   */
+  moveTo(lat: Degrees, lon: Degrees, alt?: Kilometers): GroundStation {
+    return new GroundStation({
+      id: this.id,
+      name: this.name,
+      type: this.type,
+      lat,
+      lon,
+      alt: alt ?? this.alt,
+      active: this.active,
+      metadata: this.metadata ? { ...this.metadata } : undefined,
+    });
+  }
+
+  /**
    * Returns true since GroundStation is always a ground object.
    */
   override isGroundObject(): boolean {
