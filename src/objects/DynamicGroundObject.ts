@@ -36,6 +36,7 @@ import { DEG2RAD, RAD2DEG } from '../utils/constants';
 import { BaseObjectParams } from './BaseObject';
 import { GroundObject } from './GroundObject';
 import { History, HistoryConfig } from './History';
+import { HistoricalState } from './ObjectTypes';
 
 /**
  * Data for a single waypoint in a dynamic ground object's path.
@@ -71,6 +72,14 @@ export interface DynamicGroundObjectParams extends Omit<BaseObjectParams, 'type'
   interpolationMethod?: GroundInterpolationMethod;
   /** Optional history configuration for position tracking */
   historyConfig?: HistoryConfig;
+}
+
+/**
+ * Options for the DynamicGroundObject.clone() method.
+ */
+export interface DynamicGroundObjectCloneOptions {
+  /** If true, clone history entries. If false (default), start with empty history but same config. */
+  cloneHistory?: boolean;
 }
 
 /**
@@ -409,14 +418,14 @@ export class DynamicGroundObject extends GroundObject {
    * Enables position history tracking.
    * @param config - History configuration options
    */
-  enableHistory(config?: HistoryConfig): void {
+  override enableHistory(config?: HistoryConfig): void {
     this.positionHistory_ = new History<LlaVec3<Degrees, Kilometers>>(config);
   }
 
   /**
    * Disables position history tracking and clears existing history.
    */
-  disableHistory(): void {
+  override disableHistory(): void {
     this.positionHistory_ = null;
   }
 
@@ -426,6 +435,37 @@ export class DynamicGroundObject extends GroundObject {
    */
   get positionHistory(): History<LlaVec3<Degrees, Kilometers>> | null {
     return this.positionHistory_;
+  }
+
+  /**
+   * Alias for positionHistory for API consistency with Satellite.
+   * Returns the position history (LLA), or null if not enabled.
+   *
+   * Note: Unlike Satellite.history which stores ECI state (position + velocity),
+   * DynamicGroundObject stores LLA positions since it moves along Earth's surface.
+   *
+   * @remarks
+   * This shadows the base class `history` property because the types are different.
+   * DynamicGroundObject tracks LLA coordinates while Satellite tracks ECI state.
+   */
+  // @ts-expect-error - Intentionally shadows base class with different type
+  get history(): History<LlaVec3<Degrees, Kilometers>> | null {
+    return this.positionHistory_;
+  }
+
+  /**
+   * Returns true if position history tracking is enabled.
+   */
+  override get isHistoryEnabled(): boolean {
+    return this.positionHistory_ !== null;
+  }
+
+  /**
+   * Override to prevent use of base class history recording.
+   * DynamicGroundObject uses recordPosition_ for LLA tracking instead.
+   */
+  protected override recordToHistory(_time: Date, _state: HistoricalState): void {
+    // Intentionally empty - DynamicGroundObject uses recordPosition_ instead
   }
 
   /**
@@ -497,8 +537,13 @@ export class DynamicGroundObject extends GroundObject {
 
   /**
    * Creates a deep copy of this dynamic ground object.
+   *
+   * By default, history configuration is preserved but starts empty.
+   * Pass `{ cloneHistory: true }` to also clone the history entries.
+   *
+   * @param options - Clone options
    */
-  clone(): DynamicGroundObject {
+  clone(options?: DynamicGroundObjectCloneOptions): DynamicGroundObject {
     const cloned = new DynamicGroundObject({
       id: this.id,
       name: this.name,
@@ -512,11 +557,20 @@ export class DynamicGroundObject extends GroundObject {
       interpolationMethod: this.interpolationMethod_,
       active: this.active,
       metadata: this.metadata ? { ...this.metadata } : undefined,
+      // Preserve history config if enabled (starts with empty history)
+      historyConfig: this.isHistoryEnabled ? this.positionHistory_!.config : undefined,
     });
 
     // Copy sensors and comm devices references
     cloned.sensors = [...this.sensors];
     cloned.commDevices = [...this.commDevices];
+
+    // Clone history data if requested
+    if (options?.cloneHistory && this.positionHistory_) {
+      cloned.disableHistory();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (cloned as any).positionHistory_ = this.positionHistory_.clone();
+    }
 
     return cloned;
   }
