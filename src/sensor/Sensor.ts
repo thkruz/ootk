@@ -36,7 +36,7 @@ export type SensorPlatform = GroundObject | SpaceObject;
  */
 export interface SensorParams {
   /** Unique identifier for the sensor */
-  id: string;
+  id: number;
   /** Human-readable name */
   name: string;
   /** Type of sensor */
@@ -67,7 +67,7 @@ export interface SensorParams {
  * Serialized representation of a sensor.
  */
 export interface SerializedSensor {
-  id: string;
+  id: number;
   name: string;
   sensorType: SensorType;
   fieldOfView: ReturnType<FieldOfView['serialize']>;
@@ -111,7 +111,7 @@ export interface SerializedSensor {
  */
 export abstract class Sensor {
   /** Unique identifier */
-  readonly id: string;
+  readonly id: number;
   /** Human-readable name */
   name: string;
   /** Type of sensor */

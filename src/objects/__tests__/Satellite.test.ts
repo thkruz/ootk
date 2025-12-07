@@ -257,7 +257,7 @@ describe('Satellite', () => {
       it('should deep clone sensors', () => {
         const sat = new Satellite({ tle1, tle2 });
         const sensor = new OpticalSensor({
-          id: 'test-sensor',
+          id: 7001,
           name: 'Test Optical Sensor',
           sensorType: SensorType.OPTICAL,
           fieldOfView: {
@@ -286,7 +286,7 @@ describe('Satellite', () => {
       it('should update sensor parent to cloned satellite', () => {
         const sat = new Satellite({ tle1, tle2 });
         const sensor = new OpticalSensor({
-          id: 'test-sensor',
+          id: 7001,
           name: 'Test Optical Sensor',
           sensorType: SensorType.OPTICAL,
           fieldOfView: {
@@ -314,7 +314,7 @@ describe('Satellite', () => {
       it('should not affect original sensors when modifying clone', () => {
         const sat = new Satellite({ tle1, tle2 });
         const sensor = new OpticalSensor({
-          id: 'test-sensor',
+          id: 7001,
           name: 'Test Optical Sensor',
           sensorType: SensorType.OPTICAL,
           fieldOfView: {
@@ -343,7 +343,7 @@ describe('Satellite', () => {
       it('should deep clone communication devices', () => {
         const sat = new Satellite({ tle1, tle2 });
         const transmitter = new Transmitter({
-          id: 'test-tx',
+          id: 7002,
           name: 'Test Transmitter',
           frequency: 12e9 as Hertz,
           power: 50 as Watts,
@@ -368,7 +368,7 @@ describe('Satellite', () => {
       it('should update commDevice parent to cloned satellite', () => {
         const sat = new Satellite({ tle1, tle2 });
         const transmitter = new Transmitter({
-          id: 'test-tx',
+          id: 7002,
           name: 'Test Transmitter',
           frequency: 12e9 as Hertz,
           power: 50 as Watts,

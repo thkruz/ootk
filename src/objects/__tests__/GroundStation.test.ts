@@ -13,7 +13,7 @@ describe('GroundStation', () => {
   describe('constructor', () => {
     it('should create a GroundStation with valid parameters', () => {
       const station = new GroundStation({
-        id: 'test-station',
+        id: 3001,
         name: 'Test Station',
         lat: 40.7128 as Degrees,
         lon: -74.006 as Degrees,
@@ -21,7 +21,7 @@ describe('GroundStation', () => {
       });
 
       expect(station).toBeDefined();
-      expect(station.id).toBe('test-station');
+      expect(station.id).toBe(3001);
       expect(station.name).toBe('Test Station');
       expect(station.lat).toBe(40.7128);
       expect(station.lon).toBe(-74.006);
@@ -33,7 +33,7 @@ describe('GroundStation', () => {
       expect(
         () =>
           new GroundStation({
-            id: 'test',
+            id: 3002,
             lat: 91 as Degrees,
             lon: 0 as Degrees,
             alt: 0 as Kilometers,
@@ -45,7 +45,7 @@ describe('GroundStation', () => {
       expect(
         () =>
           new GroundStation({
-            id: 'test',
+            id: 3002,
             lat: 0 as Degrees,
             lon: 181 as Degrees,
             alt: 0 as Kilometers,
@@ -62,9 +62,9 @@ describe('GroundStation', () => {
         0.01 as Kilometers,
       );
 
-      const station = GroundStation.fromGeodetic(geodetic, 'NYC Station', 'nyc-1');
+      const station = GroundStation.fromGeodetic(geodetic, 'NYC Station', 3005);
 
-      expect(station.id).toBe('nyc-1');
+      expect(station.id).toBe(3005);
       expect(station.name).toBe('NYC Station');
       expect(station.lat).toBeCloseTo(40.7128, 4);
       expect(station.lon).toBeCloseTo(-74.006, 4);
@@ -75,7 +75,7 @@ describe('GroundStation', () => {
   describe('clone', () => {
     it('should create a deep copy of the GroundStation', () => {
       const original = new GroundStation({
-        id: 'original',
+        id: 3003,
         name: 'Original Station',
         lat: 45 as Degrees,
         lon: -90 as Degrees,
@@ -95,7 +95,7 @@ describe('GroundStation', () => {
 
     it('should have independent sensors and commDevices arrays', () => {
       const original = new GroundStation({
-        id: 'original',
+        id: 3003,
         lat: 45 as Degrees,
         lon: -90 as Degrees,
         alt: 0 as Kilometers,
@@ -111,7 +111,7 @@ describe('GroundStation', () => {
   describe('moveTo', () => {
     it('should create a new GroundStation at the specified position', () => {
       const original = new GroundStation({
-        id: 'original',
+        id: 3003,
         name: 'Original Station',
         lat: 40 as Degrees,
         lon: -74 as Degrees,
@@ -130,7 +130,7 @@ describe('GroundStation', () => {
 
     it('should leave the original instance unchanged', () => {
       const original = new GroundStation({
-        id: 'original',
+        id: 3003,
         lat: 40 as Degrees,
         lon: -74 as Degrees,
         alt: 0.1 as Kilometers,
@@ -145,7 +145,7 @@ describe('GroundStation', () => {
 
     it('should allow specifying a new altitude', () => {
       const original = new GroundStation({
-        id: 'original',
+        id: 3003,
         lat: 40 as Degrees,
         lon: -74 as Degrees,
         alt: 0.1 as Kilometers,
@@ -158,7 +158,7 @@ describe('GroundStation', () => {
 
     it('should validate the new position', () => {
       const station = new GroundStation({
-        id: 'test',
+        id: 3004,
         lat: 40 as Degrees,
         lon: -74 as Degrees,
         alt: 0 as Kilometers,
@@ -172,7 +172,7 @@ describe('GroundStation', () => {
   describe('isGroundObject', () => {
     it('should return true', () => {
       const station = new GroundStation({
-        id: 'test',
+        id: 3004,
         lat: 0 as Degrees,
         lon: 0 as Degrees,
         alt: 0 as Kilometers,
@@ -185,7 +185,7 @@ describe('GroundStation', () => {
   describe('toString', () => {
     it('should return a formatted string representation', () => {
       const station = new GroundStation({
-        id: 'test-station',
+        id: 3001,
         name: 'Test Station',
         lat: 40.7128 as Degrees,
         lon: -74.006 as Degrees,
@@ -195,7 +195,7 @@ describe('GroundStation', () => {
       const str = station.toString();
 
       expect(str).toContain('[GroundStation]');
-      expect(str).toContain('test-station');
+      expect(str).toContain('3001');
       expect(str).toContain('Test Station');
       expect(str).toContain('40.7128');
       expect(str).toContain('-74.0060');

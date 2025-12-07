@@ -33,7 +33,7 @@ export interface SerializedObject {
   /** The class name of the object */
   type: string;
   /** Unique identifier */
-  id: string;
+  id: number;
   /** Human-readable name */
   name: string;
   /** Additional type-specific data */
@@ -51,7 +51,7 @@ export type PropagatorType = 'SGP4' | 'RK4' | 'RK89' | 'KEPLER' | 'DORMAND_PRINC
  * without creating circular dependencies.
  */
 export interface SensorInterface {
-  id: string;
+  id: number;
   name: string;
 }
 
@@ -61,6 +61,6 @@ export interface SensorInterface {
  * without creating circular dependencies.
  */
 export interface CommunicationDeviceInterface {
-  id: string;
+  id: number;
   name: string;
 }

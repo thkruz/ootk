@@ -20,7 +20,7 @@ describe('AccessCalculator', () => {
 
   // Ground station at mid-latitude (approximate Washington DC location)
   const midLatStation = new GroundStation({
-    id: 'test-gs',
+    id: 8001,
     name: 'Test Ground Station',
     lat: 38.9 as Degrees,
     lon: -77.0 as Degrees,
@@ -29,7 +29,7 @@ describe('AccessCalculator', () => {
 
   // Ground station at equator
   const equatorStation = new GroundStation({
-    id: 'equator-gs',
+    id: 8002,
     name: 'Equator Station',
     lat: 0 as Degrees,
     lon: 0 as Degrees,
@@ -56,7 +56,7 @@ describe('AccessCalculator', () => {
       it('should return empty array when satellite never visible', () => {
         // Create a high-latitude station where low-inclination satellites can't reach
         const polarStation = new GroundStation({
-          id: 'polar-gs',
+          id: 8003,
           name: 'Polar Station',
           lat: 85 as Degrees,
           lon: 0 as Degrees,
@@ -362,7 +362,7 @@ describe('AccessCalculator', () => {
     it('should return null when no pass in search period', () => {
       // Create station where GEO satellite won't be visible
       const polarStation = new GroundStation({
-        id: 'polar-gs',
+        id: 5004,
         name: 'Polar Station',
         lat: 85 as Degrees,
         lon: 0 as Degrees,
@@ -419,41 +419,41 @@ describe('AccessCalculator', () => {
 
   describe('calculateMultiTargetAccess', () => {
     it('should return map with correct keys', () => {
-      const iss = new Satellite({ id: 'iss', tle1: issTle1, tle2: issTle2 });
-      const geo = new Satellite({ id: 'geo', tle1: geoTle1, tle2: geoTle2 });
+      const iss = new Satellite({ id: 8101, tle1: issTle1, tle2: issTle2 });
+      const geo = new Satellite({ id: 8102, tle1: geoTle1, tle2: geoTle2 });
 
       const start = testEpoch;
       const end = new Date(testEpoch.getTime() + 2 * 60 * 60 * 1000); // 2 hours
 
       const results = AccessCalculator.calculateMultiTargetAccess(midLatStation, [iss, geo], start, end);
 
-      expect(results.has('iss')).toBe(true);
-      expect(results.has('geo')).toBe(true);
+      expect(results.has(8101)).toBe(true);
+      expect(results.has(8102)).toBe(true);
       expect(results.size).toBe(2);
     });
 
     it('should return empty array for never-visible targets', () => {
       const polarStation = new GroundStation({
-        id: 'polar-gs',
+        id: 8003,
         name: 'Polar Station',
         lat: 85 as Degrees,
         lon: 0 as Degrees,
         alt: 0 as Kilometers,
       });
 
-      const geoSat = new Satellite({ id: 'geo-test', tle1: geoTle1, tle2: geoTle2 });
+      const geoSat = new Satellite({ id: 8103, tle1: geoTle1, tle2: geoTle2 });
 
       const start = testEpoch;
       const end = new Date(testEpoch.getTime() + 2 * 60 * 60 * 1000);
 
       const results = AccessCalculator.calculateMultiTargetAccess(polarStation, [geoSat], start, end);
 
-      expect(results.get('geo-test')).toEqual([]);
+      expect(results.get(8103)).toEqual([]);
     });
 
     it('should find different windows for different satellites', () => {
-      const iss = new Satellite({ id: 'iss', tle1: issTle1, tle2: issTle2 });
-      const issClone = new Satellite({ id: 'iss-clone', tle1: issTle1, tle2: issTle2 });
+      const iss = new Satellite({ id: 8104, tle1: issTle1, tle2: issTle2 });
+      const issClone = new Satellite({ id: 8105, tle1: issTle1, tle2: issTle2 });
 
       const start = testEpoch;
       const end = new Date(testEpoch.getTime() + 24 * 60 * 60 * 1000);
@@ -461,8 +461,8 @@ describe('AccessCalculator', () => {
       const results = AccessCalculator.calculateMultiTargetAccess(midLatStation, [iss, issClone], start, end);
 
       // Same TLE should produce same windows
-      const issWindows = results.get('iss');
-      const cloneWindows = results.get('iss-clone');
+      const issWindows = results.get(8104);
+      const cloneWindows = results.get(8105);
 
       expect(issWindows).toBeDefined();
       expect(cloneWindows).toBeDefined();
@@ -470,7 +470,7 @@ describe('AccessCalculator', () => {
     });
 
     it('should apply constraints to all targets', () => {
-      const iss = new Satellite({ id: 'iss', tle1: issTle1, tle2: issTle2 });
+      const iss = new Satellite({ id: 8106, tle1: issTle1, tle2: issTle2 });
 
       const start = testEpoch;
       const end = new Date(testEpoch.getTime() + 24 * 60 * 60 * 1000);
@@ -478,7 +478,7 @@ describe('AccessCalculator', () => {
       const constraints: AccessConstraints = { minElevation: 20 as Degrees };
       const results = AccessCalculator.calculateMultiTargetAccess(midLatStation, [iss], start, end, constraints);
 
-      const windows = results.get('iss');
+      const windows = results.get(8106);
 
       if (windows && windows.length > 0) {
         for (const window of windows) {

@@ -21,7 +21,7 @@ describe('ContactScheduler', () => {
   const sat2Tle2 = '2 25544  51.6415 161.8339 0005168  35.9781  54.7009 15.50067047350657' as TleLine2;
 
   const station1 = new GroundStation({
-    id: 'gs-1',
+    id: 1,
     name: 'Station 1',
     lat: 38.9 as Degrees,
     lon: -77.0 as Degrees,
@@ -29,15 +29,15 @@ describe('ContactScheduler', () => {
   });
 
   const station2 = new GroundStation({
-    id: 'gs-2',
+    id: 2,
     name: 'Station 2',
     lat: 40.0 as Degrees,
     lon: -75.0 as Degrees,
     alt: 0.1 as Kilometers,
   });
 
-  const satellite1 = new Satellite({ id: 'sat-1', tle1: issTle1, tle2: issTle2 });
-  const satellite2 = new Satellite({ id: 'sat-2', tle1: sat2Tle1, tle2: sat2Tle2 });
+  const satellite1 = new Satellite({ id: 101, tle1: issTle1, tle2: issTle2 });
+  const satellite2 = new Satellite({ id: 102, tle1: sat2Tle1, tle2: sat2Tle2 });
 
   // Fixed epoch for reproducible tests
   const testEpoch = new Date('2022-07-22T12:00:00Z');
@@ -164,7 +164,7 @@ describe('ContactScheduler', () => {
         const end = new Date(testEpoch.getTime() + 24 * 60 * 60 * 1000);
 
         const result = ContactScheduler.schedule([station1], [satellite1], testEpoch, end, {
-          satellitePriority: (sat) => (sat.id === 'sat-1' ? 10 : 1),
+          satellitePriority: (sat) => (sat.id === 101 ? 10 : 1),
         });
 
         // All contacts should have priority 10 since we only have sat-1

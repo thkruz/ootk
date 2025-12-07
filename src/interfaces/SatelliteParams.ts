@@ -31,7 +31,7 @@ export interface SatelliteParams extends LaunchDetails, SpaceCraftDetails, Opera
   // ==================== Detailed Properties (merged from DetailedSatellite) ====================
 
   /** Unique identifier */
-  id?: string;
+  id?: number;
   /** Whether the satellite is active */
   active?: boolean;
 

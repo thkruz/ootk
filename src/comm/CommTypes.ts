@@ -122,13 +122,13 @@ export interface SerializedCommDevice {
   /** The class name of the device */
   type: string;
   /** Unique identifier */
-  id: string;
+  id: number;
   /** Human-readable name */
   name: string;
   /** Device type classification */
   deviceType: CommDeviceType;
   /** Parent platform ID (reference only, not full object) */
-  parentId?: string;
+  parentId?: number;
   /** Additional type-specific data */
   [key: string]: unknown;
 }

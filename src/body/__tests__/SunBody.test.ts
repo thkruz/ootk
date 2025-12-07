@@ -193,7 +193,7 @@ describe('SunBody', () => {
     it('should serialize to object', () => {
       const serialized = Sun.serialize();
 
-      expect(serialized).toHaveProperty('id', 'sun');
+      expect(serialized).toHaveProperty('id', 0);
       expect(serialized).toHaveProperty('name', 'Sun');
       expect(serialized).toHaveProperty('bodyType', CelestialBodyType.STAR);
     });

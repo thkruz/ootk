@@ -115,7 +115,7 @@ export class SunBody extends CelestialBody {
 
   private constructor() {
     super({
-      id: 'sun',
+      id: 0,
       name: 'Sun',
       type: SpaceObjectType.STAR,
       bodyType: CelestialBodyType.STAR,

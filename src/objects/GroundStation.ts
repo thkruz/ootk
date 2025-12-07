@@ -44,7 +44,7 @@ export class GroundStation extends GroundObject {
    * @param name - Optional name for the station
    * @param id - Optional unique identifier
    */
-  static fromGeodetic(geodetic: Geodetic, name?: string, id?: string): GroundStation {
+  static fromGeodetic(geodetic: Geodetic, name?: string, id?: number): GroundStation {
     return new GroundStation({
       id,
       name,

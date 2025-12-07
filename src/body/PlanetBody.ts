@@ -29,7 +29,7 @@ import { bodyTypeLookup, CelestialBodyType } from './CelestialBodyType';
 interface PlanetData {
   body: Body;
   name: string;
-  id: string;
+  id: number;
   mu: number;
   radius: Kilometers;
   type: CelestialBodyType;
@@ -44,7 +44,7 @@ const PLANET_DATA: Record<string, PlanetData> = {
   Mercury: {
     body: Body.Mercury,
     name: 'Mercury',
-    id: 'mercury',
+    id: 1,
     mu: 22032.09,
     radius: 2439.7 as Kilometers,
     type: CelestialBodyType.TERRESTRIAL_PLANET,
@@ -53,7 +53,7 @@ const PLANET_DATA: Record<string, PlanetData> = {
   Venus: {
     body: Body.Venus,
     name: 'Venus',
-    id: 'venus',
+    id: 2,
     mu: 324858.63,
     radius: 6051.8 as Kilometers,
     type: CelestialBodyType.TERRESTRIAL_PLANET,
@@ -62,7 +62,7 @@ const PLANET_DATA: Record<string, PlanetData> = {
   Earth: {
     body: Body.Earth,
     name: 'Earth',
-    id: 'earth',
+    id: 3,
     mu: 398600.4418,
     radius: 6371.0 as Kilometers,
     type: CelestialBodyType.TERRESTRIAL_PLANET,
@@ -71,7 +71,7 @@ const PLANET_DATA: Record<string, PlanetData> = {
   Mars: {
     body: Body.Mars,
     name: 'Mars',
-    id: 'mars',
+    id: 4,
     mu: 42828.37,
     radius: 3389.5 as Kilometers,
     type: CelestialBodyType.TERRESTRIAL_PLANET,
@@ -80,7 +80,7 @@ const PLANET_DATA: Record<string, PlanetData> = {
   Jupiter: {
     body: Body.Jupiter,
     name: 'Jupiter',
-    id: 'jupiter',
+    id: 5,
     mu: 126686534.0,
     radius: 69911 as Kilometers,
     type: CelestialBodyType.GAS_GIANT,
@@ -89,7 +89,7 @@ const PLANET_DATA: Record<string, PlanetData> = {
   Saturn: {
     body: Body.Saturn,
     name: 'Saturn',
-    id: 'saturn',
+    id: 6,
     mu: 37931187.0,
     radius: 58232 as Kilometers,
     type: CelestialBodyType.GAS_GIANT,
@@ -98,7 +98,7 @@ const PLANET_DATA: Record<string, PlanetData> = {
   Uranus: {
     body: Body.Uranus,
     name: 'Uranus',
-    id: 'uranus',
+    id: 7,
     mu: 5793939.0,
     radius: 25362 as Kilometers,
     type: CelestialBodyType.ICE_GIANT,
@@ -107,7 +107,7 @@ const PLANET_DATA: Record<string, PlanetData> = {
   Neptune: {
     body: Body.Neptune,
     name: 'Neptune',
-    id: 'neptune',
+    id: 8,
     mu: 6836529.0,
     radius: 24622 as Kilometers,
     type: CelestialBodyType.ICE_GIANT,
@@ -116,7 +116,7 @@ const PLANET_DATA: Record<string, PlanetData> = {
   Pluto: {
     body: Body.Pluto,
     name: 'Pluto',
-    id: 'pluto',
+    id: 9,
     mu: 871.0,
     radius: 1188.3 as Kilometers,
     type: CelestialBodyType.DWARF_PLANET,

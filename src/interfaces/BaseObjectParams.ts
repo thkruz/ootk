@@ -24,7 +24,7 @@
 import { SpaceObjectType } from '../types/types';
 
 export interface BaseObjectParams {
-  id?: string;
+  id?: number;
   name?: string;
   type?: SpaceObjectType;
   active?: boolean;

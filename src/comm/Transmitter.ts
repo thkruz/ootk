@@ -308,7 +308,7 @@ export class Transmitter extends CommunicationDevice {
    */
   static deserialize(data: Record<string, unknown>): Transmitter {
     return new Transmitter({
-      id: data.id as string,
+      id: data.id as number,
       name: data.name as string,
       frequency: data.frequency as Hertz,
       power: data.power as Watts,

@@ -229,7 +229,7 @@ describe('VisualizationHelpers', () => {
     // Create a ground station and sensor for testing
     const createTestSensor = () => {
       const gs = new GroundStation({
-        id: 'test-gs',
+        id: 9005,
         name: 'Test Ground Station',
         lat: 40.0 as Degrees,
         lon: -75.0 as Degrees,
@@ -237,7 +237,7 @@ describe('VisualizationHelpers', () => {
       });
 
       const sensor = new OpticalSensor({
-        id: 'test-sensor',
+        id: 9006,
         name: 'Test Sensor',
         sensorType: SensorType.OPTICAL,
         fieldOfView: {
@@ -256,7 +256,7 @@ describe('VisualizationHelpers', () => {
 
     it('should throw error if sensor has no parent', () => {
       const sensor = new OpticalSensor({
-        id: 'orphan-sensor',
+        id: 9007,
         name: 'Orphan Sensor',
         sensorType: SensorType.OPTICAL,
         fieldOfView: {
@@ -347,7 +347,7 @@ describe('VisualizationHelpers', () => {
 
     it('should work with zenith-pointed sensor', () => {
       const gs = new GroundStation({
-        id: 'test-gs',
+        id: 9001,
         name: 'Test Ground Station',
         lat: 40.0 as Degrees,
         lon: -75.0 as Degrees,
@@ -355,7 +355,7 @@ describe('VisualizationHelpers', () => {
       });
 
       const sensor = new OpticalSensor({
-        id: 'zenith-sensor',
+        id: 9002,
         name: 'Zenith Sensor',
         sensorType: SensorType.OPTICAL,
         fieldOfView: {
@@ -381,7 +381,7 @@ describe('VisualizationHelpers', () => {
 
     it('should work with elliptical FOV', () => {
       const gs = new GroundStation({
-        id: 'test-gs',
+        id: 9003,
         name: 'Test Ground Station',
         lat: 40.0 as Degrees,
         lon: -75.0 as Degrees,
@@ -389,7 +389,7 @@ describe('VisualizationHelpers', () => {
       });
 
       const sensor = new OpticalSensor({
-        id: 'elliptical-sensor',
+        id: 9004,
         name: 'Elliptical Sensor',
         sensorType: SensorType.OPTICAL,
         fieldOfView: {

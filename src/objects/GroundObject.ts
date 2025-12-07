@@ -186,7 +186,7 @@ export abstract class GroundObject extends BaseObject {
    * Removes a sensor from this ground object.
    * @param sensorId - The ID of the sensor to remove
    */
-  removeSensor(sensorId: string): void {
+  removeSensor(sensorId: number): void {
     this.sensors = this.sensors.filter((s) => s.id !== sensorId);
   }
 
@@ -204,7 +204,7 @@ export abstract class GroundObject extends BaseObject {
    * Removes a communication device from this ground object.
    * @param deviceId - The ID of the device to remove
    */
-  removeCommDevice(deviceId: string): void {
+  removeCommDevice(deviceId: number): void {
     this.commDevices = this.commDevices.filter((d) => d.id !== deviceId);
   }
 

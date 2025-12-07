@@ -16,7 +16,7 @@ import {
 
 describe('Transponder', () => {
   const createTestTransponder = (overrides = {}): Transponder => new Transponder({
-    id: 'test-xponder',
+    id: 1004,
     name: 'Test Transponder',
     uplinkFrequency: 14e9 as Hertz,
     downlinkFrequency: 12e9 as Hertz,
@@ -31,7 +31,7 @@ describe('Transponder', () => {
     it('should create a transponder with required parameters', () => {
       const xponder = createTestTransponder();
 
-      expect(xponder.id).toBe('test-xponder');
+      expect(xponder.id).toBe(1004);
       expect(xponder.name).toBe('Test Transponder');
       expect(xponder.uplinkFrequency).toBe(14e9);
       expect(xponder.downlinkFrequency).toBe(12e9);
@@ -59,8 +59,8 @@ describe('Transponder', () => {
 
       expect(xponder.receiver).toBeDefined();
       expect(xponder.transmitter).toBeDefined();
-      expect(xponder.receiver.id).toBe('test-xponder-rx');
-      expect(xponder.transmitter.id).toBe('test-xponder-tx');
+      expect(xponder.receiver.id).toBe(1004001);
+      expect(xponder.transmitter.id).toBe(1004002);
     });
 
     it('should throw on non-positive power', () => {
@@ -128,7 +128,7 @@ describe('Transponder', () => {
       const serialized = xponder.serialize();
 
       expect(serialized.type).toBe('Transponder');
-      expect(serialized.id).toBe('test-xponder');
+      expect(serialized.id).toBe(1004);
       expect(serialized.name).toBe('Test Transponder');
       expect(serialized.deviceType).toBe(CommDeviceType.TRANSPONDER);
       expect(serialized.uplinkFrequency).toBe(14e9);
@@ -170,7 +170,7 @@ describe('Transponder', () => {
       const str = xponder.toString();
 
       expect(str).toContain('[Transponder]');
-      expect(str).toContain('test-xponder');
+      expect(str).toContain('1004');
       expect(str).toContain('14.000 GHz'); // uplink
       expect(str).toContain('12.000 GHz'); // downlink
       expect(str).toContain('36.0 MHz'); // bandwidth

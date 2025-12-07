@@ -225,7 +225,7 @@ export class Receiver extends CommunicationDevice {
    */
   static deserialize(data: Record<string, unknown>): Receiver {
     return new Receiver({
-      id: data.id as string,
+      id: data.id as number,
       name: data.name as string,
       frequency: data.frequency as Hertz,
       bandwidth: data.bandwidth as Hertz,

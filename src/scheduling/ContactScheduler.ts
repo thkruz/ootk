@@ -121,9 +121,9 @@ export interface CoverageStatistics {
   /** Number of contacts scheduled */
   contactCount: number;
   /** Per-satellite statistics */
-  bySatellite: Map<string, SatelliteCoverageStats>;
+  bySatellite: Map<number, SatelliteCoverageStats>;
   /** Per-station statistics */
-  byStation: Map<string, StationCoverageStats>;
+  byStation: Map<number, StationCoverageStats>;
   /** Overall coverage percentage (time with contact / total time) */
   overallCoveragePercent: number;
   /** Average gap duration in milliseconds */
@@ -367,8 +367,8 @@ export class ContactScheduler {
     end: Date,
   ): CoverageStatistics {
     const totalWindow = end.getTime() - start.getTime();
-    const bySatellite = new Map<string, SatelliteCoverageStats>();
-    const byStation = new Map<string, StationCoverageStats>();
+    const bySatellite = new Map<number, SatelliteCoverageStats>();
+    const byStation = new Map<number, StationCoverageStats>();
     let totalContactTime = 0;
     let allGaps: TimeWindow[] = [];
 
@@ -480,7 +480,7 @@ export class ContactScheduler {
     const result: AccessWindow[] = [];
 
     // Group by satellite
-    const bySatellite = new Map<string, AccessWindow[]>();
+    const bySatellite = new Map<number, AccessWindow[]>();
 
     for (const w of windows) {
       const satId = w.target.id;
@@ -641,8 +641,8 @@ export class ContactScheduler {
     scored.sort((a, b) => b.score - a.score);
 
     const scheduled: ScheduledContact[] = [];
-    const satContactCounts = new Map<string, number>();
-    const stationContactCounts = new Map<string, number>();
+    const satContactCounts = new Map<number, number>();
+    const stationContactCounts = new Map<number, number>();
 
     for (const { contact } of scored) {
       const satId = contact.satellite.id;

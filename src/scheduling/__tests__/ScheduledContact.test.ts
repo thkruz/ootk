@@ -15,7 +15,7 @@ describe('ScheduledContact', () => {
   const issTle2 = '2 25544  51.6415 161.8339 0005168  35.9781  54.7009 15.50067047350657' as TleLine2;
 
   const station = new GroundStation({
-    id: 'gs-1',
+    id: 1,
     name: 'Test Station',
     lat: 38.9 as Degrees,
     lon: -77.0 as Degrees,
@@ -175,7 +175,7 @@ describe('ScheduledContact', () => {
 
   describe('conflictsWith', () => {
     const station2 = new GroundStation({
-      id: 'gs-2',
+      id: 2,
       name: 'Test Station 2',
       lat: 40.0 as Degrees,
       lon: -75.0 as Degrees,

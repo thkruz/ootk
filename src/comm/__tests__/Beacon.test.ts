@@ -19,7 +19,7 @@ describe('Beacon', () => {
   const epoch = new Date('2025-01-01T00:00:00Z');
 
   const createTestBeacon = (overrides = {}): Beacon => new Beacon({
-    id: 'test-beacon',
+    id: 1001,
     name: 'Test Beacon',
     frequency: 437e6 as Hertz,
     power: 1 as Watts,
@@ -35,7 +35,7 @@ describe('Beacon', () => {
     it('should create a beacon with required parameters', () => {
       const beacon = createTestBeacon();
 
-      expect(beacon.id).toBe('test-beacon');
+      expect(beacon.id).toBe(1001);
       expect(beacon.name).toBe('Test Beacon');
       expect(beacon.frequency).toBe(437e6);
       expect(beacon.power).toBe(1);
@@ -285,7 +285,7 @@ describe('Beacon', () => {
       const serialized = beacon.serialize();
 
       expect(serialized.type).toBe('Beacon');
-      expect(serialized.id).toBe('test-beacon');
+      expect(serialized.id).toBe(1001);
       expect(serialized.deviceType).toBe(CommDeviceType.BEACON);
       expect(serialized.frequency).toBe(437e6);
       expect(serialized.transmitInterval).toBe(60);
@@ -323,7 +323,7 @@ describe('Beacon', () => {
       const str = beacon.toString();
 
       expect(str).toContain('[Beacon]');
-      expect(str).toContain('test-beacon');
+      expect(str).toContain('1001');
       expect(str).toContain('437.000 MHz');
       expect(str).toContain('60 s'); // interval
       expect(str).toContain('5 s'); // duration

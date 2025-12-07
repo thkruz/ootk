@@ -60,7 +60,7 @@ describe('EphemerisBody', () => {
   describe('constructor', () => {
     it('should create instance with valid ephemeris', () => {
       const body = new EphemerisBody({
-        id: 'test-asteroid',
+        id: 9001,
         name: 'Test Asteroid',
         bodyType: CelestialBodyType.ASTEROID,
         ephemeris: createTestEphemeris(),
@@ -74,7 +74,7 @@ describe('EphemerisBody', () => {
     it('should throw error for empty ephemeris', () => {
       expect(() => {
         new EphemerisBody({
-          id: 'empty',
+          id: 9002,
           name: 'Empty',
           bodyType: CelestialBodyType.ASTEROID,
           ephemeris: [],
@@ -87,7 +87,7 @@ describe('EphemerisBody', () => {
     it('should return validity window', () => {
       const ephemeris = createTestEphemeris();
       const body = new EphemerisBody({
-        id: 'test',
+        id: 9003,
         name: 'Test',
         bodyType: CelestialBodyType.ASTEROID,
         ephemeris,
@@ -102,7 +102,7 @@ describe('EphemerisBody', () => {
 
     it('should return true for date within validity window', () => {
       const body = new EphemerisBody({
-        id: 'test',
+        id: 9003,
         name: 'Test',
         bodyType: CelestialBodyType.ASTEROID,
         ephemeris: createTestEphemeris(),
@@ -114,7 +114,7 @@ describe('EphemerisBody', () => {
 
     it('should return false for date outside validity window', () => {
       const body = new EphemerisBody({
-        id: 'test',
+        id: 9003,
         name: 'Test',
         bodyType: CelestialBodyType.ASTEROID,
         ephemeris: createTestEphemeris(),
@@ -128,7 +128,7 @@ describe('EphemerisBody', () => {
   describe('heliocentric position', () => {
     it('should return interpolated position for heliocentric body', () => {
       const body = new EphemerisBody({
-        id: 'test',
+        id: 9003,
         name: 'Test',
         bodyType: CelestialBodyType.ASTEROID,
         ephemeris: createTestEphemeris(),
@@ -143,7 +143,7 @@ describe('EphemerisBody', () => {
 
     it('should throw error for date outside validity window', () => {
       const body = new EphemerisBody({
-        id: 'test',
+        id: 9003,
         name: 'Test',
         bodyType: CelestialBodyType.ASTEROID,
         ephemeris: createTestEphemeris(),
@@ -157,7 +157,7 @@ describe('EphemerisBody', () => {
 
     it('should throw for geocentric body calling heliocentric', () => {
       const body = new EphemerisBody({
-        id: 'test',
+        id: 9003,
         name: 'Test',
         bodyType: CelestialBodyType.ASTEROID,
         ephemeris: createTestEphemeris(),
@@ -173,7 +173,7 @@ describe('EphemerisBody', () => {
   describe('eci position', () => {
     it('should throw for heliocentric body calling eci', () => {
       const body = new EphemerisBody({
-        id: 'test',
+        id: 9003,
         name: 'Test',
         bodyType: CelestialBodyType.ASTEROID,
         ephemeris: createTestEphemeris(),
@@ -187,7 +187,7 @@ describe('EphemerisBody', () => {
 
     it('should return position for geocentric body', () => {
       const body = new EphemerisBody({
-        id: 'test',
+        id: 9003,
         name: 'Test',
         bodyType: CelestialBodyType.ASTEROID,
         ephemeris: createTestEphemeris(),
@@ -203,7 +203,7 @@ describe('EphemerisBody', () => {
   describe('velocity', () => {
     it('should return velocity when available', () => {
       const body = new EphemerisBody({
-        id: 'test',
+        id: 9003,
         name: 'Test',
         bodyType: CelestialBodyType.ASTEROID,
         ephemeris: createTestEphemeris(),
@@ -223,7 +223,7 @@ describe('EphemerisBody', () => {
       }));
 
       const body = new EphemerisBody({
-        id: 'test',
+        id: 9003,
         name: 'Test',
         bodyType: CelestialBodyType.ASTEROID,
         ephemeris: ephemerisNoVelocity,
@@ -239,7 +239,7 @@ describe('EphemerisBody', () => {
   describe('interpolation types', () => {
     it('should support lagrange interpolation', () => {
       const body = new EphemerisBody({
-        id: 'test',
+        id: 9003,
         name: 'Test',
         bodyType: CelestialBodyType.ASTEROID,
         ephemeris: createTestEphemeris(),
@@ -255,7 +255,7 @@ describe('EphemerisBody', () => {
 
     it('should support spline interpolation', () => {
       const body = new EphemerisBody({
-        id: 'test',
+        id: 9003,
         name: 'Test',
         bodyType: CelestialBodyType.ASTEROID,
         ephemeris: createTestEphemeris(),
@@ -290,7 +290,7 @@ describe('EphemerisBody', () => {
       ];
 
       const body = EphemerisBody.fromData(
-        'ceres',
+        99,
         'Ceres',
         CelestialBodyType.DWARF_PLANET,
         data,
@@ -305,7 +305,7 @@ describe('EphemerisBody', () => {
   describe('serialization', () => {
     it('should serialize with ephemeris metadata', () => {
       const body = new EphemerisBody({
-        id: 'test',
+        id: 9003,
         name: 'Test',
         bodyType: CelestialBodyType.ASTEROID,
         ephemeris: createTestEphemeris(),

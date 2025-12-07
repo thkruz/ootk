@@ -183,7 +183,7 @@ describe('MoonBody', () => {
     it('should serialize to object', () => {
       const serialized = Moon.serialize();
 
-      expect(serialized).toHaveProperty('id', 'moon');
+      expect(serialized).toHaveProperty('id', 10);
       expect(serialized).toHaveProperty('name', 'Moon');
       expect(serialized).toHaveProperty('bodyType', CelestialBodyType.MOON);
     });
@@ -192,7 +192,7 @@ describe('MoonBody', () => {
   describe('name and id', () => {
     it('should have Moon name and id', () => {
       expect(Moon.name).toBe('Moon');
-      expect(Moon.id).toBe('moon');
+      expect(Moon.id).toBe(10);
     });
   });
 });

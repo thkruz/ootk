@@ -18,7 +18,7 @@ import {
 
 describe('Transmitter', () => {
   const createTestTransmitter = (overrides = {}): Transmitter => new Transmitter({
-    id: 'test-tx',
+    id: 1003,
     name: 'Test Transmitter',
     frequency: 14e9 as Hertz,
     power: 1000 as Watts,
@@ -31,7 +31,7 @@ describe('Transmitter', () => {
     it('should create a transmitter with required parameters', () => {
       const tx = createTestTransmitter();
 
-      expect(tx.id).toBe('test-tx');
+      expect(tx.id).toBe(1003);
       expect(tx.name).toBe('Test Transmitter');
       expect(tx.frequency).toBe(14e9);
       expect(tx.power).toBe(1000);
@@ -116,7 +116,7 @@ describe('Transmitter', () => {
       const serialized = tx.serialize();
 
       expect(serialized.type).toBe('Transmitter');
-      expect(serialized.id).toBe('test-tx');
+      expect(serialized.id).toBe(1003);
       expect(serialized.name).toBe('Test Transmitter');
       expect(serialized.deviceType).toBe(CommDeviceType.TRANSMITTER);
       expect(serialized.frequency).toBe(14e9);
@@ -156,7 +156,7 @@ describe('Transmitter', () => {
       const str = tx.toString();
 
       expect(str).toContain('[Transmitter]');
-      expect(str).toContain('test-tx');
+      expect(str).toContain('1003');
       expect(str).toContain('14.000 GHz');
       expect(str).toContain('QPSK');
     });

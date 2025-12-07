@@ -23,7 +23,7 @@ it('should convert valid RAE coordinates to RAE Off Boresight', () => {
   };
 
   const sensor = new PhasedArrayRadar({
-    id: 'test-radar',
+    id: 4001,
     name: 'Test Radar',
     sensorType: SensorType.PHASED_ARRAY_RADAR,
     boresightAz: [0 as Degrees],
