@@ -17,7 +17,6 @@
 
 import { CelestialBody } from './CelestialBody';
 import { CelestialBodyType } from './CelestialBodyType';
-import { EphemerisBody } from './EphemerisBody';
 import { MoonBody, Moon } from './MoonBody';
 import { Jupiter, Mars, Mercury, Neptune, Pluto, Saturn, Uranus, Venus, PlanetBody } from './PlanetBody';
 import { Sun, SunBody } from './SunBody';

@@ -28,14 +28,14 @@ import type { ParsedOem } from '../parsers/OemTypes';
 import { EpochUTC } from '../time/EpochUTC';
 import type { EpochWindow } from '../time/EpochWindow';
 import {
-    Degrees,
-    EcefVec3,
-    Kilometers,
-    KilometersPerSecond,
-    LlaVec3,
-    PosVel,
-    Seconds,
-    SpaceObjectType,
+  Degrees,
+  EcefVec3,
+  Kilometers,
+  KilometersPerSecond,
+  LlaVec3,
+  PosVel,
+  Seconds,
+  SpaceObjectType,
 } from '../types/types';
 import { linearInterpolate } from '../utils/functions';
 import { CenterBody, CenterBodyMu, parseCenterBody } from './CenterBody';
@@ -84,9 +84,6 @@ export class EphemerisSatellite extends SpaceObject {
   private readonly ephemeris_: J2000[];
   private readonly centerBody_: CenterBody;
   private readonly referenceFrame_: 'J2000' | 'TEME';
-
-  /** Optional metadata associated with this satellite */
-  metadata?: Record<string, unknown>;
 
   constructor(params: EphemerisSatelliteParams) {
     if (!params.ephemeris || params.ephemeris.length === 0) {
