@@ -81,3 +81,5 @@ export * from './maneuver/index';
 export * from './optimize/index';
 
 export * from './scheduling/index';
+
+export * from './constellation/index';
