@@ -79,3 +79,5 @@ export * from './maneuver/index';
 // export * from './fetch/index';
 
 export * from './optimize/index';
+
+export * from './scheduling/index';
