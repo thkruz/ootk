@@ -21,7 +21,7 @@ import { Degrees, Kilometers, KilometersPerSecond } from '../types/types';
 import { SpaceObjectType } from '../types/types';
 import { KM_PER_AU } from '../utils/constants';
 import { CelestialBody, CelestialBodyParams } from './CelestialBody';
-import { bodyTypeLookup, CelestialBodyType } from './CelestialBodyType';
+import { CelestialBodyType } from './CelestialBodyType';
 
 /**
  * Planet physical data.

@@ -81,10 +81,10 @@ const altitude = 0.060966 as Kilometers;
 OOTK provides specialized vector types for different coordinate systems:
 
 ```typescript
-import { EciVec3, EcfVec3, LlaVec3, RaeVec3 } from 'ootk';
+import { TemeVec3, EcfVec3, LlaVec3, RaeVec3 } from 'ootk';
 
 // ECI (Earth-Centered Inertial) vector
-const eciPos: EciVec3 = { x: 6778.137, y: 0, z: 0 } as EciVec3<Kilometers>;
+const eciPos: TemeVec3 = { x: 6778.137, y: 0, z: 0 } as TemeVec3<Kilometers>;
 
 // Geodetic coordinates
 const lla: LlaVec3 = {
@@ -391,8 +391,8 @@ import { J2000, Kilometers, KilometersPerSecond } from 'ootk';
 
 const j2000 = new J2000(
   epoch,
-  { x: 6778.137, y: 0, z: 0 } as EciVec3<Kilometers>,
-  { x: 0, y: 7.67, z: 0 } as EciVec3<KilometersPerSecond>
+  { x: 6778.137, y: 0, z: 0 } as TemeVec3<Kilometers>,
+  { x: 0, y: 7.67, z: 0 } as TemeVec3<KilometersPerSecond>
 );
 
 // Convert to other frames

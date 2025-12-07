@@ -18,7 +18,6 @@
 import type { J2000 } from '../coordinate/J2000';
 import type { StateCovariance } from '../covariance/StateCovariance';
 import type { ConjunctionEvent } from '../conjunction/ConjunctionEvent';
-import type { EpochUTC } from '../time/EpochUTC';
 import type { CdmExportOptions, CdmObjectMetadata } from './CdmTypes';
 
 /**
@@ -107,7 +106,7 @@ export class CdmExporter {
   /**
    * Format header section.
    */
-  private static formatHeader_(event: ConjunctionEvent, options: CdmExportOptions): string[] {
+  private static formatHeader_(_event: ConjunctionEvent, options: CdmExportOptions): string[] {
     const lines: string[] = [];
 
     lines.push('CCSDS_CDM_VERS = 1.0');

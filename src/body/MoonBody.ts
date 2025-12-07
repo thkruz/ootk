@@ -25,7 +25,7 @@ import {
   SearchRiseSet,
 } from 'astronomy-engine';
 import { Vector3D } from '../operations/Vector3D';
-import { Degrees, Kilometers, Radians } from '../types/types';
+import { Degrees, Kilometers } from '../types/types';
 import { SpaceObjectType } from '../types/types';
 import { DEG2RAD, MS_PER_DAY } from '../utils/constants';
 import { CelestialBody, CelestialBodyParams } from './CelestialBody';
