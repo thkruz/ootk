@@ -496,10 +496,19 @@ export class Satellite extends SpaceObject {
   }
 
   /**
-   * Calculates ECEF position at a given time.
+   * Calculates position in the ECEF (Earth-Centered Earth-Fixed) frame at a given time.
+   *
+   * **Coordinate Frame: ECEF (pseudo-ITRF)**
+   *
+   * Returns Earth-fixed coordinates that rotate with the Earth. The transformation
+   * from TEME to ECEF uses a simplified rotation based on GMST (Greenwich Mean Sidereal Time).
+   *
+   * For higher precision Earth-fixed coordinates that account for precession, nutation,
+   * and polar motion, use `toITRF()` instead.
+   *
    * @variation optimized
    * @param date - The date at which to calculate the ECEF position. Optional, defaults to the current date.
-   * @returns The ECEF position at the specified date.
+   * @returns The ECEF position at the specified date, or null if propagation fails.
    */
   override ecef(date: Date = new Date()): EcefVec3<Kilometers> | null {
     const { gmst } = Satellite.calculateTimeVariables_(date);
@@ -513,9 +522,25 @@ export class Satellite extends SpaceObject {
   }
 
   /**
-   * Calculates ECI position at a given time.
+   * Calculates position and velocity in the TEME (True Equator Mean Equinox) frame at a given time.
+   *
+   * **Coordinate Frame: TEME**
+   *
+   * TEME is the native output frame of SGP4/SDP4 propagation. It uses the true equator of date
+   * and a mean equinox that accounts for precession but uses a simplified nutation model.
+   *
+   * **When to use TEME vs J2000:**
+   * - Use TEME (`eci()`) for quick calculations, visualization, and when frame accuracy isn't critical
+   * - Use J2000 (`toJ2000()`) for precise calculations, force modeling, and interoperability with
+   *   other systems that expect J2000 coordinates
+   *
+   * To convert to other frames:
+   * - J2000: Use `toJ2000()` method
+   * - ITRF/ECEF: Use `toITRF()` or `ecef()` methods
+   * - Geodetic: Use `lla()` or `toGeodetic()` methods
+   *
    * @variation optimized
-   * @param date - The date at which to calculate the ECI position. Optional, defaults to the current date.
+   * @param date - The date at which to calculate the position. Optional, defaults to the current date.
    * @param j - Julian date. Optional, defaults to null.
    * @param gmst - Greenwich Mean Sidereal Time. Optional, defaults to null.
    * @example
@@ -528,17 +553,17 @@ export class Satellite extends SpaceObject {
    * );
    * const satellite = new Satellite({ tle });
    *
-   * // Get current position
+   * // Get current position in TEME frame
    * const pv = satellite.eci();
    * if (pv) {
    *   console.log(`Position: ${pv.position.x.toFixed(2)}, ${pv.position.y.toFixed(2)}, ${pv.position.z.toFixed(2)} km`);
    *   console.log(`Velocity: ${pv.velocity.x.toFixed(4)} km/s`);
    * }
    *
-   * // Get position at specific time
-   * const futurePos = satellite.eci(new Date('2024-06-15T12:00:00Z'));
+   * // For J2000 frame, use toJ2000() instead
+   * const j2000 = satellite.toJ2000();
    * ```
-   * @returns The ECI position at the specified date.
+   * @returns Position and velocity in TEME frame, or null if propagation fails.
    */
   override eci(date?: Date, j?: number, gmst?: GreenwichMeanSiderealTime): PosVel | null {
     date ??= new Date();
@@ -562,10 +587,24 @@ export class Satellite extends SpaceObject {
   }
 
   /**
-   * Calculates the J2000 coordinates for a given date. If no date is provided, the current time is used.
+   * Calculates the position and velocity in the J2000 (EME2000) frame at a given time.
+   *
+   * **Coordinate Frame: J2000**
+   *
+   * J2000 (also called EME2000) is an Earth-Centered Inertial (ECI) frame defined by:
+   * - Origin: Earth's center of mass
+   * - X-axis: Mean vernal equinox at J2000.0 epoch (Jan 1, 2000 12:00 TT)
+   * - Z-axis: Earth's mean rotation axis at J2000.0
+   * - Y-axis: Completes right-handed system
+   *
+   * This is the standard ECI frame for precise calculations and interoperability.
+   *
+   * **Internally:** SGP4 outputs TEME, which is then converted to J2000 via precession
+   * and nutation transformations.
+   *
    * @variation expanded
    * @param date - The date for which to calculate the J2000 coordinates, defaults to the current date.
-   * @returns The J2000 coordinates for the specified date.
+   * @returns The J2000 state vector (position and velocity).
    * @throws Error if propagation fails.
    */
   override toJ2000(date: Date = new Date()): J2000 {
@@ -645,8 +684,19 @@ export class Satellite extends SpaceObject {
   }
 
   /**
-   * Converts the satellite's position to the International Terrestrial Reference Frame (ITRF) at the specified date.
-   * If no date is provided, the current date is used.
+   * Converts the satellite's position to the ITRF (International Terrestrial Reference Frame) at the specified date.
+   *
+   * **Coordinate Frame: ITRF (Earth-Fixed)**
+   *
+   * ITRF is the standard Earth-fixed geocentric reference frame. Unlike the simplified ECEF
+   * transformation in `ecef()`, this method performs the full transformation chain:
+   * TEME → J2000 → ITRF, accounting for precession, nutation, and Earth rotation.
+   *
+   * Use ITRF when you need:
+   * - Precise Earth-fixed coordinates
+   * - Interoperability with GPS/GNSS systems
+   * - Accurate ground track calculations
+   *
    * @variation expanded
    * @param date The date for which to convert the position. Defaults to the current date.
    * @returns The satellite's position in the ITRF at the specified date.

@@ -24,14 +24,22 @@ import type { GroundObject } from '../objects/GroundObject';
 import type { PhasedArrayRadar } from '../sensor/PhasedArrayRadar';
 
 /**
- * Converts ECEF to ECI coordinates.
+ * Converts ECEF (Earth-Centered Earth-Fixed) to TEME (True Equator Mean Equinox) coordinates.
+ *
+ * **Coordinate Frame Transformation: ECEF → TEME**
+ *
+ * This is a simplified transformation that rotates by GMST (Greenwich Mean Sidereal Time)
+ * around the Z-axis. It does not account for precession, nutation, or polar motion.
+ *
+ * For high-precision transformations, use the ITRF class methods instead.
  *
  * [X]     [C -S  0][X]
  * [Y]  =  [S  C  0][Y]
  * [Z]eci  [0  0  1][Z]ecef
- * @param ecef takes xyz coordinates
- * @param gmst takes a number in gmst time
- * @returns array containing eci coordinates
+ *
+ * @param ecef - ECEF coordinates (Earth-fixed)
+ * @param gmst - Greenwich Mean Sidereal Time in radians
+ * @returns TEME coordinates (inertial)
  */
 export function ecef2eci<T extends number>(ecef: EcefVec3<T>, gmst: number): TemeVec3<T> {
   const X = (ecef.x * Math.cos(gmst) - ecef.y * Math.sin(gmst)) as T;
@@ -58,19 +66,22 @@ export function ecef2enu<T extends number>(ecef: EcefVec3<T>, lla: LlaVec3): Enu
 }
 
 /**
- * Converts ECI to ECEF coordinates.
+ * Converts TEME (True Equator Mean Equinox) to ECEF (Earth-Centered Earth-Fixed) coordinates.
  *
- * [X]     [C -S  0][X]
- * [Y]  =  [S  C  0][Y]
- * [Z]eci  [0  0  1][Z]ecef
+ * **Coordinate Frame Transformation: TEME → ECEF**
  *
- * Inverse:
+ * This is a simplified transformation that rotates by GMST (Greenwich Mean Sidereal Time)
+ * around the Z-axis. It does not account for precession, nutation, or polar motion.
+ *
+ * For high-precision transformations, use J2000.toITRF() instead.
+ *
  * [X]     [C  S  0][X]
  * [Y]  =  [-S C  0][Y]
- * [Z]ecef  [0  0  1][Z]eci
- * @param eci takes xyz coordinates
- * @param gmst takes a number in gmst time
- * @returns array containing ecef coordinates
+ * [Z]ecef [0  0  1][Z]eci
+ *
+ * @param eci - TEME coordinates (inertial, from SGP4)
+ * @param gmst - Greenwich Mean Sidereal Time in radians
+ * @returns ECEF coordinates (Earth-fixed)
  */
 export function eci2ecef<T extends number>(eci: TemeVec3<T>, gmst: number): EcefVec3<T> {
   const x = <T>(eci.x * Math.cos(gmst) + eci.y * Math.sin(gmst));
@@ -85,11 +96,17 @@ export function eci2ecef<T extends number>(eci: TemeVec3<T>, gmst: number): Ecef
 }
 
 /**
- * EciToGeodetic converts eci coordinates to lla coordinates
+ * Converts TEME (True Equator Mean Equinox) coordinates to geodetic (lat/lon/alt) coordinates.
+ *
+ * **Coordinate Frame Transformation: TEME → Geodetic (WGS84)**
+ *
+ * Internally converts TEME to ECEF via GMST rotation, then iteratively solves
+ * for geodetic latitude on the WGS84 ellipsoid.
+ *
  * @variation cached - results are cached
- * @param eci takes xyz coordinates
- * @param gmst takes a number in gmst time
- * @returns array containing lla coordinates
+ * @param eci - TEME coordinates (inertial, from SGP4)
+ * @param gmst - Greenwich Mean Sidereal Time in radians
+ * @returns Geodetic coordinates (lat/lon in degrees, alt in km on WGS84)
  */
 export function eci2lla(eci: TemeVec3, gmst: number): LlaVec3<Degrees, Kilometers> {
   // http://www.celestrak.com/columns/v02n03/
@@ -169,11 +186,17 @@ export function lla2ecef<AltitudeUnits extends number>(lla: LlaVec3<Degrees, Alt
 }
 
 /**
- * Converts geodetic coordinates (latitude, longitude, altitude) to Earth-centered inertial (ECI) coordinates.
+ * Converts geodetic coordinates (lat/lon/alt) to TEME (True Equator Mean Equinox) coordinates.
+ *
+ * **Coordinate Frame Transformation: Geodetic → TEME**
+ *
+ * Converts WGS84 geodetic coordinates to inertial TEME coordinates via ECEF
+ * and GMST rotation. Uses spherical Earth approximation (Earth.radiusMean).
+ *
  * @variation cached - results are cached
- * @param lla The geodetic coordinates in radians and meters.
- * @param gmst The Greenwich Mean Sidereal Time in seconds.
- * @returns The ECI coordinates in meters.
+ * @param lla - Geodetic coordinates (lat/lon in radians, alt in km)
+ * @param gmst - Greenwich Mean Sidereal Time in radians
+ * @returns TEME coordinates (inertial)
  */
 export function lla2eci(lla: LlaVec3<Radians, Kilometers>, gmst: GreenwichMeanSiderealTime): TemeVec3<Kilometers> {
   const { lat, lon, alt } = lla;

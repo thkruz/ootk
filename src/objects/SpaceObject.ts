@@ -99,22 +99,49 @@ export abstract class SpaceObject extends BaseObject {
   // ==================== Abstract Position Methods ====================
 
   /**
-   * Returns the position and velocity in TEME (True Equator Mean Equinox) frame at the given time.
-   * TEME is the native output frame of SGP4/SDP4 propagation.
+   * Returns the position and velocity in the TEME (True Equator Mean Equinox) frame at the given time.
+   *
+   * **Coordinate Frame: TEME (Earth-Centered Inertial)**
+   *
+   * TEME is the native output frame of SGP4/SDP4 propagation. It is an inertial frame
+   * that uses the true equator of date and a simplified mean equinox. For standard J2000
+   * ECI coordinates, use {@link toJ2000} instead.
+   *
+   * **Frame comparison:**
+   * | Method | Frame | Inertial | Precision | Use Case |
+   * |--------|-------|----------|-----------|----------|
+   * | `eci()` | TEME | Yes | Lower | SGP4-native, visualization |
+   * | `toJ2000()` | J2000 | Yes | Higher | Force models, interop |
+   * | `ecef()` | ECEF | No | Lower | Quick Earth-fixed |
+   * | `toITRF()` | ITRF | No | Higher | Precise Earth-fixed |
+   *
    * @param date - The time to calculate position for (defaults to now)
    * @returns Position and velocity in TEME frame, or null if propagation fails
    */
   abstract eci(date?: Date): PosVel | null;
 
   /**
-   * Returns the ECEF (Earth-Centered Earth Fixed) position at the given time.
+   * Returns the position in ECEF (Earth-Centered Earth-Fixed) coordinates at the given time.
+   *
+   * **Coordinate Frame: ECEF (Earth-Fixed)**
+   *
+   * ECEF coordinates rotate with the Earth. This uses a simplified transformation from TEME
+   * based on GMST rotation. For higher precision Earth-fixed coordinates, use {@link toITRF}.
+   *
    * @param date - The time to calculate position for (defaults to now)
+   * @returns ECEF position, or null if propagation fails
    */
   abstract ecef(date?: Date): EcefVec3<Kilometers> | null;
 
   /**
-   * Returns the geodetic position (lat/lon/alt) at the given time.
+   * Returns the geodetic position (latitude, longitude, altitude) at the given time.
+   *
+   * **Coordinate System: Geodetic (WGS84)**
+   *
+   * Returns geographic coordinates on the WGS84 ellipsoid. Derived from ECEF coordinates.
+   *
    * @param date - The time to calculate position for (defaults to now)
+   * @returns Geodetic coordinates (lat/lon in degrees, alt in km), or null if propagation fails
    */
   abstract lla(date?: Date): LlaVec3<Degrees, Kilometers> | null;
 
@@ -169,20 +196,47 @@ export abstract class SpaceObject extends BaseObject {
   // ==================== Abstract Coordinate Conversions ====================
 
   /**
-   * Returns J2000 coordinates at the given time.
+   * Returns the state vector in J2000 (EME2000) frame at the given time.
+   *
+   * **Coordinate Frame: J2000 (Earth-Centered Inertial)**
+   *
+   * J2000 is the standard Earth-Centered Inertial frame defined at the J2000.0 epoch
+   * (January 1, 2000, 12:00 TT). Use this frame for:
+   * - Force modeling and numerical propagation
+   * - Interoperability with external systems
+   * - Precise astrodynamics calculations
+   *
    * @param date - The time to calculate for (defaults to now)
+   * @returns J2000 state vector with position and velocity
    */
   abstract toJ2000(date?: Date): J2000;
 
   /**
-   * Returns ITRF coordinates at the given time.
+   * Returns the state vector in ITRF (International Terrestrial Reference Frame) at the given time.
+   *
+   * **Coordinate Frame: ITRF (Earth-Fixed)**
+   *
+   * ITRF is the standard Earth-fixed frame maintained by IERS. Unlike the simplified ECEF
+   * from `ecef()`, ITRF includes full precession/nutation modeling. Use this frame for:
+   * - Precise Earth-fixed coordinates
+   * - GPS/GNSS interoperability
+   * - Ground track calculations requiring high accuracy
+   *
    * @param date - The time to calculate for (defaults to now)
+   * @returns ITRF state vector with position and velocity
    */
   abstract toITRF(date?: Date): ITRF;
 
   /**
    * Returns classical orbital elements at the given time.
+   *
+   * Classical (Keplerian) elements define the orbit shape and orientation:
+   * - Semi-major axis (a), Eccentricity (e), Inclination (i)
+   * - Right Ascension of Ascending Node (Ω), Argument of Perigee (ω)
+   * - True/Mean Anomaly (ν/M)
+   *
    * @param date - The time to calculate for (defaults to now)
+   * @returns Classical orbital elements
    */
   abstract toClassicalElements(date?: Date): ClassicalElements;
 
