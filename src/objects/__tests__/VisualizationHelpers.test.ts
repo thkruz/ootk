@@ -9,6 +9,7 @@ import {
   SensorType,
   TleLine1,
   TleLine2,
+  ValidationError,
   VisualizationHelpers,
 } from '../../main';
 
@@ -267,6 +268,7 @@ describe('VisualizationHelpers', () => {
         },
       });
 
+      expect(() => VisualizationHelpers.generateFOVBoundary(sensor)).toThrow(ValidationError);
       expect(() => VisualizationHelpers.generateFOVBoundary(sensor)).toThrow(
         'Sensor must have a parent platform',
       );
