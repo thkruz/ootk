@@ -53,6 +53,18 @@ export class ConjunctionEvent {
   public readonly primaryRadius?: Kilometers;
   /** Hard body radius for secondary object (km, optional) */
   public readonly secondaryRadius?: Kilometers;
+  /** Primary object name/identifier (optional, for CDM export) */
+  public readonly primaryName?: string;
+  /** Secondary object name/identifier (optional, for CDM export) */
+  public readonly secondaryName?: string;
+  /** Primary object catalog designator (optional, for CDM export) */
+  public readonly primaryDesignator?: string;
+  /** Secondary object catalog designator (optional, for CDM export) */
+  public readonly secondaryDesignator?: string;
+  /** Primary object covariance (optional, for CDM export) */
+  public readonly primaryCovariance?: StateCovariance;
+  /** Secondary object covariance (optional, for CDM export) */
+  public readonly secondaryCovariance?: StateCovariance;
 
   constructor(
     params: {
@@ -61,7 +73,10 @@ export class ConjunctionEvent {
       radialDistance: Kilometers; intrackDistance: Kilometers;
       crosstrackDistance: Kilometers; relativeVelocity: KilometersPerSecond;
       combinedCovariance?: StateCovariance; probabilityOfCollision?: number;
-      primaryRadius?: Kilometers; secondaryRadius?: Kilometers
+      primaryRadius?: Kilometers; secondaryRadius?: Kilometers;
+      primaryName?: string; secondaryName?: string;
+      primaryDesignator?: string; secondaryDesignator?: string;
+      primaryCovariance?: StateCovariance; secondaryCovariance?: StateCovariance;
     },
   ) {
     this.tca = params.tca;
@@ -77,6 +92,12 @@ export class ConjunctionEvent {
     this.probabilityOfCollision = params.probabilityOfCollision;
     this.primaryRadius = params.primaryRadius;
     this.secondaryRadius = params.secondaryRadius;
+    this.primaryName = params.primaryName;
+    this.secondaryName = params.secondaryName;
+    this.primaryDesignator = params.primaryDesignator;
+    this.secondaryDesignator = params.secondaryDesignator;
+    this.primaryCovariance = params.primaryCovariance;
+    this.secondaryCovariance = params.secondaryCovariance;
   }
 
   /**
