@@ -2,8 +2,107 @@ import { DifferentiableFunction } from '../main';
 /* eslint-disable require-jsdoc */
 import { AngularDiameterMethod } from '../enums/AngularDiameterMethod';
 import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';
-import { EcefVec3, Kilometers, KilometersPerSecond, Radians, SpaceObjectType } from '../types/types';
+import { EcefVec3, Kilometers, KilometersPerSecond, Radians, SpaceObjectType, Vec3 } from '../types/types';
 import { angularVelocityOfEarth, cKmPerSec } from './constants';
+
+/**
+ * Converts magnitude to decibels.
+ * @param magnitude - The magnitude to convert (must be positive).
+ * @returns The value in decibels.
+ * @throws Error if magnitude is not positive.
+ * @example
+ * ```typescript
+ * const db = mag2db(1000); // Returns 30
+ * const db2 = mag2db(100); // Returns 20
+ * ```
+ */
+export function mag2db(magnitude: number): number {
+  if (magnitude <= 0) {
+    throw new Error('Magnitude must be positive for decibel conversion');
+  }
+
+  return 10 * Math.log10(magnitude);
+}
+
+/**
+ * Calculates the relative velocity between two velocity vectors.
+ * @param vel1 - First velocity vector in km/s.
+ * @param vel2 - Second velocity vector in km/s.
+ * @returns The magnitude of the relative velocity in km/s.
+ * @example
+ * ```typescript
+ * const v1 = { x: 7.0, y: 0.5, z: 0.1 };
+ * const v2 = { x: 6.8, y: 0.6, z: 0.2 };
+ * const relVel = relativeVelocity(v1, v2); // ~0.24 km/s
+ * ```
+ */
+export function relativeVelocity<T extends number>(vel1: Vec3<T>, vel2: Vec3<T>): T {
+  return Math.sqrt((vel1.x - vel2.x) ** 2 + (vel1.y - vel2.y) ** 2 + (vel1.z - vel2.z) ** 2) as T;
+}
+
+/**
+ * Shape type for RCS estimation.
+ */
+export type RcsShape = 'sphere' | 'cylinder' | 'cone' | 'hexagon' | 'cube';
+
+/**
+ * Estimates the Radar Cross Section (RCS) of an object based on its dimensions and shape.
+ * @param length - Length in meters.
+ * @param width - Width in meters.
+ * @param height - Height in meters.
+ * @param shape - The shape type ('sphere', 'cylinder', 'cone', 'hexagon', 'cube').
+ * @returns Estimated RCS in square meters.
+ * @example
+ * ```typescript
+ * const rcs = estimateRcs(2.0, 1.5, 1.5, 'cylinder');
+ * console.log(`Estimated RCS: ${rcs.toFixed(2)} m²`);
+ * ```
+ */
+export function estimateRcs(length: number, width: number, height: number, shape: string): number {
+  const shapeLower = shape.toLowerCase();
+
+  if (shapeLower.includes('sphere')) {
+    const rcs = Math.PI * (length / 2) ** 2;
+
+
+    return (Math.sqrt(rcs) * 3) / 2;
+  }
+
+  if (shapeLower.includes('cyl')) {
+    const minRcs = length * 2 * (width / 2);
+    const maxRcs = Math.PI * (length / 2) ** 2;
+    const rcs = (minRcs + maxRcs) / 2;
+
+
+    return (Math.sqrt(rcs) * 3) / 2;
+  }
+
+  if (shapeLower.includes('cone')) {
+    const rcs = (Math.PI * (width / 2) ** 2) / 2;
+
+
+    return (Math.sqrt(rcs) * 3) / 2;
+  }
+
+  if (shapeLower.includes('hex')) {
+    const minLength = Math.min(length * width, length * height, width * height);
+    const minRcs = (3 * ((Math.sqrt(3) / 2) * minLength ** 2)) / 4;
+    const maxLength = Math.max(length * width, length * height, width * height);
+    const maxRcs = (3 * ((Math.sqrt(3) / 2) * maxLength ** 2)) / 2;
+    const rcs = (minRcs + maxRcs) / 2;
+
+
+    return (Math.sqrt(rcs) * 3) / 2;
+  }
+
+  // Default to cube/box
+  const minRcs = Math.min(length * width, length * height, width * height);
+  const maxRcs = Math.max(length * width, length * height, width * height);
+  const rcs = (minRcs + maxRcs) / 2;
+
+
+  return (Math.sqrt(rcs) * 3) / 2;
+}
 
 /**
  * Calculates the factorial of a given number.

@@ -8,4 +8,5 @@ export { OrbitRegime } from './OrbitRegime';
 export { PassType } from './PassType';
 export { SensorType } from './SensorType';
 export { Sgp4OpsMode } from './Sgp4OpsMode';
+export { SunStatus } from './SunStatus';
 

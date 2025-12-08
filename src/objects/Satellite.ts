@@ -21,6 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Sun } from '../body/SunBody';
 import { FormatTle } from '../coordinate/FormatTle';
 import { Geodetic } from '../coordinate/Geodetic';
 import type { ClassicalElements } from '../coordinate/index';
@@ -29,6 +30,7 @@ import { J2000 } from '../coordinate/J2000';
 import { RIC } from '../coordinate/RIC';
 import { Tle } from '../coordinate/Tle';
 import { CatalogSource } from '../enums/CatalogSource';
+import { SunStatus } from '../enums/SunStatus';
 import { OmmDataFormat, OmmParsedDataFormat } from '../interfaces/OmmFormat';
 import { OptionsParams } from '../interfaces/OptionsParams';
 import { SatelliteParams } from '../interfaces/SatelliteParams';
@@ -39,6 +41,7 @@ import { EpochUTC } from '../time/EpochUTC';
 import { ecef2rae, eci2ecef, eci2lla, jday } from '../transforms/index';
 import {
   Degrees,
+  DegreesPerDay,
   EcefVec3,
   GreenwichMeanSiderealTime,
   Kilometers,
@@ -976,6 +979,426 @@ export class Satellite extends SpaceObject {
       rcs: this.rcs,
       status: this.status,
     };
+  }
+
+  // ==================== Orbit Visualization Methods ====================
+
+  /**
+   * Calculates ECI positions along the satellite's current orbit.
+   *
+   * @param startDate - The start date for the orbit calculation.
+   * @param points - Number of points to calculate (default: 180).
+   * @param orbits - Number of orbits to calculate (default: 1).
+   * @returns Array of ECI position vectors.
+   * @example
+   * ```typescript
+   * const orbitPoints = satellite.getOrbitPointsEci(new Date(), 360);
+   * orbitPoints.forEach(pt => console.log(`${pt.x}, ${pt.y}, ${pt.z}`));
+   * ```
+   */
+  getOrbitPointsEci(startDate: Date = new Date(), points: number = 180, orbits: number = 1): Vector3D<Kilometers>[] {
+    const result: Vector3D<Kilometers>[] = [];
+    const periodMs = this.period * 60 * 1000; // Convert to milliseconds
+
+    for (let i = 0; i < points; i++) {
+      const offset = (i * periodMs * orbits) / points;
+      const date = new Date(startDate.getTime() + offset);
+      const pv = this.eci(date);
+
+      if (pv) {
+        result.push(new Vector3D(pv.position.x, pv.position.y, pv.position.z));
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Calculates ECEF positions along the satellite's current orbit.
+   *
+   * @param startDate - The start date for the orbit calculation.
+   * @param points - Number of points to calculate (default: 180).
+   * @param orbits - Number of orbits to calculate (default: 1).
+   * @returns Array of ECEF position vectors.
+   */
+  getOrbitPointsEcef(startDate: Date = new Date(), points: number = 180, orbits: number = 1): Vector3D<Kilometers>[] {
+    const result: Vector3D<Kilometers>[] = [];
+    const periodMs = this.period * 60 * 1000;
+
+    for (let i = 0; i < points; i++) {
+      const offset = (i * periodMs * orbits) / points;
+      const date = new Date(startDate.getTime() + offset);
+      const ecef = this.ecef(date);
+
+      if (ecef) {
+        result.push(new Vector3D(ecef.x, ecef.y, ecef.z));
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Calculates LLA positions along the satellite's current orbit.
+   *
+   * @param startDate - The start date for the orbit calculation.
+   * @param points - Number of points to calculate (default: 180).
+   * @param orbits - Number of orbits to calculate (default: 1).
+   * @returns Array of LLA positions with timestamps.
+   * @example
+   * ```typescript
+   * const groundTrack = satellite.getOrbitPointsLla(new Date(), 360);
+   * groundTrack.forEach(pt => console.log(`${pt.lat}°, ${pt.lon}° at ${pt.time}`));
+   * ```
+   */
+  getOrbitPointsLla(
+    startDate: Date = new Date(),
+    points: number = 180,
+    orbits: number = 1,
+  ): { lat: Degrees; lon: Degrees; alt: Kilometers; time: Date }[] {
+    const result: { lat: Degrees; lon: Degrees; alt: Kilometers; time: Date }[] = [];
+    const periodMs = this.period * 60 * 1000;
+
+    for (let i = 0; i < points; i++) {
+      const offset = (i * periodMs * orbits) / points;
+      const date = new Date(startDate.getTime() + offset);
+      const lla = this.lla(date);
+
+      if (lla) {
+        result.push({ ...lla, time: date });
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Calculates RIC (Radial, In-track, Cross-track) positions relative to another satellite along the orbit.
+   *
+   * @param reference - The reference satellite for RIC calculations.
+   * @param startDate - The start date for the orbit calculation.
+   * @param points - Number of points to calculate (default: 180).
+   * @param orbits - Number of orbits to calculate (default: 1).
+   * @returns Array of RIC state vectors.
+   * @example
+   * ```typescript
+   * const relativeOrbit = sat1.getOrbitPointsRic(sat2, new Date(), 360);
+   * relativeOrbit.forEach(ric => console.log(`R: ${ric.position.x}, I: ${ric.position.y}, C: ${ric.position.z}`));
+   * ```
+   */
+  getOrbitPointsRic(reference: Satellite, startDate: Date = new Date(), points: number = 180, orbits: number = 1): RIC[] {
+    const result: RIC[] = [];
+    const periodMs = this.period * 60 * 1000;
+
+    for (let i = 0; i < points; i++) {
+      const offset = (i * periodMs * orbits) / points;
+      const date = new Date(startDate.getTime() + offset);
+
+      try {
+        const ric = this.toRIC(reference, date);
+
+        result.push(ric);
+      } catch {
+        // Skip failed propagations
+      }
+    }
+
+    return result;
+  }
+
+  // ==================== Orbital Mechanics Methods ====================
+
+  /**
+   * Determines if the satellite is moving northward or southward.
+   * @param date - The date at which to calculate the direction.
+   * @returns 'N' for northward, 'S' for southward.
+   * @throws Error if direction cannot be determined.
+   * @example
+   * ```typescript
+   * const direction = satellite.getDirection(new Date());
+   * console.log(`Satellite is moving ${direction === 'N' ? 'North' : 'South'}`);
+   * ```
+   */
+  getDirection(date: Date = new Date()): 'N' | 'S' {
+    const FIVE_SECONDS = 5000;
+
+    const currentLla = this.lla(date);
+
+    if (!currentLla) {
+      throw new Error('Cannot determine current position');
+    }
+
+    const futureDate = new Date(date.getTime() + FIVE_SECONDS);
+    const futureLla = this.lla(futureDate);
+
+    if (!futureLla) {
+      throw new Error('Cannot determine future position');
+    }
+
+    if (currentLla.lat < futureLla.lat) {
+      return 'N';
+    }
+    if (currentLla.lat > futureLla.lat) {
+      return 'S';
+    }
+
+    // Try 10 seconds if 5 seconds shows no change (near poles)
+    const farFutureDate = new Date(date.getTime() + FIVE_SECONDS * 2);
+    const farFutureLla = this.lla(farFutureDate);
+
+    if (!farFutureLla) {
+      throw new Error('Cannot determine far future position');
+    }
+
+    if (currentLla.lat < farFutureLla.lat) {
+      return 'N';
+    }
+
+    return 'S';
+  }
+
+  /**
+   * Calculates the nodal precession rate of the satellite's orbit.
+   *
+   * The nodal precession is caused by Earth's oblateness (J2 effect) and causes
+   * the orbital plane to rotate around Earth's axis over time.
+   *
+   * @returns The nodal precession rate in degrees per day.
+   * @example
+   * ```typescript
+   * const rate = satellite.getNodalPrecessionRate();
+   * console.log(`RAAN precesses at ${rate.toFixed(4)} deg/day`);
+   * ```
+   */
+  getNodalPrecessionRate(): DegreesPerDay {
+    const Re = 6378137; // Earth radius in meters
+    const J2 = 1.082626680e-3; // Earth's J2 coefficient
+    const periodSeconds = this.period * 60; // Convert minutes to seconds
+    const omega = (2 * Math.PI) / periodSeconds; // Angular velocity in rad/s
+    const a = this.semiMajorAxis * 1000; // km to meters
+    const e = this.eccentricity;
+    const i = this.inclination * DEG2RAD;
+
+    // Calculate precession rate in rad/s
+    const omegaP = (-3 / 2) * (Re / a) ** 2 / (1 - e * e) ** 2 * J2 * omega * Math.cos(i);
+
+    // Convert to degrees per day
+    return (omegaP * (180 / Math.PI) * 86400) as DegreesPerDay;
+  }
+
+  /**
+   * Calculates the normalized RAAN (Right Ascension of Ascending Node) accounting for nodal precession.
+   *
+   * This adjusts the RAAN from the TLE epoch to the specified date by applying
+   * the precession rate over the elapsed time.
+   *
+   * @param date - The date for which to calculate the normalized RAAN.
+   * @returns The normalized RAAN in degrees (0-360 range).
+   * @example
+   * ```typescript
+   * const raan = satellite.normalizeRaan(new Date());
+   * console.log(`Current RAAN: ${raan.toFixed(2)}°`);
+   * ```
+   */
+  normalizeRaan(date: Date = new Date()): Degrees {
+    const precessionRate = this.getNodalPrecessionRate();
+    const daysSinceEpoch = this.ageOfElset(date, 'days');
+    let normalizedRaan = this.rightAscension + precessionRate * daysSinceEpoch;
+
+    // Ensure RAAN stays within 0-360 range
+    normalizedRaan = ((normalizedRaan % 360) + 360) % 360;
+
+    return normalizedRaan as Degrees;
+  }
+
+  /**
+   * Calculates the angular separation between this satellite and another.
+   *
+   * Returns the azimuth and elevation angles of the relative position vector
+   * in the orbital plane reference frame.
+   *
+   * @param other - The other satellite.
+   * @param date - The date for the calculation.
+   * @returns Object containing azimuth and elevation angles in degrees.
+   * @throws Error if positions are undefined.
+   * @example
+   * ```typescript
+   * const angle = sat1.angleTo(sat2, new Date());
+   * console.log(`Az: ${angle.az.toFixed(2)}°, El: ${angle.el.toFixed(2)}°`);
+   * ```
+   */
+  angleTo(other: Satellite, date: Date = new Date()): { az: Degrees; el: Degrees } {
+    const pv1 = this.eci(date);
+    const pv2 = other.eci(date);
+
+    if (!pv1 || !pv2) {
+      throw new Error('Cannot determine satellite positions');
+    }
+
+    const { position: pos1, velocity: vel1 } = pv1;
+    const { position: pos2, velocity: vel2 } = pv2;
+
+    // Identical positions
+    if (pos1.x === pos2.x && pos1.y === pos2.y && pos1.z === pos2.z) {
+      return { az: 0 as Degrees, el: 0 as Degrees };
+    }
+
+    const r1 = new Vector3D(pos1.x, pos1.y, pos1.z);
+    const r2 = new Vector3D(pos2.x, pos2.y, pos2.z);
+    const v1 = new Vector3D(vel1.x, vel1.y, vel1.z);
+    const v2 = new Vector3D(vel2.x, vel2.y, vel2.z);
+
+    const r = r1.subtract(r2);
+    const v = v1.subtract(v2);
+    const rcrossv = r.cross(v);
+    const rcrossvmag = rcrossv.magnitude();
+
+    const az = (Math.atan2(rcrossv.y, rcrossv.x) * (180 / Math.PI)) as Degrees;
+    const el = (Math.asin(rcrossv.z / rcrossvmag) * (180 / Math.PI)) as Degrees;
+
+    return { az, el };
+  }
+
+  /**
+   * Calculates the angle between this satellite, another satellite, and the Sun.
+   *
+   * Returns the angle at this satellite between the vector to the other satellite
+   * and the vector to the Sun.
+   *
+   * @param other - The other satellite.
+   * @param sunPosition - The Sun's ECI position vector.
+   * @param date - The date for the calculation.
+   * @returns The angle in radians.
+   * @throws Error if positions are undefined.
+   */
+  sunAngleTo(other: Satellite, sunPosition: Vector3D<Kilometers>, date: Date = new Date()): Radians {
+    const pv1 = this.eci(date);
+    const pv2 = other.eci(date);
+
+    if (!pv1 || !pv2) {
+      throw new Error('Cannot determine satellite positions');
+    }
+
+    const { position: pos1 } = pv1;
+    const { position: pos2 } = pv2;
+
+    // Check if positions are identical
+    if (pos1.x === pos2.x && pos1.y === pos2.y && pos1.z === pos2.z) {
+      return NaN as Radians;
+    }
+
+    // Compute vectors from sat2 to sun and sat2 to sat1
+    const sat2ToSun = new Vector3D(
+      sunPosition.x - pos2.x,
+      sunPosition.y - pos2.y,
+      sunPosition.z - pos2.z,
+    );
+    const sat2ToSat1 = new Vector3D(pos1.x - pos2.x, pos1.y - pos2.y, pos1.z - pos2.z);
+
+    return sat2ToSun.angle(sat2ToSat1);
+  }
+
+  // ==================== Sun/Eclipse Methods ====================
+
+  /**
+   * Determines the illumination status of the satellite (sunlit, penumbra, or umbra).
+   *
+   * Uses the Sun's lighting ratio to determine if the satellite is in Earth's shadow.
+   *
+   * @param date - The date for the calculation.
+   * @returns The sun status (UMBRAL, PENUMBRAL, SUN, or UNKNOWN).
+   * @example
+   * ```typescript
+   * const status = satellite.getSunStatus(new Date());
+   * if (status === SunStatus.SUN) {
+   *   console.log('Satellite is sunlit');
+   * } else if (status === SunStatus.UMBRAL) {
+   *   console.log('Satellite is in full eclipse');
+   * }
+   * ```
+   */
+  getSunStatus(date: Date = new Date()): SunStatus {
+    const pv = this.eci(date);
+
+    if (!pv) {
+      return SunStatus.UNKNOWN;
+    }
+
+    const satPos = new Vector3D<Kilometers>(pv.position.x, pv.position.y, pv.position.z);
+
+    const sunPos = Sun.eci(date);
+    const ratio = Sun.lightingRatio(satPos, sunPos);
+
+    if (ratio === 0) {
+      return SunStatus.UMBRAL;
+    }
+    if (ratio < 1) {
+      return SunStatus.PENUMBRAL;
+    }
+
+    return SunStatus.SUN;
+  }
+
+  // ==================== Conjunction/Proximity Methods ====================
+
+  /**
+   * Result of closest approach calculation.
+   */
+  /**
+   * Finds the closest approach between this satellite and another within a search window.
+   *
+   * Searches through the specified duration to find the minimum distance between
+   * the two satellites using RIC (Radial, In-track, Cross-track) coordinates.
+   *
+   * @param other - The other satellite.
+   * @param startDate - The start date for the search.
+   * @param duration - Search duration in seconds (default: 86400 = 1 day).
+   * @param stepSize - Time step in seconds (default: 1).
+   * @returns Object containing offset, distance, RIC state, and date of closest approach.
+   * @throws Error if no valid approach found.
+   * @example
+   * ```typescript
+   * const result = sat1.findClosestApproach(sat2, new Date(), 86400);
+   * console.log(`Closest: ${result.distance.toFixed(2)} km at ${result.date}`);
+   * console.log(`RIC: R=${result.ric.position.x}, I=${result.ric.position.y}, C=${result.ric.position.z}`);
+   * ```
+   */
+  findClosestApproach(
+    other: Satellite,
+    startDate: Date = new Date(),
+    duration: number = 86400,
+    stepSize: number = 1,
+  ): { offset: number; distance: Kilometers; ric: RIC; date: Date } {
+    let minDist = Infinity;
+    let result: { offset: number; distance: Kilometers; ric: RIC; date: Date } | null = null;
+
+    for (let t = 0; t < duration; t += stepSize) {
+      const offset = t * 1000;
+      const date = new Date(startDate.getTime() + offset);
+
+      try {
+        const ric = this.toRIC(other, date);
+        const dist = ric.range;
+
+        if (dist < minDist && dist > 0) {
+          minDist = dist;
+          result = {
+            offset,
+            distance: dist,
+            ric,
+            date,
+          };
+        }
+      } catch {
+        // Skip failed propagations
+      }
+    }
+
+    if (!result) {
+      throw new Error('No closest approach found in the search window');
+    }
+
+    return result;
   }
 
   // ==================== Private Helpers ====================
