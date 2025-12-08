@@ -102,6 +102,11 @@ export type RadiansPerSecond = Distinct<number, 'RadiansPerSecond'>;
 export type DegreesPerSecond = Distinct<number, 'DegreesPerSecond'>;
 
 /**
+ * Represents a value in degrees per day.
+ */
+export type DegreesPerDay = Distinct<number, 'DegreesPerDay'>;
+
+/**
  * Represents a value in meters per second.
  */
 export type MetersPerSecond = Distinct<number, 'MetersPerSecond'>;
