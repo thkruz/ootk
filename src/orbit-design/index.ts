@@ -15,6 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+export { OrbitFinder } from './OrbitFinder';
+export type { OrbitFinderOptions, OrbitParameters } from './OrbitFinder';
 export { RepeatGroundTrack } from './RepeatGroundTrack';
 export type {
   FindNearestOptions,
