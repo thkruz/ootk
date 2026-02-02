@@ -17,6 +17,7 @@ const jestConfig = {
     ],
   },
   testMatch: ['**/test/**/?(*.)+(spec|test).?(m)[jt]s?(x)', '**/__tests__/**/?(*.)+(spec|test).?(m)[jt]s?(x)'],
+  testPathIgnorePatterns: ['<rootDir>/test/integration/'],
   moduleFileExtensions: ['js', 'mjs', 'ts'],
   coverageDirectory: '<rootDir>/coverage',
   moduleDirectories: ['node_modules'],
