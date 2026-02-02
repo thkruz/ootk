@@ -21,7 +21,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { PayloadStatus } from '../types/PayloadStatus';
 import { Sun } from '../body/SunBody';
+import { CommunicationDevice } from '../comm/CommunicationDevice';
 import { FormatTle } from '../coordinate/FormatTle';
 import { Geodetic } from '../coordinate/Geodetic';
 import type { ClassicalElements } from '../coordinate/index';
@@ -37,9 +39,10 @@ import { SatelliteParams } from '../interfaces/SatelliteParams';
 import { Sgp4 } from '../main';
 import { RAE } from '../observation/RAE';
 import { Vector3D } from '../operations/Vector3D';
+import { Sensor } from '../sensor/Sensor';
 import { EpochUTC } from '../time/EpochUTC';
 import { ecef2rae, eci2ecef, eci2lla, jday } from '../transforms/index';
-import {
+import type {
   Degrees,
   DegreesPerDay,
   EcefVec3,
@@ -49,7 +52,6 @@ import {
   LlaVec3,
   Minutes,
   OperationsDetails,
-  PayloadStatus,
   PosVel,
   Radians,
   RaeVec3,
@@ -60,8 +62,6 @@ import {
   TleLine2,
 } from '../types/types';
 import { DEG2RAD, MILLISECONDS_TO_DAYS, MINUTES_PER_DAY } from '../utils/constants';
-import { CommunicationDevice } from '../comm/CommunicationDevice';
-import { Sensor } from '../sensor/Sensor';
 import { dopplerFactor } from './../utils/functions';
 import { GroundObject } from './GroundObject';
 import { SpaceObject } from './SpaceObject';
