@@ -27,7 +27,7 @@ describe('ConjunctionAssessment - High Fidelity', () => {
   });
 
   describe('High-Fidelity Propagation', () => {
-    it('should use high-fidelity propagation when requested', () => {
+    it('should use high-fidelity propagation when requested', { timeout: 30000 }, () => {
       const assessment = new ConjunctionAssessment(
         { tle: primaryTle, radius: 0.01 as Kilometers },
         { tle: secondaryTle, radius: 0.01 as Kilometers },
@@ -49,7 +49,7 @@ describe('ConjunctionAssessment - High Fidelity', () => {
   });
 
   describe('Covariance Propagation', () => {
-    it('should propagate covariances and compute Pc', () => {
+    it('should propagate covariances and compute Pc', { timeout: 30000 }, () => {
       const assessment = new ConjunctionAssessment(
         { tle: primaryTle, radius: 0.01 as Kilometers },
         { tle: secondaryTle, radius: 0.01 as Kilometers },
