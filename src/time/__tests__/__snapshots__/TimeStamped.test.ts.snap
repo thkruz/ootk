@@ -8,12 +8,3 @@ TimeStamped {
   "value_": "test",
 }
 `;
-
-exports[`TimeStamped should be constructed from an epoch 1`] = `
-TimeStamped {
-  "epoch_": EpochUTC {
-    "posix": 315964800,
-  },
-  "value_": "test",
-}
-`;
