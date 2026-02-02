@@ -1,4 +1,3 @@
-import { describe, expect, it } from '@jest/globals';
 import {
   J2000,
   Kilometers, KilometersPerSecond,

@@ -1,3 +1,4 @@
+import { vi, Mock } from 'vitest';
 import { Earth, EpochUTC, J2000, MetersPerSecond, Vector3D } from '../../main';
 import { AtmosphericDrag } from '../AtmosphericDrag';
 import { EarthGravity } from '../EarthGravity';
@@ -14,12 +15,12 @@ import { Thrust } from '../Thrust';
  */
 
 
-jest.mock('../AtmosphericDrag');
-jest.mock('../EarthGravity');
-jest.mock('../Gravity');
-jest.mock('../SolarRadiationPressure');
-jest.mock('../ThirdBodyGravity');
-jest.mock('../Thrust');
+vi.mock('../AtmosphericDrag');
+vi.mock('../EarthGravity');
+vi.mock('../Gravity');
+vi.mock('../SolarRadiationPressure');
+vi.mock('../ThirdBodyGravity');
+vi.mock('../Thrust');
 
 describe('ForceModel', () => {
   let forceModel: ForceModel;
@@ -32,7 +33,7 @@ describe('ForceModel', () => {
       velocity: new Vector3D(0, 7.5, 0),
       epoch: null as unknown as EpochUTC,
     } as J2000;
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('setGravity', () => {
@@ -133,9 +134,11 @@ describe('ForceModel', () => {
     it('should accumulate central gravity acceleration', () => {
       const mockAcceleration = new Vector3D(1, 2, 3);
 
-      (Gravity as jest.Mock).mockImplementation(() => ({
-        acceleration: jest.fn().mockReturnValue(mockAcceleration),
-      }));
+      (Gravity as Mock).mockImplementation(function () {
+        return {
+          acceleration: vi.fn().mockReturnValue(mockAcceleration),
+        };
+      });
 
       forceModel.setGravity();
       const acceleration = forceModel.acceleration(mockState);
@@ -148,15 +151,21 @@ describe('ForceModel', () => {
       const thirdBodyAcc = new Vector3D(0, 1, 0);
       const srpAcc = new Vector3D(0, 0, 1);
 
-      (Gravity as jest.Mock).mockImplementation(() => ({
-        acceleration: jest.fn().mockReturnValue(gravityAcc),
-      }));
-      (ThirdBodyGravity as unknown as jest.Mock).mockImplementation(() => ({
-        acceleration: jest.fn().mockReturnValue(thirdBodyAcc),
-      }));
-      (SolarRadiationPressure as unknown as jest.Mock).mockImplementation(() => ({
-        acceleration: jest.fn().mockReturnValue(srpAcc),
-      }));
+      (Gravity as Mock).mockImplementation(function () {
+        return {
+          acceleration: vi.fn().mockReturnValue(gravityAcc),
+        };
+      });
+      (ThirdBodyGravity as unknown as Mock).mockImplementation(function () {
+        return {
+          acceleration: vi.fn().mockReturnValue(thirdBodyAcc),
+        };
+      });
+      (SolarRadiationPressure as unknown as Mock).mockImplementation(function () {
+        return {
+          acceleration: vi.fn().mockReturnValue(srpAcc),
+        };
+      });
 
       forceModel.setGravity();
       forceModel.setThirdBodyGravity({ moon: true });
@@ -171,13 +180,15 @@ describe('ForceModel', () => {
   describe('derivative', () => {
     it('should return velocity joined with acceleration', () => {
       const mockAcceleration = new Vector3D(1, 2, 3);
-      const mockJoin = jest.fn();
+      const mockJoin = vi.fn();
 
       mockState.velocity.join = mockJoin;
 
-      (Gravity as jest.Mock).mockImplementation(() => ({
-        acceleration: jest.fn().mockReturnValue(mockAcceleration),
-      }));
+      (Gravity as Mock).mockImplementation(function () {
+        return {
+          acceleration: vi.fn().mockReturnValue(mockAcceleration),
+        };
+      });
 
       forceModel.setGravity();
       forceModel.derivative(mockState);

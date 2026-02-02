@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { CovarianceFrame, StateCovariance } from '../../main';
 import { createCovarianceFromTle, createSampleCovarianceFromTle } from '../create-covariance-from-tle';
 
@@ -6,11 +7,11 @@ describe('createCovarianceFromTle', () => {
   const tleLine2 = '2 25544  51.6461 339.8014 0002571  34.5857 120.4689 15.48919393265019';
 
   beforeEach(() => {
-    jest.spyOn(console, 'log').mockImplementation();
+    vi.spyOn(console, 'log').mockImplementation();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should create a StateCovariance object with default parameters', () => {

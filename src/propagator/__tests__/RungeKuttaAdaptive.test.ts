@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, it } from '@jest/globals';
 import { ForceModel } from '../../force/ForceModel';
 import { Thrust } from '../../force/Thrust';
 import { EpochUTC, J2000, Kilometers, KilometersPerSecond, MetersPerSecond, Seconds, SecondsPerMeterPerSecond, Vector3D } from '../../main';

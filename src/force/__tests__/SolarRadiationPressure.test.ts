@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { EpochUTC, J2000, Seconds, Sun, Vector3D } from '../../main';
 import { SolarRadiationPressure } from '../SolarRadiationPressure';
 
@@ -38,7 +39,7 @@ describe('SolarRadiationPressure', () => {
     });
 
     it('should return zero-like acceleration when lighting ratio is zero', () => {
-      jest.spyOn(Sun, 'lightingRatio').mockReturnValue(0);
+      vi.spyOn(Sun, 'lightingRatio').mockReturnValue(0);
 
       const mockEpoch = new EpochUTC(new Date('2024-01-01T00:00:00Z').getTime() / 1000 as Seconds);
       const mockPosition = new Vector3D(7000, 0, 0);
