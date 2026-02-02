@@ -12,6 +12,10 @@ test/performance
 test/satellite/transform*
 test/sgp4/sgp4prop
 
+FUTURE-WORK.md
+
+circular-deps.svg
+
 **/**.out
 .qodo
 
