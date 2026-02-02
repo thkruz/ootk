@@ -1,14 +1,14 @@
+import { PayloadStatus } from '../types/PayloadStatus';
 import { CatalogSource } from '../enums/CatalogSource';
 import { HistoryConfig } from '../objects/History';
 import {
-  TemeVec3,
-  LaunchDetails,
-  OperationsDetails,
-  PayloadStatus,
-  SpaceCraftDetails,
-  SpaceObjectType,
-  TleLine1,
-  TleLine2,
+    LaunchDetails,
+    OperationsDetails,
+    SpaceCraftDetails,
+    SpaceObjectType,
+    TemeVec3,
+    TleLine1,
+    TleLine2,
 } from '../types/types';
 import { OmmDataFormat } from './OmmFormat';
 
