@@ -1,4 +1,13 @@
-// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`TimeStamped > should be constructed from an epoch 1`] = `
+TimeStamped {
+  "epoch_": EpochUTC {
+    "posix": 315964800,
+  },
+  "value_": "test",
+}
+`;
 
 exports[`TimeStamped should be constructed from an epoch 1`] = `
 TimeStamped {
