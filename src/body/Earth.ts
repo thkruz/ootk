@@ -38,8 +38,8 @@ import {
   secondsPerSiderealDay,
   TAU,
   ttasec2rad,
-  Vector3D,
 } from '../main';
+import { Vector3D } from './../operations/Vector3D';
 import { NutationAngles } from './NutationAngles';
 import { PrecessionAngles } from './PrecessionAngles';
 
