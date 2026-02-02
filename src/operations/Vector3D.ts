@@ -21,7 +21,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Kilometers, KilometersPerSecond, Radians, linearDistance } from '../main';
+import type { Kilometers, KilometersPerSecond, Radians } from '../types/types';
+import { linearDistance } from '../utils/linearDistance';
 import { Matrix } from './Matrix';
 import { Vector } from './Vector';
 

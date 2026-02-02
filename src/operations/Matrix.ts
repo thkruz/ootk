@@ -21,7 +21,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Radians, Vector, Vector3D } from '../main';
+import type { Radians } from '../types/types';
+import { Vector } from './Vector';
+import { Vector3D } from './Vector3D';
 
 /**
  * A matrix is a rectangular array of numbers or other mathematical objects for
