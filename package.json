@@ -5,12 +5,17 @@
   "module": "dist/main.js",
   "description": "Orbital Object Toolkit including Multiple Propagators, Initial Orbit Determination, and Maneuver Calculations.",
   "scripts": {
-    "build": "npm run clean && npx tsc -p tsconfig.build.json",
+    "build": "npm run clean && npx tsc -p tsconfig.build.json && node scripts/fix-esm-imports.mjs",
     "clean": "node ./scripts/cleanup.mjs",
+    "circular": "madge --circular --extensions ts src/main.ts",
+    "circular:image": "madge --circular --image circular-deps.svg --extensions ts src/main.ts",
     "lint": "npx eslint src",
     "lint:fix": "npx eslint src --fix",
     "test": "jest",
     "test:coverage": "jest --coverage",
+    "test:integration": "npm run build && vitest run --config test/integration/vitest.config.mts",
+    "test:integration:only": "vitest run --config test/integration/vitest.config.mts",
+    "test:all": "npm run test && npm run test:integration",
     "version": "npm run build && auto-changelog && git add CHANGELOG.md"
   },
   "main": "dist/main.js",
@@ -48,10 +53,12 @@
     "eslint": "^9.39.1",
     "fix-esm-import-path": "^1.10.3",
     "jest": "^30.2.0",
+    "madge": "^8.0.0",
     "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   },
   "homepage": "https://github.com/thkruz/ootk",
   "dependencies": {
