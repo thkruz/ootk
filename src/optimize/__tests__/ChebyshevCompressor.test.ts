@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { EpochUTC, EpochWindow, J2000, Kilometers, KilometersPerSecond, Seconds, Vector3D } from '../../main';
 import { StateInterpolator } from '../../interpolator/StateInterpolator';
 import { ChebyshevCompressor } from '../ChebyshevCompressor';
@@ -16,10 +17,10 @@ describe('ChebyshevCompressor', () => {
     );
 
     mockInterpolator = {
-      window: jest.fn().mockReturnValue(new EpochWindow(startEpoch, endEpoch)),
-      interpolate: jest.fn().mockReturnValue(mockJ2000),
-      inWindow: jest.fn().mockReturnValue(true),
-      overlap: jest.fn(),
+      window: vi.fn().mockReturnValue(new EpochWindow(startEpoch, endEpoch)),
+      interpolate: vi.fn().mockReturnValue(mockJ2000),
+      inWindow: vi.fn().mockReturnValue(true),
+      overlap: vi.fn(),
       sizeBytes: 0,
     } as unknown as StateInterpolator;
 

@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { EpochUTC, Seconds } from '../../main';
 import { ChebyshevCoefficients } from '../ChebyshevCoefficients';
 import { ChebyshevInterpolator } from '../ChebyshevInterpolator';
@@ -12,7 +13,7 @@ describe('ChebyshevInterpolator', () => {
         a: 1000,
         b: 2000,
         sizeBytes: 100,
-        interpolate: jest.fn().mockReturnValue({
+        interpolate: vi.fn().mockReturnValue({
           position: { x: 1, y: 2, z: 3 },
           velocity: { x: 0.1, y: 0.2, z: 0.3 },
         }),
@@ -21,7 +22,7 @@ describe('ChebyshevInterpolator', () => {
         a: 2000,
         b: 3000,
         sizeBytes: 100,
-        interpolate: jest.fn().mockReturnValue({
+        interpolate: vi.fn().mockReturnValue({
           position: { x: 4, y: 5, z: 6 },
           velocity: { x: 0.4, y: 0.5, z: 0.6 },
         }),

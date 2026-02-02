@@ -1,10 +1,11 @@
+import { vi, Mocked } from 'vitest';
 import { Thrust } from '../../force/Thrust';
 import { EpochUTC, Kilometers, KilometersPerSecond, Seconds, StateVector, Tle, Vector3D } from '../../main';
 import { Sgp4Propagator } from '../Sgp4Propagator';
 
 describe('Sgp4Propagator', () => {
   let propagator: Sgp4Propagator;
-  let mockTle: jest.Mocked<Tle>;
+  let mockTle: Mocked<Tle>;
   let mockJ2000State: StateVector;
 
   beforeEach(() => {
@@ -15,15 +16,15 @@ describe('Sgp4Propagator', () => {
 
     mockTle = {
       state: {
-        toJ2000: jest.fn().mockReturnValue(mockJ2000State),
+        toJ2000: vi.fn().mockReturnValue(mockJ2000State),
       },
-      propagate: jest.fn().mockReturnValue({
-        toJ2000: jest.fn().mockReturnValue({
+      propagate: vi.fn().mockReturnValue({
+        toJ2000: vi.fn().mockReturnValue({
           position: { x: 1100, y: 2100, z: 3100 },
           velocity: { x: 1.1, y: 2.1, z: 3.1 },
         }),
       }),
-    } as unknown as jest.Mocked<Tle>;
+    } as unknown as Mocked<Tle>;
 
     propagator = new Sgp4Propagator(mockTle);
   });

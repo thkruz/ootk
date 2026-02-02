@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { StateInterpolator } from '@src/interpolator/StateInterpolator';
 import {
   EpochUTC,
@@ -10,6 +11,7 @@ import {
   Thrust,
   Vector3D,
 } from '@src/main';
+import { LambertIOD } from '@src/orbit-determination/LambertIOD';
 import { Waypoint } from '../Waypoint';
 
 
@@ -53,7 +55,7 @@ describe('Waypoint', () => {
         0 as SecondsPerMeterPerSecond,
       );
       const mockTarget = {
-        interpolate: jest.fn().mockReturnValue(null),
+        interpolate: vi.fn().mockReturnValue(null),
       } as unknown as StateInterpolator;
       const components = new Float64Array([0, 0, 0]);
 
@@ -97,7 +99,7 @@ describe('Waypoint', () => {
       );
       const mockPivot = EpochUTC.fromDateTimeString('2024-01-01T10:00:00.000Z');
       const mockTarget = {
-        interpolate: jest.fn().mockReturnValue(null),
+        interpolate: vi.fn().mockReturnValue(null),
       } as unknown as StateInterpolator;
 
       expect(() => {
@@ -143,11 +145,11 @@ describe('Waypoint', () => {
         new Vector3D(0 as KilometersPerSecond, 7.4 as KilometersPerSecond, 0 as KilometersPerSecond),
       );
       const mockTarget = {
-        interpolate: jest.fn().mockReturnValue(mockTargetState),
+        interpolate: vi.fn().mockReturnValue(mockTargetState),
       } as unknown as StateInterpolator;
 
       // Mock LambertIOD to return null
-      jest.spyOn(require('@src/orbit-determination/LambertIOD').LambertIOD.prototype, 'estimate')
+      vi.spyOn(LambertIOD.prototype, 'estimate')
         .mockReturnValue(null);
 
       expect(() => {
@@ -195,7 +197,7 @@ describe('Waypoint', () => {
         new Vector3D(0 as KilometersPerSecond, 7.4 as KilometersPerSecond, 0 as KilometersPerSecond),
       );
       const mockTarget = {
-        interpolate: jest.fn().mockReturnValue(mockTargetState),
+        interpolate: vi.fn().mockReturnValue(mockTargetState),
       } as unknown as StateInterpolator;
 
       // Mock LambertIOD to return a valid state
@@ -205,10 +207,10 @@ describe('Waypoint', () => {
         new Vector3D(0.1 as KilometersPerSecond, 7.5 as KilometersPerSecond, 0.1 as KilometersPerSecond),
       );
 
-      jest.spyOn(require('@src/orbit-determination/LambertIOD').LambertIOD.prototype, 'estimate')
+      vi.spyOn(LambertIOD.prototype, 'estimate')
         .mockReturnValue(mockLambertResult);
 
-      const refineManeuversSpy = jest.spyOn(Waypoint as any, '_refineManeuvers')
+      const refineManeuversSpy = vi.spyOn(Waypoint as any, '_refineManeuvers')
         .mockReturnValue([]);
 
       Waypoint.toManeuvers(mockInterceptor, mockPivot, [waypoint], mockTarget, null, null, {
@@ -233,7 +235,7 @@ describe('Waypoint', () => {
         new Vector3D(0 as KilometersPerSecond, 7.4 as KilometersPerSecond, 0 as KilometersPerSecond),
       );
       const mockTarget = {
-        interpolate: jest.fn().mockReturnValue(mockTargetState),
+        interpolate: vi.fn().mockReturnValue(mockTargetState),
       } as unknown as StateInterpolator;
 
       // Mock LambertIOD to return a valid state
@@ -243,7 +245,7 @@ describe('Waypoint', () => {
         new Vector3D(0.1 as KilometersPerSecond, 7.5 as KilometersPerSecond, 0.1 as KilometersPerSecond),
       );
 
-      jest.spyOn(require('@src/orbit-determination/LambertIOD').LambertIOD.prototype, 'estimate')
+      vi.spyOn(LambertIOD.prototype, 'estimate')
         .mockReturnValue(mockLambertResult);
 
       const result = Waypoint.toManeuvers(
@@ -274,7 +276,7 @@ describe('Waypoint', () => {
           new Vector3D(0 as KilometersPerSecond, 7.4 as KilometersPerSecond, 0 as KilometersPerSecond),
         );
         const mockTarget = {
-          interpolate: jest.fn().mockReturnValue(mockTargetState),
+          interpolate: vi.fn().mockReturnValue(mockTargetState),
         } as unknown as StateInterpolator;
 
         // Mock LambertIOD to return a valid state
@@ -283,11 +285,11 @@ describe('Waypoint', () => {
           mockInterceptor.position,
           new Vector3D(0.1 as KilometersPerSecond, 7.5 as KilometersPerSecond, 0.1 as KilometersPerSecond),
         );
-        jest.spyOn(require('@src/orbit-determination/LambertIOD').LambertIOD.prototype, 'estimate')
+        vi.spyOn(LambertIOD.prototype, 'estimate')
           .mockReturnValue(mockLambertResult);
 
         // Spy on _refineManeuvers to verify it receives correct parameters
-        const refineManeuversSpy = jest.spyOn(Waypoint as unknown as { _refineManeuvers: () => Thrust[] }, '_refineManeuvers')
+        const refineManeuversSpy = vi.spyOn(Waypoint as unknown as { _refineManeuvers: () => Thrust[] }, '_refineManeuvers')
           .mockReturnValue([]);
 
         Waypoint.toManeuvers(mockInterceptor, mockPivot, [waypoint], mockTarget, null, null, {
@@ -323,7 +325,7 @@ describe('Waypoint', () => {
           new Vector3D(0 as KilometersPerSecond, 7.4 as KilometersPerSecond, 0 as KilometersPerSecond),
         );
         const mockTarget = {
-          interpolate: jest.fn().mockReturnValue(mockTargetState),
+          interpolate: vi.fn().mockReturnValue(mockTargetState),
         } as unknown as StateInterpolator;
 
         // Mock LambertIOD
@@ -332,10 +334,10 @@ describe('Waypoint', () => {
           mockInterceptor.position,
           new Vector3D(0.1 as KilometersPerSecond, 7.5 as KilometersPerSecond, 0.1 as KilometersPerSecond),
         );
-        jest.spyOn(require('@src/orbit-determination/LambertIOD').LambertIOD.prototype, 'estimate')
+        vi.spyOn(LambertIOD.prototype, 'estimate')
           .mockReturnValue(mockLambertResult);
 
-        const refineManeuversSpy = jest.spyOn(Waypoint as unknown as { _refineManeuvers: () => Thrust[] }, '_refineManeuvers')
+        const refineManeuversSpy = vi.spyOn(Waypoint as unknown as { _refineManeuvers: () => Thrust[] }, '_refineManeuvers')
           .mockReturnValue([]);
 
         Waypoint.toManeuvers(mockInterceptor, mockPivot, [waypoint, waypoint2], mockTarget, null, null, {
@@ -367,7 +369,7 @@ describe('Waypoint', () => {
           new Vector3D(0 as KilometersPerSecond, 7.4 as KilometersPerSecond, 0 as KilometersPerSecond),
         );
         const mockTarget = {
-          interpolate: jest.fn().mockReturnValue(mockTargetState),
+          interpolate: vi.fn().mockReturnValue(mockTargetState),
         } as unknown as StateInterpolator;
 
         // Mock LambertIOD
@@ -376,10 +378,10 @@ describe('Waypoint', () => {
           mockInterceptor.position,
           new Vector3D(0.1 as KilometersPerSecond, 7.5 as KilometersPerSecond, 0.1 as KilometersPerSecond),
         );
-        jest.spyOn(require('@src/orbit-determination/LambertIOD').LambertIOD.prototype, 'estimate')
+        vi.spyOn(LambertIOD.prototype, 'estimate')
           .mockReturnValue(mockLambertResult);
 
-        const refineManeuversSpy = jest.spyOn(Waypoint as unknown as { _refineManeuvers: () => Thrust[] }, '_refineManeuvers')
+        const refineManeuversSpy = vi.spyOn(Waypoint as unknown as { _refineManeuvers: () => Thrust[] }, '_refineManeuvers')
           .mockReturnValue([]);
 
         Waypoint.toManeuvers(mockInterceptor, mockPivot, [waypoint], mockTarget, null, null, {
