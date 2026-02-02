@@ -15,7 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { PassType, Satellite, Vector3D } from '../main';
+import type { PassType } from '../enums/PassType';
+import type { Satellite } from '../objects/Satellite';
+import type { Vector3D } from '../operations/Vector3D';
 import { Sgp4ErrorCode } from '../sgp4/sgp4-error';
 
 /**
@@ -760,30 +762,6 @@ export enum ZoomValue {
   LEO = 0.45,
   GEO = 0.82,
   MAX = 1,
-}
-
-/*
- * + Operational
- * - Nonoperational
- * P Partially Operational
- * Partially fulfilling primary mission or secondary mission(s)
- * B Backup/Standby
- * Previously operational satellite put into reserve status
- * S Spare
- * New satellite awaiting full activation
- * X Extended Mission
- * D Decayed
- * ? Unknown
- */
-export enum PayloadStatus {
-  OPERATIONAL = '+',
-  NONOPERATIONAL = '-',
-  PARTIALLY_OPERATIONAL = 'P',
-  BACKUP_STANDBY = 'B',
-  SPARE = 'S',
-  EXTENDED_MISSION = 'X',
-  DECAYED = 'D',
-  UNKNOWN = '?'
 }
 
 /**
