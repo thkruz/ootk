@@ -19,6 +19,7 @@ import type { PassType } from '../enums/PassType';
 import type { Satellite } from '../objects/Satellite';
 import type { Vector3D } from '../operations/Vector3D';
 import { Sgp4ErrorCode } from '../sgp4/sgp4-error';
+export { PayloadStatus } from './PayloadStatus';
 
 /**
  * Represents a distinct type.
