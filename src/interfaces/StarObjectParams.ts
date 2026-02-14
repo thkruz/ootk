@@ -8,4 +8,9 @@ export interface StarObjectParams extends BaseObjectParams {
   h?: string;
   pname?: string;
   vmag?: number;
+  constellation?: string;
+  colorTemp?: number;
+  hr?: number;
+  flamsteed?: string;
+  bayer?: string;
 }

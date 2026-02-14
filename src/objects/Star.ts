@@ -48,6 +48,11 @@ export class Star extends BaseObject {
   h: string;
   pname: string;
   vmag?: number;
+  constellation?: string;
+  colorTemp?: number;
+  hr?: number;
+  flamsteed?: string;
+  bayer?: string;
 
   constructor(info: StarObjectParams) {
     super(info);
@@ -60,6 +65,11 @@ export class Star extends BaseObject {
     this.bf = info.bf ?? '';
     this.h = info.h ?? '';
     this.vmag = info.vmag;
+    this.constellation = info.constellation;
+    this.colorTemp = info.colorTemp;
+    this.hr = info.hr;
+    this.flamsteed = info.flamsteed;
+    this.bayer = info.bayer;
   }
 
   eci(lla: LlaVec3 = { lat: <Degrees>180, lon: <Degrees>0, alt: <Kilometers>0 }, date: Date = new Date()): TemeVec3 {
@@ -98,6 +108,11 @@ export class Star extends BaseObject {
       h: this.h,
       pname: this.pname,
       vmag: this.vmag,
+      constellation: this.constellation,
+      colorTemp: this.colorTemp,
+      hr: this.hr,
+      flamsteed: this.flamsteed,
+      bayer: this.bayer,
       active: this.active,
       metadata: this.metadata ? { ...this.metadata } : undefined,
     });
@@ -114,6 +129,11 @@ export class Star extends BaseObject {
       h: this.h,
       pname: this.pname,
       vmag: this.vmag,
+      constellation: this.constellation,
+      colorTemp: this.colorTemp,
+      hr: this.hr,
+      flamsteed: this.flamsteed,
+      bayer: this.bayer,
     };
   }
 
