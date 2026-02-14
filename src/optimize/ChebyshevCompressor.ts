@@ -95,9 +95,9 @@ export class ChebyshevCompressor {
    * @returns ChebyshevCoefficients for the X, Y, Z position components.
    */
   private fitWindow_(coeffs: number, a: Seconds, b: Seconds): ChebyshevCoefficients {
-    const cx = new Float64Array();
-    const cy = new Float64Array();
-    const cz = new Float64Array();
+    const cx = new Float64Array(coeffs);
+    const cy = new Float64Array(coeffs);
+    const cz = new Float64Array(coeffs);
 
     for (let j = 0; j < coeffs; j++) {
       const result = this.fitCoefficient_(j, coeffs, a, b);
@@ -122,9 +122,9 @@ export class ChebyshevCompressor {
    * @returns A new ChebyshevInterpolator that can reconstruct positions
    *          from the polynomial coefficients.
    */
-  compress(cpr = 21): ChebyshevInterpolator {
+  compress(cpr = 21, segmentDuration?: Seconds): ChebyshevInterpolator {
     const { start, end } = this.interpolator_.window();
-    const period = this.interpolator_.interpolate(start)!.period;
+    const period = segmentDuration ?? this.interpolator_.interpolate(start)!.period;
     const coefficients: ChebyshevCoefficients[] = [];
     let current = start;
 
