@@ -44,6 +44,14 @@ export type {
   CdmExportOptions,
 } from './CdmTypes';
 
+export { OdmExporter } from './OdmExporter';
+export type {
+  OdmExportOptions,
+  OpmExportOptions,
+  OemExportOptions,
+  OmmExportOptions,
+} from './OdmTypes';
+
 // TODO: Future parsers to add:
 // - Sp3Parser: GPS precise ephemerides (SP3 format)
 // - TdmParser: Tracking Data Messages
