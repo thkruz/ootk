@@ -30,6 +30,7 @@ type SolveOptions = {
   posSearch?: number;
   velSearch?: number;
   tolerance?: number;
+  maxIter?: number;
   printIter?: boolean;
 };
 
@@ -95,6 +96,7 @@ export class ModifiedGoodingIOD {
       posSearch = 10.0,
       velSearch = 0.1,
       tolerance = 1e-6,
+      maxIter = 10000,
       printIter = false,
     }: SolveOptions = this.defaultSolveOptions_(),
   ): J2000 {
@@ -118,6 +120,7 @@ export class ModifiedGoodingIOD {
       adaptive: true,
       xTolerance: tolerance,
       fTolerance: tolerance,
+      maxIter,
       printIter,
     });
 
