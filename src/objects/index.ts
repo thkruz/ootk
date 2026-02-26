@@ -18,7 +18,6 @@ export { Marker } from './Marker';
 export type {
   CommunicationDeviceInterface,
   HistoricalState,
-  PropagatorType,
   SensorInterface,
   SerializedObject
 } from './ObjectTypes';

@@ -41,11 +41,6 @@ export interface SerializedObject {
 }
 
 /**
- * Available propagator types for satellite propagation.
- */
-export type PropagatorType = 'SGP4' | 'RK4' | 'RK89' | 'KEPLER' | 'DORMAND_PRINCE';
-
-/**
  * Placeholder interface for sensors (will be defined in Phase 2).
  * This allows SpaceObject and GroundObject to reference sensors
  * without creating circular dependencies.

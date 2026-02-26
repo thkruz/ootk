@@ -30,14 +30,24 @@ import type { ClassicalElements } from '../coordinate/index';
 import { ITRF } from '../coordinate/ITRF';
 import { J2000 } from '../coordinate/J2000';
 import { RIC } from '../coordinate/RIC';
+import { TEME } from '../coordinate/TEME';
 import { Tle } from '../coordinate/Tle';
 import { CatalogSource } from '../enums/CatalogSource';
+import { PropagatorType } from '../enums/PropagatorType';
 import { SunStatus } from '../enums/SunStatus';
+import { ForceModel } from '../force/ForceModel';
 import { OmmDataFormat, OmmParsedDataFormat } from '../interfaces/OmmFormat';
+import { NumericalPropagatorOptions } from '../interfaces/NumericalPropagatorOptions';
 import { OptionsParams } from '../interfaces/OptionsParams';
 import { SatelliteParams } from '../interfaces/SatelliteParams';
 import { Sgp4 } from '../main';
 import { RAE } from '../observation/RAE';
+import { DormandPrince54Propagator } from '../propagator/DormandPrince54Propagator';
+import { KeplerPropagator } from '../propagator/KeplerPropagator';
+import { Propagator } from '../propagator/Propagator';
+import { RungeKutta4Propagator } from '../propagator/RungeKutta4Propagator';
+import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
+import { Sgp4Propagator } from '../propagator/Sgp4Propagator';
 import { Vector3D } from '../operations/Vector3D';
 import { Sensor } from '../sensor/Sensor';
 import { EpochUTC } from '../time/EpochUTC';
@@ -628,7 +638,7 @@ export class Satellite extends SpaceObject {
     const pos = new Vector3D(p.x, p.y, p.z);
     const vel = new Vector3D(v.x, v.y, v.z);
 
-    return new J2000(epoch, pos, vel);
+    return new TEME(epoch, pos, vel).toJ2000();
   }
 
   /**
@@ -1399,6 +1409,123 @@ export class Satellite extends SpaceObject {
     }
 
     return result;
+  }
+
+  // ==================== Propagator Factory Methods ====================
+
+  /**
+   * Creates a Propagator instance initialized from this satellite's state at the given date.
+   *
+   * Returns a fully-featured Propagator with the complete API including propagate(),
+   * ephemeris(), maneuver(), checkpoint/restore, and orbital event finding.
+   *
+   * @param date - The date to initialize the propagator state. Defaults to current date.
+   * @param options - Propagator configuration options.
+   * @returns A Propagator instance.
+   * @example
+   * ```typescript
+   * // Quick default (RK89 with point-mass gravity)
+   * const prop = satellite.createPropagator();
+   * const futureState = prop.propagate(futureEpoch);
+   *
+   * // Full customization
+   * const forceModel = new ForceModel()
+   *   .setGravity()
+   *   .setThirdBodyGravity({ moon: true, sun: true });
+   *
+   * const prop = satellite.createPropagator(new Date(), {
+   *   type: PropagatorType.DP54,
+   *   forceModel,
+   *   tolerance: 1e-12,
+   * });
+   *
+   * const ephemeris = prop.ephemeris(start, stop, 60 as Seconds);
+   * ```
+   */
+  createPropagator(date: Date = new Date(), options?: NumericalPropagatorOptions): Propagator {
+    const type = options?.type ?? PropagatorType.RK89;
+
+    switch (type) {
+      case PropagatorType.SGP4:
+        return new Sgp4Propagator(this.toTle());
+
+      case PropagatorType.KEPLER: {
+        const elements = this.toClassicalElements(date);
+
+        return new KeplerPropagator(elements);
+      }
+
+      case PropagatorType.RK4: {
+        const initState = this.toJ2000(date);
+        const forceModel = options?.forceModel ?? new ForceModel().setGravity();
+        const stepSize = options?.stepSize ?? 15.0;
+
+        return new RungeKutta4Propagator(initState, forceModel, stepSize);
+      }
+
+      case PropagatorType.DP54: {
+        const initState = this.toJ2000(date);
+        const forceModel = options?.forceModel ?? new ForceModel().setGravity();
+        const tolerance = options?.tolerance ?? 1e-9;
+
+        return new DormandPrince54Propagator(initState, forceModel, tolerance);
+      }
+
+      case PropagatorType.RK89: {
+        const initState = this.toJ2000(date);
+        const forceModel = options?.forceModel ?? new ForceModel().setGravity();
+        const tolerance = options?.tolerance ?? 1e-9;
+
+        return new RungeKutta89Propagator(initState, forceModel, tolerance);
+      }
+
+      default:
+        throw new Error(`Unknown propagator type: ${type as string}`);
+    }
+  }
+
+  /**
+   * Creates an Sgp4Propagator from this satellite's TLE.
+   *
+   * @returns An Sgp4Propagator instance.
+   * @example
+   * ```typescript
+   * const prop = satellite.createSgp4Propagator();
+   * const state = prop.propagate(futureEpoch);
+   * ```
+   */
+  createSgp4Propagator(): Sgp4Propagator {
+    return new Sgp4Propagator(this.toTle());
+  }
+
+  /**
+   * Creates a high-accuracy numerical propagator (RK89) from this satellite's state.
+   *
+   * For other propagator types or RK4, use `createPropagator()` with options.
+   *
+   * @param date - The date to initialize the propagator state. Defaults to current date.
+   * @param forceModel - The force model. Defaults to point-mass gravity.
+   * @param tolerance - Adaptive step tolerance. Defaults to 1e-9.
+   * @returns A RungeKutta89Propagator instance.
+   * @example
+   * ```typescript
+   * const fm = new ForceModel()
+   *   .setGravity()
+   *   .setThirdBodyGravity({ moon: true, sun: true })
+   *   .setSolarRadiationPressure(500, 10, 1.2);
+   *
+   * const prop = satellite.createNumericalPropagator(new Date(), fm);
+   * const state = prop.propagate(futureEpoch);
+   * ```
+   */
+  createNumericalPropagator(
+    date: Date = new Date(),
+    forceModel: ForceModel = new ForceModel().setGravity(),
+    tolerance: number = 1e-9,
+  ): RungeKutta89Propagator {
+    const initState = this.toJ2000(date);
+
+    return new RungeKutta89Propagator(initState, forceModel, tolerance);
   }
 
   // ==================== Private Helpers ====================
