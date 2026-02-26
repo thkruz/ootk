@@ -325,7 +325,7 @@ export class ClassicalElements {
       eaFinal = eaTemp;
     }
     const cosEaFinal = Math.cos(eaFinal);
-    let vFinal = clamp(Math.acos((cosEaFinal - this.eccentricity) / (1 - this.eccentricity * cosEaFinal)), -1, 1);
+    let vFinal = Math.acos(clamp((cosEaFinal - this.eccentricity) / (1 - this.eccentricity * cosEaFinal), -1, 1));
 
     vFinal = matchHalfPlane(vFinal, eaFinal);
 

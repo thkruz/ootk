@@ -15,6 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+export { LaunchTrajectoryGenerator } from './LaunchTrajectoryGenerator';
+export type { LaunchTrajectoryConfig } from './LaunchTrajectoryGenerator';
 export { OrbitFinder } from './OrbitFinder';
 export type { OrbitFinderOptions, OrbitParameters } from './OrbitFinder';
 export { RepeatGroundTrack } from './RepeatGroundTrack';

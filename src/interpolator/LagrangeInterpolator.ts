@@ -90,7 +90,7 @@ export class LagrangeInterpolator extends StateInterpolator {
   }
 
   private static position_(xs: Float64Array, ys: Float64Array, x: number): number {
-    const k = xs.length - 1;
+    const k = xs.length;
     let result = 0.0;
 
     for (let j = 0; j < k; j++) {
@@ -174,7 +174,7 @@ export class LagrangeInterpolator extends StateInterpolator {
     }
     const offset = Math.floor(this.order / 2);
     const left = mid - offset;
-    const right = mid + offset - (this.order % 2 === 1 ? 1 : 0);
+    const right = left + this.order;
 
     if (left < 0) {
       return { left: 0, right: this.order };
