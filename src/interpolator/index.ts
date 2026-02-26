@@ -29,4 +29,5 @@ export { CubicSplineInterpolator } from './CubicSplineInterpolator';
 export { LagrangeInterpolator } from './LagrangeInterpolator';
 export { ChebyshevCoefficients } from './ChebyshevCoefficients';
 export { ChebyshevInterpolator } from './ChebyshevInterpolator';
+export { SegmentedLagrangeInterpolator } from './SegmentedLagrangeInterpolator';
 export { VerletBlendInterpolator } from './VerletBlendInterpolator';

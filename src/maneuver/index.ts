@@ -21,5 +21,6 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+export { PlaneChangeBurn } from './PlaneChangeBurn';
 export { Waypoint } from './Waypoint';
 export { TwoBurnOrbitTransfer } from './TwoBurnOrbitTransfer';
