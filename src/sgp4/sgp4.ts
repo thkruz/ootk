@@ -1125,6 +1125,14 @@ export class Sgp4 {
       templ = templ + satrec.t3cof * t3 + t4 * (satrec.t4cof + satrec.t * satrec.t5cof);
     }
 
+    // Catch decayed satellites where tempa has gone negative.
+    // tempa^2 hides the sign, producing plausible position but absurd velocity.
+    if (tempa <= 0) {
+      satrec.error = Sgp4ErrorCode.SATELLITE_DECAYED;
+
+      return { position: false, velocity: false };
+    }
+
     let nm = satrec.no;
     let em = satrec.ecco;
     let inclm = satrec.inclo;
