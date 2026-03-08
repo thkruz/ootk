@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -192,13 +192,13 @@ export abstract class RungeKuttaAdaptive extends Propagator {
         throw new ValidationError('Propagated epoch must be finite', 'epoch', result.state.epoch.posix);
       }
       if (!Number.isFinite(result.state.position.x) ||
-          !Number.isFinite(result.state.position.y) ||
-          !Number.isFinite(result.state.position.z)) {
+        !Number.isFinite(result.state.position.y) ||
+        !Number.isFinite(result.state.position.z)) {
         throw new ValidationError('Propagated position must be finite', 'position', result.state.position);
       }
       if (!Number.isFinite(result.state.velocity.x) ||
-          !Number.isFinite(result.state.velocity.y) ||
-          !Number.isFinite(result.state.velocity.z)) {
+        !Number.isFinite(result.state.velocity.y) ||
+        !Number.isFinite(result.state.velocity.z)) {
         throw new ValidationError('Propagated velocity must be finite', 'velocity', result.state.velocity);
       }
       this._cacheState = result.state;

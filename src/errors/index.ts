@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
- * @license MIT
- * @copyright (c) 2020-2025, Theodore Kruczek
+ * @license AGPL-3.0-or-later
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Custom error classes for ootk.
  *
@@ -32,6 +32,7 @@
  * }
  * ```
  */
+/* eslint-disable max-classes-per-file */
 export class OotkError extends Error {
   constructor(message: string) {
     super(message);

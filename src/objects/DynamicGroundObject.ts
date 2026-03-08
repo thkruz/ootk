@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -18,17 +18,17 @@
 import { Geodetic } from '../coordinate/Geodetic';
 import { J2000 } from '../coordinate/J2000';
 import {
-    Degrees,
-    EcefVec3,
-    TemeVec3,
-    Kilometers,
-    KilometersPerSecond,
-    LlaVec3,
-    Radians,
-    SpaceObjectType,
-    calcGmst,
-    lla2eci,
-    llaRad2ecef,
+  Degrees,
+  EcefVec3,
+  TemeVec3,
+  Kilometers,
+  KilometersPerSecond,
+  LlaVec3,
+  Radians,
+  SpaceObjectType,
+  calcGmst,
+  lla2eci,
+  llaRad2ecef,
 } from '../main';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
