@@ -48,6 +48,7 @@ OOTK (Orbital Object Toolkit) is a comprehensive library for orbital mechanics c
 ### Prerequisites
 
 You'll need:
+
 - **Node.js** (version 14 or higher)
 - **npm** (comes with Node.js)
 
@@ -105,11 +106,13 @@ Let's track the International Space Station (ISS)!
 ### Step 1: Get TLE Data
 
 TLE (Two-Line Element) sets describe a satellite's orbit. You can get them from:
-- https://celestrak.org/
-- https://www.space-track.org/
-- https://api.keeptrack.space/
+
+- <https://celestrak.org/>
+- <https://www.space-track.org/>
+- <https://api.keeptrack.space/>
 
 Example ISS TLE:
+
 ```
 ISS (ZARYA)
 1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991
@@ -149,6 +152,7 @@ console.log('  Z:', eci.velocity.z, 'km/s');
 ```
 
 **Output Example:**
+
 ```
 Position (ECI):
   X: 3590.123 km
@@ -171,6 +175,7 @@ console.log('Altitude:', lla.alt, 'km');
 ```
 
 **Output Example:**
+
 ```
 Latitude: 23.456 °
 Longitude: -45.678 °
@@ -279,6 +284,7 @@ console.log('Range Rate:', rae.rngRate, 'km/s');
 ```
 
 **Interpretation**:
+
 - **Range**: Distance to satellite
 - **Azimuth**: Which direction to point (compass heading)
 - **Elevation**: How high to look up
@@ -322,6 +328,7 @@ passes.forEach((pass, index) => {
 ```
 
 **Output Example**:
+
 ```
 Found 3 passes in the next 24 hours:
 
@@ -568,7 +575,7 @@ analyzeSatellite(isstle1, isstle2);
 
 Now that you understand the basics:
 
-1. **Try different satellites**: Get TLEs from https://celestrak.org/
+1. **Try different satellites**: Get TLEs from <https://celestrak.org/>
 2. **Change sensor locations**: Track from your city
 3. **Experiment with times**: Look at positions in the past or future
 4. **Build a web interface**: Display positions on a map
@@ -583,6 +590,7 @@ Ready for more? Explore:
 4. **Force models**: Add gravity harmonics, drag, solar radiation pressure
 
 See the [User Guide](./user-guide.md) sections:
+
 - [Orbit Propagation](./user-guide.md#orbit-propagation)
 - [Coordinate Systems](./user-guide.md#coordinate-systems)
 - [Time Systems](./user-guide.md#time-systems)
@@ -597,6 +605,7 @@ For advanced orbital mechanics:
 4. **Custom Propagators**: Create your own propagation methods
 
 See the [User Guide](./user-guide.md) sections:
+
 - [Initial Orbit Determination](./user-guide.md#initial-orbit-determination)
 - [Maneuvers](./user-guide.md#maneuvers)
 - [Force Models](./user-guide.md#force-models)
@@ -613,6 +622,7 @@ See the [User Guide](./user-guide.md) sections:
 **Problem**: Import error
 
 **Solution**: Make sure you've installed OOTK:
+
 ```bash
 npm install ootk
 ```
@@ -624,6 +634,7 @@ And that your `package.json` has `"type": "module"` for ES modules.
 **Problem**: TypeScript complains about number types
 
 **Solution**: Cast to appropriate types:
+
 ```typescript
 // Wrong
 const lat = 41.7;
@@ -637,6 +648,7 @@ const lat = 41.7 as Degrees;
 **Problem**: Position doesn't match expected values
 
 **Solutions**:
+
 - Check TLE is current (TLEs expire quickly, especially for LEO)
 - Verify the time (use `new Date()` for current time)
 - Ensure TLE lines are correct (no extra spaces or truncation)
@@ -646,6 +658,7 @@ const lat = 41.7 as Degrees;
 **Problem**: `calculatePasses()` returns empty array
 
 **Solutions**:
+
 - Increase `lengthDays` parameter (satellite may not pass for several days)
 - Lower `minEl` on sensor (try 0 degrees)
 - Increase `maxRng` on sensor
@@ -655,8 +668,8 @@ const lat = 41.7 as Degrees;
 
 - **Documentation**: See [User Guide](./user-guide.md)
 - **Examples**: Check `/examples` folder in repository
-- **Issues**: https://github.com/thkruz/ootk/issues
-- **Discussions**: https://github.com/thkruz/ootk/discussions
+- **Issues**: <https://github.com/thkruz/ootk/issues>
+- **Discussions**: <https://github.com/thkruz/ootk/discussions>
 
 ---
 
@@ -726,26 +739,31 @@ const passes = sensor.calculatePasses(30, sat, {
 ## Example Projects to Build
 
 ### 1. ISS Notifier
+
 Build a program that alerts you when the ISS will pass overhead.
 
 **Skills**: Satellite tracking, pass prediction, notifications
 
 ### 2. Satellite Constellation Visualizer
+
 Display multiple satellites on a map in real-time.
 
 **Skills**: Multi-satellite tracking, web development, visualization
 
 ### 3. Ground Station Planner
+
 Determine the best location for a ground station to maximize satellite contact time.
 
 **Skills**: Sensor placement, pass analysis, optimization
 
 ### 4. Orbit Comparator
+
 Compare different satellites' orbits and find close approaches.
 
 **Skills**: Coordinate transformations, distance calculations
 
 ### 5. TLE Age Checker
+
 Monitor a catalog of TLEs and alert when they're getting old.
 
 **Skills**: TLE parsing, date handling, automation
@@ -756,26 +774,26 @@ Monitor a catalog of TLEs and alert when they're getting old.
 
 ### Where to Get TLE Data
 
-- **CelesTrak**: https://celestrak.org/ (free, no account needed)
-- **Space-Track**: https://www.space-track.org/ (free account required)
-- **KeepTrack API**: https://api.keeptrack.space/ (simple REST API)
+- **CelesTrak**: <https://celestrak.org/> (free, no account needed)
+- **Space-Track**: <https://www.space-track.org/> (free account required)
+- **KeepTrack API**: <https://api.keeptrack.space/> (simple REST API)
 
 ### Learning More
 
 - **Orbital Mechanics**: "Fundamentals of Astrodynamics" by Bate, Mueller, White
 - **SGP4**: "Revisiting Spacetrack Report #3" by Vallado et al.
-- **OOTK Repository**: https://github.com/thkruz/ootk
+- **OOTK Repository**: <https://github.com/thkruz/ootk>
 - **Full Documentation**: [User Guide](./user-guide.md)
 
 ### Related Projects
 
-- **KeepTrack**: https://github.com/thkruz/keeptrack.space
+- **KeepTrack**: <https://github.com/thkruz/keeptrack.space>
 - **satellite.js**: Alternative JavaScript satellite library
 - **Skyfield**: Python satellite library
 
 ---
 
-## Congratulations!
+## Congratulations
 
 You're now ready to start building with OOTK. Start simple with satellite tracking, then explore more advanced features as you need them.
 
