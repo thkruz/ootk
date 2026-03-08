@@ -6,10 +6,13 @@
   "exports": {
     ".": {
       "types": "./dist/main.d.ts",
-      "import": "./dist/main.js"
+      "import": "./dist/main.js",
+      "require": "./dist/main.cjs",
+      "default": "./dist/main.js"
     }
   },
-  "main": "dist/main.js",
+  "main": "dist/main.cjs",
+  "module": "dist/main.js",
   "types": "dist/main.d.ts",
   "files": [
     "dist"
@@ -27,6 +30,7 @@
     "test:integration": "npm run build && vitest run --config test/integration/vitest.config.mts",
     "test:integration:only": "vitest run --config test/integration/vitest.config.mts",
     "test:all": "npm run test && npm run test:integration",
+    "prepublishOnly": "npm run test:all",
     "version": "npm run build && auto-changelog && git add CHANGELOG.md"
   },
   "repository": {
@@ -43,12 +47,16 @@
     "iod"
   ],
   "author": "Theodore Kruczek <theodore.kruczek@gmail.com> (https://github.com/ootk/)",
-  "license": "APGL-3.0",
+  "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "bugs": {
     "url": "https://github.com/thkruz/ootk/issues"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
+    "astronomy-engine": "^2.1.19",
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
     "@vitest/coverage-v8": "^4.0.18",
@@ -61,8 +69,5 @@
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   },
-  "homepage": "https://github.com/thkruz/ootk",
-  "dependencies": {
-    "astronomy-engine": "^2.1.19"
-  }
+  "homepage": "https://github.com/thkruz/ootk"
 }
