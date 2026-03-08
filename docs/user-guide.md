@@ -70,6 +70,7 @@ const altitude = 0.060966 as Kilometers;
 ```
 
 **Available Unit Types:**
+
 - **Angular**: `Degrees`, `Radians`
 - **Distance**: `Kilometers`, `Meters`
 - **Time**: `Seconds`, `Minutes`, `Hours`, `Days`
@@ -686,6 +687,7 @@ forceModel.setEarthGravity(20, 20);
 ```
 
 **Degree/Order Guide:**
+
 - `(0, 0)` - Point mass only
 - `(2, 0)` - J2 oblateness
 - `(4, 4)` - Basic harmonics
@@ -1919,9 +1921,9 @@ const vel = 7.8 as KilometersPerSecond;
 
 ## Support and Resources
 
-- **GitHub**: https://github.com/thkruz/ootk
-- **Issues**: https://github.com/thkruz/ootk/issues
-- **NPM**: https://www.npmjs.com/package/ootk
+- **GitHub**: <https://github.com/thkruz/ootk>
+- **Issues**: <https://github.com/thkruz/ootk/issues>
+- **NPM**: <https://www.npmjs.com/package/ootk>
 - **Examples**: `/examples` directory in repository
 
 For questions or contributions, please open an issue on GitHub.

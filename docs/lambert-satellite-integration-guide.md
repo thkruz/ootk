@@ -16,6 +16,7 @@ This guide demonstrates how to use Lambert's problem solution to generate state 
 ## Overview
 
 **Lambert's Problem** finds the orbit connecting two position vectors at specific times. This is useful for:
+
 - Orbit determination from observation data
 - Transfer orbit design
 - Maneuver planning
@@ -80,6 +81,7 @@ const lambert = new LambertIOD(mu?: number);
 ```
 
 **Parameters:**
+
 - `mu`: Gravitational parameter (km³/s²)
   - Default: `Earth.mu` (398600.4418 km³/s²)
   - Moon: `Moon.mu` (4902.8 km³/s²)
@@ -98,6 +100,7 @@ estimate(
 ```
 
 **Parameters:**
+
 - `p1`, `p2`: Position vectors (km) in ECI/J2000 frame
 - `t1`, `t2`: Epoch times (EpochUTC objects)
 - `posigrade`:
@@ -106,6 +109,7 @@ estimate(
 - `nRev`: Number of complete revolutions (0, 1, 2, ...)
 
 **Returns:**
+
 - `J2000` state vector at epoch `t1` (null if solution fails)
 
 ### Understanding the Output
@@ -121,6 +125,7 @@ The returned `J2000` object contains:
 ```
 
 **Key Methods:**
+
 ```typescript
 stateVector.toClassicalElements()  // Convert to orbital elements
 stateVector.magnitude              // Position magnitude
@@ -164,6 +169,7 @@ console.log('Future velocity:', futureState.velocity);
 ```
 
 **Advantages:**
+
 - No TLE conversion artifacts
 - Full control over perturbation forces
 - Higher precision for short-term propagation
@@ -650,6 +656,7 @@ if (elements.semimajorAxis < 6378) {
 ### 4. Numerical Stability
 
 The Lambert solver uses:
+
 - Householder's method (3rd order convergence)
 - Tolerance: 1e-13
 - Max iterations: 50
@@ -663,11 +670,13 @@ Most solutions converge in < 10 iterations.
 ### Problem: Lambert returns null
 
 **Causes:**
+
 1. Positions nearly collinear
 2. Time of flight incompatible with geometry
 3. Numerical convergence issues
 
 **Solutions:**
+
 ```typescript
 // Check input validity
 const r1 = p1.magnitude;
@@ -689,6 +698,7 @@ console.log('Minimum TOF:', minTOF, 'seconds');
 **Cause:** Inefficient transfer geometry
 
 **Solution:**
+
 ```typescript
 // Try multiple revolution transfers
 for (let nRev = 0; nRev <= 2; nRev++) {

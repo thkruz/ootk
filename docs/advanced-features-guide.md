@@ -97,6 +97,7 @@ OOTK provides multiple IOD methods to determine orbits from observations - essen
 ### Available Methods
 
 #### Lambert's Problem
+
 Solves for the orbit between two position vectors at known times.
 
 ```typescript
@@ -137,6 +138,7 @@ console.log(tle.line2);
 ```
 
 #### Gibbs Method
+
 Determines orbit from three coplanar position vectors.
 
 ```typescript
@@ -153,6 +155,7 @@ const orbit = gibbs.solve(p1.position, p2.position, p3.position, p2.epoch, p3.ep
 ```
 
 #### Herrick-Gibbs Method
+
 Improved method for closely-spaced observations.
 
 ```typescript
@@ -168,6 +171,7 @@ const orbit = hgibbs.solve(
 ```
 
 #### Gooding's Angles-Only IOD
+
 Determines orbit from optical angle observations (right ascension/declination).
 
 ```typescript
