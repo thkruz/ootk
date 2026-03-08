@@ -1,0 +1,65 @@
+===============================================================================
+PROPAGATOR ACCURACY vs SP3 LASER RANGING TRUTH
+===============================================================================
+
+Target:       AJISAI (NORAD 16908) — geodetic laser ranging sphere
+              ~1485 km altitude, 50° inclination, e ≈ 0.001
+Truth source: NSGF ILRS SP3 nsgf.orb.ajisai.v00.sp3
+              cm-level accuracy from satellite laser ranging (4-day arc)
+Init state:   First SP3 point (ITRF → J2000 conversion)
+TLE:          1 16908U 86061A   26057.30424418 (2026-02-26T07:18:06.697Z)
+              SGP4 propagated backward from TLE epoch to SP3 window
+Comparison:   J2000 position difference vs SP3 truth (ITRF → J2000)
+Generated:    2026-03-08T15:35:48.573Z
+
+───────────────────────────────────────────────────────────────────────────────
+POSITION ERROR vs SP3 TRUTH (J2000 frame)
+───────────────────────────────────────────────────────────────────────────────
+
+                           SGP4 (bkwd)    Point-Mass      J2 (2,0)     EGM96 4x4     EGM96 8x8       8x8+SRP        8x8+TB    8x8+TB+SRP      DP54 4x4
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+t=0 (SP3 start)                  418 m         0.0 m         0.0 m         0.0 m         0.0 m         0.0 m         0.0 m         0.0 m         0.0 m
+6h                               100 m     189.52 km       1.88 km         347 m          25 m          23 m          52 m          50 m         347 m
+12h                              170 m     362.69 km       3.49 km         442 m          49 m          47 m          91 m          87 m         442 m
+1d                               403 m     797.89 km       6.26 km         962 m         145 m         144 m         275 m         275 m         962 m
+2d                               150 m    1566.11 km      13.58 km       1.97 km         307 m         289 m         609 m         592 m       1.97 km
+3d                               252 m    2249.61 km      18.02 km       2.99 km         443 m         431 m         891 m         880 m       2.99 km
+~3.86d (SP3 end)                 289 m    3093.47 km      24.72 km       3.84 km         563 m         520 m       1.13 km       1.09 km       3.84 km
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+───────────────────────────────────────────────────────────────────────────────
+BEST NUMERICAL PROPAGATOR AT EACH TIME STEP
+───────────────────────────────────────────────────────────────────────────────
+
+  t=0 (SP3 start)         Point-Mass      0 m
+  6h                      8x8+SRP         23 m
+  12h                     8x8+SRP         47 m
+  1d                      8x8+SRP         144 m
+  2d                      8x8+SRP         289 m
+  3d                      8x8+SRP         431 m
+  ~3.86d (SP3 end)        8x8+SRP         520 m
+
+───────────────────────────────────────────────────────────────────────────────
+CROSS-INTEGRATOR CONSISTENCY (same 4x4 force model)
+───────────────────────────────────────────────────────────────────────────────
+
+  RK89 vs DP54 at 1 day:  0.4 meters
+
+───────────────────────────────────────────────────────────────────────────────
+PROPAGATOR KEY
+───────────────────────────────────────────────────────────────────────────────
+
+  SGP4 (bkwd)   Analytical SGP4, propagated backward from TLE epoch
+  Point-Mass    RK89 numerical, central body gravity only (mu/r²)
+  J2 (2,0)      RK89 numerical, J2 oblateness only
+  EGM96 4x4     RK89 numerical, 4×4 spherical harmonics
+  EGM96 8x8     RK89 numerical, 8×8 spherical harmonics
+  8x8+SRP       RK89 numerical, 8×8 gravity + solar radiation pressure
+  8x8+TB        RK89 numerical, 8×8 gravity + lunar/solar third-body
+  8x8+TB+SRP    RK89 numerical, 8×8 + third-body + SRP (full model)
+  DP54 4x4      Dormand-Prince 5(4) numerical, 4×4 harmonics
+
+  AJISAI SRP params: mass=685 kg, area=3.63 m², Cr=1.13
+
+Note: Numerical propagators initialized from SP3 start (ITRF → J2000).
+      SGP4 backward uses TLE epoch 2026-02-26, propagating back to SP3 window.
