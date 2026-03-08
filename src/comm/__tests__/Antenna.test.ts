@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  */
 
 import { Antenna, Decibels, ValidationError } from '../../main';

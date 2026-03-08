@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * This class was ported from the python-sgp4 library by Brandon Rhodes. That library
  * is licensed under the MIT license and he maintains the copyright for that work.
