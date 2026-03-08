@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -24,19 +24,19 @@
 import { Geodetic } from '../coordinate/Geodetic';
 import { J2000 } from '../coordinate/J2000';
 import {
-    DEG2RAD,
-    Degrees,
-    EcefVec3,
-    TemeVec3,
-    Kilometers,
-    KilometersPerSecond,
-    LlaVec3,
-    Radians,
-    RaeVec3,
-    SpaceObjectType,
-    calcGmst,
-    lla2eci,
-    llaRad2ecef,
+  DEG2RAD,
+  Degrees,
+  EcefVec3,
+  TemeVec3,
+  Kilometers,
+  KilometersPerSecond,
+  LlaVec3,
+  Radians,
+  RaeVec3,
+  SpaceObjectType,
+  calcGmst,
+  lla2eci,
+  llaRad2ecef,
 } from '../main';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';

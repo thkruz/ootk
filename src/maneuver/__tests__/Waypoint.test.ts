@@ -18,7 +18,7 @@ import { Waypoint } from '../Waypoint';
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  */
 
 describe('Waypoint', () => {
@@ -157,7 +157,7 @@ describe('Waypoint', () => {
       }).toThrow('Lambert solve result is null.');
     });
 
-      it('should process pre-maneuvers before pivot', () => {
+    it('should process pre-maneuvers before pivot', () => {
       const mockInterceptor = new J2000(
         EpochUTC.fromDateTimeString('2024-01-01T10:00:00.000Z'),
         new Vector3D(7000 as Kilometers, 0 as Kilometers, 0 as Kilometers),

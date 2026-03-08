@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -149,7 +149,7 @@ export class GoodingIOD {
    * @returns Orbit estimate referenced to the epoch of the second observation
    */
   estimate(o1: ObservationOptical, o2: ObservationOptical, o3: ObservationOptical,
-    rho1init: Kilometers| null = null, rho3init: Kilometers | null = null,
+    rho1init: Kilometers | null = null, rho3init: Kilometers | null = null,
     nRev = 0, direction = true,
   ): J2000 {
     let orbit: J2000 | null = null;
@@ -232,7 +232,7 @@ export class GoodingIOD {
     if (!converged) {
       throw new OrbitDeterminationError(
         `Gooding IOD failed to converge after ${GoodingIOD.MAX_ITERATIONS} iterations. ` +
-          'Try different initial range estimates or check observation quality.',
+        'Try different initial range estimates or check observation quality.',
         'Gooding',
       );
     }
