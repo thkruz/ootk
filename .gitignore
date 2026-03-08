@@ -25,4 +25,4 @@ src/fetch
 CLAUDE.md
 .dev.vars
 
-src\objects\__tests__\propagator-accuracy-summary.txt
+src/objects/__tests__/propagator-accuracy-summary.txt
