@@ -2,12 +2,13 @@ import { defineConfig } from 'tsup';
 
 export default defineConfig({
   entry: ['src/main.ts'],
-  format: ['esm'],
-  dts: true,
+  format: ['esm', 'cjs'],
+  dts: { resolve: ['astronomy-engine'] },
   splitting: false,
-  sourcemap: true,
+  sourcemap: false,
   clean: true,
   target: 'es2022',
   outDir: 'dist',
-  external: ['astronomy-engine'],
+  treeshake: true,
+  noExternal: ['astronomy-engine'],
 });
