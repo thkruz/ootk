@@ -438,7 +438,7 @@ export class Tle {
 
     if (bstarSymbol === '-') {
       bstar1 *= -1;
-    } else if (bstarSymbol === '+' || bstarSymbol === ' ') {
+    } else if (bstarSymbol === '+' || bstarSymbol === ' ' || bstarSymbol === '0') {
       // Do nothing
     } else {
       throw new ParseError(`Invalid BSTAR symbol: ${bstarSymbol}`, 'TLE');
@@ -689,7 +689,8 @@ export class Tle {
    * @returns The first derivative of the mean motion.
    */
   static meanMoDev1(tleLine1: TleLine1): number {
-    const meanMoDev1 = parseFloat(tleLine1.substring(Tle.meanMoDev1_.start, Tle.meanMoDev1_.stop));
+    const raw = tleLine1.substring(Tle.meanMoDev1_.start, Tle.meanMoDev1_.stop).trim();
+    const meanMoDev1 = parseFloat(raw.startsWith('+') ? raw.substring(1) : raw);
 
     if (isNaN(meanMoDev1)) {
       throw new ParseError('Invalid first derivative of mean motion', 'TLE');
