@@ -315,6 +315,15 @@ export class Satellite extends SpaceObject {
     });
   }
 
+  /**
+   * Creates a Satellite from an OMM (Orbit Mean-elements Message) data object.
+   * @param omm - The OMM data in flat format
+   * @param name - Optional satellite name (overrides OMM OBJECT_NAME)
+   */
+  static fromOmm(omm: OmmDataFormat, name?: string): Satellite {
+    return new Satellite({ omm, name: name ?? omm.OBJECT_NAME });
+  }
+
   // ==================== TLE/OMM Parsing ====================
 
   private parseTleAndUpdateOrbit_(tle1: TleLine1, tle2: TleLine2, sccNum?: string) {
