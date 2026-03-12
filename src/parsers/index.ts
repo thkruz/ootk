@@ -52,6 +52,18 @@ export type {
   OmmExportOptions,
 } from './OdmTypes';
 
+export { OmmParser } from './OmmParser';
+export type {
+  OmmHeader,
+  OmmMetadata,
+  OmmMeanElements,
+  OmmSpacecraftParameters,
+  OmmTleParameters,
+  OmmCovarianceMatrix,
+  OmmUserDefined,
+  ParsedOmm,
+} from './OmmTypes';
+
 // TODO: Future parsers to add:
 // - Sp3Parser: GPS precise ephemerides (SP3 format)
 // - TdmParser: Tracking Data Messages
