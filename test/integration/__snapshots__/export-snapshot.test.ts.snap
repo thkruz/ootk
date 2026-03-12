@@ -106,6 +106,7 @@ exports[`Export Snapshot > should export the expected public API surface 1`] = `
   "Neptune",
   "OdmExporter",
   "OemParser",
+  "OmmParser",
   "OotkError",
   "OpticalSensor",
   "OrbitDeterminationError",
