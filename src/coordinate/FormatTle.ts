@@ -41,7 +41,7 @@ export abstract class FormatTle {
     const { inc, meanmo, rasc, argPe, meana, ecen, epochyr, epochday, intl } = tleParams;
     const scc = Tle.convert6DigitToA5(tleParams.scc);
     const epochYrStr = String(epochyr).padStart(2, '0');
-    const epochdayStr = parseFloat(String(epochday)).toFixed(8).padStart(12, '0');
+    const epochdayStr = Number(epochday).toFixed(8).padStart(12, '0');
     const incStr = FormatTle.inclination(inc);
     const meanmoStr = FormatTle.meanMotion(meanmo);
     const rascStr = FormatTle.rightAscension(rasc);
@@ -68,10 +68,7 @@ export abstract class FormatTle {
       TLE1Ending = ` ${mmDot} ${mmDdot} ${bstarStr} ${ephemerisType} ${elementSetNo}0`;
     }
 
-    // Add explicit positive/negative signs
-    TLE1Ending = TLE1Ending[1] === ' ' ? FormatTle.setCharAt(TLE1Ending, 1, '+') : TLE1Ending;
-    TLE1Ending = TLE1Ending[12] === ' ' ? FormatTle.setCharAt(TLE1Ending, 12, '+') : TLE1Ending;
-    TLE1Ending = TLE1Ending[21] === ' ' ? FormatTle.setCharAt(TLE1Ending, 21, '+') : TLE1Ending;
+    // NOTE: TLE standard uses space (not '+') for positive values — do not replace spaces with '+'
 
     const tle1Pre = `1 ${scc}${classification} ${intlStr} ${epochYrStr}${epochdayStr}${TLE1Ending}`;
     const tle1 = FormatTle.setCharAt(tle1Pre, 68, FormatTle.tleChecksum(tle1Pre).toString());
@@ -94,7 +91,7 @@ export abstract class FormatTle {
     }
 
     const argPeNum = parseFloat(argPe).toFixed(4);
-    const argPe0 = argPeNum.padStart(8, '0');
+    const argPe0 = argPeNum.padStart(8, ' ');
 
     if (argPe0.length !== 8) {
       throw new ValidationError('Argument of perigee must be 8 characters', 'argPe', argPe0);
@@ -111,7 +108,14 @@ export abstract class FormatTle {
    */
   static eccentricity(ecen: string | number): string {
     if (typeof ecen === 'number') {
-      ecen = ecen.toFixed(7);
+      // Truncate to 7 decimal places (no rounding) to match TLE/NORAD convention.
+      // Work with string representation to avoid IEEE 754 precision issues
+      // (e.g., 0.0002554 * 1e7 = 2553.999... in floating point).
+      const ecenStr = ecen.toString();
+      const dotIdx = ecenStr.indexOf('.');
+      const afterDot = dotIdx >= 0 ? ecenStr.substring(dotIdx + 1) : '';
+
+      ecen = `0.${afterDot.substring(0, 7).padEnd(7, '0')}`;
     }
 
     let ecen0 = ecen.padEnd(9, '0');
@@ -140,7 +144,7 @@ export abstract class FormatTle {
     }
 
     const incNum = parseFloat(inc).toFixed(4);
-    const inc0 = incNum.padStart(8, '0');
+    const inc0 = incNum.padStart(8, ' ');
 
     if (inc0.length !== 8) {
       throw new ValidationError('Inclination must be 8 characters', 'inclination', inc0);
@@ -161,7 +165,7 @@ export abstract class FormatTle {
     }
 
     const meanaNum = parseFloat(meana).toFixed(4);
-    const meana0 = meanaNum.padStart(8, '0');
+    const meana0 = meanaNum.padStart(8, ' ');
 
     if (meana0.length !== 8) {
       throw new ValidationError('Mean anomaly must be 8 characters', 'meanAnomaly', meana0);
@@ -210,7 +214,7 @@ export abstract class FormatTle {
     }
 
     const rascNum = parseFloat(rasc).toFixed(4);
-    const rasc0 = rascNum.padStart(8, '0');
+    const rasc0 = rascNum.padStart(8, ' ');
 
     if (rasc0.length !== 8) {
       throw new ValidationError('Right ascension must be 8 characters', 'rightAscension', rasc0);
@@ -255,7 +259,7 @@ export abstract class FormatTle {
    */
   static formatTleExponential(value: number): string {
     if (value === 0) {
-      return ' 00000-0';
+      return ' 00000+0';
     }
 
     const sign = value >= 0 ? ' ' : '-';
