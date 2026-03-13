@@ -49,18 +49,35 @@ export abstract class FormatTle {
     const meanaStr = FormatTle.meanAnomaly(meana);
     const ecenStr = FormatTle.eccentricity(ecen);
     const intlStr = intl.padEnd(8, ' ');
+    const classification = tleParams.classification ?? 'U';
+    const elementSetNo = (tleParams.elementSetNo ?? 999).toString().padStart(4, ' ');
+    const ephemerisType = (tleParams.ephemerisType ?? 0).toString();
+    const revAtEpoch = (tleParams.revAtEpoch ?? 0).toString().padStart(5, ' ');
 
-    // M' and M'' are both set to 0 to put the object in a perfect stable orbit
-    let TLE1Ending = tleParams.sat ? tleParams.sat.tle1.substring(32, 71) : ' +.00000000 +00000+0 +00000-0 0  9990';
+    let TLE1Ending: string;
+
+    if (tleParams.sat) {
+      // Preserve the original TLE1 ending from the satellite
+      TLE1Ending = tleParams.sat.tle1.substring(32, 71);
+    } else {
+      // Build TLE1 ending from provided parameters or defaults
+      const mmDot = FormatTle.formatMeanMotionDot(tleParams.meanMotionDot ?? 0);
+      const mmDdot = FormatTle.formatTleExponential(tleParams.meanMotionDdot ?? 0);
+      const bstarStr = FormatTle.formatTleExponential(tleParams.bstar ?? 0);
+
+      TLE1Ending = ` ${mmDot} ${mmDdot} ${bstarStr} ${ephemerisType} ${elementSetNo}0`;
+    }
 
     // Add explicit positive/negative signs
     TLE1Ending = TLE1Ending[1] === ' ' ? FormatTle.setCharAt(TLE1Ending, 1, '+') : TLE1Ending;
     TLE1Ending = TLE1Ending[12] === ' ' ? FormatTle.setCharAt(TLE1Ending, 12, '+') : TLE1Ending;
     TLE1Ending = TLE1Ending[21] === ' ' ? FormatTle.setCharAt(TLE1Ending, 21, '+') : TLE1Ending;
-    TLE1Ending = TLE1Ending[32] === ' ' ? FormatTle.setCharAt(TLE1Ending, 32, '0') : TLE1Ending;
 
-    const tle1 = `1 ${scc}U ${intlStr} ${epochYrStr}${epochdayStr}${TLE1Ending}`;
-    const tle2 = `2 ${scc} ${incStr} ${rascStr} ${ecenStr} ${argPeStr} ${meanaStr} ${meanmoStr} 00010`;
+    const tle1Pre = `1 ${scc}${classification} ${intlStr} ${epochYrStr}${epochdayStr}${TLE1Ending}`;
+    const tle1 = FormatTle.setCharAt(tle1Pre, 68, FormatTle.tleChecksum(tle1Pre).toString());
+
+    const tle2Pre = `2 ${scc} ${incStr} ${rascStr} ${ecenStr} ${argPeStr} ${meanaStr} ${meanmoStr}${revAtEpoch}0`;
+    const tle2 = FormatTle.setCharAt(tle2Pre, 68, FormatTle.tleChecksum(tle2Pre).toString());
 
     return { tle1: tle1 as TleLine1, tle2: tle2 as TleLine2 };
   }
@@ -215,5 +232,74 @@ export abstract class FormatTle {
     }
 
     return `${str.substring(0, index)}${chr}${str.substring(index + 1)}`;
+  }
+
+  /**
+   * Format mean motion dot (first derivative / 2) for TLE line 1.
+   * Format: sign + ".NNNNNNNN" = 10 chars total.
+   * @param value - Mean motion dot value (rev/day^2)
+   * @returns Formatted 10-character string
+   */
+  static formatMeanMotionDot(value: number): string {
+    const sign = value >= 0 ? ' ' : '-';
+
+    return sign + Math.abs(value).toFixed(8).substring(1);
+  }
+
+  /**
+   * Format a value in TLE exponential notation for BSTAR or mean motion ddot.
+   * Format: "sNNNNN±N" (8 chars) where mantissa has implied leading decimal point.
+   * Example: 0.00017507 → " 17507-3" (i.e., .17507 × 10^-3)
+   * @param value - The value to format
+   * @returns Formatted 8-character string
+   */
+  static formatTleExponential(value: number): string {
+    if (value === 0) {
+      return ' 00000-0';
+    }
+
+    const sign = value >= 0 ? ' ' : '-';
+    const absVal = Math.abs(value);
+
+    // Find exponent such that mantissa is in [0.1, 1.0)
+    let exponent = Math.floor(Math.log10(absVal)) + 1;
+    let mantissa = absVal / Math.pow(10, exponent);
+
+    // Guard against floating-point edge cases
+    if (mantissa >= 1) {
+      mantissa /= 10;
+      exponent++;
+    }
+    if (mantissa < 0.1 && mantissa > 0) {
+      mantissa *= 10;
+      exponent--;
+    }
+
+    const mantissaStr = Math.round(mantissa * 100000).toString().padStart(5, '0');
+    const expSign = exponent >= 0 ? '+' : '-';
+    const expStr = Math.abs(exponent).toString();
+
+    return sign + mantissaStr + expSign + expStr;
+  }
+
+  /**
+   * Compute TLE line checksum (modulo 10 sum of digits, '-' counts as 1).
+   * @param line - TLE line (first 68 characters are summed)
+   * @returns Checksum digit (0-9)
+   */
+  static tleChecksum(line: string): number {
+    let sum = 0;
+
+    for (let i = 0; i < 68 && i < line.length; i++) {
+      const c = line[i];
+
+      if (c >= '0' && c <= '9') {
+        sum += parseInt(c);
+      } else if (c === '-') {
+        sum += 1;
+      }
+    }
+
+    return sum % 10;
   }
 }
