@@ -19,7 +19,7 @@ describe('FormatTle', () => {
     const tle = FormatTle.createTle(tleParams);
 
     expect(tle.tle1).toBe('1 00001U 58001A   17206.18396726 +.00000000 +00000-0 +00000-0 0  9993');
-    expect(tle.tle2).toBe('2 00001 051.6400 208.9163 0006317 069.9862 025.2906 15.54225995 00010');
+    expect(tle.tle2).toBe('2 00001 051.6400 208.9163 0006317 069.9862 025.2906 15.54225995    06');
   });
 
   // Should be able to convert argument of perigee to a stringified number
