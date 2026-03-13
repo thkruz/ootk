@@ -356,8 +356,10 @@ export class Satellite extends SpaceObject {
   }
 
   private parseOmmAndUpdateOrbit_(omm: OmmDataFormat) {
-    this.sccNum = omm.NORAD_CAT_ID.padStart(5, '0');
-    this.sccNum5 = Tle.convert6DigitToA5(omm.NORAD_CAT_ID);
+    const noradStr = String(omm.NORAD_CAT_ID);
+
+    this.sccNum = noradStr.padStart(5, '0');
+    this.sccNum5 = Tle.convert6DigitToA5(noradStr);
     this.sccNum6 = Tle.convertA5to6Digit(this.sccNum5);
     this.intlDes = omm.OBJECT_ID;
     const YYYY = omm.EPOCH.slice(0, 4);
@@ -371,6 +373,19 @@ export class Satellite extends SpaceObject {
 
     const ommParsed: OmmParsedDataFormat = {
       ...omm,
+      NORAD_CAT_ID: noradStr,
+      MEAN_MOTION: String(omm.MEAN_MOTION),
+      ECCENTRICITY: String(omm.ECCENTRICITY),
+      INCLINATION: String(omm.INCLINATION),
+      RA_OF_ASC_NODE: String(omm.RA_OF_ASC_NODE),
+      ARG_OF_PERICENTER: String(omm.ARG_OF_PERICENTER),
+      MEAN_ANOMALY: String(omm.MEAN_ANOMALY),
+      EPHEMERIS_TYPE: String(omm.EPHEMERIS_TYPE),
+      ELEMENT_SET_NO: String(omm.ELEMENT_SET_NO),
+      REV_AT_EPOCH: String(omm.REV_AT_EPOCH),
+      BSTAR: String(omm.BSTAR),
+      MEAN_MOTION_DOT: String(omm.MEAN_MOTION_DOT),
+      MEAN_MOTION_DDOT: String(omm.MEAN_MOTION_DDOT),
       epoch: {
         year: Number(YYYY),
         month: Number(MM),
@@ -384,20 +399,44 @@ export class Satellite extends SpaceObject {
 
     this.epochYear = parseInt(YYYY.slice(2, 4));
     this.epochDay = dayOfYear;
-    this.meanMoDev1 = parseFloat(omm.MEAN_MOTION_DOT);
-    this.meanMoDev2 = parseFloat(omm.MEAN_MOTION_DDOT);
-    this.bstar = parseFloat(omm.BSTAR);
-    this.inclination = parseFloat(omm.INCLINATION) as Degrees;
-    this.rightAscension = parseFloat(omm.RA_OF_ASC_NODE) as Degrees;
-    this.eccentricity = parseFloat(omm.ECCENTRICITY);
-    this.argOfPerigee = parseFloat(omm.ARG_OF_PERICENTER) as Degrees;
-    this.meanAnomaly = parseFloat(omm.MEAN_ANOMALY) as Degrees;
-    this.meanMotion = parseFloat(omm.MEAN_MOTION);
+    this.meanMoDev1 = Number(omm.MEAN_MOTION_DOT);
+    this.meanMoDev2 = Number(omm.MEAN_MOTION_DDOT);
+    this.bstar = Number(omm.BSTAR);
+    this.inclination = Number(omm.INCLINATION) as Degrees;
+    this.rightAscension = Number(omm.RA_OF_ASC_NODE) as Degrees;
+    this.eccentricity = Number(omm.ECCENTRICITY);
+    this.argOfPerigee = Number(omm.ARG_OF_PERICENTER) as Degrees;
+    this.meanAnomaly = Number(omm.MEAN_ANOMALY) as Degrees;
+    this.meanMotion = Number(omm.MEAN_MOTION);
     this.period = (1440 / this.meanMotion) as Minutes;
     this.semiMajorAxis = ((8681663.653 / this.meanMotion) ** (2 / 3)) as Kilometers;
     this.semiMinorAxis = (this.semiMajorAxis * Math.sqrt(1 - this.eccentricity ** 2)) as Kilometers;
     this.apogee = (this.semiMajorAxis * (1 + this.eccentricity) - 6371) as Kilometers;
     this.perigee = (this.semiMajorAxis * (1 - this.eccentricity) - 6371) as Kilometers;
+
+    // Generate TLE lines from OMM data so tle1/tle2 are always available
+    const { tle1, tle2 } = FormatTle.createTle({
+      inc: this.inclination,
+      meanmo: this.meanMotion,
+      rasc: this.rightAscension,
+      argPe: this.argOfPerigee,
+      meana: this.meanAnomaly,
+      ecen: this.eccentricity,
+      epochyr: this.epochYear,
+      epochday: this.epochDay,
+      intl: omm.OBJECT_ID,
+      scc: this.sccNum,
+      bstar: this.bstar,
+      meanMotionDot: this.meanMoDev1,
+      meanMotionDdot: this.meanMoDev2,
+      classification: String(omm.CLASSIFICATION_TYPE) || 'U',
+      revAtEpoch: Number(omm.REV_AT_EPOCH) || 0,
+      elementSetNo: Number(omm.ELEMENT_SET_NO) || 999,
+      ephemerisType: Number(omm.EPHEMERIS_TYPE) || 0,
+    });
+
+    this.tle1 = tle1;
+    this.tle2 = tle2;
     this.satrec = Sgp4.createSatrecFromOmm(ommParsed);
   }
 
