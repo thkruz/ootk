@@ -16,6 +16,7 @@
  */
 
 import { ParseError } from '../errors';
+import type { OmmDataFormat } from '../interfaces/OmmFormat';
 import type {
   OmmCovarianceMatrix,
   OmmHeader,
@@ -108,6 +109,64 @@ export class OmmParser {
     const theory = omm.metadata.MEAN_ELEMENT_THEORY.toUpperCase();
 
     return theory === 'SGP' || theory === 'SGP4' || theory === 'SGP4-XP';
+  }
+
+  /**
+   * Parse a CelesTrak-style flat JSON OMM object into the structured ParsedOmm format.
+   *
+   * CelesTrak's JSON OMM format is a flat object with all fields at the top level,
+   * omitting metadata fields like CENTER_NAME, REF_FRAME, TIME_SYSTEM, and
+   * MEAN_ELEMENT_THEORY (which are always EARTH/TEME/UTC/SGP4 for GP data).
+   *
+   * @param omm - A flat OMM JSON object from CelesTrak
+   * @returns Parsed OMM structure with inferred metadata
+   */
+  static parseJson(omm: OmmDataFormat): ParsedOmm {
+    const result: ParsedOmm = {
+      header: {
+        CCSDS_OMM_VERS: '3.0',
+        CREATION_DATE: new Date().toISOString(),
+        ORIGINATOR: 'CelesTrak',
+      },
+      metadata: {
+        OBJECT_NAME: omm.OBJECT_NAME,
+        OBJECT_ID: omm.OBJECT_ID,
+        CENTER_NAME: 'EARTH',
+        REF_FRAME: 'TEME',
+        TIME_SYSTEM: 'UTC',
+        MEAN_ELEMENT_THEORY: 'SGP4',
+      },
+      meanElements: {
+        EPOCH: omm.EPOCH,
+        MEAN_MOTION: Number(omm.MEAN_MOTION),
+        ECCENTRICITY: Number(omm.ECCENTRICITY),
+        INCLINATION: Number(omm.INCLINATION),
+        RA_OF_ASC_NODE: Number(omm.RA_OF_ASC_NODE),
+        ARG_OF_PERICENTER: Number(omm.ARG_OF_PERICENTER),
+        MEAN_ANOMALY: Number(omm.MEAN_ANOMALY),
+      },
+      tleParameters: {
+        EPHEMERIS_TYPE: Number(omm.EPHEMERIS_TYPE),
+        CLASSIFICATION_TYPE: String(omm.CLASSIFICATION_TYPE),
+        NORAD_CAT_ID: Number(omm.NORAD_CAT_ID),
+        ELEMENT_SET_NO: Number(omm.ELEMENT_SET_NO),
+        REV_AT_EPOCH: Number(omm.REV_AT_EPOCH),
+        BSTAR: Number(omm.BSTAR),
+        MEAN_MOTION_DOT: Number(omm.MEAN_MOTION_DOT),
+        MEAN_MOTION_DDOT: Number(omm.MEAN_MOTION_DDOT),
+      },
+    };
+
+    return result;
+  }
+
+  /**
+   * Parse an array of CelesTrak-style flat JSON OMM objects.
+   * @param ommArray - Array of flat OMM JSON objects from CelesTrak
+   * @returns Array of parsed OMM structures
+   */
+  static parseJsonArray(ommArray: OmmDataFormat[]): ParsedOmm[] {
+    return ommArray.map((omm) => OmmParser.parseJson(omm));
   }
 
   /**
