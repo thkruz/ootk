@@ -107,16 +107,32 @@ export class ClassicalElements {
     const h = pos.cross(vel);
     const i = Math.acos(clamp(h.z / h.magnitude(), -1.0, 1.0)) as Radians;
     const n = Vector3D.zAxis.cross(h);
-    let o = Math.acos(clamp(n.x / n.magnitude(), -1.0, 1.0)) as Radians;
+    const nMag = n.magnitude();
+    let o: Radians;
+    let w: Radians;
 
-    if (n.y < 0) {
-      o = TAU - o as Radians;
+    if (nMag < 1e-12) {
+      // Equatorial orbit: RAAN is undefined, set to 0; measure argPerigee from X-axis
+      o = 0 as Radians;
+      if (e > 1e-12) {
+        w = Math.atan2(eVec.y, eVec.x) as Radians;
+        if (w < 0) {
+          w = w + TAU as Radians;
+        }
+      } else {
+        w = 0 as Radians;
+      }
+    } else {
+      o = Math.acos(clamp(n.x / nMag, -1.0, 1.0)) as Radians;
+      if (n.y < 0) {
+        o = TAU - o as Radians;
+      }
+      w = n.angle(eVec);
+      if (eVec.z < 0) {
+        w = TAU - w as Radians;
+      }
     }
-    let w = n.angle(eVec);
 
-    if (eVec.z < 0) {
-      w = TAU - w as Radians;
-    }
     let v = eVec.angle(pos);
 
     if (pos.dot(vel) < 0) {
