@@ -18,8 +18,8 @@ describe('FormatTle', () => {
 
     const tle = FormatTle.createTle(tleParams);
 
-    expect(tle.tle1).toBe('1 00001U 58001A   17206.18396726 +.00000000 +00000-0 +00000-0 0  9993');
-    expect(tle.tle2).toBe('2 00001 051.6400 208.9163 0006317 069.9862 025.2906 15.54225995    06');
+    expect(tle.tle1).toBe('1 00001U 58001A   17206.18396726  .00000000  00000+0  00000+0 0  9991');
+    expect(tle.tle2).toBe('2 00001  51.6400 208.9163 0006317  69.9862  25.2906 15.54225995    06');
   });
 
   // Should be able to convert argument of perigee to a stringified number
@@ -28,7 +28,7 @@ describe('FormatTle', () => {
 
     const result = FormatTle.argumentOfPerigee(argPe);
 
-    expect(result).toBe('069.9862');
+    expect(result).toBe(' 69.9862');
   });
 
   // Should be able to return the eccentricity value of a given string
@@ -57,7 +57,7 @@ describe('FormatTle', () => {
     const meana = 25.2906;
     const result = FormatTle.meanAnomaly(meana);
 
-    expect(result).toBe('025.2906');
+    expect(result).toBe(' 25.2906');
   });
 
   /*
