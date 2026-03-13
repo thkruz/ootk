@@ -750,6 +750,20 @@ export type TleParams = {
   intl: string;
   /** alpha 5 satellite number */
   scc: string;
+  /** B* drag term (1/Earth radii). Used when `sat` is not provided. */
+  bstar?: number;
+  /** First derivative of mean motion / 2 (rev/day^2). Used when `sat` is not provided. */
+  meanMotionDot?: number;
+  /** Second derivative of mean motion / 6 (rev/day^3). Used when `sat` is not provided. */
+  meanMotionDdot?: number;
+  /** Classification type (default 'U'). Used when `sat` is not provided. */
+  classification?: string;
+  /** Revolution number at epoch. Used when `sat` is not provided. */
+  revAtEpoch?: number;
+  /** Element set number (default 999). Used when `sat` is not provided. */
+  elementSetNo?: number;
+  /** Ephemeris type (default 0). Used when `sat` is not provided. */
+  ephemerisType?: number;
 };
 // / Position and velocity [Vector3D] container.
 
