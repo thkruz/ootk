@@ -430,7 +430,7 @@ export class Tle {
 
     if (exponentSymbol === '-') {
       exponent *= -1;
-    } else if (exponentSymbol !== '+') {
+    } else if (exponentSymbol !== '+' && exponentSymbol !== ' ' && exponentSymbol !== '0') {
       throw new ParseError(`Invalid BSTAR exponent symbol: ${exponentSymbol}`, 'TLE');
     }
 
