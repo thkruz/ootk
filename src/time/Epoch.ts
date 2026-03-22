@@ -68,8 +68,8 @@ export class Epoch {
    * [posix] epoch _(`1970-01-01T00:00:00.000`)_ in the [Epoch] time scale.
    */
   constructor(public posix: Seconds = Date.now() / 1000 as Seconds) {
-    if (posix < 0) {
-      throw new ValidationError('Epoch posix time must be non-negative', 'posix', posix);
+    if (Number.isNaN(posix)) {
+      throw new ValidationError('Epoch posix time must be a valid number', 'posix', posix);
     }
   }
 

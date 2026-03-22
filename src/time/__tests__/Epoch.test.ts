@@ -116,9 +116,14 @@ describe('Epoch', () => {
     expect(epoch1.operatorLessThanOrEqual(epoch2)).toEqual(true);
   });
 
-  // Test negative posix timestamp
-  it('should throw an error for negative POSIX timestamp', () => {
-    expect(() => new Epoch(-1 as Seconds)).toThrow('Epoch posix time must be non-negative');
+  // Test negative posix timestamp (pre-1970 dates are valid for TLE epochs back to 1957)
+  it('should allow negative POSIX timestamp for pre-1970 dates', () => {
+    expect(() => new Epoch(-1 as Seconds)).not.toThrow();
+  });
+
+  // Test NaN posix timestamp
+  it('should throw an error for NaN POSIX timestamp', () => {
+    expect(() => new Epoch(NaN as Seconds)).toThrow('Epoch posix time must be a valid number');
   });
 
   // Test equals with same epoch
