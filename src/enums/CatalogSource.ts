@@ -1,4 +1,5 @@
 export enum CatalogSource {
+  UNKNOWN = 'unknown',
   USSF = 'spacetrack',
   CELESTRAK = 'celestrak',
   CELESTRAK_SUP = 'celestrak-sup',
