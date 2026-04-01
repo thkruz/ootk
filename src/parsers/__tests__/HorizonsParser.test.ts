@@ -110,6 +110,51 @@ $$EOE
     });
   });
 
+  describe('target name parsing', () => {
+    it('should strip parenthetical descriptors from target name', () => {
+      const data = `Target body name: Artemis II (spacecraft) (-1024) {source: Artemis_II_merged}
+Center body name: Earth (399)
+Reference frame: ICRF
+$$SOE
+2460645.500000000 = A.D. 2024-Dec-01 00:00:00.0000 TDB
+   X = 1.000000000000000E+04 Y = 2.000000000000000E+04 Z = 3.000000000000000E+04
+   VX= 1.000000000000000E+00 VY= 2.000000000000000E+00 VZ= 3.000000000000000E+00
+$$EOE`;
+
+      const result = HorizonsParser.parseVectors(data);
+
+      expect(result.targetName).toBe('Artemis II');
+    });
+
+    it('should strip numeric ID parenthetical from planet names', () => {
+      const data = `Target body name: Mars (499)
+Center body name: Sun (10)
+$$SOE
+2460645.500000000 = A.D. 2024-Dec-01 00:00:00.0000 TDB
+   X = 1.000000000000000E+08 Y = 2.000000000000000E+08 Z = 3.000000000000000E+07
+   VX= 1.000000000000000E+01 VY= 2.000000000000000E+01 VZ= 3.000000000000000E+00
+$$EOE`;
+
+      const result = HorizonsParser.parseVectors(data);
+
+      expect(result.targetName).toBe('Mars');
+    });
+
+    it('should preserve simple names without parenthetical suffixes', () => {
+      const data = `Target body name: 1 Ceres
+Center body name: Sun (10)
+$$SOE
+2460645.500000000 = A.D. 2024-Dec-01 00:00:00.0000 TDB
+   X = 1.000000000000000E+08 Y = 2.000000000000000E+08 Z = 3.000000000000000E+07
+   VX= 1.000000000000000E+01 VY= 2.000000000000000E+01 VZ= 3.000000000000000E+00
+$$EOE`;
+
+      const result = HorizonsParser.parseVectors(data);
+
+      expect(result.targetName).toBe('1 Ceres');
+    });
+  });
+
   describe('edge cases', () => {
     it('should throw ParseError for empty input', () => {
       expect(() => HorizonsParser.parseVectors('')).toThrow(ParseError);
