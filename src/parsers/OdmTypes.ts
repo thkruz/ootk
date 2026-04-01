@@ -48,6 +48,18 @@ export interface OemExportOptions extends OdmExportOptions {
 }
 
 /**
+ * OEM from state vectors export options.
+ */
+export interface OemFromStateVectorsOptions extends OdmExportOptions {
+  /** Interpolation method. Default: 'LAGRANGE' */
+  interpolation?: string;
+  /** Interpolation order. Default: 7 */
+  interpolationDegree?: number;
+  /** Center body name. Default: 'EARTH' */
+  centerName?: string;
+}
+
+/**
  * OMM (Orbit Mean-Elements Message) export options.
  */
 export type OmmExportOptions = OdmExportOptions;
