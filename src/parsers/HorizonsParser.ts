@@ -153,12 +153,12 @@ export class HorizonsParser {
 
       // Parse metadata
       if (line.startsWith('Target body name:')) {
-        targetName = this.extractValue_(line, 'Target body name:');
+        targetName = this.extractTargetName_(line, 'Target body name:');
         metadata.targetName = targetName;
       } else if (line.startsWith('Center body name:')) {
         centerBody = this.extractValue_(line, 'Center body name:');
         metadata.centerBody = centerBody;
-      } else if (line.startsWith('Center-site name:')) {
+      } else if (line.startsWith('Center-site name:') && !centerBody) {
         centerBody = this.extractValue_(line, 'Center-site name:');
         metadata.centerBody = centerBody;
       } else if (line.startsWith('Output type:')) {
@@ -230,7 +230,7 @@ export class HorizonsParser {
 
       // Parse metadata
       if (line.startsWith('Target body name:')) {
-        targetName = this.extractValue_(line, 'Target body name:');
+        targetName = this.extractTargetName_(line, 'Target body name:');
       } else if (line.startsWith('Center-site name:')) {
         observerLocation = this.extractValue_(line, 'Center-site name:');
       }
@@ -269,9 +269,31 @@ export class HorizonsParser {
    */
   private static extractValue_(line: string, key: string): string {
     const value = line.substring(key.length).trim();
-    // Remove trailing metadata like (1 Ceres)
 
-    return value.split(/\s{2,}/)[0].trim();
+    // Remove trailing metadata separated by 2+ spaces (e.g., "{source: astDys}")
+    return value.split(/\s{2,}/u)[0].trim();
+  }
+
+  /**
+   * Extracts the target body name, stripping parenthetical descriptors and IDs.
+   *
+   * Horizons format examples:
+   * - "1 Ceres                       {source: astDys}" → "1 Ceres"
+   * - "Artemis II (spacecraft) (-1024) {source: ...}"  → "Artemis II"
+   * - "Mars (499)"                                     → "Mars"
+   */
+  private static extractTargetName_(line: string, key: string): string {
+    const raw = this.extractValue_(line, key);
+
+    // Strip parenthetical suffixes: "(spacecraft)", "(-1024)", "(499)", etc.
+    // Stop at the first '(' that is preceded by a space (part of a suffix, not the name itself)
+    const parenIdx = raw.search(/\s\(/u);
+
+    if (parenIdx > 0) {
+      return raw.substring(0, parenIdx).trim();
+    }
+
+    return raw;
   }
 
   /**
@@ -360,7 +382,12 @@ export class HorizonsParser {
     }
 
     const posLine = allLines[nextIndex].trim();
-    const posMatch = posLine.match(/X\s*=\s*([-\d.E+]+)\s+Y\s*=\s*([-\d.E+]+)\s+Z\s*=\s*([-\d.E+]+)/i);
+
+    // Try labeled format first: X = ... Y = ... Z = ...
+    const posMatchLabeled = posLine.match(/X\s*=\s*([-\d.E+]+)\s+Y\s*=\s*([-\d.E+]+)\s+Z\s*=\s*([-\d.E+]+)/iu);
+    // Then try unlabeled format: three bare numbers (scientific notation)
+    const posMatchBare = !posMatchLabeled ? posLine.match(/^\s*([-\d.E+]+)\s+([-\d.E+]+)\s+([-\d.E+]+)\s*$/iu) : null;
+    const posMatch = posMatchLabeled ?? posMatchBare;
 
     if (!posMatch) {
       return null;
@@ -378,7 +405,12 @@ export class HorizonsParser {
 
     if (nextIndex < allLines.length) {
       const velLine = allLines[nextIndex].trim();
-      const velMatch = velLine.match(/VX\s*=\s*([-\d.E+]+)\s+VY\s*=\s*([-\d.E+]+)\s+VZ\s*=\s*([-\d.E+]+)/i);
+
+      // Try labeled format first: VX = ... VY = ... VZ = ...
+      const velMatchLabeled = velLine.match(/VX\s*=\s*([-\d.E+]+)\s+VY\s*=\s*([-\d.E+]+)\s+VZ\s*=\s*([-\d.E+]+)/iu);
+      // Then try unlabeled format: three bare numbers (scientific notation)
+      const velMatchBare = !velMatchLabeled ? velLine.match(/^\s*([-\d.E+]+)\s+([-\d.E+]+)\s+([-\d.E+]+)\s*$/iu) : null;
+      const velMatch = velMatchLabeled ?? velMatchBare;
 
       if (velMatch) {
         velocity = new Vector3D(
@@ -387,6 +419,24 @@ export class HorizonsParser {
           parseFloat(velMatch[3]) as KilometersPerSecond,
         );
         nextIndex++;
+      }
+    }
+
+    // Skip any remaining data lines for this entry (e.g., LT, RG, RR line in format 3)
+    while (nextIndex < allLines.length) {
+      const extraLine = allLines[nextIndex].trim();
+
+      // Stop if we hit the next date line, $$EOE, or an empty line
+      if (extraLine === '$$EOE' || extraLine.length === 0 ||
+          /^\d+\.\d+\s*=\s*A\.D\./u.test(extraLine)) {
+        break;
+      }
+
+      // If it's just numbers (like LT RG RR), skip it
+      if (/^\s*[-\d.E+]+(\s+[-\d.E+]+)*\s*$/u.test(extraLine)) {
+        nextIndex++;
+      } else {
+        break;
       }
     }
 
