@@ -49,6 +49,7 @@ export type {
   OdmExportOptions,
   OpmExportOptions,
   OemExportOptions,
+  OemFromStateVectorsOptions,
   OmmExportOptions,
 } from './OdmTypes';
 

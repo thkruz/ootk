@@ -65,6 +65,11 @@ export interface OemMetadata {
   REF_FRAME_EPOCH?: string;
   /** Optional comment lines from metadata */
   COMMENT?: string[];
+  /**
+   * User-defined parameters from CCSDS OEM USER_DEFINED_ keywords.
+   * @see CCSDS 502.0-B-3 Section 7.5.1
+   */
+  USER_DEFINED?: Record<string, string>;
 }
 
 /**

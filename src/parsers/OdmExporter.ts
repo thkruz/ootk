@@ -15,9 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import type { J2000 } from '../coordinate/J2000';
 import { earthGravityParam, RAD2DEG } from '../utils/constants';
 import type { Satellite } from '../objects/Satellite';
-import type { OpmExportOptions, OemExportOptions, OmmExportOptions } from './OdmTypes';
+import type { OpmExportOptions, OemExportOptions, OemFromStateVectorsOptions, OmmExportOptions } from './OdmTypes';
 
 /**
  * Exporter for CCSDS Orbit Data Messages (ODM) in KVN format.
@@ -202,6 +203,76 @@ export class OdmExporter {
           );
         }
       }
+    }
+
+    return lines.join('\n');
+  }
+
+  // ==========================================================================
+  // OEM from State Vectors — direct J2000 array export
+  // ==========================================================================
+
+  /**
+   * Export an array of J2000 state vectors as OEM KVN.
+   *
+   * Unlike {@link formatOem}, which propagates a TLE-based satellite, this
+   * method serializes pre-computed state vectors directly. Useful for
+   * converting parsed ephemeris data (e.g., NASA Horizons) to CCSDS OEM.
+   *
+   * @param stateVectors - Array of J2000 state vectors to export
+   * @param metadata - Object identification metadata
+   * @param options - Export configuration
+   * @returns OEM KVN format string
+   */
+  static formatOemFromStateVectors(
+    stateVectors: J2000[],
+    metadata: {
+      objectName: string;
+      objectId: string;
+    },
+    options: OemFromStateVectorsOptions = {},
+  ): string {
+    if (stateVectors.length === 0) {
+      throw new Error('Cannot export OEM with no state vectors');
+    }
+
+    const refFrame = options.refFrame ?? 'EME2000';
+    const centerName = options.centerName ?? 'EARTH';
+    const startTime = stateVectors[0].epoch.toDateTime();
+    const stopTime = stateVectors[stateVectors.length - 1].epoch.toDateTime();
+    const lines: string[] = [];
+
+    // Header
+    lines.push('CCSDS_OEM_VERS = 2.0');
+    OdmExporter.appendComments_(lines, options.comments);
+    lines.push(`CREATION_DATE = ${OdmExporter.formatDateTime_(new Date())}`);
+    lines.push(`ORIGINATOR = ${options.originator ?? 'KeepTrack'}`);
+    if (options.messageId) {
+      lines.push(`MESSAGE_ID = ${options.messageId}`);
+    }
+    lines.push('');
+
+    // Metadata
+    lines.push('META_START');
+    lines.push(`OBJECT_NAME = ${metadata.objectName}`);
+    lines.push(`OBJECT_ID = ${metadata.objectId}`);
+    lines.push(`CENTER_NAME = ${centerName}`);
+    lines.push(`REF_FRAME = ${refFrame}`);
+    lines.push('TIME_SYSTEM = UTC');
+    lines.push(`START_TIME = ${OdmExporter.formatDateTime_(startTime)}`);
+    lines.push(`STOP_TIME = ${OdmExporter.formatDateTime_(stopTime)}`);
+    lines.push(`INTERPOLATION = ${options.interpolation ?? 'LAGRANGE'}`);
+    lines.push(`INTERPOLATION_DEGREE = ${options.interpolationDegree ?? 7}`);
+    lines.push('META_STOP');
+    lines.push('');
+
+    // Ephemeris data
+    for (const sv of stateVectors) {
+      const epoch = OdmExporter.formatDateTime_(sv.epoch.toDateTime());
+
+      lines.push(
+        `${epoch}  ${OdmExporter.formatNumber_(sv.position.x)}  ${OdmExporter.formatNumber_(sv.position.y)}  ${OdmExporter.formatNumber_(sv.position.z)}  ${OdmExporter.formatNumber_(sv.velocity.x)}  ${OdmExporter.formatNumber_(sv.velocity.y)}  ${OdmExporter.formatNumber_(sv.velocity.z)}`,
+      );
     }
 
     return lines.join('\n');

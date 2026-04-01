@@ -122,6 +122,7 @@ export class OemParser {
     let currentBlock: Partial<OemDataBlock> | null = null;
     let currentMetadata: Partial<OemMetadata> = {};
     let metadataComments: string[] = [];
+    let userDefined: Record<string, string> = {};
     let inMeta = false;
     let inData = false;
     let inCovariance = false;
@@ -132,6 +133,7 @@ export class OemParser {
       if (line === 'META_START') {
         currentMetadata = {};
         metadataComments = [];
+        userDefined = {};
         inMeta = true;
         continue;
       }
@@ -139,6 +141,9 @@ export class OemParser {
       if (line === 'META_STOP') {
         if (metadataComments.length > 0) {
           currentMetadata.COMMENT = metadataComments;
+        }
+        if (Object.keys(userDefined).length > 0) {
+          currentMetadata.USER_DEFINED = userDefined;
         }
         currentBlock = {
           metadata: currentMetadata as OemMetadata,
@@ -186,7 +191,10 @@ export class OemParser {
           const key = line.substring(0, eqIndex).trim();
           const value = line.substring(eqIndex + 1).trim();
 
-          if (key === 'INTERPOLATION_DEGREE') {
+          if (key.startsWith('USER_DEFINED_')) {
+            // CCSDS 502.0-B-3 Section 7.5.1 — store without prefix
+            userDefined[key.substring(13)] = value;
+          } else if (key === 'INTERPOLATION_DEGREE') {
             currentMetadata[key] = parseInt(value, 10);
           } else {
             (currentMetadata as Record<string, string | number>)[key] = value;
