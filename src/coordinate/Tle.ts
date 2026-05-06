@@ -29,7 +29,6 @@ import { Sgp4GravConstants } from '../sgp4/sgp4';
 import { EpochUTC } from '../time/EpochUTC';
 import {
   Degrees,
-  TemeVec3,
   Kilometers,
   KilometersPerSecond,
   Line1Data,
@@ -38,6 +37,7 @@ import {
   SatelliteRecord,
   Seconds,
   StateVectorSgp4,
+  TemeVec3,
   TleData,
   TleDataFull,
   TleLine1,
@@ -897,18 +897,24 @@ export class Tle {
     const line2 = Tle.parseLine2(tleLine2);
 
     if (line1.satNum !== line2.satNum) {
+      console.info('Line 1 satNum:', line1.satNum);
+      console.info('Line 2 satNum:', line2.satNum);
       throw new ParseError('Satellite numbers do not match between TLE lines', 'TLE');
     }
 
     if (line1.satNumRaw !== line2.satNumRaw) {
+      console.info('Line 1 satNumRaw:', line1.satNumRaw);
+      console.info('Line 2 satNumRaw:', line2.satNumRaw);
       throw new ParseError('Raw satellite numbers do not match between TLE lines', 'TLE');
     }
 
     if (line1.lineNumber1 !== 1) {
+      console.info('Line 1 line number:', line1.lineNumber1);
       throw new ParseError('First TLE line number must be 1', 'TLE');
     }
 
     if (line2.lineNumber2 !== 2) {
+      console.info('Line 2 line number:', line2.lineNumber2);
       throw new ParseError('Second TLE line number must be 2', 'TLE');
     }
 
