@@ -146,4 +146,18 @@ describe('EpochGPS', () => {
 
     expect(epoch).toMatchSnapshot();
   });
+
+  // Regression: rendering pipeline (Earth.update / getJ2000 / getTeme) constructs
+  // EpochUTC from simulationTimeObj for missions like Apollo 8 (1968), which
+  // produces a negative POSIX value. Pre-1970 dates must flow through without throwing.
+  it('should accept pre-1970 dates via fromDateTime', () => {
+    const apollo8Tli = new Date('1968-12-21T12:51:00Z');
+
+    expect(() => EpochUTC.fromDateTime(apollo8Tli)).not.toThrow();
+    expect(EpochUTC.fromDateTime(apollo8Tli).posix).toBeLessThan(0);
+  });
+
+  it('should accept negative POSIX seconds via constructor', () => {
+    expect(() => new EpochUTC(-1 as Seconds)).not.toThrow();
+  });
 });
