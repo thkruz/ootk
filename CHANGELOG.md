@@ -3,7 +3,59 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [6.0.0](https://github.com/thkruz/ootk/compare/v1.0.4...6.0.0)
+#### [6.0.6](https://github.com/thkruz/ootk/compare/v6.0.4...6.0.6)
+
+- feat(Satellite): add support for OMM ID conversion and classification of satellite catalog numbers [`8563512`](https://github.com/thkruz/ootk/commit/85635124c4219806339a1a4b8cfb604680632578)
+- fix(HorizonsParser): :bug: improve target name extraction logic [`7ac2bbf`](https://github.com/thkruz/ootk/commit/7ac2bbf28659ef0db298863acdebe045861f29a7)
+- feat(OdmExporter): :sparkles: add OEM export from state vectors [`eeb9ff0`](https://github.com/thkruz/ootk/commit/eeb9ff0e5a50974b74279c7d27098c5e81c645a8)
+- test(EpochUTC): :white_check_mark: add tests for pre-1970 dates [`26382c8`](https://github.com/thkruz/ootk/commit/26382c80c59a71cb8aaf3ef9bdef47e999b63c1b)
+- fix(Tle): :bug: add debug info for TLE line validation [`24558e1`](https://github.com/thkruz/ootk/commit/24558e1172bde3aa6d00e0b13308bb0886e33acb)
+- chore(package): :wrench: bump version to 6.0.5 [`db25f3b`](https://github.com/thkruz/ootk/commit/db25f3bc4616b09adb518672c6939c9673828bf5)
+- fix(CatalogSource): :bug: add UNKNOWN source to enum [`5d0f8ed`](https://github.com/thkruz/ootk/commit/5d0f8edbf83e3bab96642e841e05a455e765731c)
+
+#### [v6.0.4](https://github.com/thkruz/ootk/compare/v6.0.2...v6.0.4)
+
+>  
+
+- chore(package): :wrench: bump version to 6.0.4 [`e36a2fa`](https://github.com/thkruz/ootk/commit/e36a2faa1e037362f02c851cb39d469c736f03a4)
+- test(FormatTle): :white_check_mark: add CelesTrak stations validation tests [`bb4230c`](https://github.com/thkruz/ootk/commit/bb4230c659cd2c8473a71acecec85ac498515d37)
+- fix(ClassicalElements): :bug: handle equatorial orbits in fromStateVector [`a2b210e`](https://github.com/thkruz/ootk/commit/a2b210e655daad44e61cbfe5ae8ebae367d53b38)
+- fix(FormatTle): :bug: fix TLE formatting to match NORAD/CelesTrak conventions [`d34218d`](https://github.com/thkruz/ootk/commit/d34218d7f1251f7436e3ed7560587c4e3b26d1c0)
+- fix(Epoch): :bug: allow pre-1970 POSIX timestamps for historic TLEs [`15c1841`](https://github.com/thkruz/ootk/commit/15c1841d6d8a20a0e82117b973740e3ad82ec1ba)
+- fix(CatalogSource): :bug: update catalog source names to match standards [`3951df7`](https://github.com/thkruz/ootk/commit/3951df79f469c18160804e4c91a4527da1e7828c)
+- test(FormatTle): :white_check_mark: update test expectations for new TLE formatting [`bcb907b`](https://github.com/thkruz/ootk/commit/bcb907b64ad11c8c81d0cc26d1219ceac022c4bb)
+- fix(Tle): :bug: handle additional BSTAR exponent symbols [`e5f96b4`](https://github.com/thkruz/ootk/commit/e5f96b461ea7ca91083c8d7e59acc794524084be)
+- chore(package): :wrench: bump version to 6.0.3 [`be31bfa`](https://github.com/thkruz/ootk/commit/be31bfa79a7a431bb53e65400de3cc479f82ff92)
+- test(FormatTle): :white_check_mark: fix line 2 expected value for new formatting [`e607f21`](https://github.com/thkruz/ootk/commit/e607f215e430f5efcc0a7e5de5fbf218cdb5b3b2)
+
+#### [v6.0.2](https://github.com/thkruz/ootk/compare/v6.0.1...v6.0.2)
+
+>  
+
+- feat(FormatTle): :sparkles: enhance TLE generation with new formatting [`ba10fd0`](https://github.com/thkruz/ootk/commit/ba10fd0792ff4d5ce762508f7849b16ea9707265)
+- feat(Satellite): :sparkles: update OMM parsing to use Number [`0d37c26`](https://github.com/thkruz/ootk/commit/0d37c2652a83118605628ef4b667986cf324d5e8)
+- feat(OmmParser): :sparkles: add JSON parsing for CelesTrak OMM [`9da31e3`](https://github.com/thkruz/ootk/commit/9da31e3a291ea744b16a3ea641869ff7d6ef08be)
+- feat(OmmFormat): :sparkles: update data format to support numeric types [`afecc3f`](https://github.com/thkruz/ootk/commit/afecc3f97e3c8e4774063c0460b7bd3ae7eb0901)
+- feat(TleParams): :sparkles: add additional satellite parameters [`2734276`](https://github.com/thkruz/ootk/commit/27342760b13e97382ae090d8450733c539df09b4)
+- chore(package): :wrench: bump version to 6.0.2 [`9e109d1`](https://github.com/thkruz/ootk/commit/9e109d1edb40d9147c0253ff86424a3323707e9d)
+- test(integration): :white_check_mark: update export snapshot for new OMM exports [`e0c91b6`](https://github.com/thkruz/ootk/commit/e0c91b6a17988ea8e3fb36cb24edd2230bf2b846)
+
+#### [v6.0.1](https://github.com/thkruz/ootk/compare/v6.0.0...v6.0.1)
+
+>  
+
+- feat(parsers): :sparkles: add OMM parser and types [`645b3e4`](https://github.com/thkruz/ootk/commit/645b3e4f955382e6861fc4eb3556f5c98fb7da8b)
+- test(OmmParser): :white_check_mark: add unit tests for OMM parsing [`e238a56`](https://github.com/thkruz/ootk/commit/e238a56c0c50d7a43552bda501b76ae4689b160b)
+- test(Tle): :white_check_mark: add tests for meanMoDev1 and bstar parsing [`506a2d8`](https://github.com/thkruz/ootk/commit/506a2d81b5e95c0e5065d0fcbf7ee5056ec91345)
+- chore(gitignore): :wastebasket: update .gitignore to include propagator accuracy summary file [`1673dc2`](https://github.com/thkruz/ootk/commit/1673dc29f55ecccf92b8cbccdd7cb44100f89644)
+- feat(Satellite): :sparkles: add fromOmm method for satellite creation [`a8f46fe`](https://github.com/thkruz/ootk/commit/a8f46fe7864bfc9a97e0a00656eb3f2534920ea2)
+- fix(Tle): :bug: handle '0' as valid BSTAR symbol [`6cda026`](https://github.com/thkruz/ootk/commit/6cda026fd74c99d6b2d2f4538b2037e0e8bf2667)
+- chore(package): :wrench: bump version to 6.0.1 [`e116431`](https://github.com/thkruz/ootk/commit/e1164313e86d5a22bd2d55a9fbd21bbd405837e6)
+- chore(gitignore): :wastebasket: fix path format for propagator accuracy summary file [`ad1976c`](https://github.com/thkruz/ootk/commit/ad1976c97ca82327d5391aff5b455c40bb41e22b)
+
+### [v6.0.0](https://github.com/thkruz/ootk/compare/v1.0.4...v6.0.0)
+
+>  
 
 - docs: add comprehensive advanced features guide [`#41`](https://github.com/thkruz/ootk/pull/41)
 - docs: add comprehensive user guide and getting started documentation [`#39`](https://github.com/thkruz/ootk/pull/39)
