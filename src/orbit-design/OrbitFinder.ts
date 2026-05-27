@@ -581,8 +581,21 @@ export class OrbitFinder {
     return perigeeParams;
   }
 
+  /**
+   * Returns the 5-char satnum to embed in the synthesized TLEs.
+   *
+   * Why not {@link Satellite.sccNum}? For extended (7+ digit) IDs sccNum is
+   * the full 9-digit canonical value, which would push the TLE past 69 chars
+   * and break Sgp4.createSatrec. The input tle1 always has a valid 5-char
+   * satnum at columns 2-6, and SGP4 itself doesn't care what value lives
+   * there as long as line 1 and line 2 agree — so use that.
+   */
+  private tleSatNum_(): string {
+    return this.sat_.tle1.substring(2, 7);
+  }
+
   private generateTle1_(): TleLine1 {
-    return `1 ${this.sat_.sccNum}U ${this.sat_.tle1.substring(9, 17)} ${this.sat_.tle1.substring(18, 32)}${this.sat_.tle1.substring(32, 71)}` as TleLine1;
+    return `1 ${this.tleSatNum_()}U ${this.sat_.tle1.substring(9, 17)} ${this.sat_.tle1.substring(18, 32)}${this.sat_.tle1.substring(32, 71)}` as TleLine1;
   }
 
   private generateTle2_(newParams: Partial<OrbitParameters>): TleLine2 {
@@ -599,6 +612,6 @@ export class OrbitFinder {
     const meanA = mergedParams.meanAnomaly.toFixed(4).padStart(8, '0');
     const meanMo = this.sat_.tle2.substring(52, 63);
 
-    return `2 ${this.sat_.sccNum} ${inc} ${raan} ${ecc} ${argPer} ${meanA} ${meanMo}    10` as TleLine2;
+    return `2 ${this.tleSatNum_()} ${inc} ${raan} ${ecc} ${argPer} ${meanA} ${meanMo}    10` as TleLine2;
   }
 }
