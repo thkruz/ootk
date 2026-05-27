@@ -1,4 +1,4 @@
-import { ClassicalElements, EpochUTC, Kilometers, Radians, Tle, TleLine1, TleLine2 } from '../../main';
+import { ClassicalElements, EpochUTC, Kilometers, Radians, Tle, TleLine1, TleLine2, ValidationError } from '../../main';
 
 describe('Tle', () => {
   let tle: Tle;
@@ -109,6 +109,89 @@ describe('convert6DigitToA5', () => {
 
     // Edge case - exactly 6 characters but first is already a letter
     expect(Tle.convert6DigitToA5('B12345')).toBe('B12345');
+  });
+
+  it('should throw ValidationError when 6-digit input exceeds alpha-5 range', () => {
+    expect(() => Tle.convert6DigitToA5('340000')).toThrow(ValidationError);
+    expect(() => Tle.convert6DigitToA5('999999')).toThrow(ValidationError);
+  });
+
+  it('should throw ValidationError when input exceeds 6 chars (extended IDs)', () => {
+    // CelesTrak supplemental 9-digit IDs cannot be encoded in TLE alpha-5.
+    expect(() => Tle.convert6DigitToA5('799500766')).toThrow(ValidationError);
+    expect(() => Tle.convert6DigitToA5('1234567')).toThrow(ValidationError);
+  });
+});
+
+describe('convertA5to6Digit', () => {
+  it('should convert alpha-5 to 6-digit numeric', () => {
+    expect(Tle.convertA5to6Digit('A0000')).toBe('100000');
+    expect(Tle.convertA5to6Digit('C3456')).toBe('123456');
+    expect(Tle.convertA5to6Digit('Z9999')).toBe('339999');
+  });
+
+  it('should pass 5-digit numeric input through unchanged', () => {
+    expect(Tle.convertA5to6Digit('25544')).toBe('25544');
+    expect(Tle.convertA5to6Digit('00001')).toBe('00001');
+  });
+
+  it('should pass extended (7+ digit) numeric input through unchanged', () => {
+    // Dynamic / 9-digit case: the function's contract is "alpha-5 to 6-digit";
+    // extended IDs are out of its scope but identity-passthrough is the safe answer.
+    expect(Tle.convertA5to6Digit('799500766')).toBe('799500766');
+    expect(Tle.convertA5to6Digit('1234567')).toBe('1234567');
+  });
+
+  it('should throw ValidationError when 6-digit input exceeds alpha-5 range', () => {
+    expect(() => Tle.convertA5to6Digit('340000')).toThrow(ValidationError);
+  });
+
+  it('should throw ValidationError when alpha-5 has non-digit trailing chars', () => {
+    expect(() => Tle.convertA5to6Digit('A12B3')).toThrow(ValidationError);
+  });
+
+  it('should throw ValidationError on mixed letters in non-leading positions', () => {
+    expect(() => Tle.convertA5to6Digit('799500A66')).toThrow(ValidationError);
+  });
+
+  it('should tolerate leading/trailing whitespace from TLE column padding', () => {
+    expect(Tle.convertA5to6Digit(' 1234')).toBe(' 1234');
+  });
+});
+
+describe('classifySatNum', () => {
+  it('should classify 5-digit and shorter numeric IDs', () => {
+    expect(Tle.classifySatNum('1')).toBe('numeric5');
+    expect(Tle.classifySatNum('25544')).toBe('numeric5');
+    expect(Tle.classifySatNum('99999')).toBe('numeric5');
+  });
+
+  it('should classify alpha-5 IDs', () => {
+    expect(Tle.classifySatNum('A0000')).toBe('alpha5');
+    expect(Tle.classifySatNum('Z9999')).toBe('alpha5');
+  });
+
+  it('should classify 6-digit numeric IDs in range', () => {
+    expect(Tle.classifySatNum('100000')).toBe('numeric6');
+    expect(Tle.classifySatNum('339999')).toBe('numeric6');
+  });
+
+  it('should classify 6-digit numeric IDs above range as extended', () => {
+    expect(Tle.classifySatNum('340000')).toBe('extended');
+    expect(Tle.classifySatNum('999999')).toBe('extended');
+  });
+
+  it('should classify 7+ digit numeric IDs as extended', () => {
+    expect(Tle.classifySatNum('1234567')).toBe('extended');
+    expect(Tle.classifySatNum('799500766')).toBe('extended');
+  });
+
+  it('should classify malformed inputs as invalid', () => {
+    expect(Tle.classifySatNum('')).toBe('invalid');
+    expect(Tle.classifySatNum('   ')).toBe('invalid');
+    expect(Tle.classifySatNum('A123')).toBe('invalid'); // alpha-5 needs 5 chars
+    expect(Tle.classifySatNum('A12345')).toBe('invalid'); // alpha-5 is 5 chars not 6
+    expect(Tle.classifySatNum('12A45')).toBe('invalid');
   });
 });
 

@@ -106,12 +106,16 @@ export class Satellite extends SpaceObject {
   period!: Minutes;
   rightAscension!: Degrees;
   satrec!: SatelliteRecord;
-  /** The satellite catalog number as listed in the TLE. */
+  /** The canonical satellite catalog number. May be a 5-digit numeric, alpha-5,
+   * 6-digit numeric, or an extended (7+ digit) ID such as CelesTrak supplemental
+   * 9-digit IDs. */
   sccNum!: string;
-  /** The 5 digit alpha-numeric satellite catalog number. */
-  sccNum5!: string;
-  /** The 6 digit numeric satellite catalog number. */
-  sccNum6!: string;
+  /** The 5-character alpha-5 representation, or `null` when {@link sccNum} is
+   * an extended ID that exceeds the alpha-5 capacity (max numeric value 339 999). */
+  sccNum5!: string | null;
+  /** The 6-digit numeric representation, or `null` when {@link sccNum} is
+   * an extended ID that exceeds the alpha-5 capacity (max numeric value 339 999). */
+  sccNum6!: string | null;
   tle1!: TleLine1;
   tle2!: TleLine2;
   /** The semi-major axis of the satellite's orbit. */
@@ -326,6 +330,42 @@ export class Satellite extends SpaceObject {
 
   // ==================== TLE/OMM Parsing ====================
 
+  /**
+   * Converts an OMM international designator (e.g. `"2026-114A"`) to the
+   * TLE intl-des column format (cols 10-17, e.g. `"26114A"`). Inputs that
+   * don't match the OMM `YYYY-NNNL...` pattern pass through unchanged.
+   */
+  private static ommObjectIdToTleIntlDes_(objectId: string | undefined): string {
+    if (!objectId) {
+      return '';
+    }
+    // OMM intl des: YYYY-NNNL[LL] → TLE intl des: YYNNNL[LL]
+    const match = objectId.match(/^\d{4}-(?<rest>\d{3}[A-Z]{1,3})$/u);
+
+    if (match?.groups?.rest) {
+      return objectId.slice(2, 4) + match.groups.rest;
+    }
+
+    return objectId;
+  }
+
+  /**
+   * Derives {@link sccNum5} and {@link sccNum6} from {@link sccNum}. When the
+   * canonical ID is an extended (7+ digit) value that exceeds the TLE alpha-5
+   * capacity (max 339 999), both forms are set to `null`.
+   */
+  private assignAlpha5Forms_(): void {
+    const kind = Tle.classifySatNum(this.sccNum);
+
+    if (kind === 'numeric5' || kind === 'alpha5' || kind === 'numeric6') {
+      this.sccNum5 = Tle.convert6DigitToA5(this.sccNum);
+      this.sccNum6 = Tle.convertA5to6Digit(this.sccNum5);
+    } else {
+      this.sccNum5 = null;
+      this.sccNum6 = null;
+    }
+  }
+
   private parseTleAndUpdateOrbit_(tle1: TleLine1, tle2: TleLine2, sccNum?: string) {
     const tleData = Tle.parse(tle1, tle2);
 
@@ -333,8 +373,7 @@ export class Satellite extends SpaceObject {
     this.tle2 = tle2;
 
     this.sccNum = sccNum ?? tleData.satNum.toString();
-    this.sccNum5 = Tle.convert6DigitToA5(this.sccNum);
-    this.sccNum6 = Tle.convertA5to6Digit(this.sccNum5);
+    this.assignAlpha5Forms_();
     this.intlDes = tleData.intlDes;
     this.epochYear = tleData.epochYear;
     this.epochDay = tleData.epochDay;
@@ -359,8 +398,7 @@ export class Satellite extends SpaceObject {
     const noradStr = String(omm.NORAD_CAT_ID);
 
     this.sccNum = noradStr.padStart(5, '0');
-    this.sccNum5 = Tle.convert6DigitToA5(noradStr);
-    this.sccNum6 = Tle.convertA5to6Digit(this.sccNum5);
+    this.assignAlpha5Forms_();
     this.intlDes = omm.OBJECT_ID;
     const YYYY = omm.EPOCH.slice(0, 4);
     const MM = omm.EPOCH.slice(5, 7);
@@ -424,8 +462,10 @@ export class Satellite extends SpaceObject {
       ecen: this.eccentricity,
       epochyr: this.epochYear,
       epochday: this.epochDay,
-      intl: omm.OBJECT_ID,
-      scc: this.sccNum,
+      intl: Satellite.ommObjectIdToTleIntlDes_(omm.OBJECT_ID),
+      // Extended (7+ digit) IDs don't fit TLE cols 3-7. Truncate to the last 5
+      // digits for the TLE string; the canonical ID stays on this.sccNum.
+      scc: Tle.classifySatNum(this.sccNum) === 'extended' ? this.sccNum.slice(-5) : this.sccNum,
       bstar: this.bstar,
       meanMotionDot: this.meanMoDev1,
       meanMotionDdot: this.meanMoDev2,

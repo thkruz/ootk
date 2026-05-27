@@ -23,7 +23,7 @@
  */
 
 import { Sgp4OpsMode } from '../enums/Sgp4OpsMode';
-import { ParseError, PropagationError } from '../errors';
+import { ParseError, PropagationError, ValidationError } from '../errors';
 import { Sgp4, Vector3D } from '../main';
 import { Sgp4GravConstants } from '../sgp4/sgp4';
 import { EpochUTC } from '../time/EpochUTC';
@@ -47,6 +47,19 @@ import { DEG2RAD, earthGravityParam, RAD2DEG, secondsPerDay, TAU } from '../util
 import { getDayOfYear, newtonNu, toPrecision } from '../utils/functions';
 import { ClassicalElements, FormatTle, TEME } from './index';
 import { TleFormatData } from './tle-format-data';
+
+/**
+ * Classification of a satellite catalog number by its representation.
+ *
+ * - `numeric5` — 1-5 numeric digits, value 0-99 999.
+ * - `alpha5` — 5 chars, leading letter (A-Z, excl. I/O), value 100 000-339 999.
+ * - `numeric6` — 6 numeric digits, value 100 000-339 999.
+ * - `extended` — 7+ numeric digits (e.g. CelesTrak supplemental 9-digit IDs).
+ *   Cannot be encoded in TLE cols 3-7 without truncation; canonical ID lives
+ *   on `Satellite.sccNum`.
+ * - `invalid` — empty, malformed, or otherwise unclassifiable.
+ */
+export type SatNumKind = 'numeric5' | 'alpha5' | 'numeric6' | 'extended' | 'invalid';
 
 /**
  * Tle is a static class with a collection of methods for working with TLEs.
@@ -968,12 +981,58 @@ export class Tle {
   }
 
   /**
-   * Converts a 6 digit SCC number to a 5 digit SCC alpha 5 number
-   * @param sccNum The 6 digit SCC number
-   * @returns The 5 digit SCC alpha 5 number
+   * Classifies a satellite catalog number by representation. See {@link SatNumKind}.
+   * Pure function; no side effects.
+   * @param sccNum The catalog number string.
+   * @returns The {@link SatNumKind} describing the input.
+   */
+  static classifySatNum(sccNum: string): SatNumKind {
+    if (typeof sccNum !== 'string') {
+      return 'invalid';
+    }
+
+    const trimmed = sccNum.trim();
+
+    if (trimmed.length === 0) {
+      return 'invalid';
+    }
+
+    const first = trimmed[0];
+
+    // Alpha-5: exactly 5 chars, leading letter from the alpha5_ map.
+    if (trimmed.length === 5 && first in Tle.alpha5_) {
+      return (/^\d{4}$/u).test(trimmed.slice(1)) ? 'alpha5' : 'invalid';
+    }
+
+    // Otherwise must be all digits.
+    if (!(/^\d+$/u).test(trimmed)) {
+      return 'invalid';
+    }
+
+    if (trimmed.length <= 5) {
+      return 'numeric5';
+    }
+
+    if (trimmed.length === 6) {
+      return parseInt(trimmed, 10) <= 339999 ? 'numeric6' : 'extended';
+    }
+
+    return 'extended';
+  }
+
+  /**
+   * Converts a 6-digit numeric SCC number to its 5-character alpha-5 form.
+   *
+   * Inputs shorter than 6 chars or already in alpha-5 form pass through unchanged.
+   *
+   * @param sccNum The SCC number to convert.
+   * @returns The 5-character alpha-5 representation.
+   * @throws {ValidationError} If `sccNum` exceeds the alpha-5 range (numeric value > 339 999,
+   *   or length > 6). For such IDs the canonical value should be kept on
+   *   `Satellite.sccNum` and the TLE column populated with the last 5 digits.
    */
   static convert6DigitToA5(sccNum: string): string {
-    // Only applies to 6 digit numbers
+    // Pass-through for short / already-alpha5 inputs.
     if (sccNum.length < 6) {
       return sccNum;
     }
@@ -982,17 +1041,39 @@ export class Tle {
       throw new ParseError('Invalid SCC number format', 'TLE');
     }
 
-    // Already an alpha 5 number
+    if (sccNum.length > 6) {
+      throw new ValidationError(
+        'SCC number exceeds TLE alpha-5 capacity (max 339999); use Satellite.sccNum for the canonical ID',
+        'sccNum',
+        sccNum,
+      );
+    }
+
+    // Already an alpha-5 number (leading letter).
     if (RegExp(/[A-Z]/iu, 'u').test(sccNum[0])) {
       return sccNum;
     }
 
-    // Extract the trailing 4 digits
+    // Reject 6-digit values above alpha-5 range (340 000-999 999).
+    const numericValue = parseInt(sccNum, 10);
+
+    if (isNaN(numericValue)) {
+      throw new ValidationError('SCC number must be numeric', 'sccNum', sccNum);
+    }
+    if (numericValue > 339999) {
+      throw new ValidationError(
+        'SCC number exceeds TLE alpha-5 capacity (max 339999); use Satellite.sccNum for the canonical ID',
+        'sccNum',
+        sccNum,
+      );
+    }
+
+    // Extract the trailing 4 digits.
     const rest = sccNum.slice(2, 6);
 
     /*
      * Convert the first two digit numbers into a Letter. Skip I and O as they
-     * look too similar to 1 and 0 A=10, B=11, C=12, D=13, E=14, F=15, G=16,
+     * look too similar to 1 and 0. A=10, B=11, C=12, D=13, E=14, F=15, G=16,
      * H=17, J=18, K=19, L=20, M=21, N=22, P=23, Q=24, R=25, S=26, T=27, U=28,
      * V=29, W=30, X=31, Y=32, Z=33
      */
@@ -1006,9 +1087,17 @@ export class Tle {
   }
 
   /**
-   * Converts a 5-digit SCC number to a 6-digit SCC number.
-   * @param sccNum - The 5-digit SCC number to convert.
-   * @returns The converted 6-digit SCC number.
+   * Converts a 5-character alpha-5 SCC number to its 6-digit numeric form.
+   *
+   * Inputs shorter than 5 chars pass through unchanged. Numeric inputs without
+   * an alpha-5 leading letter pass through unchanged (5-digit numeric, in-range
+   * 6-digit numeric, and extended 7+ digit numeric IDs are all identity).
+   *
+   * @param sccNum The SCC number to convert.
+   * @returns The 6-digit numeric representation, or the input itself if it
+   *   is already a numeric form.
+   * @throws {ValidationError} If `sccNum` is malformed: 6-digit numeric whose
+   *   value exceeds 339 999, or contains stray letters in a non-leading position.
    */
   static convertA5to6Digit(sccNum: string): string {
     if (sccNum.length < 5) {
@@ -1021,12 +1110,46 @@ export class Tle {
       throw new ParseError('Invalid SCC number format', 'TLE');
     }
 
+    // Alpha-5 case: leading letter from the alpha5_ map.
     if (values[0] in Tle.alpha5_) {
+      // Remaining chars must be digits.
+      if (!(/^\d+$/u).test(sccNum.slice(1))) {
+        throw new ValidationError(
+          'Alpha-5 SCC number must have 4 trailing digits',
+          'sccNum',
+          sccNum,
+        );
+      }
+
       const firstLetter = values[0] as keyof typeof Tle.alpha5_;
 
       values[0] = Tle.alpha5_[firstLetter];
+
+      return values.join('');
     }
 
-    return values.join('');
+    // Numeric input. All characters must be digits (allow leading/trailing
+    // whitespace so TLE column substrings with space-padding round-trip).
+    if (!(/^\s*\d+\s*$/u).test(sccNum)) {
+      throw new ValidationError(
+        'SCC number must be alpha-5 or all-numeric',
+        'sccNum',
+        sccNum,
+      );
+    }
+
+    // 6-digit numeric: enforce the alpha-5 range. 7+ digit "extended" passes
+    // through (e.g. CelesTrak 9-digit supplemental IDs).
+    const trimmed = sccNum.trim();
+
+    if (trimmed.length === 6 && parseInt(trimmed, 10) > 339999) {
+      throw new ValidationError(
+        '6-digit SCC number exceeds TLE alpha-5 capacity (max 339999)',
+        'sccNum',
+        sccNum,
+      );
+    }
+
+    return sccNum;
   }
 }
