@@ -38,13 +38,16 @@ describe('Satellite sccNum derivation from TLE construction', () => {
       expect(sat.sccNum6).toBe(expectedSixDigit);
     });
 
-    it('preserves the original sccNum when an explicit override is passed to the constructor', () => {
+    it('normalizes an explicit alpha-5 constructor override to the numeric form', () => {
       const sat = new Satellite({ sccNum: 'T0001', tle1, tle2 });
+      const expectedSixDigit = Tle.convertA5to6Digit('T0001');
 
-      // Explicit override wins; canonical sccNum stays alpha-5, sccNum5 mirrors it.
-      expect(sat.sccNum).toBe('T0001');
+      // Class invariant: sat.sccNum is always the display-canonical numeric
+      // form, regardless of which form the caller supplied. The alpha-5
+      // string is preserved on sccNum5.
+      expect(sat.sccNum).toBe(expectedSixDigit);
       expect(sat.sccNum5).toBe('T0001');
-      expect(sat.sccNum6).toBe(Tle.convertA5to6Digit('T0001'));
+      expect(sat.sccNum6).toBe(expectedSixDigit);
     });
   });
 
@@ -93,6 +96,96 @@ describe('Satellite sccNum derivation from TLE construction', () => {
       sat.editTle(newTle1, newTle2, '799500766');
       expect(sat.sccNum).toBe('799500766');
       expect(sat.sccNum5).toBeNull();
+    });
+  });
+
+  // Class-wide invariant: Satellite.sccNum is ALWAYS the display-canonical
+  // numeric form, never an alpha-5 string. This block parametrizes over every
+  // construction path to catch any future regression that re-introduces
+  // alpha-5 preservation on .sccNum.
+  describe('sccNum invariant: always display-canonical numeric', () => {
+    const tle1Numeric = '1 25544U 98067A   22203.46960946  .00003068  00000+0  61583-4 0  9996' as TleLine1;
+    const tle2Numeric = '2 25544  51.6415 161.8339 0005168  35.9781  54.7009 15.50067047350657' as TleLine2;
+    const tle1Alpha5 = '1 T0001U 98067A   22203.46960946  .00003068  00000+0  61583-4 0  9996' as TleLine1;
+    const tle2Alpha5 = '2 T0001  51.6415 161.8339 0005168  35.9781  54.7009 15.50067047350657' as TleLine2;
+
+    const isNeverAlpha5 = (sat: { sccNum: string }) => {
+      expect(Tle.classifySatNum(sat.sccNum)).not.toBe('alpha5');
+    };
+
+    it('numeric5 input via TLE construction stays numeric', () => {
+      const sat = new Satellite({ tle1: tle1Numeric, tle2: tle2Numeric });
+
+      isNeverAlpha5(sat);
+      expect(sat.sccNum).toBe('25544');
+    });
+
+    it('alpha-5 TLE construction normalizes to the 6-digit numeric form', () => {
+      const sat = new Satellite({ tle1: tle1Alpha5, tle2: tle2Alpha5 });
+
+      isNeverAlpha5(sat);
+      expect(sat.sccNum).toBe(Tle.convertA5to6Digit('T0001'));
+    });
+
+    it('explicit alpha-5 constructor override normalizes too', () => {
+      const sat = new Satellite({ sccNum: 'T0001', tle1: tle1Numeric, tle2: tle2Numeric });
+
+      isNeverAlpha5(sat);
+      expect(sat.sccNum).toBe(Tle.convertA5to6Digit('T0001'));
+    });
+
+    it('fromOmm with numeric NORAD_CAT_ID stays numeric', () => {
+      const sat = Satellite.fromOmm({
+        OBJECT_NAME: 'TEST', OBJECT_ID: '2024-001A',
+        EPOCH: '2024-01-01T00:00:00.000000',
+        MEAN_MOTION: 15.5, ECCENTRICITY: 0.0001, INCLINATION: 51.6,
+        RA_OF_ASC_NODE: 0, ARG_OF_PERICENTER: 0, MEAN_ANOMALY: 0,
+        EPHEMERIS_TYPE: 0, CLASSIFICATION_TYPE: 'U', NORAD_CAT_ID: '25544',
+        ELEMENT_SET_NO: 999, REV_AT_EPOCH: 1, BSTAR: 0,
+        MEAN_MOTION_DOT: 0, MEAN_MOTION_DDOT: 0,
+      });
+
+      isNeverAlpha5(sat);
+      expect(sat.sccNum).toBe('25544');
+    });
+
+    it('fromOmm with alpha-5 NORAD_CAT_ID normalizes to the 6-digit numeric form', () => {
+      const sat = Satellite.fromOmm({
+        OBJECT_NAME: 'TEST', OBJECT_ID: '2024-001A',
+        EPOCH: '2024-01-01T00:00:00.000000',
+        MEAN_MOTION: 15.5, ECCENTRICITY: 0.0001, INCLINATION: 51.6,
+        RA_OF_ASC_NODE: 0, ARG_OF_PERICENTER: 0, MEAN_ANOMALY: 0,
+        EPHEMERIS_TYPE: 0, CLASSIFICATION_TYPE: 'U', NORAD_CAT_ID: 'T0001',
+        ELEMENT_SET_NO: 999, REV_AT_EPOCH: 1, BSTAR: 0,
+        MEAN_MOTION_DOT: 0, MEAN_MOTION_DDOT: 0,
+      });
+
+      isNeverAlpha5(sat);
+      expect(sat.sccNum).toBe(Tle.convertA5to6Digit('T0001'));
+      expect(sat.sccNum5).toBe('T0001');
+    });
+
+    it('extended (9-digit) sccNum passes through (no conversion applies)', () => {
+      const sat = new Satellite({ sccNum: '799500766', tle1: tle1Numeric, tle2: tle2Numeric });
+
+      isNeverAlpha5(sat);
+      expect(sat.sccNum).toBe('799500766');
+    });
+
+    it('editTle re-derives sccNum to the numeric form even when the new TLE is alpha-5', () => {
+      const sat = new Satellite({ tle1: tle1Numeric, tle2: tle2Numeric });
+
+      sat.editTle(tle1Alpha5, tle2Alpha5);
+      isNeverAlpha5(sat);
+      expect(sat.sccNum).toBe(Tle.convertA5to6Digit('T0001'));
+    });
+
+    it('editTle with explicit alpha-5 sccNum override still normalizes', () => {
+      const sat = new Satellite({ tle1: tle1Numeric, tle2: tle2Numeric });
+
+      sat.editTle(tle1Alpha5, tle2Alpha5, 'T0001');
+      isNeverAlpha5(sat);
+      expect(sat.sccNum).toBe(Tle.convertA5to6Digit('T0001'));
     });
   });
 

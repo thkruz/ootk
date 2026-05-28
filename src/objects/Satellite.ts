@@ -350,16 +350,30 @@ export class Satellite extends SpaceObject {
   }
 
   /**
-   * Derives {@link sccNum5} and {@link sccNum6} from {@link sccNum}. When the
-   * canonical ID is an extended (7+ digit) value that exceeds the TLE alpha-5
-   * capacity (max 339 999), both forms are set to `null`.
+   * Normalizes {@link sccNum} to the display-canonical numeric form and derives
+   * {@link sccNum5} and {@link sccNum6}. The class invariant is that
+   * `Satellite.sccNum` is always numeric — never an alpha-5 string. Alpha-5
+   * inputs ("T0001") are converted to their 6-digit numeric equivalent
+   * ("270001"); the alpha-5 form is preserved on {@link sccNum5}.
+   *
+   * Extended (7+ digit) IDs that exceed the alpha-5 capacity (max 339 999)
+   * leave sccNum5/sccNum6 set to `null`.
+   *
+   * Invalid input (empty string, malformed token) is passed through unchanged
+   * so callers can store placeholder sccNums on notional / debris stubs.
    */
   private assignAlpha5Forms_(): void {
+    try {
+      this.sccNum = Tle.convertA5to6Digit(this.sccNum);
+    } catch {
+      // Pass through invalid sccNum (e.g., "" on notional debris).
+    }
+
     const kind = Tle.classifySatNum(this.sccNum);
 
-    if (kind === 'numeric5' || kind === 'alpha5' || kind === 'numeric6') {
+    if (kind === 'numeric5' || kind === 'numeric6') {
       this.sccNum5 = Tle.convert6DigitToA5(this.sccNum);
-      this.sccNum6 = Tle.convertA5to6Digit(this.sccNum5);
+      this.sccNum6 = this.sccNum;
     } else {
       this.sccNum5 = null;
       this.sccNum6 = null;
