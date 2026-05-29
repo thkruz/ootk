@@ -369,6 +369,17 @@ export class Satellite extends SpaceObject {
       // Pass through invalid sccNum (e.g., "" on notional debris).
     }
 
+    // Strip leading zeros from purely-numeric sccNums so the display form is
+    // consistent across widths: "00005" → "5", "025544" → "25544",
+    // "0270001" → "270001", "799500766" → "799500766" (no zeros to strip).
+    // Without this, the TLE-construction path produces "5" via parseInt
+    // while the OMM path produces "00005" via padStart, and the catalog
+    // would carry two different display strings for the same satellite.
+    // Alpha-5 strings (e.g. "T0001") have no leading zeros and are untouched.
+    if ((/^0+\d/u).test(this.sccNum)) {
+      this.sccNum = this.sccNum.replace(/^0+/u, '');
+    }
+
     const kind = Tle.classifySatNum(this.sccNum);
 
     if (kind === 'numeric5' || kind === 'numeric6') {

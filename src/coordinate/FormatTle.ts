@@ -39,7 +39,16 @@ export abstract class FormatTle {
    */
   static createTle(tleParams: TleParams): { tle1: TleLine1; tle2: TleLine2 } {
     const { inc, meanmo, rasc, argPe, meana, ecen, epochyr, epochday, intl } = tleParams;
-    const scc = Tle.convert6DigitToA5(tleParams.scc);
+    // TLE cols 3-7 must be exactly 5 chars. convert6DigitToA5 hands back the
+    // alpha-5 form for 6-digit numerics (5 chars by construction); for short
+    // numeric inputs ("5", "25544") and alpha-5 inputs ("T0001") it's a
+    // passthrough — so pad short numerics to 5 chars here so the TLE stays
+    // 69 chars regardless of the caller's display-canonical sccNum form.
+    let scc = Tle.convert6DigitToA5(tleParams.scc);
+
+    if ((/^\d{1,4}$/u).test(scc)) {
+      scc = scc.padStart(5, '0');
+    }
     const epochYrStr = String(epochyr).padStart(2, '0');
     const epochdayStr = Number(epochday).toFixed(8).padStart(12, '0');
     const incStr = FormatTle.inclination(inc);
