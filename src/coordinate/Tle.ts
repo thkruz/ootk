@@ -262,7 +262,9 @@ export class Tle {
     }
 
     const epochJday = epochDayOfYear + (epochYearFull * 365);
-    const currentJday = getDayOfYear() + (currentYearFull * 365);
+    // Use nowInput's day-of-year (not today's) so a caller-supplied reference time
+    // — e.g. a historic catalog's snapshot epoch — is honored consistently.
+    const currentJday = getDayOfYear(nowInput) + (currentYearFull * 365);
     const currentTime = (nowInput.getUTCHours() * 3600 + nowInput.getUTCMinutes() * 60 +
       nowInput.getUTCSeconds()) / 86400;
     const daysOld = (currentJday + currentTime) - epochJday;
@@ -436,8 +438,7 @@ export class Tle {
     const BSTAR_PART_4 = Tle.bstar_.stop - 1;
 
     const bstarSymbol = tleLine1.substring(Tle.bstar_.start, BSTAR_PART_2);
-    // Decimal place is assumed
-    let bstar1 = parseFloat(`0.${tleLine1.substring(BSTAR_PART_2, BSTAR_PART_3)}`);
+    const mantissaFraction = tleLine1.substring(BSTAR_PART_2, BSTAR_PART_3);
     const exponentSymbol = tleLine1.substring(BSTAR_PART_3, BSTAR_PART_4);
     let exponent = parseInt(tleLine1.substring(BSTAR_PART_4, Tle.bstar_.stop));
 
@@ -447,15 +448,27 @@ export class Tle {
       throw new ParseError(`Invalid BSTAR exponent symbol: ${exponentSymbol}`, 'TLE');
     }
 
-    bstar1 *= 10 ** exponent;
+    /*
+     * Column 54 is normally the mantissa sign with an assumed leading decimal point,
+     * e.g. " 36771-4" → 0.36771e-4. High-drag (reentering) element sets overflow a
+     * sixth significant digit into this column, e.g. "156214+0", where it is the
+     * integer part of the mantissa → 1.56214e0. Treat a leading digit as that integer
+     * part rather than rejecting it.
+     */
+    let sign = 1;
+    let integerPart = '0';
 
     if (bstarSymbol === '-') {
-      bstar1 *= -1;
+      sign = -1;
     } else if (bstarSymbol === '+' || bstarSymbol === ' ' || bstarSymbol === '0') {
-      // Do nothing
+      // Assumed-decimal form: integer part stays 0.
+    } else if ((/^\d$/u).test(bstarSymbol)) {
+      integerPart = bstarSymbol;
     } else {
       throw new ParseError(`Invalid BSTAR symbol: ${bstarSymbol}`, 'TLE');
     }
+
+    const bstar1 = sign * parseFloat(`${integerPart}.${mantissaFraction}`) * 10 ** exponent;
 
     return toPrecision(bstar1, 14);
   }
@@ -518,23 +531,26 @@ export class Tle {
 
   /**
    * Private value - used by United States Space Force to reference the orbit model used to generate the Tle. Will
-   * always be seen as zero externally (e.g. by "us", unless you are "them" - in which case, hello!).
+   * almost always be seen as zero externally (e.g. by "us", unless you are "them" - in which case, hello!).
    *
-   * Starting in 2024, this may contain a 4 if the Tle was generated using the new SGP4-XP model. Until the source code
-   * is released, there is no way to support that format in JavaScript or TypeScript.
+   * A value of 1 is tolerated in addition to 0: the field is informational and does not change how SGP4/SDP4
+   * propagate the element set, and a handful of archival TLEs carry a 1 (originally an SGP marker).
+   *
+   * A value of 4 indicates the SGP4-XP model. Until that source code is released there is no way to support that
+   * format in JavaScript or TypeScript, so it is rejected explicitly. Any other value is treated as malformed.
    * @example 0
    * @param tleLine1 The first line of the Tle to parse.
-   * @returns The ephemeris type.
+   * @returns The ephemeris type (0 or 1).
    */
-  static ephemerisType(tleLine1: TleLine1): 0 {
+  static ephemerisType(tleLine1: TleLine1): 0 | 1 {
     const ephemerisType = parseInt(tleLine1.substring(Tle.ephemerisType_.start, Tle.ephemerisType_.stop));
-
-    if (ephemerisType !== 0 && ephemerisType !== 4) {
-      throw new ParseError(`Invalid ephemeris type: ${ephemerisType}`, 'TLE');
-    }
 
     if (ephemerisType === 4) {
       throw new ParseError('SGP4-XP ephemeris type is not supported', 'TLE');
+    }
+
+    if (ephemerisType !== 0 && ephemerisType !== 1) {
+      throw new ParseError(`Invalid ephemeris type: ${ephemerisType}`, 'TLE');
     }
 
     return ephemerisType;
