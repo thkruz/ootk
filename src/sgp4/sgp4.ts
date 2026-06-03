@@ -332,7 +332,11 @@ export class Sgp4 {
      */
     const xpdotp = 1440.0 / (2.0 * PI); // 229.1831180523293;
 
-    satrec.satnum = tleLine1.substring(2, 7);
+    // JSC Vimpel TLEs (flagged by a 'V' in the classification column, index 7)
+    // leave the catalog-number field blank. Substitute a sentinel so the strict
+    // alpha-5 converter in sgp4init_ doesn't reject the otherwise-valid TLE; the
+    // satnum here is only a label on the propagator record.
+    satrec.satnum = tleLine1.charAt(7) === 'V' ? '0' : tleLine1.substring(2, 7);
 
     satrec.epochyr = parseInt(tleLine1.substring(18, 20));
     satrec.epochdays = parseFloat(tleLine1.substring(20, 32));
