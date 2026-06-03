@@ -153,7 +153,9 @@ export class Tle {
     this.line1 = line1 as TleLine1;
     this.line2 = line2 as TleLine2;
     this.epoch = Tle.parseEpoch_(line1.substring(18, 32));
-    this.satnum = parseInt(Tle.convertA5to6Digit(line1.substring(2, 7)));
+    // Tle.satNum tolerates a blank catalog field (JSC Vimpel TLEs), returning
+    // NaN instead of throwing inside the strict alpha-5 validator.
+    this.satnum = Tle.satNum(this.line1);
     this.satrec_ = Sgp4.createSatrec(line1, line2, gravConst, opsMode);
   }
 
@@ -828,6 +830,16 @@ export class Tle {
    */
   static satNum(tleLine: TleLine1 | TleLine2): number {
     const satNumStr = tleLine.substring(Tle.satNum_.start, Tle.satNum_.stop);
+
+    // JSC Vimpel TLEs leave the catalog-number field blank (they carry their
+    // designator elsewhere and are flagged by a 'V' in the classification
+    // column). A blank field is not a number — return NaN rather than letting
+    // the strict alpha-5 validator throw. Genuinely malformed (non-blank)
+    // fields still throw so real corruption is caught.
+    if (satNumStr.trim().length === 0) {
+      return NaN;
+    }
+
     const sixDigitSatNum = Tle.convertA5to6Digit(satNumStr);
 
     return parseInt(sixDigitSatNum);
@@ -925,13 +937,19 @@ export class Tle {
     const line1 = Tle.parseLine1(tleLine1);
     const line2 = Tle.parseLine2(tleLine2);
 
-    if (line1.satNum !== line2.satNum) {
+    // JSC Vimpel TLEs (flagged by a 'V' in the classification column) leave the
+    // catalog-number field blank, so both lines parse to NaN and the numeric/raw
+    // match checks below would reject them. Exempt only Vimpel TLEs; every other
+    // TLE must still have matching satellite numbers across both lines.
+    const isVimpel = line1.classification === 'V';
+
+    if (!isVimpel && line1.satNum !== line2.satNum) {
       console.info('Line 1 satNum:', line1.satNum);
       console.info('Line 2 satNum:', line2.satNum);
       throw new ParseError('Satellite numbers do not match between TLE lines', 'TLE');
     }
 
-    if (line1.satNumRaw !== line2.satNumRaw) {
+    if (!isVimpel && line1.satNumRaw !== line2.satNumRaw) {
       console.info('Line 1 satNumRaw:', line1.satNumRaw);
       console.info('Line 2 satNumRaw:', line2.satNumRaw);
       throw new ParseError('Raw satellite numbers do not match between TLE lines', 'TLE');
@@ -977,11 +995,15 @@ export class Tle {
     const line1 = Tle.parseLine1(tleLine1);
     const line2 = Tle.parseLine2(tleLine2);
 
-    if (line1.satNum !== line2.satNum) {
+    // See Tle.parse: JSC Vimpel TLEs (classification 'V') have blank catalog
+    // numbers and are exempt from the cross-line satellite-number match checks.
+    const isVimpel = line1.classification === 'V';
+
+    if (!isVimpel && line1.satNum !== line2.satNum) {
       throw new ParseError('Satellite numbers do not match between TLE lines', 'TLE');
     }
 
-    if (line1.satNumRaw !== line2.satNumRaw) {
+    if (!isVimpel && line1.satNumRaw !== line2.satNumRaw) {
       throw new ParseError('Raw satellite numbers do not match between TLE lines', 'TLE');
     }
 
