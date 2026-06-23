@@ -3,7 +3,27 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [6.0.6](https://github.com/thkruz/ootk/compare/v6.0.4...6.0.6)
+#### [6.0.7](https://github.com/thkruz/ootk/compare/v6.0.6...6.0.7)
+
+- feat(orbit-determination): :sparkles: add rv2tle for IOD from state vectors [`7234cb0`](https://github.com/thkruz/ootk/commit/7234cb0d7b53b715f7600d5d52e2b689773f4085)
+- test(Satellite): :white_check_mark: pin sccNum derivation across all 5 sccNum forms [`1d4755f`](https://github.com/thkruz/ootk/commit/1d4755f580f79f67d087189f317ce55cfd90377a)
+- feat(Satellite): :sparkles: enforce display-canonical numeric sccNum invariant [`9396db7`](https://github.com/thkruz/ootk/commit/9396db751e492b5bfab926cf5b227b585ef7a946)
+- fix(tle): :bug: handle real-world TLE edge cases in parsing and age [`d9c1ea8`](https://github.com/thkruz/ootk/commit/d9c1ea82a3d7bc1c9a34284a7ee5648c447589dd)
+- test(parsers): :white_check_mark: add OdmExporter KVN export tests [`8ddcfac`](https://github.com/thkruz/ootk/commit/8ddcfacb71351fcfc332bb4e3bc9e3721fdd62e9)
+- feat(photometry): :sparkles: add RCS-based visual magnitude estimator [`0d87f6c`](https://github.com/thkruz/ootk/commit/0d87f6c84a70f4f26ac919edd213a8c8c3030990)
+- feat(covariance): :sparkles: add RIC display-radii scaling helper [`557f96c`](https://github.com/thkruz/ootk/commit/557f96c0983bd3f28b1dad4ed6e531d11bad9913)
+- test(OrbitFinder): :white_check_mark: pin extended-sccNum TLE generation behavior [`79ea125`](https://github.com/thkruz/ootk/commit/79ea125a27af0059cdae12a2a97dae5ef133995e)
+- fix(tle): :bug: tolerate blank catalog number on JSC Vimpel TLEs [`7436e50`](https://github.com/thkruz/ootk/commit/7436e50dd9713e895b9ae90fce7bda30176a79d6)
+- feat(covariance): :sparkles: add cappedScreeningCovarianceFromTle for debris screening [`2149d7a`](https://github.com/thkruz/ootk/commit/2149d7a8bf452d76242acd043d4eb21b0d2cb2a2)
+- feat(Satellite): :sparkles: strip leading zeros from sccNum for natural-number canonical form [`e387971`](https://github.com/thkruz/ootk/commit/e387971416a6419d994ad6450bbcce6c8065adea)
+- fix(OrbitFinder): :bug: keep TLE satnum 5-char for extended sccNums [`d15d73b`](https://github.com/thkruz/ootk/commit/d15d73b0b1abb7d6806b6d20e142b0b621f0da7a)
+- fix(time): :bug: use full time-of-day precision in TLE epoch generation [`b80f702`](https://github.com/thkruz/ootk/commit/b80f70284b92d843d359199f3788cdfb9d5fc517)
+- test(tle): :white_check_mark: update snapshot for full-precision TLE epoch [`db8e6ba`](https://github.com/thkruz/ootk/commit/db8e6baa63e8e5536018aa65fcb3697c5c72ba21)
+- fix(sgp4): :bug: handle blank Vimpel catalog number in createSatrec [`828d9e4`](https://github.com/thkruz/ootk/commit/828d9e41e70c567a1b66ad81ab469bede2f87a6e)
+
+#### [v6.0.6](https://github.com/thkruz/ootk/compare/v6.0.4...v6.0.6)
+
+> 27 May 2026 
 
 - feat(Satellite): add support for OMM ID conversion and classification of satellite catalog numbers [`8563512`](https://github.com/thkruz/ootk/commit/85635124c4219806339a1a4b8cfb604680632578)
 - fix(HorizonsParser): :bug: improve target name extraction logic [`7ac2bbf`](https://github.com/thkruz/ootk/commit/7ac2bbf28659ef0db298863acdebe045861f29a7)
@@ -15,7 +35,7 @@ messages, it details updates like bug fixes and new features, providing a clear 
 
 #### [v6.0.4](https://github.com/thkruz/ootk/compare/v6.0.2...v6.0.4)
 
->  
+> 22 March 2026 
 
 - chore(package): :wrench: bump version to 6.0.4 [`e36a2fa`](https://github.com/thkruz/ootk/commit/e36a2faa1e037362f02c851cb39d469c736f03a4)
 - test(FormatTle): :white_check_mark: add CelesTrak stations validation tests [`bb4230c`](https://github.com/thkruz/ootk/commit/bb4230c659cd2c8473a71acecec85ac498515d37)
@@ -30,7 +50,7 @@ messages, it details updates like bug fixes and new features, providing a clear 
 
 #### [v6.0.2](https://github.com/thkruz/ootk/compare/v6.0.1...v6.0.2)
 
->  
+> 13 March 2026 
 
 - feat(FormatTle): :sparkles: enhance TLE generation with new formatting [`ba10fd0`](https://github.com/thkruz/ootk/commit/ba10fd0792ff4d5ce762508f7849b16ea9707265)
 - feat(Satellite): :sparkles: update OMM parsing to use Number [`0d37c26`](https://github.com/thkruz/ootk/commit/0d37c2652a83118605628ef4b667986cf324d5e8)
@@ -42,7 +62,7 @@ messages, it details updates like bug fixes and new features, providing a clear 
 
 #### [v6.0.1](https://github.com/thkruz/ootk/compare/v6.0.0...v6.0.1)
 
->  
+> 12 March 2026 
 
 - feat(parsers): :sparkles: add OMM parser and types [`645b3e4`](https://github.com/thkruz/ootk/commit/645b3e4f955382e6861fc4eb3556f5c98fb7da8b)
 - test(OmmParser): :white_check_mark: add unit tests for OMM parsing [`e238a56`](https://github.com/thkruz/ootk/commit/e238a56c0c50d7a43552bda501b76ae4689b160b)
@@ -55,7 +75,7 @@ messages, it details updates like bug fixes and new features, providing a clear 
 
 ### [v6.0.0](https://github.com/thkruz/ootk/compare/v1.0.4...v6.0.0)
 
->  
+> 29 November 2025 
 
 - docs: add comprehensive advanced features guide [`#41`](https://github.com/thkruz/ootk/pull/41)
 - docs: add comprehensive user guide and getting started documentation [`#39`](https://github.com/thkruz/ootk/pull/39)
@@ -401,7 +421,7 @@ messages, it details updates like bug fixes and new features, providing a clear 
 
 #### [v1.0.4](https://github.com/thkruz/ootk/compare/v1.0.0...v1.0.4)
 
->  
+> 13 January 2021 
 
 - build(tsconfig.json): enabled sourceMap [`#13`](https://github.com/thkruz/ootk/pull/13)
 - Develop [`#12`](https://github.com/thkruz/ootk/pull/12)
@@ -428,7 +448,7 @@ messages, it details updates like bug fixes and new features, providing a clear 
 
 ### [v1.0.0](https://github.com/thkruz/ootk/compare/v1.0.0-alpha1...v1.0.0)
 
->  
+> 13 January 2021 
 
 - docs(readme): added build size to the readme [`#5`](https://github.com/thkruz/ootk/pull/5)
 - Develop [`#4`](https://github.com/thkruz/ootk/pull/4)
@@ -445,7 +465,7 @@ messages, it details updates like bug fixes and new features, providing a clear 
 
 #### v1.0.0-alpha1
 
->  
+> 13 January 2021 
 
 - Documentation [`#1`](https://github.com/thkruz/ootk/pull/1)
 - ootk rename [`f194490`](https://github.com/thkruz/ootk/commit/f194490621dcbefba99554a84d654f8003e459d0)
