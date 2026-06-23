@@ -101,7 +101,17 @@ export class Epoch {
     const currentDateObj = this.toDateTime();
     const epochYear = currentDateObj.getUTCFullYear().toString().slice(2, 4);
     const epochDay = this.getDayOfYear_(currentDateObj);
-    const timeOfDay = (currentDateObj.getUTCHours() * 60 + currentDateObj.getUTCMinutes()) / 1440;
+    /*
+     * Full time-of-day precision. Dropping seconds here truncates a generated
+     * TLE's epoch to the whole minute, which shows up as up to ~59 seconds of
+     * pure in-track position error (hundreds of km in LEO).
+     */
+    const timeOfDay = (
+      currentDateObj.getUTCHours() * 3600 +
+      currentDateObj.getUTCMinutes() * 60 +
+      currentDateObj.getUTCSeconds() +
+      currentDateObj.getUTCMilliseconds() / 1000
+    ) / 86400;
     const epochDayStr = (epochDay + timeOfDay).toFixed(8).padStart(12, '0');
 
     return {
