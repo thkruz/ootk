@@ -26,10 +26,10 @@ describe('CJS Compatibility', () => {
   });
 
   it('should have matching exports between ESM and CJS', () => {
-    const esmKeys = Object.keys(esmExports).sort();
+    const esmKeys = Object.keys(esmExports).sort((a, b) => a.localeCompare(b));
     const cjsKeys = Object.keys(cjs)
       .filter((k) => k !== 'default' && k !== '__esModule')
-      .sort();
+      .sort((a, b) => a.localeCompare(b));
 
     expect(cjsKeys).toEqual(esmKeys);
   });

@@ -6,7 +6,7 @@ import * as ootk from '../../dist/main.js';
 
 describe('Export Snapshot', () => {
   it('should export the expected public API surface', () => {
-    const exportKeys = Object.keys(ootk).sort();
+    const exportKeys = Object.keys(ootk).sort((a, b) => a.localeCompare(b));
 
     expect(exportKeys).toMatchSnapshot();
   });
