@@ -63,6 +63,42 @@ describe('LaunchTrajectoryGenerator', () => {
     });
   });
 
+  describe('computeInclinationFromAzimuth()', () => {
+    it('should invert computeLaunchAzimuth for a northbound KSC→ISS launch', () => {
+      const azRad = LaunchTrajectoryGenerator.computeLaunchAzimuth(51.6, 28.5, 'N');
+      const inc = LaunchTrajectoryGenerator.computeInclinationFromAzimuth(azRad * (180 / Math.PI), 28.5);
+
+      expect(inc).toBeCloseTo(51.6, 4);
+    });
+
+    it('should invert computeLaunchAzimuth for a southbound launch', () => {
+      const azRad = LaunchTrajectoryGenerator.computeLaunchAzimuth(51.6, 28.5, 'S');
+      const inc = LaunchTrajectoryGenerator.computeInclinationFromAzimuth(azRad * (180 / Math.PI), 28.5);
+
+      expect(inc).toBeCloseTo(51.6, 4);
+    });
+
+    it('should give inclination equal to latitude for a due-east launch (90° azimuth)', () => {
+      const inc = LaunchTrajectoryGenerator.computeInclinationFromAzimuth(90, 28.5);
+
+      expect(inc).toBeCloseTo(28.5, 5);
+    });
+
+    it('should give a polar orbit (90°) for a due-north launch (0° azimuth)', () => {
+      const inc = LaunchTrajectoryGenerator.computeInclinationFromAzimuth(0, 28.5);
+
+      expect(inc).toBeCloseTo(90, 5);
+    });
+
+    it('should clamp gracefully for an unachievable azimuth/latitude combination', () => {
+      // sin(90°)·cos(0°) = 1 → acos(1) = 0; no NaN from out-of-range values.
+      const inc = LaunchTrajectoryGenerator.computeInclinationFromAzimuth(90, 0);
+
+      expect(inc).toBeCloseTo(0, 5);
+      expect(Number.isNaN(inc)).toBe(false);
+    });
+  });
+
   describe('computeGeneralizedTransfer()', () => {
     const mu = Earth.mu;
 

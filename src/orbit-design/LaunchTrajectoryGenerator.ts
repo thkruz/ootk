@@ -24,7 +24,7 @@ import { PlaneChangeBurn } from '../maneuver/PlaneChangeBurn';
 import { Vector3D } from '../operations/Vector3D';
 import { KeplerPropagator } from '../propagator/KeplerPropagator';
 import { EpochUTC } from '../time/EpochUTC';
-import { DEG2RAD } from '../utils/constants';
+import { DEG2RAD, RAD2DEG } from '../utils/constants';
 
 /** Configuration for generating a launch trajectory. */
 export interface LaunchTrajectoryConfig {
@@ -333,6 +333,28 @@ export class LaunchTrajectoryGenerator {
     }
 
     return azimuth;
+  }
+
+  /**
+   * Compute orbital inclination from a launch azimuth and launch site latitude.
+   *
+   * Inverse of {@link computeLaunchAzimuth}: from the spherical-triangle relation
+   * `cos(i) = sin(azimuth) * cos(latitude)`. The result is the magnitude of the
+   * inclination in degrees (always in [0, 180]); the launch direction (N/S) is
+   * implied by the azimuth quadrant, not by this value.
+   *
+   * @param azimuthDeg Launch azimuth in degrees (from north, clockwise).
+   * @param latDeg Launch site latitude in degrees.
+   * @returns Orbital inclination in degrees, in [0, 180].
+   */
+  static computeInclinationFromAzimuth(azimuthDeg: number, latDeg: number): number {
+    const az = azimuthDeg * DEG2RAD;
+    const lat = latDeg * DEG2RAD;
+
+    // Clamp to [-1, 1] to handle floating point edge cases before acos.
+    const cosInc = Math.max(-1, Math.min(1, Math.sin(az) * Math.cos(lat)));
+
+    return Math.acos(cosInc) * RAD2DEG;
   }
 
   /**
