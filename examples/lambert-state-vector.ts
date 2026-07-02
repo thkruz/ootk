@@ -1,14 +1,13 @@
+/* eslint-disable no-console */
 /**
  * Lambert State Vector Generation Examples
  *
  * This example demonstrates how to use Lambert's problem solution
  * to generate state vectors without relying on SGP4 or TLEs.
- *
- * Run with: npm run example:lambert-state-vector
  */
 
+// #region imports
 import {
-  ClassicalElements,
   EpochUTC,
   Kilometers,
   KilometersPerSecond,
@@ -17,8 +16,10 @@ import {
   Satellite,
   Tle,
   Vector3D,
-} from '../dist/main.js';
+} from 'ootk';
+// #endregion imports
 
+// #region basic-lambert
 /**
  * Example 1: Basic Lambert Solution
  * Generate a state vector from two position observations
@@ -27,8 +28,8 @@ function example1BasicLambert(): void {
   console.log('\n=== Example 1: Basic Lambert Solution ===\n');
 
   // Two positions in ECI coordinates (km)
-  const p1 = new Vector3D<Kilometers>(6778.137, 0.0, 0.0);
-  const p2 = new Vector3D<Kilometers>(-2000.0, 6400.0, 1500.0);
+  const p1 = new Vector3D<Kilometers>(6778.137 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+  const p2 = new Vector3D<Kilometers>(-2000.0 as Kilometers, 6400.0 as Kilometers, 1500.0 as Kilometers);
 
   // Observation times
   const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T12:00:00.000Z'));
@@ -67,11 +68,11 @@ function example1BasicLambert(): void {
   console.log('\nClassical Orbital Elements:');
   console.log('  Semi-major axis:', elements.semimajorAxis.toFixed(3), 'km');
   console.log('  Eccentricity:', elements.eccentricity.toFixed(6));
-  console.log('  Inclination:', (elements.inclination * 180 / Math.PI).toFixed(3), 'deg');
-  console.log('  RAAN:', (elements.rightAscension * 180 / Math.PI).toFixed(3), 'deg');
-  console.log('  Arg of Perigee:', (elements.argPerigee * 180 / Math.PI).toFixed(3), 'deg');
-  console.log('  True Anomaly:', (elements.trueAnomaly * 180 / Math.PI).toFixed(3), 'deg');
-  console.log('  Period:', (elements.period / 60).toFixed(2), 'minutes');
+  console.log('  Inclination:', elements.inclinationDegrees.toFixed(3), 'deg');
+  console.log('  RAAN:', elements.rightAscensionDegrees.toFixed(3), 'deg');
+  console.log('  Arg of Perigee:', elements.argPerigeeDegrees.toFixed(3), 'deg');
+  console.log('  True Anomaly:', elements.trueAnomalyDegrees.toFixed(3), 'deg');
+  console.log('  Period:', elements.period.toFixed(2), 'minutes');
 
   // Calculate apogee and perigee
   const apogee = elements.semimajorAxis * (1 + elements.eccentricity);
@@ -80,7 +81,9 @@ function example1BasicLambert(): void {
   console.log('  Apogee altitude:', (apogee - 6378.137).toFixed(3), 'km');
   console.log('  Perigee altitude:', (perigee - 6378.137).toFixed(3), 'km');
 }
+// #endregion basic-lambert
 
+// #region lambert-with-propagator
 /**
  * Example 2: Lambert + Numerical Propagator
  * Use Lambert solution with high-precision propagation (no SGP4)
@@ -89,8 +92,8 @@ function example2LambertWithPropagator(): void {
   console.log('\n=== Example 2: Lambert + Numerical Propagator ===\n');
 
   // Initial observation
-  const p1 = new Vector3D<Kilometers>(7000.0, 0.0, 0.0);
-  const p2 = new Vector3D<Kilometers>(0.0, 7000.0, 0.0);
+  const p1 = new Vector3D<Kilometers>(7000.0 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+  const p2 = new Vector3D<Kilometers>(0.0 as Kilometers, 7000.0 as Kilometers, 0.0 as Kilometers);
 
   const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
   const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T01:30:00.000Z'));
@@ -128,13 +131,15 @@ function example2LambertWithPropagator(): void {
     z: futureState.velocity.z.toFixed(6),
   });
 
-  // Compare with Keplerian propagation
+  // Compare with Keplerian expectations (period is in minutes)
   const elements = initialState.toClassicalElements();
-  const period = elements.period;
+  const periodMinutes = elements.period;
 
-  console.log('\nOrbit completed', ((24 * 3600) / period).toFixed(2), 'revolutions in 1 day');
+  console.log('\nOrbit completed', ((24 * 60) / periodMinutes).toFixed(2), 'revolutions in 1 day');
 }
+// #endregion lambert-with-propagator
 
+// #region lambert-to-satellite
 /**
  * Example 3: Convert Lambert Solution to Satellite Object
  * Generate TLE from Lambert solution for use with Satellite class
@@ -143,8 +148,8 @@ function example3LambertToSatellite(): void {
   console.log('\n=== Example 3: Lambert to Satellite Conversion ===\n');
 
   // Position observations
-  const p1 = new Vector3D<Kilometers>(6878.137, 0.0, 0.0); // ~500 km altitude
-  const p2 = new Vector3D<Kilometers>(0.0, 6878.137, 0.0);
+  const p1 = new Vector3D<Kilometers>(6878.137 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers); // ~500 km altitude
+  const p2 = new Vector3D<Kilometers>(0.0 as Kilometers, 6878.137 as Kilometers, 0.0 as Kilometers);
 
   const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
   const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T01:30:00.000Z'));
@@ -165,7 +170,7 @@ function example3LambertToSatellite(): void {
   console.log('Classical Elements from Lambert:');
   console.log('  a:', elements.semimajorAxis.toFixed(3), 'km');
   console.log('  e:', elements.eccentricity.toFixed(6));
-  console.log('  i:', elements.inclination.toFixed(3), 'deg');
+  console.log('  i:', elements.inclinationDegrees.toFixed(3), 'deg');
 
   // Generate TLE
   const tle = Tle.fromClassicalElements(elements);
@@ -197,7 +202,9 @@ function example3LambertToSatellite(): void {
   console.log('  Longitude:', lla.lon.toFixed(3), 'deg');
   console.log('  Altitude:', lla.alt.toFixed(3), 'km');
 }
+// #endregion lambert-to-satellite
 
+// #region transfer-orbit-planning
 /**
  * Example 4: Transfer Orbit Planning
  * Calculate delta-V for orbit transfer using Lambert
@@ -209,12 +216,16 @@ function example4TransferOrbit(): void {
   const r1 = 6778.137; // km (400 km altitude)
   const v1Circular = Math.sqrt(398600.4418 / r1); // Circular velocity
 
-  const pos1 = new Vector3D<Kilometers>(r1, 0.0, 0.0);
-  const vel1 = new Vector3D<KilometersPerSecond>(0.0, v1Circular, 0.0);
+  const pos1 = new Vector3D<Kilometers>(r1 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+  const vel1 = new Vector3D<KilometersPerSecond>(
+    0.0 as KilometersPerSecond,
+    v1Circular as KilometersPerSecond,
+    0.0 as KilometersPerSecond,
+  );
 
-  // Target circular orbit (MEO) - 90 degrees ahead
+  // Target circular orbit (MEO), 90 degrees ahead
   const r2 = 12000.0; // km
-  const pos2 = new Vector3D<Kilometers>(0.0, r2, 0.0);
+  const pos2 = new Vector3D<Kilometers>(0.0 as Kilometers, r2 as Kilometers, 0.0 as Kilometers);
 
   const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
   const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T05:00:00.000Z')); // 5-hour transfer
@@ -252,7 +263,9 @@ function example4TransferOrbit(): void {
   console.log('  Apogee:', (elements.semimajorAxis * (1 + elements.eccentricity)).toFixed(3), 'km');
   console.log('  Perigee:', (elements.semimajorAxis * (1 - elements.eccentricity)).toFixed(3), 'km');
 }
+// #endregion transfer-orbit-planning
 
+// #region multi-revolution
 /**
  * Example 5: Multi-Revolution Comparison
  * Compare different revolution options for same transfer
@@ -260,8 +273,8 @@ function example4TransferOrbit(): void {
 function example5MultiRevolution(): void {
   console.log('\n=== Example 5: Multi-Revolution Transfers ===\n');
 
-  const p1 = new Vector3D<Kilometers>(7000.0, 0.0, 0.0);
-  const p2 = new Vector3D<Kilometers>(0.0, 8000.0, 0.0);
+  const p1 = new Vector3D<Kilometers>(7000.0 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+  const p2 = new Vector3D<Kilometers>(0.0 as Kilometers, 8000.0 as Kilometers, 0.0 as Kilometers);
 
   const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
   const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T06:00:00.000Z'));
@@ -287,14 +300,16 @@ function example5MultiRevolution(): void {
       console.log('  Departure velocity:', vMag.toFixed(6), 'km/s');
       console.log('  Semi-major axis:', elements.semimajorAxis.toFixed(3), 'km');
       console.log('  Eccentricity:', elements.eccentricity.toFixed(6));
-      console.log('  Period:', (elements.period / 60).toFixed(2), 'minutes');
+      console.log('  Period:', elements.period.toFixed(2), 'minutes');
       console.log('');
     } else {
       console.log(`${nRev}-Revolution: No solution\n`);
     }
   }
 }
+// #endregion multi-revolution
 
+// #region short-vs-long-path
 /**
  * Example 6: Short Path vs Long Path
  * Demonstrate the difference between short and long path transfers
@@ -302,18 +317,18 @@ function example5MultiRevolution(): void {
 function example6PathComparison(): void {
   console.log('\n=== Example 6: Short Path vs Long Path ===\n');
 
-  const p1 = new Vector3D<Kilometers>(7000.0, 0.0, 0.0);
-  const p2 = new Vector3D<Kilometers>(-7000.0, 1000.0, 0.0);
+  const p1 = new Vector3D<Kilometers>(7000.0 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+  const p2 = new Vector3D<Kilometers>(-7000.0 as Kilometers, 1000.0 as Kilometers, 0.0 as Kilometers);
 
   const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
   const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T02:00:00.000Z'));
 
   const lambert = new LambertIOD();
 
-  // Short path (prosigrade = true)
+  // Short path (posigrade = true)
   const shortPath = lambert.estimate(p1, p2, t1, t2, { posigrade: true });
 
-  // Long path (prosigrade = false)
+  // Long path (posigrade = false)
   const longPath = lambert.estimate(p1, p2, t1, t2, { posigrade: false });
 
   console.log('Transfer between nearly opposite points:\n');
@@ -344,7 +359,9 @@ function example6PathComparison(): void {
     console.log('  Delta-V difference:', (deltaVDiff * 1000).toFixed(2), 'm/s');
   }
 }
+// #endregion short-vs-long-path
 
+// #region validation
 /**
  * Example 7: Validation and Error Checking
  * Demonstrate proper error handling and solution validation
@@ -356,18 +373,18 @@ function example7Validation(): void {
 
   // Test Case 1: Valid solution
   console.log('Test 1: Valid transfer');
-  const p1 = new Vector3D<Kilometers>(7000.0, 0.0, 0.0);
-  const p2 = new Vector3D<Kilometers>(0.0, 7000.0, 0.0);
+  const p1 = new Vector3D<Kilometers>(7000.0 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+  const p2 = new Vector3D<Kilometers>(0.0 as Kilometers, 7000.0 as Kilometers, 0.0 as Kilometers);
   const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
   const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T01:30:00.000Z'));
 
   let solution = lambert.estimate(p1, p2, t1, t2);
 
   if (solution) {
-    console.log('  ✓ Solution found');
+    console.log('  [ok] Solution found');
     console.log('  Velocity:', solution.velocity.magnitude().toFixed(6), 'km/s\n');
   } else {
-    console.log('  ✗ Solution failed\n');
+    console.log('  [fail] Solution failed\n');
   }
 
   // Test Case 2: Very short time of flight
@@ -376,21 +393,21 @@ function example7Validation(): void {
 
   solution = lambert.estimate(p1, p2, t1, t2Short);
   if (solution) {
-    console.log('  ✓ Solution found');
+    console.log('  [ok] Solution found (hyperbolic velocity required)');
     console.log('  Velocity:', solution.velocity.magnitude().toFixed(6), 'km/s');
   } else {
-    console.log('  ✗ Solution failed - time of flight too short\n');
+    console.log('  [fail] Solution failed, time of flight too short\n');
   }
 
   // Test Case 3: Positions too close
   console.log('Test 3: Positions very close together');
-  const p2Close = new Vector3D<Kilometers>(7000.1, 0.1, 0.0);
+  const p2Close = new Vector3D<Kilometers>(7000.1 as Kilometers, 0.1 as Kilometers, 0.0 as Kilometers);
 
   solution = lambert.estimate(p1, p2Close, t1, t2);
   if (solution) {
-    console.log('  ✓ Solution found\n');
+    console.log('  [ok] Solution found\n');
   } else {
-    console.log('  ✗ Solution failed - positions too close\n');
+    console.log('  [fail] Solution failed, positions too close\n');
   }
 
   // Test Case 4: Validate orbital parameters
@@ -406,28 +423,27 @@ function example7Validation(): void {
     const perigeeRadius = elements.semimajorAxis * (1 - elements.eccentricity);
 
     if (perigeeRadius < earthRadius) {
-      console.log('  ✗ WARNING: Orbit intersects Earth!');
+      console.log('  [warn] WARNING: Orbit intersects Earth!');
       console.log('    Perigee radius:', perigeeRadius.toFixed(3), 'km');
     } else {
-      console.log('  ✓ Orbit is valid (perigee above surface)');
+      console.log('  [ok] Orbit is valid (perigee above surface)');
       console.log('    Perigee altitude:', (perigeeRadius - earthRadius).toFixed(3), 'km');
     }
 
     // Check for hyperbolic orbit
     if (elements.eccentricity >= 1.0) {
-      console.log('  ⚠ Hyperbolic trajectory (e ≥ 1.0)');
+      console.log('  [warn] Hyperbolic trajectory (e >= 1.0)');
     } else {
-      console.log('  ✓ Elliptical orbit (e < 1.0)');
+      console.log('  [ok] Elliptical orbit (e < 1.0)');
     }
   }
 }
+// #endregion validation
 
-// Run all examples
+// #region run-all
 function main(): void {
-  console.log('\n╔═══════════════════════════════════════════════════════╗');
-  console.log('║   Lambert State Vector Generation Examples           ║');
-  console.log('║   Generating state vectors without SGP4/TLE          ║');
-  console.log('╚═══════════════════════════════════════════════════════╝');
+  console.log('\nLambert State Vector Generation Examples');
+  console.log('Generating state vectors without SGP4/TLE');
 
   example1BasicLambert();
   example2LambertWithPropagator();
@@ -437,9 +453,8 @@ function main(): void {
   example6PathComparison();
   example7Validation();
 
-  console.log('\n╔═══════════════════════════════════════════════════════╗');
-  console.log('║   All examples completed!                             ║');
-  console.log('╚═══════════════════════════════════════════════════════╝\n');
+  console.log('\nAll examples completed!\n');
 }
 
 main();
+// #endregion run-all

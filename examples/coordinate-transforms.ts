@@ -5,10 +5,11 @@
  * This example shows:
  * - Converting between different coordinate frames (ECI, ECEF, LLA)
  * - Working with different state vector representations (J2000, TEME, ITRF)
- * - Relative coordinates (RIC, Hill)
- * - Observation coordinates (RAE, SEZ)
+ * - Relative coordinates (RIC)
+ * - Creating state vectors directly
  */
 
+// #region imports
 import {
   calcGmst,
   Degrees,
@@ -22,15 +23,17 @@ import {
   lla2ecef,
   lla2eci,
   Radians,
+  RIC,
   Satellite,
   TEME,
   TleLine1,
   TleLine2,
   Vector3D,
-} from '../dist/main.js';
+} from 'ootk';
+// #endregion imports
 
-// Example 1: ECI ↔ ECEF transformations
-console.log('=== Example 1: ECI ↔ ECEF Transformations ===\n');
+// #region eci-ecef
+console.log('=== Example 1: ECI <-> ECEF Transformations ===\n');
 
 const date = new Date('2024-01-28T12:00:00.000Z');
 const gmst = calcGmst(date);
@@ -62,19 +65,20 @@ console.log('\nConverted back to ECI:');
 console.log(`  X: ${eciPos2.x.toFixed(2)} km`);
 console.log(`  Y: ${eciPos2.y.toFixed(2)} km`);
 console.log(`  Z: ${eciPos2.z.toFixed(2)} km`);
+// #endregion eci-ecef
 
-// Example 2: ECI ↔ LLA transformations
-console.log('\n=== Example 2: ECI ↔ Geodetic (LLA) Transformations ===\n');
+// #region eci-lla
+console.log('\n=== Example 2: ECI <-> Geodetic (LLA) Transformations ===\n');
 
-// Convert ECI to Geodetic
+// Convert ECI to Geodetic (returns degrees and kilometers)
 const lla = eci2lla(eciPos, gmst.gmst);
 
 console.log('Geodetic Coordinates:');
-console.log(`  Latitude:  ${lla.lat.toFixed(4)}°`);
-console.log(`  Longitude: ${lla.lon.toFixed(4)}°`);
+console.log(`  Latitude:  ${lla.lat.toFixed(4)} deg`);
+console.log(`  Longitude: ${lla.lon.toFixed(4)} deg`);
 console.log(`  Altitude:  ${lla.alt.toFixed(2)} km`);
 
-// Convert geodetic to ECI
+// lla2eci expects radians, so convert the angles first
 const llaRad = {
   lat: (lla.lat * (Math.PI / 180)) as Radians,
   lon: (lla.lon * (Math.PI / 180)) as Radians,
@@ -87,8 +91,9 @@ console.log('\nConverted back to ECI:');
 console.log(`  X: ${eciFromLla.x.toFixed(2)} km`);
 console.log(`  Y: ${eciFromLla.y.toFixed(2)} km`);
 console.log(`  Z: ${eciFromLla.z.toFixed(2)} km`);
+// #endregion eci-lla
 
-// Example 3: Working with different state vector frames
+// #region state-vector-frames
 console.log('\n=== Example 3: Different State Vector Frames (J2000, TEME, ITRF) ===\n');
 
 const sat = new Satellite({
@@ -117,51 +122,50 @@ console.log('\nITRF Frame (Earth-fixed):');
 console.log(`  Position: [${itrfState.position.x.toFixed(2)}, ${itrfState.position.y.toFixed(2)}, ${itrfState.position.z.toFixed(2)}] km`);
 console.log(`  Velocity: [${itrfState.velocity.x.toFixed(6)}, ${itrfState.velocity.y.toFixed(6)}, ${itrfState.velocity.z.toFixed(6)}] km/s`);
 
-// Convert ITRF to Geodetic
+// Convert ITRF to Geodetic (Geodetic stores radians; use the Deg getters)
 const geodeticFromItrf = itrfState.toGeodetic();
 
 console.log('\nGeodetic from ITRF:');
-console.log(`  Latitude:  ${geodeticFromItrf.lat.toFixed(4)}°`);
-console.log(`  Longitude: ${geodeticFromItrf.lon.toFixed(4)}°`);
+console.log(`  Latitude:  ${geodeticFromItrf.latDeg.toFixed(4)} deg`);
+console.log(`  Longitude: ${geodeticFromItrf.lonDeg.toFixed(4)} deg`);
 console.log(`  Altitude:  ${geodeticFromItrf.alt.toFixed(2)} km`);
+// #endregion state-vector-frames
 
-// Example 4: RIC (Radial, In-track, Cross-track) coordinates
+// #region ric-relative-frame
 console.log('\n=== Example 4: Relative Coordinates (RIC Frame) ===\n');
 
-// Create two satellites
-const sat1 = new Satellite({
-  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
-  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
-});
+// Use the ISS as the chief satellite
+const chiefState = sat.toJ2000(date);
 
-// Create a second satellite slightly ahead in the same orbit
-const sat2State = sat1.toJ2000(date);
-const sat2Elements = sat2State.toClassicalElements();
+// Create a deputy slightly ahead in the same orbit by perturbing the
+// true anomaly of the chief's classical elements
+const deputyElements = chiefState.toClassicalElements();
 
-sat2Elements.trueAnomaly = (sat2Elements.trueAnomaly + 0.1) as Radians; // Slightly ahead
+deputyElements.trueAnomaly = (deputyElements.trueAnomaly + 0.1) as Radians;
 
-const sat2J2000 = sat2Elements.toJ2000();
+const deputyState = deputyElements.toJ2000();
 
 console.log('Satellite 1 (Chief) Position:');
-console.log(`  [${sat2State.position.x.toFixed(2)}, ${sat2State.position.y.toFixed(2)}, ${sat2State.position.z.toFixed(2)}] km`);
+console.log(`  [${chiefState.position.x.toFixed(2)}, ${chiefState.position.y.toFixed(2)}, ${chiefState.position.z.toFixed(2)}] km`);
 
 console.log('\nSatellite 2 (Deputy) Position:');
-console.log(`  [${sat2J2000.position.x.toFixed(2)}, ${sat2J2000.position.y.toFixed(2)}, ${sat2J2000.position.z.toFixed(2)}] km`);
+console.log(`  [${deputyState.position.x.toFixed(2)}, ${deputyState.position.y.toFixed(2)}, ${deputyState.position.z.toFixed(2)}] km`);
 
-// Convert to RIC coordinates
-const ricState = sat2J2000.toRIC(sat2State);
+// Convert to RIC coordinates (deputy state relative to chief origin)
+const ricState = RIC.fromJ2000(deputyState, chiefState);
 
 console.log('\nRelative Position in RIC Frame:');
-console.log(`  Radial:     ${ricState.position.x.toFixed(4)} km`);
-console.log(`  In-track:   ${ricState.position.y.toFixed(4)} km`);
+console.log(`  Radial:      ${ricState.position.x.toFixed(4)} km`);
+console.log(`  In-track:    ${ricState.position.y.toFixed(4)} km`);
 console.log(`  Cross-track: ${ricState.position.z.toFixed(4)} km`);
 
 console.log('\nRelative Velocity in RIC Frame:');
-console.log(`  Radial:     ${ricState.velocity.x.toFixed(6)} km/s`);
-console.log(`  In-track:   ${ricState.velocity.y.toFixed(6)} km/s`);
+console.log(`  Radial:      ${ricState.velocity.x.toFixed(6)} km/s`);
+console.log(`  In-track:    ${ricState.velocity.y.toFixed(6)} km/s`);
 console.log(`  Cross-track: ${ricState.velocity.z.toFixed(6)} km/s`);
+// #endregion ric-relative-frame
 
-// Example 5: Creating state vectors directly
+// #region custom-state-vectors
 console.log('\n=== Example 5: Creating State Vectors Directly ===\n');
 
 const epoch = EpochUTC.fromDateTime(date);
@@ -185,7 +189,7 @@ console.log('Custom J2000 State:');
 console.log(`  Position: [${customJ2000.position.x.toFixed(2)}, ${customJ2000.position.y.toFixed(2)}, ${customJ2000.position.z.toFixed(2)}] km`);
 console.log(`  Velocity: [${customJ2000.velocity.x.toFixed(6)}, ${customJ2000.velocity.y.toFixed(6)}, ${customJ2000.velocity.z.toFixed(6)}] km/s`);
 
-// Convert to TEME
+// Create a TEME state vector with the same numbers
 const customTEME = new TEME(
   epoch,
   new Vector3D(
@@ -210,8 +214,9 @@ const temeToJ2000 = customTEME.toJ2000();
 console.log('\nTEME converted to J2000:');
 console.log(`  Position: [${temeToJ2000.position.x.toFixed(2)}, ${temeToJ2000.position.y.toFixed(2)}, ${temeToJ2000.position.z.toFixed(2)}] km`);
 console.log(`  Velocity: [${temeToJ2000.velocity.x.toFixed(6)}, ${temeToJ2000.velocity.y.toFixed(6)}, ${temeToJ2000.velocity.z.toFixed(6)}] km/s`);
+// #endregion custom-state-vectors
 
-// Example 6: LLA to ECEF transformation
+// #region lla-ecef
 console.log('\n=== Example 6: Geodetic to ECEF ===\n');
 
 const observerLla = {
@@ -221,8 +226,8 @@ const observerLla = {
 };
 
 console.log('Observer Location:');
-console.log(`  Latitude:  ${observerLla.lat}°`);
-console.log(`  Longitude: ${observerLla.lon}°`);
+console.log(`  Latitude:  ${observerLla.lat} deg`);
+console.log(`  Longitude: ${observerLla.lon} deg`);
 console.log(`  Altitude:  ${observerLla.alt} km`);
 
 const observerEcef = lla2ecef(observerLla);
@@ -232,11 +237,8 @@ console.log(`  X: ${observerEcef.x.toFixed(4)} km`);
 console.log(`  Y: ${observerEcef.y.toFixed(4)} km`);
 console.log(`  Z: ${observerEcef.z.toFixed(4)} km`);
 
-const distance = Math.sqrt(
-  observerEcef.x * observerEcef.x +
-  observerEcef.y * observerEcef.y +
-  observerEcef.z * observerEcef.z,
-);
+const distance = Math.hypot(observerEcef.x, observerEcef.y, observerEcef.z);
 
 console.log(`\nDistance from Earth center: ${distance.toFixed(4)} km`);
-console.log(`Earth equatorial radius: 6378.137 km`);
+console.log('Earth equatorial radius: 6378.137 km');
+// #endregion lla-ecef

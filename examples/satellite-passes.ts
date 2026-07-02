@@ -3,12 +3,13 @@
  * Example demonstrating satellite pass prediction and visibility calculations.
  *
  * This example shows:
- * - Calculating satellite passes
+ * - Calculating satellite look angles from a ground station
  * - Finding when satellites are visible from a ground station
  * - Computing look angles (azimuth, elevation, range)
- * - Checking field of view constraints using the new sensor module
+ * - Checking field of view constraints using the sensor module
  */
 
+// #region imports
 import {
   Degrees,
   GroundStation,
@@ -18,9 +19,10 @@ import {
   SensorType,
   TleLine1,
   TleLine2,
-} from '../dist/main.js';
+} from 'ootk';
+// #endregion imports
 
-// Example 1: Calculate passes for ISS
+// #region create-ground-station
 console.log('=== Example 1: ISS Pass Prediction ===\n');
 
 // Create a ground station
@@ -44,8 +46,9 @@ console.log(`  Altitude: ${groundStation.alt} km`);
 console.log('\nSatellite: ISS');
 console.log(`  Inclination: ${iss.inclination}°`);
 console.log(`  Period: ${iss.period} minutes`);
+// #endregion create-ground-station
 
-// Example 2: Check visibility at a specific time
+// #region visibility-check
 console.log('\n=== Example 2: Satellite Visibility Check ===\n');
 
 const checkTime = new Date('2024-01-28T12:00:00.000Z');
@@ -55,7 +58,7 @@ const rae = iss.rae(groundStation, checkTime);
 
 if (rae) {
   console.log(`Time: ${checkTime.toISOString()}`);
-  console.log(`\nLook Angles:`);
+  console.log('\nLook Angles:');
   console.log(`  Azimuth:   ${rae.az.toFixed(2)}°`);
   console.log(`  Elevation: ${rae.el.toFixed(2)}°`);
   console.log(`  Range:     ${rae.rng.toFixed(2)} km`);
@@ -70,25 +73,26 @@ if (rae) {
     console.log(`Elevation: ${getElevationDescription(rae.el)}`);
   }
 }
+// #endregion visibility-check
 
-// Example 3: PhasedArrayRadar with field of view constraints
+// #region field-of-view
 console.log('\n=== Example 3: Field of View Constraints ===\n');
 
-// Create a phased array radar and attach it to the ground station
+// Create a phased array radar and attach it to the ground station.
+// The field of view is a cone around the boresight, plus range bounds and
+// a minimum elevation.
 const radar = new PhasedArrayRadar({
-  id: 'cape-cod-radar',
+  id: 1,
   name: 'Cape Cod Radar',
   sensorType: SensorType.PHASED_ARRAY_RADAR,
   beamwidth: 2 as Degrees,
   boresightAz: [0 as Degrees],
   boresightEl: [45 as Degrees],
   fieldOfView: {
+    halfAngle: 45 as Degrees,
     minRange: 100 as Kilometers,
     maxRange: 5556 as Kilometers,
-    minAzimuth: 0 as Degrees,
-    maxAzimuth: 360 as Degrees,
     minElevation: 10 as Degrees,
-    maxElevation: 85 as Degrees,
   },
 });
 
@@ -96,45 +100,45 @@ const radar = new PhasedArrayRadar({
 groundStation.addSensor(radar);
 radar.setParent(groundStation);
 
+const fov = radar.fieldOfView;
+
 console.log(`Sensor: ${radar.name}`);
-console.log(`Field of View Constraints:`);
-console.log(`  Azimuth:   ${radar.fieldOfView.minAzimuth}° - ${radar.fieldOfView.maxAzimuth}°`);
-console.log(`  Elevation: ${radar.fieldOfView.minElevation}° - ${radar.fieldOfView.maxElevation}°`);
-console.log(`  Range:     ${radar.fieldOfView.minRange} - ${radar.fieldOfView.maxRange} km`);
+console.log('Field of View Constraints:');
+console.log(`  Boresight:     Az ${radar.boresightAz[0]}°, El ${radar.boresightEl[0]}°`);
+console.log(`  Cone Half-Angle: ${fov.halfAngle}°`);
+console.log(`  Min Elevation:   ${fov.minElevation}°`);
+console.log(`  Range:           ${fov.minRange} - ${fov.maxRange} km`);
 
 // Check if satellite is in FOV
 const inFov = radar.canObserve(iss, checkTime);
 
 console.log(`\nAt ${checkTime.toISOString()}:`);
-console.log(`  Satellite in FOV: ${inFov ? 'YES ✓' : 'NO ✗'}`);
+console.log(`  Satellite in FOV: ${inFov ? 'YES' : 'NO'}`);
 
 if (inFov) {
-  console.log(`  The satellite meets all FOV constraints`);
+  console.log('  The satellite meets all FOV constraints');
 } else {
   const raeCheck = radar.getRae(iss, checkTime);
 
   if (raeCheck) {
-    console.log(`  Constraints not met:`);
+    console.log('  Constraints not met:');
 
-    if (raeCheck.el < radar.fieldOfView.minElevation) {
-      console.log(`    - Elevation too low (${raeCheck.el.toFixed(1)}° < ${radar.fieldOfView.minElevation}°)`);
+    if (raeCheck.el < fov.minElevation) {
+      console.log(`    - Elevation too low (${raeCheck.el.toFixed(1)}° < ${fov.minElevation}°)`);
     }
 
-    if (raeCheck.el > radar.fieldOfView.maxElevation) {
-      console.log(`    - Elevation too high (${raeCheck.el.toFixed(1)}° > ${radar.fieldOfView.maxElevation}°)`);
+    if (raeCheck.rng < fov.minRange) {
+      console.log(`    - Range too close (${raeCheck.rng.toFixed(0)} km < ${fov.minRange} km)`);
     }
 
-    if (raeCheck.rng < radar.fieldOfView.minRange) {
-      console.log(`    - Range too close (${raeCheck.rng.toFixed(0)} km < ${radar.fieldOfView.minRange} km)`);
-    }
-
-    if (raeCheck.rng > radar.fieldOfView.maxRange) {
-      console.log(`    - Range too far (${raeCheck.rng.toFixed(0)} km > ${radar.fieldOfView.maxRange} km)`);
+    if (raeCheck.rng > fov.maxRange) {
+      console.log(`    - Range too far (${raeCheck.rng.toFixed(0)} km > ${fov.maxRange} km)`);
     }
   }
 }
+// #endregion field-of-view
 
-// Example 4: Track satellite across the sky
+// #region track-over-time
 console.log('\n=== Example 4: Satellite Tracking Over Time ===\n');
 
 const trackStart = new Date('2024-01-28T12:00:00.000Z');
@@ -159,15 +163,16 @@ for (let i = 0; i < 12; i++) {
       status = 'Visible';
 
       if (radar.canObserve(iss, trackTime)) {
-        status = 'In FOV ✓';
+        status = 'In FOV';
       }
     }
 
     console.log(`${timeStr}          ${azStr}° ${elStr}° ${rngStr} km  ${status}`);
   }
 }
+// #endregion track-over-time
 
-// Example 5: Multiple satellites
+// #region multiple-satellites
 console.log('\n=== Example 5: Tracking Multiple Satellites ===\n');
 
 const satellites = [
@@ -205,13 +210,14 @@ satellites.forEach((satInfo) => {
     const elStr = satRae.el.toFixed(1).padStart(6);
     const rngStr = satRae.rng.toFixed(0).padStart(7);
     const visStr = (satVisible ? 'Yes' : 'No').padEnd(8);
-    const fovStr = satInFov ? 'Yes ✓' : 'No';
+    const fovStr = satInFov ? 'Yes' : 'No';
 
     console.log(`${nameStr}  ${azStr}° ${elStr}° ${rngStr} km  ${visStr}  ${fovStr}`);
   }
 });
+// #endregion multiple-satellites
 
-// Helper functions
+// #region helpers
 function getCardinalDirection(azimuth: number): string {
   const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
   const index = Math.round(azimuth / 22.5) % 16;
@@ -220,11 +226,22 @@ function getCardinalDirection(azimuth: number): string {
 }
 
 function getElevationDescription(elevation: number): string {
-  if (elevation > 80) return 'Nearly overhead';
-  if (elevation > 60) return 'Very high in the sky';
-  if (elevation > 45) return 'High in the sky';
-  if (elevation > 30) return 'Medium elevation';
-  if (elevation > 15) return 'Low in the sky';
+  if (elevation > 80) {
+    return 'Nearly overhead';
+  }
+  if (elevation > 60) {
+    return 'Very high in the sky';
+  }
+  if (elevation > 45) {
+    return 'High in the sky';
+  }
+  if (elevation > 30) {
+    return 'Medium elevation';
+  }
+  if (elevation > 15) {
+    return 'Low in the sky';
+  }
 
   return 'Near the horizon';
 }
+// #endregion helpers

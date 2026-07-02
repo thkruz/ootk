@@ -9,6 +9,7 @@
  * - Creating TLEs from classical elements
  */
 
+// #region imports
 import {
   ClassicalElements,
   Degrees,
@@ -16,14 +17,15 @@ import {
   J2000,
   Kilometers,
   KilometersPerSecond,
-  Radians,
   Satellite,
   Tle,
   TleLine1,
   TleLine2,
   Vector3D,
-} from '../dist/main.js';
+} from 'ootk';
+// #endregion imports
 
+// #region tle-to-elements
 // Example 1: Extract orbital elements from a TLE
 console.log('=== Example 1: Extract Orbital Elements from TLE ===\n');
 
@@ -49,7 +51,9 @@ console.log(`\nDerived Parameters:`);
 console.log(`  Period: ${elements.period.toFixed(2)} minutes`);
 console.log(`  Apogee altitude: ${((elements.semimajorAxis * (1 + elements.eccentricity)) - 6378.137).toFixed(2)} km`);
 console.log(`  Perigee altitude: ${((elements.semimajorAxis * (1 - elements.eccentricity)) - 6378.137).toFixed(2)} km`);
+// #endregion tle-to-elements
 
+// #region elements-to-state-vector
 // Example 2: Create classical elements and convert to state vector
 console.log('\n=== Example 2: Create Orbital Elements and Convert to State Vector ===\n');
 
@@ -74,7 +78,9 @@ const stateVector = customElements.toJ2000();
 console.log(`\nState Vector:`);
 console.log(`  Position: [${stateVector.position.x.toFixed(2)}, ${stateVector.position.y.toFixed(2)}, ${stateVector.position.z.toFixed(2)}] km`);
 console.log(`  Velocity: [${stateVector.velocity.x.toFixed(6)}, ${stateVector.velocity.y.toFixed(6)}, ${stateVector.velocity.z.toFixed(6)}] km/s`);
+// #endregion elements-to-state-vector
 
+// #region state-vector-to-elements
 // Example 3: Convert state vector to classical elements
 console.log('\n=== Example 3: Create State Vector and Convert to Classical Elements ===\n');
 
@@ -101,7 +107,9 @@ console.log(`  Inclination: ${(derivedElements.inclination * (180 / Math.PI)).to
 console.log(`  Right Ascension: ${(derivedElements.rightAscension * (180 / Math.PI)).toFixed(4)}°`);
 console.log(`  Arg of Perigee: ${(derivedElements.argPerigee * (180 / Math.PI)).toFixed(4)}°`);
 console.log(`  True Anomaly: ${(derivedElements.trueAnomaly * (180 / Math.PI)).toFixed(4)}°`);
+// #endregion state-vector-to-elements
 
+// #region elements-to-tle
 // Example 4: Create TLE from classical elements
 console.log('\n=== Example 4: Create TLE from Classical Elements ===\n');
 
@@ -132,7 +140,9 @@ const verifyElements = verifyState.toClassicalElements();
 
 console.log(`\nVerification - Semi-major axis: ${verifyElements.semimajorAxis.toFixed(2)} km`);
 console.log(`Verification - Period: ${verifyElements.period.toFixed(2)} minutes (should be ~1436 min for GEO)`);
+// #endregion elements-to-tle
 
+// #region orbit-types
 // Example 5: Different orbit types
 console.log('\n=== Example 5: Different Orbit Types ===\n');
 
@@ -182,3 +192,4 @@ orbits.forEach((orbit) => {
   console.log(`  Period: ${orbit.elements.period.toFixed(2)} minutes`);
   console.log('');
 });
+// #endregion orbit-types

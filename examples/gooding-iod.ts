@@ -1,93 +1,93 @@
 /* eslint-disable no-console */
-import { Degrees, Kilometers, Seconds } from '@src/main';
-import { Sensor } from '@src/objects';
-import { RadecTopocentric } from '@src/observation';
-import { ObservationOptical } from '@src/observation/ObservationOptical';
-import { GoodingIOD } from '@src/orbit_determination';
-import { EpochUTC } from '@src/time';
+// #region imports
+import {
+  Degrees,
+  EpochUTC,
+  GoodingIOD,
+  GroundObject,
+  Kilometers,
+  ObservationOptical,
+  RadecTopocentric,
+} from 'ootk';
+// #endregion imports
 
-const sensorLocation = {
-  latitude: 41.958076,
-  longitude: -70.662182,
-  altitude: 0, // meters
-};
+// #region setup-site
+// Optical observations are angles-only, so the observer's inertial position
+// at each epoch is required. A GroundObject provides toJ2000(date) for that.
+const site = new GroundObject({
+  name: 'Cape Cod Observatory',
+  lat: 41.958076 as Degrees,
+  lon: -70.662182 as Degrees,
+  alt: 0 as Kilometers,
+});
+// #endregion setup-site
 
+// #region setup-observations
 /**
- * Realistic observations of a GEO satellite pass
- * Observations span 2 hours with satellite motion reflected in RA/Dec changes
+ * Realistic observations of a GEO satellite pass.
+ * Observations span 2 hours with satellite motion reflected in RA/Dec changes.
  */
 const observations = [
   {
-    timestamp: new Date(2025, 10, 22, 2, 0, 0).getTime(),
+    date: new Date(2025, 10, 22, 2, 0, 0),
     ra: 333.38 as Degrees,
     dec: -6.24 as Degrees,
   },
   {
-    timestamp: new Date(2025, 10, 22, 3, 0, 0).getTime(),
+    date: new Date(2025, 10, 22, 3, 0, 0),
     ra: 334.12 as Degrees,
     dec: -5.87 as Degrees,
   },
   {
-    timestamp: new Date(2025, 10, 22, 4, 0, 0).getTime(),
+    date: new Date(2025, 10, 22, 4, 0, 0),
     ra: 334.89 as Degrees,
     dec: -5.51 as Degrees,
   },
 ];
 
-const sensor = new Sensor(
-  {
-    lat: sensorLocation.latitude as Degrees,
-    lon: sensorLocation.longitude as Degrees,
-    alt: sensorLocation.altitude as Kilometers,
-    minEl: 0 as Degrees,
-    maxEl: 90 as Degrees,
-    minAz: 0 as Degrees,
-    maxAz: 360 as Degrees,
-    minRng: 0 as Kilometers,
-    maxRng: 60_000 as Kilometers,
-  },
-);
-
-// Get three observations
-const obs1 = new ObservationOptical(sensor.toJ2000(new Date(observations[0].timestamp)), RadecTopocentric.fromDegrees(
-  new EpochUTC((new Date(observations[0].timestamp).getTime() / 1000) as Seconds),
-  observations[0].ra,
-  observations[0].dec,
+// Pair each RA/Dec observation with the site's inertial position at that epoch
+const [obs1, obs2, obs3] = observations.map((o) => new ObservationOptical(
+  site.toJ2000(o.date),
+  RadecTopocentric.fromDegrees(EpochUTC.fromDateTime(o.date), o.ra, o.dec),
 ));
 
-console.log('Obs1:', JSON.stringify(obs1, null, 2));
+for (const [i, obs] of [obs1, obs2, obs3].entries()) {
+  console.log(`Observation ${i + 1}: ${obs.epoch.toDateTime().toISOString()}` +
+    ` RA ${obs.observation.rightAscensionDegrees.toFixed(2)} deg,` +
+    ` Dec ${obs.observation.declinationDegrees.toFixed(2)} deg`);
+}
+// #endregion setup-observations
 
-const obs2 = new ObservationOptical(sensor.toJ2000(new Date(observations[1].timestamp)), RadecTopocentric.fromDegrees(
-  new EpochUTC((new Date(observations[1].timestamp).getTime() / 1000) as Seconds),
-  observations[1].ra,
-  observations[1].dec,
-));
-
-console.log('Obs2:', JSON.stringify(obs2, null, 2));
-
-const obs3 = new ObservationOptical(sensor.toJ2000(new Date(observations[2].timestamp)), RadecTopocentric.fromDegrees(
-  new EpochUTC((new Date(observations[2].timestamp).getTime() / 1000) as Seconds),
-  observations[2].ra,
-  observations[2].dec,
-));
-
-console.log('Obs3:', JSON.stringify(obs3, null, 2));
-
-// Run IOD
-const iod = new GoodingIOD(obs1, obs2, obs3);
-
+// #region solve-gooding
 /**
- * Use SLANT RANGE from observer to satellite for initial estimates
- * GEO altitude is ~35,786 km above Earth surface
- * For a ground observer, slant range to GEO satellite ≈ 35,800 - 40,000 km
- * depending on elevation angle
+ * Gooding IOD needs initial SLANT RANGE guesses from observer to satellite
+ * for the first and third observations.
+ * GEO altitude is ~35,786 km above Earth's surface, so for a ground observer
+ * the slant range to a GEO satellite is roughly 35,800 to 40,000 km
+ * depending on elevation angle.
  */
 const rangeEstimate1 = 36800 as Kilometers;
 const rangeEstimate3 = 36800 as Kilometers;
 
-const solved = iod.solve(rangeEstimate1, rangeEstimate3);
-const classicalElements = solved.toClassicalElements();
-const sv = solved.toTEME();
+const iod = new GoodingIOD();
+const solved = iod.solve(obs1, obs2, obs3, rangeEstimate1, rangeEstimate3);
+// #endregion solve-gooding
 
-console.log('Solved State Vector (TEME):', JSON.stringify(sv, null, 2));
-console.log('Classical Orbital Elements:', JSON.stringify(classicalElements, null, 2));
+// #region results
+const sv = solved.toTEME();
+const elements = solved.toClassicalElements();
+
+console.log('\nSolved State Vector (TEME) at middle observation epoch:');
+console.log(`  Epoch: ${sv.epoch.toDateTime().toISOString()}`);
+console.log(`  Position: [${sv.position.x.toFixed(2)}, ${sv.position.y.toFixed(2)}, ${sv.position.z.toFixed(2)}] km`);
+console.log(`  Velocity: [${sv.velocity.x.toFixed(6)}, ${sv.velocity.y.toFixed(6)}, ${sv.velocity.z.toFixed(6)}] km/s`);
+
+console.log('\nClassical Orbital Elements:');
+console.log(`  Semi-major axis: ${elements.semimajorAxis.toFixed(2)} km`);
+console.log(`  Eccentricity: ${elements.eccentricity.toFixed(6)}`);
+console.log(`  Inclination: ${(elements.inclination * (180 / Math.PI)).toFixed(4)} deg`);
+console.log(`  Right Ascension: ${(elements.rightAscension * (180 / Math.PI)).toFixed(4)} deg`);
+console.log(`  Arg of Perigee: ${(elements.argPerigee * (180 / Math.PI)).toFixed(4)} deg`);
+console.log(`  True Anomaly: ${(elements.trueAnomaly * (180 / Math.PI)).toFixed(4)} deg`);
+console.log(`  Period: ${elements.period.toFixed(2)} minutes`);
+// #endregion results

@@ -1,24 +1,21 @@
-Run the examples using tsx.
+# Examples
 
-Example:
-npx tsx ./examples/julian.ts -p ./examples/tsconfig.json
+Runnable demonstration scripts for ootk. Each script is embedded, section by
+section, in the VitePress documentation site (`docs/examples/`), so keep the
+`// #region` markers intact when editing: the docs pages reference them by name.
 
-## Available Examples
-
-### Lambert State Vector Generation
-Demonstrates how to use Lambert's problem solution to generate state vectors without SGP4/TLE:
+The scripts import from `'ootk'`, which resolves to the built `dist/` output via
+npm package self-reference. Build once, then run any example with tsx:
 
 ```bash
-npx tsx ./examples/lambert-state-vector.ts -p ./examples/tsconfig.json
+npm run build
+npx tsx ./examples/satellite-passes.ts
 ```
 
-This example covers:
-- Basic Lambert solution from two position observations
-- Using Lambert with numerical propagators (RungeKutta89)
-- Converting Lambert solutions to Satellite objects via TLE
-- Transfer orbit planning and delta-V calculation
-- Multi-revolution transfers
-- Short path vs long path comparison
-- Solution validation and error handling
+Browse the annotated versions with explanations and expected output:
 
-See the comprehensive guide: `docs/lambert-satellite-integration-guide.md`
+```bash
+npm run docs:dev
+```
+
+then open the Examples section.

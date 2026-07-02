@@ -1,9 +1,12 @@
+/* eslint-disable no-console */
+// #region imports
 import {
   DEG2RAD, Degrees, EpochUTC, J2000, Kilometers, KilometersPerSecond, RAE, Radians, Tle, Vector3D, calcGmst,
   lla2eci, LambertIOD, GibbsIOD, HerrickGibbsIOD,
-} from '../dist/main.js';
-/* eslint-disable no-console */
+} from 'ootk';
+// #endregion imports
 
+// #region setup-observations
 const lambert = new LambertIOD();
 
 const rae1 = {
@@ -29,7 +32,9 @@ const sensor = {
   lon: (-70.539151 * DEG2RAD) as Radians,
   alt: 0.085 as Kilometers,
 };
+// #endregion setup-observations
 
+// #region rae-to-position
 const gmst = calcGmst(rae1.t.toDateTime());
 const sensorEci = lla2eci(sensor, gmst.gmst);
 
@@ -48,7 +53,9 @@ const p3 = RAE.fromDegrees(rae3.t, rae3.rng, rae3.az, rae3.el).toStateVector(
     new Vector3D(sensorEci.x, sensorEci.y, sensorEci.z), Vector3D.origin as Vector3D<KilometersPerSecond>,
   ),
 );
+// #endregion rae-to-position
 
+// #region eci-positions
 const eci1 = {
   x: -4901.84521484375 as Kilometers,
   y: -3592.527587890625 as Kilometers,
@@ -68,7 +75,7 @@ const p1b = new J2000(rae1.t, new Vector3D(eci1.x, eci1.y, eci1.z), Vector3D.ori
 const p2b = new J2000(rae2.t, new Vector3D(eci2.x, eci2.y, eci2.z), Vector3D.origin as Vector3D<KilometersPerSecond>);
 const p3b = new J2000(rae3.t, new Vector3D(eci3.x, eci3.y, eci3.z), Vector3D.origin as Vector3D<KilometersPerSecond>);
 
-const eci4 = { x: -4738.27734375 as Kilometers, y: -3707.9072265625 as Kilometers, z: 3431.36669921875 as Kilometers};
+const eci4 = { x: -4738.27734375 as Kilometers, y: -3707.9072265625 as Kilometers, z: 3431.36669921875 as Kilometers };
 const p4b = new J2000(
   EpochUTC.fromDateTime(new Date(1704628492000)),
   new Vector3D(eci4.x, eci4.y, eci4.z),
@@ -85,7 +92,9 @@ const p5b = new J2000(
   new Vector3D(eci5.x, eci5.y, eci5.z),
   Vector3D.origin as Vector3D<KilometersPerSecond>,
 );
+// #endregion eci-positions
 
+// #region solve-iod
 const estimate = lambert.estimate(p1.position, p2.position, p1.epoch, p2.epoch);
 const estimate2 = new HerrickGibbsIOD().solve(p1.position, p1.epoch, p2.position, p2.epoch, p3.position, p3.epoch);
 const estimate3 = new GibbsIOD().solve(p1b.position, p2b.position, p3b.position, p2b.epoch, p3b.epoch);
@@ -97,15 +106,27 @@ const estimate4 = new HerrickGibbsIOD().solve(
   p5b.position,
   p5b.epoch,
 );
+// #endregion solve-iod
 
-Tle.fromClassicalElements(estimate.toClassicalElements());
-Tle.fromClassicalElements(estimate2.toClassicalElements());
+// #region fit-tles
+const tleLambert = Tle.fromClassicalElements(estimate.toClassicalElements());
+const tleHerrickGibbsRae = Tle.fromClassicalElements(estimate2.toClassicalElements());
 const tle = Tle.fromClassicalElements(estimate3.toClassicalElements());
-
-console.log(tle.line1);
-console.log(tle.line2);
-
 const tle2 = Tle.fromClassicalElements(estimate4.toClassicalElements());
 
-console.log(tle2.line1);
-console.log(tle2.line2);
+console.log('Lambert IOD (two RAE-derived positions, 10 s apart) fitted to a TLE:');
+console.log(`  ${tleLambert.line1}`);
+console.log(`  ${tleLambert.line2}`);
+
+console.log('\nHerrick-Gibbs IOD (three RAE-derived positions, 10 s spacing) fitted to a TLE:');
+console.log(`  ${tleHerrickGibbsRae.line1}`);
+console.log(`  ${tleHerrickGibbsRae.line2}`);
+
+console.log('\nGibbs IOD (three ECI positions, 10 s spacing) fitted to a TLE:');
+console.log(`  ${tle.line1}`);
+console.log(`  ${tle.line2}`);
+
+console.log('\nHerrick-Gibbs IOD (three ECI positions, 30 s spacing) fitted to a TLE:');
+console.log(`  ${tle2.line1}`);
+console.log(`  ${tle2.line2}`);
+// #endregion fit-tles
