@@ -1,0 +1,36 @@
+/**
+ * KeepTrack brand palette (International Orange Engineering), matching
+ * keeptrack.space public/css/loading-screen.css:
+ *   primary        #ba160c
+ *   primary-light  #e01a0e
+ *   primary-dark   #860f08
+ *   text-accent    #ff2827 (brighter variant for icons/dark backgrounds)
+ */
+
+:root {
+  --vp-c-brand-1: #ba160c;
+  --vp-c-brand-2: #e01a0e;
+  --vp-c-brand-3: #ba160c;
+  --vp-c-brand-soft: rgba(186, 22, 12, 0.14);
+
+  --vp-button-brand-bg: #ba160c;
+  --vp-button-brand-hover-bg: #e01a0e;
+  --vp-button-brand-active-bg: #860f08;
+
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #ff2827 30%, #860f08);
+  --vp-home-hero-image-background-image: linear-gradient(-45deg, rgba(186, 22, 12, 0.55) 50%, rgba(255, 40, 39, 0.55) 50%);
+  --vp-home-hero-image-filter: blur(44px);
+}
+
+/*
+ * Dark mode: the saturated brand red is too low-contrast as text on dark
+ * backgrounds, so links use the brighter accent shades. Solid-fill elements
+ * (buttons) keep the deep brand red with white text.
+ */
+.dark {
+  --vp-c-brand-1: #ff2827;
+  --vp-c-brand-2: #ff5c4d;
+  --vp-c-brand-3: #ba160c;
+  --vp-c-brand-soft: rgba(255, 40, 39, 0.16);
+}

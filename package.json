@@ -30,6 +30,9 @@
     "test:integration": "npm run build && vitest run --config test/integration/vitest.config.mts",
     "test:integration:only": "vitest run --config test/integration/vitest.config.mts",
     "test:all": "npm run test && npm run test:integration",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
     "prepublishOnly": "npm run test:all",
     "version": "npm run build && auto-changelog && git add CHANGELOG.md"
   },
@@ -56,10 +59,10 @@
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "astronomy-engine": "^2.1.19",
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
     "@vitest/coverage-v8": "^4.0.18",
+    "astronomy-engine": "^2.1.19",
     "auto-changelog": "^2.5.0",
     "eslint": "^9.39.1",
     "madge": "^8.0.0",
@@ -67,6 +70,7 @@
     "tsup": "^8.5.1",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
+    "vitepress": "^1.6.4",
     "vitest": "^4.0.18"
   },
   "homepage": "https://github.com/thkruz/ootk"

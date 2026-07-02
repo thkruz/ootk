@@ -26,3 +26,6 @@ CLAUDE.md
 .dev.vars
 
 src/objects/__tests__/propagator-accuracy-summary.txt
+
+docs/.vitepress/cache
+docs/.vitepress/dist
