@@ -22,6 +22,9 @@
  */
 
 export * from './ObservationUtils';
+export { Observation } from './Observation';
+export { ObservationOptical } from './ObservationOptical';
+export { ObservationRadar } from './ObservationRadar';
 export { RadecGeocentric } from './RadecGeocentric';
 export { RadecTopocentric } from './RadecTopocentric';
 export { RAE } from './RAE';
