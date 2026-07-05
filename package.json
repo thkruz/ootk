@@ -70,7 +70,7 @@
     "tsup": "^8.5.1",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
-    "vitepress": "^1.6.4",
+    "vitepress": "2.0.0-alpha.17",
     "vitest": "^4.0.18"
   },
   "homepage": "https://github.com/thkruz/ootk"
