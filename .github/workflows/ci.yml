@@ -23,7 +23,7 @@ jobs:
 
       - uses: actions/setup-node@v4.0.1
         with:
-          node-version: '20.x'
+          node-version: '24.x'
 
       - run: npm ci --ignore-scripts
 
@@ -36,7 +36,7 @@ jobs:
 
       - uses: actions/setup-node@v4.0.1
         with:
-          node-version: '20.x'
+          node-version: '24.x'
 
       - run: npm ci --ignore-scripts
 
@@ -50,7 +50,7 @@ jobs:
 
       - uses: actions/setup-node@v4.0.1
         with:
-          node-version: '20.x'
+          node-version: '24.x'
 
       - uses: actions/cache@v3
         env:
@@ -76,7 +76,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ['18.x', '20.x']
+        node-version: ['24.x']
     steps:
       - uses: actions/checkout@v4.1.1
 
@@ -103,7 +103,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ['18.x', '20.x']
+        node-version: ['24.x']
     steps:
       - uses: actions/checkout@v4.1.1
 
