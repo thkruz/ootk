@@ -18,7 +18,7 @@
 import {
   ConjunctionEvent, CovarianceFrame, CovarianceSample, EpochUTC, ForceModel, GoldenSection, J2000, Matrix,
   ProbabilityOfCollision, Propagator, RIC, Sgp4Propagator, StateCovariance, Tle,
-  type Kilometers, type Seconds, type Vector3D
+  type Kilometers, type Seconds, type Vector3D,
 } from '../main';
 import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
 

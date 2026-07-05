@@ -1,5 +1,4 @@
 import { DifferentiableFunction } from '../main';
-/* eslint-disable require-jsdoc */
 import { AngularDiameterMethod } from '../enums/AngularDiameterMethod';
 import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';
 import { EcefVec3, Kilometers, KilometersPerSecond, Radians, SpaceObjectType, Vec3 } from '../types/types';

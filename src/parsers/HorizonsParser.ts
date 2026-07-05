@@ -311,11 +311,11 @@ export class HorizonsParser {
     // Line 3: VX, VY, VZ (velocity) - optional
 
     // Try to parse the Julian Date / Calendar date line
-    const dateMatch = line.match(/^(\d+\.\d+)\s*=\s*A\.D\.\s*(\d{4})-(\w{3})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2}\.?\d*)/);
+    const dateMatch = line.match(/^(\d+\.\d+)\s*=\s*A\.D\.\s*(\d{4})-(\w{3})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2}\.?\d*)/u);
 
     if (!dateMatch) {
       // Try alternate format with just numbers
-      const parts = line.split(/\s+/);
+      const parts = line.split(/\s+/u);
 
       if (parts.length >= 7) {
         // Assume: JD X Y Z VX VY VZ format
@@ -428,12 +428,12 @@ export class HorizonsParser {
 
       // Stop if we hit the next date line, $$EOE, or an empty line
       if (extraLine === '$$EOE' || extraLine.length === 0 ||
-          /^\d+\.\d+\s*=\s*A\.D\./u.test(extraLine)) {
+          (/^\d+\.\d+\s*=\s*A\.D\./u).test(extraLine)) {
         break;
       }
 
       // If it's just numbers (like LT RG RR), skip it
-      if (/^\s*[-\d.E+]+(\s+[-\d.E+]+)*\s*$/u.test(extraLine)) {
+      if ((/^\s*[-\d.E+]+(\s+[-\d.E+]+)*\s*$/u).test(extraLine)) {
         nextIndex++;
       } else {
         break;
@@ -454,7 +454,7 @@ export class HorizonsParser {
     // Date, RA (HMS), Dec (DMS), Delta (AU), Delta-dot, S-O-T, etc.
     // This is a simplified parser
 
-    const parts = line.split(/\s+/);
+    const parts = line.split(/\s+/u);
 
     if (parts.length < 5) {
       return null;

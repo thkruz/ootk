@@ -188,9 +188,15 @@ export class OdmExporter {
         try {
           const j2k = satellite.toJ2000(time);
 
-          lines.push(
-            `${epoch}  ${OdmExporter.formatNumber_(j2k.position.x)}  ${OdmExporter.formatNumber_(j2k.position.y)}  ${OdmExporter.formatNumber_(j2k.position.z)}  ${OdmExporter.formatNumber_(j2k.velocity.x)}  ${OdmExporter.formatNumber_(j2k.velocity.y)}  ${OdmExporter.formatNumber_(j2k.velocity.z)}`,
-          );
+          lines.push([
+            epoch,
+            OdmExporter.formatNumber_(j2k.position.x),
+            OdmExporter.formatNumber_(j2k.position.y),
+            OdmExporter.formatNumber_(j2k.position.z),
+            OdmExporter.formatNumber_(j2k.velocity.x),
+            OdmExporter.formatNumber_(j2k.velocity.y),
+            OdmExporter.formatNumber_(j2k.velocity.z),
+          ].join('  '));
         } catch {
           // Skip points where propagation fails
         }
@@ -198,9 +204,15 @@ export class OdmExporter {
         const pv = satellite.eci(time);
 
         if (pv?.position && pv?.velocity) {
-          lines.push(
-            `${epoch}  ${OdmExporter.formatNumber_(pv.position.x)}  ${OdmExporter.formatNumber_(pv.position.y)}  ${OdmExporter.formatNumber_(pv.position.z)}  ${OdmExporter.formatNumber_(pv.velocity.x)}  ${OdmExporter.formatNumber_(pv.velocity.y)}  ${OdmExporter.formatNumber_(pv.velocity.z)}`,
-          );
+          lines.push([
+            epoch,
+            OdmExporter.formatNumber_(pv.position.x),
+            OdmExporter.formatNumber_(pv.position.y),
+            OdmExporter.formatNumber_(pv.position.z),
+            OdmExporter.formatNumber_(pv.velocity.x),
+            OdmExporter.formatNumber_(pv.velocity.y),
+            OdmExporter.formatNumber_(pv.velocity.z),
+          ].join('  '));
         }
       }
     }
@@ -270,9 +282,15 @@ export class OdmExporter {
     for (const sv of stateVectors) {
       const epoch = OdmExporter.formatDateTime_(sv.epoch.toDateTime());
 
-      lines.push(
-        `${epoch}  ${OdmExporter.formatNumber_(sv.position.x)}  ${OdmExporter.formatNumber_(sv.position.y)}  ${OdmExporter.formatNumber_(sv.position.z)}  ${OdmExporter.formatNumber_(sv.velocity.x)}  ${OdmExporter.formatNumber_(sv.velocity.y)}  ${OdmExporter.formatNumber_(sv.velocity.z)}`,
-      );
+      lines.push([
+        epoch,
+        OdmExporter.formatNumber_(sv.position.x),
+        OdmExporter.formatNumber_(sv.position.y),
+        OdmExporter.formatNumber_(sv.position.z),
+        OdmExporter.formatNumber_(sv.velocity.x),
+        OdmExporter.formatNumber_(sv.velocity.y),
+        OdmExporter.formatNumber_(sv.velocity.z),
+      ].join('  '));
     }
 
     return lines.join('\n');

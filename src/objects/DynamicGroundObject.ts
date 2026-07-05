@@ -896,11 +896,11 @@ export class DynamicGroundObject extends GroundObject {
 
       // Adjust if crossing -180/180 boundary
       while (diff > 180) {
-        lon = lon - 360;
+        lon -= 360;
         diff = lon - prevLon;
       }
       while (diff < -180) {
-        lon = lon + 360;
+        lon += 360;
         diff = lon - prevLon;
       }
 

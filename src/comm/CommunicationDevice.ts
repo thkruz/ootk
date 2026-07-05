@@ -144,9 +144,9 @@ export abstract class CommunicationDevice implements CommunicationDeviceInterfac
     const otherPos = other.getJ2000(date).position;
 
     return Math.sqrt(
-      Math.pow(otherPos.x - thisPos.x, 2) +
-      Math.pow(otherPos.y - thisPos.y, 2) +
-      Math.pow(otherPos.z - thisPos.z, 2),
+      (otherPos.x - thisPos.x) ** 2 +
+      (otherPos.y - thisPos.y) ** 2 +
+      (otherPos.z - thisPos.z) ** 2,
     );
   }
 

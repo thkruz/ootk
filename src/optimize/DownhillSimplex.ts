@@ -172,7 +172,7 @@ export class DownhillSimplex {
     for (const x of xs) {
       ordered.push(new SimplexEntry(f, x));
     }
-    // eslint-disable-next-line no-constant-condition
+
     while (true) {
       ordered.sort((x, y) => x.score - y.score);
       const x0 = DownhillSimplex.centroid_(f, ordered);

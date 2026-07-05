@@ -15,8 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable @typescript-eslint/no-loss-of-precision */
-/* eslint-disable class-methods-use-this */
+
 import { RungeKuttaAdaptive } from './RungeKuttaAdaptive';
 
 // / Runge-Kutta 8(9) adaptive numerical propagator.

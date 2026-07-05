@@ -16,8 +16,7 @@
  */
 
 import { EpochUTC, J2000 } from '../main';
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable class-methods-use-this */
+
 
 import { Interpolator } from './Interpolator';
 

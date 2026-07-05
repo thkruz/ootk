@@ -153,7 +153,7 @@ export class RepeatGroundTrack {
     // Initial estimate of semi-major axis (without J2)
     // n = revsPerDay * 2π / secondsPerSiderealDay (rad/s)
     const nInitial = (revsPerDay * TAU) / secondsPerSiderealDay;
-    let sma = Math.pow(Earth.mu / (nInitial * nInitial), 1 / 3) as Kilometers;
+    let sma = ((Earth.mu / (nInitial * nInitial)) ** (1 / 3)) as Kilometers;
 
     // Convert inclination to radians or calculate for sun-synchronous
     let incRad: Radians;
@@ -181,12 +181,12 @@ export class RepeatGroundTrack {
 
       // J2 secular perturbation to mean motion (Brouwer theory)
       // ṅ/n = 3/4 * J2 * (Re/p)² * √(1-e²) * (3cos²i - 1)
-      const j2Factor = (3 / 4) * Earth.j2 * Math.pow(Earth.radiusEquator / p, 2);
+      const j2Factor = (3 / 4) * Earth.j2 * (Earth.radiusEquator / p) ** 2;
       const meanMotionFactor = 1 + j2Factor * Math.sqrt(1 - eccentricity * eccentricity) * (3 * cosI * cosI - 1);
 
       // J2 effect on nodal precession
       // Ω̇ = -3/2 * J2 * (Re/p)² * n * cos(i)
-      const nodalFactor = (-3 / 2) * Earth.j2 * Math.pow(Earth.radiusEquator / p, 2) * cosI;
+      const nodalFactor = (-3 / 2) * Earth.j2 * (Earth.radiusEquator / p) ** 2 * cosI;
 
       // The nodal period (time between successive equator crossings at same longitude)
       // depends on both the orbital period and the RAAN precession
@@ -209,7 +209,7 @@ export class RepeatGroundTrack {
       const nRequired = (revolutions * TAU) / (days * nodalDaySeconds);
 
       // Update semi-major axis
-      sma = Math.pow(Earth.mu / (nRequired / meanMotionFactor) ** 2, 1 / 3) as Kilometers;
+      sma = ((Earth.mu / (nRequired / meanMotionFactor) ** 2) ** (1 / 3)) as Kilometers;
 
       // Check convergence
       if (Math.abs(sma - prevSma) < tolerance) {
@@ -439,7 +439,7 @@ export class RepeatGroundTrack {
 
     // From Ω̇ = -3/2 * J2 * (Re/p)² * n * cos(i)
     // cos(i) = Ω̇ / (-3/2 * J2 * (Re/p)² * n)
-    const factor = (-3 / 2) * Earth.j2 * Math.pow(Earth.radiusEquator / p, 2) * n;
+    const factor = (-3 / 2) * Earth.j2 * (Earth.radiusEquator / p) ** 2 * n;
     const cosI = requiredPrecession / factor;
 
     // Check if solution exists

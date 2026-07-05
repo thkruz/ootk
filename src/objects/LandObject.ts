@@ -17,7 +17,7 @@
 
 import { BaseObjectParams, Degrees, Kilometers } from '../main';
 import { BaseObject } from './BaseObject';
-/* eslint-disable class-methods-use-this */
+
 
 export interface LandObjectParams extends BaseObjectParams {
   lat: Degrees;

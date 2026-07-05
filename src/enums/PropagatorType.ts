@@ -28,6 +28,7 @@ export enum PropagatorType {
   /** Dormand-Prince 5(4) adaptive numerical propagator. */
   DP54 = 'DP54',
   /** @deprecated Use DP54 instead. */
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values -- intentional deprecated alias of DP54
   DORMAND_PRINCE = 'DP54',
   /** Runge-Kutta 8(9) adaptive numerical propagator. */
   RK89 = 'RK89',

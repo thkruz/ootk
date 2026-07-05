@@ -15,8 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable require-jsdoc */
-/* eslint-disable func-style */
+
 import { evalPoly } from '../main';
 import { DownhillSimplex } from './DownhillSimplex';
 import { PolynomicalRegressionResult } from './internal/PolynomicalRegressionResult';

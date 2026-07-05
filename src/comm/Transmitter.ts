@@ -188,7 +188,7 @@ export class Transmitter extends CommunicationDevice {
 
     return {
       eirp: this.eirp,
-      fspl: fspl,
+      fspl,
       receivedPower,
       snr,
       distance,
@@ -322,7 +322,7 @@ export class Transmitter extends CommunicationDevice {
 
   override toString(): string {
     const lines = [
-      `[Transmitter]`,
+      '[Transmitter]',
       `  ID: ${this.id}`,
       `  Name: ${this.name}`,
       `  Frequency: ${(this.frequency / 1e9).toFixed(3)} GHz`,

@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable class-methods-use-this */
+
 import { Earth } from '../body/Earth';
 import { Kilometers, KilometersPerSecond, Radians, Vector3D } from '../main';
 import { Geodetic } from './Geodetic';

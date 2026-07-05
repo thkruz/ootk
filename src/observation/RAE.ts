@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable no-undefined */
+
 import { ITRF } from '../coordinate/ITRF';
 import { J2000 } from '../coordinate/J2000';
 import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';

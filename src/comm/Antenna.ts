@@ -107,7 +107,7 @@ export class Antenna {
     const wavelength = 299792458 / frequencyHz;
 
     // Gain = efficiency * (pi * D / lambda)^2
-    const gainLinear = efficiency * Math.pow((Math.PI * diameterMeters) / wavelength, 2);
+    const gainLinear = efficiency * ((Math.PI * diameterMeters) / wavelength) ** 2;
     const gainDb = 10 * Math.log10(gainLinear);
 
     // Approximate beamwidth: 70 * lambda / D (degrees)
@@ -139,7 +139,7 @@ export class Antenna {
     // This gives -3 dB at the half-power beamwidth
     const halfPowerAngle = this.beamwidth / 2;
     const normalizedAngle = offAxisAngleDegrees / halfPowerAngle;
-    const loss = -3 * Math.pow(normalizedAngle, 2);
+    const loss = -3 * normalizedAngle ** 2;
 
     return loss as Decibels;
   }

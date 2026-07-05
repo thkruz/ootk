@@ -276,7 +276,7 @@ export abstract class FormatTle {
 
     // Find exponent such that mantissa is in [0.1, 1.0)
     let exponent = Math.floor(Math.log10(absVal)) + 1;
-    let mantissa = absVal / Math.pow(10, exponent);
+    let mantissa = absVal / 10 ** exponent;
 
     // Guard against floating-point edge cases
     if (mantissa >= 1) {

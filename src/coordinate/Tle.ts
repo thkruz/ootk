@@ -1,4 +1,4 @@
-/* eslint-disable max-lines */
+
 /**
  * @author Theodore Kruczek
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
@@ -42,7 +42,7 @@ import {
   TleDataFull,
   TleLine1,
   TleLine2,
-} from '../types/types.js';
+} from '../types/types';
 import { DEG2RAD, earthGravityParam, RAD2DEG, secondsPerDay, TAU } from '../utils/constants';
 import { getDayOfYear, newtonNu, toPrecision } from '../utils/functions';
 import { ClassicalElements, FormatTle, TEME } from './index';
@@ -944,24 +944,18 @@ export class Tle {
     const isVimpel = line1.classification === 'V';
 
     if (!isVimpel && line1.satNum !== line2.satNum) {
-      console.info('Line 1 satNum:', line1.satNum);
-      console.info('Line 2 satNum:', line2.satNum);
       throw new ParseError('Satellite numbers do not match between TLE lines', 'TLE');
     }
 
     if (!isVimpel && line1.satNumRaw !== line2.satNumRaw) {
-      console.info('Line 1 satNumRaw:', line1.satNumRaw);
-      console.info('Line 2 satNumRaw:', line2.satNumRaw);
       throw new ParseError('Raw satellite numbers do not match between TLE lines', 'TLE');
     }
 
     if (line1.lineNumber1 !== 1) {
-      console.info('Line 1 line number:', line1.lineNumber1);
       throw new ParseError('First TLE line number must be 1', 'TLE');
     }
 
     if (line2.lineNumber2 !== 2) {
-      console.info('Line 2 line number:', line2.lineNumber2);
       throw new ParseError('Second TLE line number must be 2', 'TLE');
     }
 

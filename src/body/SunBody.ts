@@ -19,7 +19,7 @@ import {
   Body,
   MakeTime,
   Observer,
-  SearchRiseSet
+  SearchRiseSet,
 } from 'astronomy-engine';
 import { GroundObject } from '../objects/GroundObject';
 import { Vector3D } from '../operations/Vector3D';

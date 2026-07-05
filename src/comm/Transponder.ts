@@ -260,8 +260,8 @@ export class Transponder extends CommunicationDevice {
     // For a bent-pipe transponder, the end-to-end SNR is limited by the
     // weaker of the two links. More precisely:
     // 1/(SNR_total) = 1/(SNR_up) + 1/(SNR_down)
-    const snrUpLinear = Math.pow(10, uplinkBudget.snr / 10);
-    const snrDownLinear = Math.pow(10, downlinkBudget.snr / 10);
+    const snrUpLinear = 10 ** (uplinkBudget.snr / 10);
+    const snrDownLinear = 10 ** (downlinkBudget.snr / 10);
     const snrTotalLinear = 1 / (1 / snrUpLinear + 1 / snrDownLinear);
     const endToEndSnr = (10 * Math.log10(snrTotalLinear)) as Decibels;
 
@@ -341,7 +341,7 @@ export class Transponder extends CommunicationDevice {
 
   override toString(): string {
     const lines = [
-      `[Transponder]`,
+      '[Transponder]',
       `  ID: ${this.id}`,
       `  Name: ${this.name}`,
       `  Uplink: ${(this.uplinkFrequency / 1e9).toFixed(3)} GHz`,

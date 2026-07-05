@@ -162,7 +162,7 @@ export function wattsToDbw(watts: Watts): Dbw {
  * @returns Power in Watts
  */
 export function dbwToWatts(dbw: Dbw): Watts {
-  return Math.pow(10, dbw / 10) as Watts;
+  return (10 ** (dbw / 10)) as Watts;
 }
 
 /**

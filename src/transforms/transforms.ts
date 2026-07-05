@@ -18,7 +18,7 @@ import {
   SezVec3,
   Sgp4,
   TAU,
-  TemeVec3
+  TemeVec3,
 } from '../main';
 import type { GroundObject } from '../objects/GroundObject';
 import type { PhasedArrayRadar } from '../sensor/PhasedArrayRadar';
@@ -462,7 +462,7 @@ export function eci2rae(
 export function calcInertAz(lat: Degrees, inc: Degrees): Degrees {
   if (inc < lat) {
     throw new ValidationError(
-      `Inclination must be greater than or equal to latitude`,
+      'Inclination must be greater than or equal to latitude',
       'inclination',
       { inclination: inc, latitude: lat },
     );

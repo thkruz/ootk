@@ -19,7 +19,7 @@ export type {
   CommunicationDeviceInterface,
   HistoricalState,
   SensorInterface,
-  SerializedObject
+  SerializedObject,
 } from './ObjectTypes';
 export { Satellite } from './Satellite';
 export { SpaceObject } from './SpaceObject';

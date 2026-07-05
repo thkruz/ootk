@@ -18,7 +18,7 @@
 import { ValidationError } from '../errors';
 import {
   EpochUTC, ForceModel, J2000, Kilometers, KilometersPerSecond, RkCheckpoint, RkResult, Seconds,
-  Thrust, Vector, Vector3D, VerletBlendInterpolator
+  Thrust, Vector, Vector3D, VerletBlendInterpolator,
 } from '../main';
 
 import { Propagator } from './Propagator';

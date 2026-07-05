@@ -19,7 +19,7 @@ import { EpochUTC } from '../time/EpochUTC';
 import { ObservationRadar } from '../observation/ObservationRadar';
 import { RAE } from '../observation/RAE';
 import type { SpaceObject } from '../objects/SpaceObject';
-import { Degrees, Radians } from '../types/types';
+import { Degrees, Kilometers, Radians } from '../types/types';
 import { DEG2RAD } from '../utils/constants';
 import { Sensor, SensorParams } from './Sensor';
 
@@ -127,7 +127,7 @@ export abstract class RadarSensor extends Sensor {
   ): RAE {
     return RAE.fromDegrees(
       epoch,
-      range as any,
+      range as Kilometers,
       azimuth,
       elevation,
     );

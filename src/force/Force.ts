@@ -16,8 +16,7 @@
  */
 
 import { J2000, Vector3D } from '../main';
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable class-methods-use-this */
+
 
 // / Base class for perturbation forces.
 export abstract class Force {

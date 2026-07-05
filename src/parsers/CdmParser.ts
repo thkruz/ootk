@@ -61,7 +61,7 @@ export class CdmParser {
    */
   static parse(content: string): ParsedCdm {
     const lines = content
-      .split(/\r?\n/)
+      .split(/\r?\n/u)
       .map((l) => l.trim())
       .filter((l) => l.length > 0 && !l.startsWith('COMMENT'));
 
@@ -221,7 +221,7 @@ export class CdmParser {
       let value = line.substring(eqIndex + 1).trim();
 
       // Remove units in brackets [km], [km/s], etc.
-      value = value.replace(/\s*\[.*?\]\s*$/, '').trim();
+      value = value.replace(/\s*\[.*?\]\s*$/u, '').trim();
 
       // Track which object we're parsing
       if (key === 'OBJECT') {

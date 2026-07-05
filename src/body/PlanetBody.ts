@@ -17,8 +17,7 @@
 
 import { Body, BaryState, Illumination, MakeTime } from 'astronomy-engine';
 import { Vector3D } from '../operations/Vector3D';
-import { Degrees, Kilometers, KilometersPerSecond } from '../types/types';
-import { SpaceObjectType } from '../types/types';
+import { Degrees, Kilometers, KilometersPerSecond, SpaceObjectType } from '../types/types';
 import { KM_PER_AU } from '../utils/constants';
 import { CelestialBody, CelestialBodyParams } from './CelestialBody';
 import { CelestialBodyType } from './CelestialBodyType';

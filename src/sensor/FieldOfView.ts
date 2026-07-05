@@ -118,9 +118,9 @@ export function boresightFrameFromAzElRoll(az: Radians, el: Radians, roll: Radia
   const sinAz = Math.sin(az);
 
   const b = new Vector3D(
-    cosEl * sinAz,  // East component
-    cosEl * cosAz,  // North component
-    sinEl,          // Up component
+    cosEl * sinAz, // East component
+    cosEl * cosAz, // North component
+    sinEl, // Up component
   );
 
   // Handle zenith singularity (elevation = 90°)
@@ -177,9 +177,9 @@ function azElToUnitVector(az: Radians, el: Radians): Vector3D {
   const cosEl = Math.cos(el);
 
   return new Vector3D(
-    cosEl * Math.sin(az),  // East
-    cosEl * Math.cos(az),  // North
-    Math.sin(el),          // Up
+    cosEl * Math.sin(az), // East
+    cosEl * Math.cos(az), // North
+    Math.sin(el), // Up
   );
 }
 

@@ -145,7 +145,7 @@ export class EpochUTC extends Epoch {
     const dateFields = fields[0].split('/') as [string, string];
     const day = parseInt(dateFields[0]);
     const year = parseInt(dateFields[1]);
-    // eslint-disable-next-line prefer-destructuring
+
     const timeField = fields[1];
     // Add day - 1 days in milliseconds to the epoch.
     const dts = new Date(`${year}-01-01T${timeField}Z`).getTime() + (day - 1) * MS_PER_DAY;

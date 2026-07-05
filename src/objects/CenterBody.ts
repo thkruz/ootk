@@ -51,7 +51,7 @@ export const CenterBodyMu: Record<CenterBody, number> = {
  * @returns The corresponding CenterBody enum value, defaults to EARTH
  */
 export function parseCenterBody(centerName: string): CenterBody {
-  const normalized = centerName.toUpperCase().trim().replace(/\s+/g, '_');
+  const normalized = centerName.toUpperCase().trim().replace(/\s+/gu, '_');
 
   // Direct match
   if (normalized in CenterBody) {

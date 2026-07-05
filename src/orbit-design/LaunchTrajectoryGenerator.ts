@@ -134,10 +134,10 @@ export class LaunchTrajectoryGenerator {
     const ascentDurationSec = LaunchTrajectoryGenerator.estimateAscentDuration_(insertionAltKm);
     const downrangeAtInsertionKm = LaunchTrajectoryGenerator.estimateDownrange_(insertionAltKm, ascentDurationSec);
 
-    const ascentStates = LaunchTrajectoryGenerator.generateAscentProfile_(
+    const ascentStates = LaunchTrajectoryGenerator.generateAscentProfile_({
       launchEpoch, launchLatDeg, launchLonDeg, launchAltKm, insertionAltKm,
-      azimuthRad, ascentDurationSec, downrangeAtInsertionKm, ascentStepSec,
-    );
+      azimuthRad, ascentDurationSec, downrangeKm: downrangeAtInsertionKm, stepSec: ascentStepSec,
+    });
 
     if (ascentStates.length === 0) {
       return { states: [], insertionIndex: -1 };
@@ -383,17 +383,21 @@ export class LaunchTrajectoryGenerator {
    * Uses Hermite splines for altitude and downrange distance to produce
    * a gravity-turn-like trajectory.
    */
-  private static generateAscentProfile_(
-    launchEpoch: EpochUTC,
-    launchLatDeg: number,
-    launchLonDeg: number,
-    launchAltKm: number,
-    insertionAltKm: number,
-    azimuthRad: number,
-    ascentDurationSec: number,
-    downrangeKm: number,
-    stepSec: number,
-  ): J2000[] {
+  private static generateAscentProfile_(params: {
+    launchEpoch: EpochUTC;
+    launchLatDeg: number;
+    launchLonDeg: number;
+    launchAltKm: number;
+    insertionAltKm: number;
+    azimuthRad: number;
+    ascentDurationSec: number;
+    downrangeKm: number;
+    stepSec: number;
+  }): J2000[] {
+    const {
+      launchEpoch, launchLatDeg, launchLonDeg, launchAltKm, insertionAltKm,
+      azimuthRad, ascentDurationSec, downrangeKm, stepSec,
+    } = params;
     const states: J2000[] = [];
     const nSteps = Math.ceil(ascentDurationSec / stepSec);
 

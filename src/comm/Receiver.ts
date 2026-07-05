@@ -143,7 +143,7 @@ export class Receiver extends CommunicationDevice {
    * Simplified: T_sys = T_ref * 10^(NF/10)
    */
   get systemTemperature(): number {
-    return 290 * Math.pow(10, this.noiseFigure / 10);
+    return 290 * 10 ** (this.noiseFigure / 10);
   }
 
   /**
@@ -239,7 +239,7 @@ export class Receiver extends CommunicationDevice {
 
   override toString(): string {
     const lines = [
-      `[Receiver]`,
+      '[Receiver]',
       `  ID: ${this.id}`,
       `  Name: ${this.name}`,
       `  Frequency: ${(this.frequency / 1e9).toFixed(3)} GHz`,

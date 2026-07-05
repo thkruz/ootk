@@ -16,7 +16,7 @@
  */
 
 import { DataHandler, Earth, ITRF, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../main';
-/* eslint-disable class-methods-use-this */
+
 // / Complex Earth gravity model, accounting for EGM-96 zonal, sectoral, and
 
 import { Force } from './Force';
@@ -64,7 +64,7 @@ export class EarthGravity implements Force {
     return state.position.scale(-Earth.mu / (rMag * rMag * rMag));
   }
 
-  // eslint-disable-next-line max-statements
+
   private aspherical_(state: J2000): Vector3D {
     const posEcef = state.toITRF().position;
     const ri = 1.0 / posEcef.magnitude();
@@ -98,7 +98,7 @@ export class EarthGravity implements Force {
 
     const dh = DataHandler.getInstance();
 
-    for (let n = 2, nm1 = 1, nm2 = 0, np1 = 3; n <= this.degree; nm2++, nm1++, n++, np1++) {
+    for (let n = 2, nm1 = 1, np1 = 3; n <= this.degree; nm1++, n++, np1++) {
       const twonm1 = 2.0 * n - 1.0;
 
       reorn *= reor;
@@ -120,7 +120,7 @@ export class EarthGravity implements Force {
 
         const lim = n < this.order ? n : this.order;
 
-        for (let m = 1, mm1 = 0, mm2 = -1, mp1 = 2, mp2 = 3; m <= lim; mm2++, mm1++, m++, mp1++, mp2++) {
+        for (let m = 1, mm1 = 0, mp1 = 2, mp2 = 3; m <= lim; mm1++, m++, mp1++, mp2++) {
           pN[mp1] = pNm2[mp1] + twonm1 * pNm1[m];
 
           const dm = m;

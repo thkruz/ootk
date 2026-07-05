@@ -44,7 +44,7 @@ export class OemParser {
    */
   static parse(content: string): ParsedOem {
     const lines = content
-      .split(/\r?\n/)
+      .split(/\r?\n/u)
       .map((l) => l.trim())
       .filter((l) => l.length > 0);
 
@@ -154,12 +154,12 @@ export class OemParser {
       }
 
       // Handle various data block markers (OEM 1.0 and 2.0 formats)
-      if (line === 'DATA_START' || line.match(/^EPHEMERIS_DATA_BLOCK/i)) {
+      if (line === 'DATA_START' || line.match(/^EPHEMERIS_DATA_BLOCK/iu)) {
         inData = true;
         continue;
       }
 
-      if (line === 'DATA_STOP' || line.match(/^EPHEMERIS_DATA_BLOCK.*STOP/i)) {
+      if (line === 'DATA_STOP' || line.match(/^EPHEMERIS_DATA_BLOCK.*STOP/iu)) {
         inData = false;
         if (currentBlock) {
           if (covarianceData.length > 0) {
@@ -225,7 +225,7 @@ export class OemParser {
   }
 
   private static parseStateVector_(line: string): J2000 | null {
-    const parts = line.trim().split(/\s+/);
+    const parts = line.trim().split(/\s+/u);
 
     // Need at least: epoch x y z vx vy vz
     if (parts.length < 7) {
@@ -255,7 +255,7 @@ export class OemParser {
   private static parseCovarianceLine_(line: string): OemCovarianceMatrix | null {
     // Covariance parsing is minimal - just store the raw data
     // Full processing is deferred to future enhancement
-    const parts = line.trim().split(/\s+/);
+    const parts = line.trim().split(/\s+/u);
 
     if (parts.length < 2) {
       return null;

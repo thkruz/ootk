@@ -21,18 +21,18 @@
  */
 
 // NOTE: This file is meant to maintain as much of the original format as possible.
-/* eslint-disable complexity */
+
 /* eslint-disable max-statements */
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-lines */
-/* eslint-disable @typescript-eslint/no-loss-of-precision */
+
 
 import { Sgp4OpsMode } from '../enums/Sgp4OpsMode';
 import { OmmParsedDataFormat } from '../interfaces/OmmFormat';
 import { Tle } from '../main';
 import {
   GreenwichMeanSiderealTime, Kilometers, KilometersPerSecond, SatelliteRecord, StateVectorSgp4, Vec3Flat,
-} from '../types/types.js';
+} from '../types/types';
 import { DEG2RAD, PI, TAU, temp4, x2o3 } from '../utils/constants';
 import { Sgp4ErrorCode } from './sgp4-error';
 

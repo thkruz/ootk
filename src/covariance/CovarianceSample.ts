@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable class-methods-use-this */
+
 import { ForceModel } from '../force/ForceModel';
 import { Thrust } from '../force/Thrust';
 import {

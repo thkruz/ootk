@@ -110,15 +110,13 @@ export class PlaneChangeBurn {
     } else if (preferredNode === 'descending') {
       timeToBurn = descending;
       nodeType = 'descending';
-    } else {
       // 'nearest' — pick whichever node comes first
-      if (ascending <= descending) {
-        timeToBurn = ascending;
-        nodeType = 'ascending';
-      } else {
-        timeToBurn = descending;
-        nodeType = 'descending';
-      }
+    } else if (ascending <= descending) {
+      timeToBurn = ascending;
+      nodeType = 'ascending';
+    } else {
+      timeToBurn = descending;
+      nodeType = 'descending';
     }
 
     // Add delay orbits

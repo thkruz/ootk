@@ -304,7 +304,7 @@ export class Beacon extends Transmitter {
 
   override toString(): string {
     const lines = [
-      `[Beacon]`,
+      '[Beacon]',
       `  ID: ${this.id}`,
       `  Name: ${this.name}`,
       `  Frequency: ${(this.frequency / 1e6).toFixed(3)} MHz`,

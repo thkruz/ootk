@@ -114,7 +114,7 @@ export class PhasedArrayRadar extends RadarSensor {
    */
   getFacesInFov(rae: RaeVec3<Kilometers, Degrees>): number[] {
     return this.faceFovs
-      .map((fov, i) => fov.contains(rae) ? i : -1)
+      .map((fov, i) => (fov.contains(rae) ? i : -1))
       .filter((i) => i >= 0);
   }
 

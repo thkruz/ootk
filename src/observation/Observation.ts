@@ -20,7 +20,7 @@ import { Propagator } from '../propagator/Propagator';
 import { RandomGaussianSource } from './../operations/RandomGaussianSource';
 import { PropagatorPairs } from './PropagatorPairs';
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
+
 /**
  * Observation data.
  */

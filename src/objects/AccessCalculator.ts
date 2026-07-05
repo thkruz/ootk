@@ -20,8 +20,7 @@ import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { ecef2rae } from '../transforms/transforms';
 import { Degrees, Kilometers, Meters, RaeVec3 } from '../types/types';
-import { AccessWindow } from './AccessWindow';
-import type { AccessConstraints, AccessState } from './AccessWindow';
+import { AccessWindow, type AccessConstraints, type AccessState } from './AccessWindow';
 import type { GroundObject } from './GroundObject';
 import type { SpaceObject } from './SpaceObject';
 
