@@ -82,7 +82,7 @@ describe('TwoBurnOrbitTransfer', () => {
       const tTrans = 5000 as Seconds;
       const transfer = new TwoBurnOrbitTransfer(7.5, 7.8, 0.3, 0.2, tTrans);
 
-      const [mA, mB] = transfer.toManeuvers(epoch);
+      const [, mB] = transfer.toManeuvers(epoch);
 
       expect(mB.center.toDateTime()).toEqual(epoch.roll(tTrans).toDateTime());
     });

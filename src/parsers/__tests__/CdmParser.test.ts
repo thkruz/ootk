@@ -5,8 +5,6 @@
 
 import {
   CdmParser,
-  EpochUTC,
-  Kilometers,
   ParseError,
 } from '../../main';
 
@@ -199,7 +197,7 @@ Z_DOT = 0.001
     });
 
     it('should handle Windows line endings', () => {
-      const windowsContent = validCdmContent.replace(/\n/g, '\r\n');
+      const windowsContent = validCdmContent.replace(/\n/gu, '\r\n');
       const parsed = CdmParser.parse(windowsContent);
 
       expect(parsed.header.CCSDS_CDM_VERS).toBe('1.0');

@@ -43,7 +43,7 @@ describe('createCovarianceFromTle', () => {
   it('should parse TLE and convert to J2000', () => {
     createCovarianceFromTle(tleLine1, tleLine2);
 
-    // eslint-disable-next-line no-console
+
     expect(console.log).toHaveBeenCalled();
   });
 });

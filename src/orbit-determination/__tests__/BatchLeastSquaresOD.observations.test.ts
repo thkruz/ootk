@@ -9,12 +9,10 @@ import {
   Degrees,
   J2000,
   Kilometers,
-  KilometersPerSecond,
   RAE,
   RadecTopocentric,
   Radians,
   Seconds,
-  Vector3D,
 } from '@src/main';
 import { GroundStation } from '../../objects/GroundStation';
 import { Observation } from '@src/observation/Observation';

@@ -1,5 +1,5 @@
-/* eslint-disable max-lines */
-/* eslint-disable no-undefined */
+
+
 /**
  * @file LevenbergMarquardtOD test suite
  * @description Comprehensive tests for Levenberg-Marquardt orbit determination
@@ -205,7 +205,7 @@ function validateStateAccuracy(
  * ============================================================================
  */
 
-// eslint-disable-next-line max-lines-per-function
+
 describe('LevenbergMarquardtOD', () => {
   /*
    * ==========================================================================

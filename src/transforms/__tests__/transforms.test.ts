@@ -41,7 +41,7 @@ it('should convert valid RAE coordinates to RAE Off Boresight', () => {
   expect(raeOffBoresightCoordinates).toMatchSnapshot();
 });
 
-// eslint-disable-next-line multiline-comment-style
+
 // rae2ruv
 // it('should convert valid RAE coordinates to RUV', () => {
 //   const rae = {

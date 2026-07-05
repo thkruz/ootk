@@ -21,20 +21,14 @@ describe('CatalogScreener', () => {
   const tleLine1C = '1 25544U 98067A   25019.50000000  .00016717  00000-0  10270-3 0  9007';
   const tleLine2C = '2 25544  51.6400 339.8200 0002571  90.5200 269.6200 15.50000000000000';
 
-  // High altitude TLE (different orbital shell)
-  const tleLine1High = '1 36516U 10013A   25019.50000000 -.00000113  00000-0  00000-0 0  9996';
-  const tleLine2High = '2 36516   0.0182 266.3245 0000789 324.4011 194.1932  1.00273272 54312';
-
   let tleA: Tle;
   let tleB: Tle;
   let tleC: Tle;
-  let tleHigh: Tle;
 
   beforeEach(() => {
     tleA = new Tle(tleLine1A, tleLine2A);
     tleB = new Tle(tleLine1B, tleLine2B);
     tleC = new Tle(tleLine1C, tleLine2C);
-    tleHigh = new Tle(tleLine1High, tleLine2High);
   });
 
   describe('screenOneToMany', () => {

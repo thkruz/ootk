@@ -163,7 +163,7 @@ describe('LaunchTrajectoryGenerator', () => {
       const rPerigee = Earth.radiusMean + 500; // Molniya perigee
       const rApogee = Earth.radiusMean + 40000; // Molniya apogee
 
-      const { dv1, dv2, tTransfer } = LaunchTrajectoryGenerator.computeGeneralizedTransfer(
+      const { dv1, tTransfer } = LaunchTrajectoryGenerator.computeGeneralizedTransfer(
         rPark, rPerigee, rApogee,
       );
 
@@ -391,7 +391,7 @@ describe('LaunchTrajectoryGenerator', () => {
         if (posDelta > maxPosChangeKm) {
           posJumpCount++;
           if (posJumpCount <= 5) {
-            // eslint-disable-next-line no-console
+
             console.log(
               `  POS JUMP [${label}] T+${(t - startPosix).toFixed(1)}s: ` +
               `${posDelta.toFixed(4)} km (alt ${(state.position.magnitude() - Earth.radiusMean).toFixed(1)} km)`,
@@ -412,7 +412,7 @@ describe('LaunchTrajectoryGenerator', () => {
         if (velDelta > maxVelChangeKmS) {
           velJumpCount++;
           if (velJumpCount <= 5) {
-            // eslint-disable-next-line no-console
+
             console.log(
               `  VEL JUMP [${label}] T+${(t - startPosix).toFixed(1)}s: ` +
               `${(velDelta * 1000).toFixed(4)} m/s (|v| ${state.velocity.magnitude().toFixed(4)} km/s)`,
@@ -423,7 +423,7 @@ describe('LaunchTrajectoryGenerator', () => {
         prevState = state;
       }
 
-      // eslint-disable-next-line no-console
+
       console.log(
         `[${label}] ${totalSamples} samples @ ${dt}s | ` +
         `worst pos ${worstPosJumpKm.toFixed(6)} km @ T+${worstPosJumpTime.toFixed(1)}s | ` +
@@ -807,7 +807,7 @@ describe('LaunchTrajectoryGenerator', () => {
         }
       }
 
-      // eslint-disable-next-line no-console
+
       console.log(`Boundary index: ${boundaryIndex} out of ${states.length} total states`);
       expect(boundaryIndex).toBeGreaterThan(0);
 
@@ -815,11 +815,11 @@ describe('LaunchTrajectoryGenerator', () => {
       const startAscent = Math.max(0, boundaryIndex - 4);
       const endOrbital = Math.min(states.length - 1, boundaryIndex + 5);
 
-      // eslint-disable-next-line no-console
+
       console.log('\n=== LAST 5 ASCENT STATES ===');
-      // eslint-disable-next-line no-console
+
       console.log('idx | T offset (s) | Pos Mag (km) | Alt (km) | Vel Mag (km/s) | dt (s)');
-      // eslint-disable-next-line no-console
+
       console.log('----|-------------|-------------|---------|---------------|-------');
 
       const boundaryStates: {
@@ -842,7 +842,8 @@ describe('LaunchTrajectoryGenerator', () => {
         boundaryStates.push({ index: i, tOffset, posMag, alt, velMag, dt });
 
         const label = i <= boundaryIndex ? 'ASCENT' : 'ORBIT ';
-        // eslint-disable-next-line no-console
+
+
         console.log(
           `${label} ${String(i).padStart(4)} | ${tOffset.toFixed(1).padStart(11)} | ${posMag.toFixed(3).padStart(11)} | ${alt.toFixed(3).padStart(7)} | ${velMag.toFixed(6).padStart(13)} | ${dt.toFixed(1).padStart(5)}`,
         );

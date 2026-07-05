@@ -16,7 +16,7 @@ class TestStateInterpolator extends StateInterpolator {
     return new EpochWindow(this.start_, this.end_);
   }
 
-  override interpolate(epoch: EpochUTC): J2000 | null {
+  override interpolate(_epoch: EpochUTC): J2000 | null {
     return null;
   }
 }

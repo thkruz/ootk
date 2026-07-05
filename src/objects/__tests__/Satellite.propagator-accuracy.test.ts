@@ -920,18 +920,18 @@ describe('Propagator accuracy vs SP3 laser ranging truth (NORAD 16908 — AJISAI
 
     // Position roundtrip error < 1 meter
     const posErr = Math.sqrt(
-      (itrf.position.x - itrfBack.position.x) ** 2
-      + (itrf.position.y - itrfBack.position.y) ** 2
-      + (itrf.position.z - itrfBack.position.z) ** 2,
+      (itrf.position.x - itrfBack.position.x) ** 2 +
+      (itrf.position.y - itrfBack.position.y) ** 2 +
+      (itrf.position.z - itrfBack.position.z) ** 2,
     );
 
     expect(posErr).toBeLessThan(0.001);
 
     // Velocity roundtrip error < 1 mm/s
     const velErr = Math.sqrt(
-      (itrf.velocity.x - itrfBack.velocity.x) ** 2
-      + (itrf.velocity.y - itrfBack.velocity.y) ** 2
-      + (itrf.velocity.z - itrfBack.velocity.z) ** 2,
+      (itrf.velocity.x - itrfBack.velocity.x) ** 2 +
+      (itrf.velocity.y - itrfBack.velocity.y) ** 2 +
+      (itrf.velocity.z - itrfBack.velocity.z) ** 2,
     );
 
     expect(velErr).toBeLessThan(0.000001);
@@ -1333,7 +1333,7 @@ describe('Propagator accuracy vs SP3 laser ranging truth (NORAD 16908 — AJISAI
       '  8x8+TB+SRP    RK89 numerical, 8×8 + third-body + SRP (full model)',
       '  DP54 4x4      Dormand-Prince 5(4) numerical, 4×4 harmonics',
       '',
-      `  AJISAI SRP params: mass=685 kg, area=3.63 m², Cr=1.13`,
+      '  AJISAI SRP params: mass=685 kg, area=3.63 m², Cr=1.13',
       '',
       'Note: Numerical propagators initialized from SP3 start (ITRF → J2000).',
       '      SGP4 backward uses TLE epoch 2026-02-26, propagating back to SP3 window.',

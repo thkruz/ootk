@@ -62,8 +62,8 @@ describe('OrbitFinder TLE generation with extended sccNums', () => {
 
   it('keeps producing 5-char alpha-5 satnums when the TLE carries them', () => {
     // Build a TLE whose satnum columns hold a real alpha-5 id "T0001".
-    const alpha5Tle1 = `1 T0001U 98067A   22203.46960946  .00003068  00000+0  61583-4 0  9996` as TleLine1;
-    const alpha5Tle2 = `2 T0001  51.6415 161.8339 0005168  35.9781  54.7009 15.50067047350657` as TleLine2;
+    const alpha5Tle1 = '1 T0001U 98067A   22203.46960946  .00003068  00000+0  61583-4 0  9996' as TleLine1;
+    const alpha5Tle2 = '2 T0001  51.6415 161.8339 0005168  35.9781  54.7009 15.50067047350657' as TleLine2;
     const sat = new Satellite({ tle1: alpha5Tle1, tle2: alpha5Tle2 });
 
     const finder = new OrbitFinder(sat, 0 as Degrees, 0 as Degrees, 'N', now);

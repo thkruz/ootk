@@ -4,7 +4,6 @@
  */
 
 import {
-  ConjunctionAssessment,
   ConjunctionEvent,
   CovarianceFrame,
   CovarianceRealism,
@@ -15,7 +14,6 @@ import {
   Matrix,
   RIC,
   StateCovariance,
-  Tle,
   Vector3D,
 } from '../../main';
 

@@ -1,4 +1,4 @@
-/* eslint-disable complexity */
+
 /**
  * @file GoodingIOD test suite
  * @description Tests for Gooding angles-only Initial Orbit Determination
@@ -16,7 +16,7 @@ import { GoodingIOD, ModifiedGoodingIOD } from '@src/orbit-determination';
 import { KeplerPropagator } from '@src/propagator/KeplerPropagator';
 import { EpochUTC } from '@src/time';
 
-// eslint-disable-next-line max-lines-per-function
+
 describe('GoodingIOD', () => {
   /**
    * Test based on real satellite observations

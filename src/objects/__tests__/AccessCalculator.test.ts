@@ -27,15 +27,6 @@ describe('AccessCalculator', () => {
     alt: 0.1 as Kilometers,
   });
 
-  // Ground station at equator
-  const equatorStation = new GroundStation({
-    id: 8002,
-    name: 'Equator Station',
-    lat: 0 as Degrees,
-    lon: 0 as Degrees,
-    alt: 0 as Kilometers,
-  });
-
   // Fixed epoch for reproducible tests
   const testEpoch = new Date('2022-07-22T12:00:00Z');
 

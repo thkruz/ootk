@@ -1,4 +1,4 @@
-import { Degrees, Kilometers, RAD2DEG, ValidationError } from '../../main';
+import { Degrees, Kilometers, ValidationError } from '../../main';
 import { ConstellationGenerator } from '../ConstellationGenerator';
 
 describe('ConstellationGenerator', () => {

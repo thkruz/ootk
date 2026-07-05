@@ -15,7 +15,6 @@ import {
   Earth,
   J2000,
   Kilometers,
-  KilometersPerSecond,
   Radians,
   Seconds,
   Vector3D,
@@ -399,10 +398,9 @@ describe('LambertIOD', () => {
       const t2 = startEpoch.roll(300 as Seconds);
 
       const iod = new LambertIOD();
-      const result = iod.estimate(p1, p2, t1, t2);
 
-      // Should return null or handle gracefully
-      // (exact behavior depends on implementation)
+      // Should return null or handle gracefully (exact behavior depends on implementation)
+      expect(() => iod.estimate(p1, p2, t1, t2)).not.toThrow();
     });
 
     it('should handle nearly opposite positions (near-180 degree transfer)', () => {

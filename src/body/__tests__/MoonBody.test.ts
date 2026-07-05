@@ -128,8 +128,10 @@ describe('MoonBody', () => {
       const phaseInfo = Moon.getPhase(testDate);
 
       expect(typeof phaseInfo.phase.name).toBe('string');
-      expect(['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous',
-        'Full Moon', 'Waning Gibbous', 'Third Quarter', 'Waning Crescent']).toContain(phaseInfo.phase.name);
+      expect([
+        'New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous',
+        'Full Moon', 'Waning Gibbous', 'Third Quarter', 'Waning Crescent',
+      ]).toContain(phaseInfo.phase.name);
     });
 
     it('should return full moon for full moon date', () => {

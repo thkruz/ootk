@@ -44,14 +44,14 @@ describe('Sensor parent validation', () => {
     const sensor = createOrphanSensor();
 
     expect(() => sensor.parent).toThrow(ValidationError);
-    expect(() => sensor.parent).toThrow(/no parent platform assigned/);
+    expect(() => sensor.parent).toThrow(/no parent platform assigned/u);
   });
 
   it('should throw ValidationError when calling getJ2000 without parent', () => {
     const sensor = createOrphanSensor();
 
     expect(() => sensor.getJ2000()).toThrow(ValidationError);
-    expect(() => sensor.getJ2000()).toThrow(/getJ2000/);
+    expect(() => sensor.getJ2000()).toThrow(/getJ2000/u);
   });
 
   it('should throw ValidationError when calling getRae without parent', () => {
@@ -59,7 +59,7 @@ describe('Sensor parent validation', () => {
     const sat = new Satellite({ tle1, tle2 });
 
     expect(() => sensor.getRae(sat)).toThrow(ValidationError);
-    expect(() => sensor.getRae(sat)).toThrow(/getRae/);
+    expect(() => sensor.getRae(sat)).toThrow(/getRae/u);
   });
 
   it('should throw ValidationError when calling calculatePasses without parent', () => {
@@ -86,7 +86,8 @@ describe('Sensor parent validation', () => {
     const sensor = createOrphanSensor();
 
     try {
-      sensor.parent;
+      const _parent = sensor.parent;
+
       fail('Expected an error to be thrown');
     } catch (e) {
       expect((e as ValidationError).message).toContain('Test Sensor');
@@ -109,7 +110,8 @@ describe('Sensor parent validation', () => {
     const sensor = createOrphanSensor();
 
     try {
-      sensor.parent;
+      const _parent = sensor.parent;
+
       fail('Expected an error to be thrown');
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);

@@ -1,7 +1,6 @@
 import { SensorType } from '../../enums/SensorType';
 import { Satellite } from '../Satellite';
-import { TleLine1, TleLine2 } from '../../types/types';
-import { Degrees, Kilometers } from '../../types/types';
+import { TleLine1, TleLine2, Degrees, Kilometers } from '../../types/types';
 import { OpticalSensor } from '../../sensor/OpticalSensor';
 import { Antenna } from '../../comm/Antenna';
 import { Decibels, Hertz, Watts } from '../../comm/CommTypes';

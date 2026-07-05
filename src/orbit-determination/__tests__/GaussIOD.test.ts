@@ -15,7 +15,7 @@ import { GaussIOD } from '@src/orbit-determination/GaussIOD';
 import { KeplerPropagator } from '@src/propagator/KeplerPropagator';
 import { EpochUTC } from '@src/time';
 
-// eslint-disable-next-line max-lines-per-function
+
 describe('GaussIOD', () => {
   const mu = Earth.mu;
 

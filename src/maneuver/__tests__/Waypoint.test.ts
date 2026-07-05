@@ -285,6 +285,7 @@ describe('Waypoint', () => {
           mockInterceptor.position,
           new Vector3D(0.1 as KilometersPerSecond, 7.5 as KilometersPerSecond, 0.1 as KilometersPerSecond),
         );
+
         vi.spyOn(LambertIOD.prototype, 'estimate')
           .mockReturnValue(mockLambertResult);
 
@@ -334,6 +335,7 @@ describe('Waypoint', () => {
           mockInterceptor.position,
           new Vector3D(0.1 as KilometersPerSecond, 7.5 as KilometersPerSecond, 0.1 as KilometersPerSecond),
         );
+
         vi.spyOn(LambertIOD.prototype, 'estimate')
           .mockReturnValue(mockLambertResult);
 
@@ -378,6 +380,7 @@ describe('Waypoint', () => {
           mockInterceptor.position,
           new Vector3D(0.1 as KilometersPerSecond, 7.5 as KilometersPerSecond, 0.1 as KilometersPerSecond),
         );
+
         vi.spyOn(LambertIOD.prototype, 'estimate')
           .mockReturnValue(mockLambertResult);
 
@@ -414,7 +417,7 @@ describe('Waypoint', () => {
         const mockForceModel = new ForceModel();
         const mockTarget = {} as StateInterpolator;
 
-        const result = Waypoint['_refineManeuvers'](
+        const result = Waypoint._refineManeuvers(
           [],
           [],
           mockInterceptor,

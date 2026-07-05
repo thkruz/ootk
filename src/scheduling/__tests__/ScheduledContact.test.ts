@@ -7,7 +7,7 @@ import {
   TleLine1,
   TleLine2,
 } from '../../main';
-import { ScheduledContact, ScheduledContactParams } from '../ScheduledContact';
+import { ScheduledContact } from '../ScheduledContact';
 
 describe('ScheduledContact', () => {
   // ISS TLE for testing

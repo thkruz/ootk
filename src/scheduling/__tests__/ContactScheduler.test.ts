@@ -8,7 +8,7 @@ import {
   TleLine1,
   TleLine2,
 } from '../../main';
-import { ContactScheduler, ContactSelectionStrategy, ScheduleOptions } from '../ContactScheduler';
+import { ContactScheduler, ContactSelectionStrategy } from '../ContactScheduler';
 import { ScheduledContact } from '../ScheduledContact';
 
 describe('ContactScheduler', () => {
@@ -25,14 +25,6 @@ describe('ContactScheduler', () => {
     name: 'Station 1',
     lat: 38.9 as Degrees,
     lon: -77.0 as Degrees,
-    alt: 0.1 as Kilometers,
-  });
-
-  const station2 = new GroundStation({
-    id: 2,
-    name: 'Station 2',
-    lat: 40.0 as Degrees,
-    lon: -75.0 as Degrees,
     alt: 0.1 as Kilometers,
   });
 

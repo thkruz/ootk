@@ -143,7 +143,7 @@ CREATION_DATE = 2024-01-01
     });
 
     it('should handle Windows line endings', () => {
-      const windowsContent = sampleOemContent.replace(/\n/g, '\r\n');
+      const windowsContent = sampleOemContent.replace(/\n/gu, '\r\n');
       const parsed = OemParser.parse(windowsContent);
 
       expect(parsed.dataBlocks.length).toBe(1);

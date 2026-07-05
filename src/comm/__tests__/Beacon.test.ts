@@ -8,7 +8,6 @@ import {
   Antenna,
   Beacon,
   CommDeviceType,
-  Decibels,
   Hertz,
   ModulationType,
   ValidationError,

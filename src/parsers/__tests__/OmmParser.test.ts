@@ -180,8 +180,8 @@ USER_DEFINED_ATMOSPHERIC_MODEL = NRLMSISE-00
       const result = OmmParser.parse(fullOmmWithCovariance);
 
       expect(result.userDefined).toBeDefined();
-      expect(result.userDefined!['USER_DEFINED_EARTH_MODEL']).toBe('WGS-84');
-      expect(result.userDefined!['USER_DEFINED_ATMOSPHERIC_MODEL']).toBe('NRLMSISE-00');
+      expect(result.userDefined!.USER_DEFINED_EARTH_MODEL).toBe('WGS-84');
+      expect(result.userDefined!.USER_DEFINED_ATMOSPHERIC_MODEL).toBe('NRLMSISE-00');
     });
 
     it('should handle CRLF line endings', () => {
