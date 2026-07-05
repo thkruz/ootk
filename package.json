@@ -41,10 +41,10 @@
     "url": "git+https://github.com/thkruz/ootk.git"
   },
   "keywords": [
+    "space",
     "sgp4",
     "orbit",
     "toolkit",
-    "space",
     "satellite",
     "radar",
     "iod"
