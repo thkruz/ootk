@@ -890,7 +890,12 @@ export class Satellite extends SpaceObject {
    */
   override rae(observer: GroundObject, date?: Date, j?: number, gmst?: GreenwichMeanSiderealTime): RaeVec3<Kilometers, Degrees> | null {
     date ??= new Date();
-    gmst ??= Satellite.calculateTimeVariables_(date, this.satrec).gmst;
+    if (typeof j !== 'number' || typeof gmst !== 'number') {
+      const timeVariables = Satellite.calculateTimeVariables_(date, this.satrec, j, gmst);
+
+      j = timeVariables.j;
+      gmst = timeVariables.gmst;
+    }
     const eci = this.eci(date, j, gmst);
 
     if (!eci) {
@@ -1657,20 +1662,39 @@ export class Satellite extends SpaceObject {
     j?: number,
     gmst?: GreenwichMeanSiderealTime,
   ) {
-    j ??=
-      jday(
-        date.getUTCFullYear(),
-        date.getUTCMonth() + 1,
-        date.getUTCDate(),
-        date.getUTCHours(),
-        date.getUTCMinutes(),
-        date.getUTCSeconds(),
-      ) +
-      date.getUTCMilliseconds() * MILLISECONDS_TO_DAYS;
+    if (typeof j !== 'number') {
+      // Sweeping a whole catalog at one instant is the dominant call pattern,
+      // so memoize the date-only work (jday + gstime) for the last date seen.
+      const ms = date.getTime();
+
+      if (Satellite.timeVariablesCacheMs_ !== ms) {
+        const jNew =
+          jday(
+            date.getUTCFullYear(),
+            date.getUTCMonth() + 1,
+            date.getUTCDate(),
+            date.getUTCHours(),
+            date.getUTCMinutes(),
+            date.getUTCSeconds(),
+          ) +
+          date.getUTCMilliseconds() * MILLISECONDS_TO_DAYS;
+
+        Satellite.timeVariablesCacheMs_ = ms;
+        Satellite.timeVariablesCacheJ_ = jNew;
+        Satellite.timeVariablesCacheGmst_ = Sgp4.gstime(jNew);
+      }
+      j = Satellite.timeVariablesCacheJ_;
+      gmst ??= Satellite.timeVariablesCacheGmst_;
+    }
     gmst ??= Sgp4.gstime(j);
 
     const m = satrec ? (j - satrec.jdsatepoch) * MINUTES_PER_DAY : null;
 
     return { gmst, m, j };
   }
+
+  /** Single-entry memo for calculateTimeVariables_, keyed on Date.getTime() */
+  private static timeVariablesCacheMs_: number | null = null;
+  private static timeVariablesCacheJ_ = 0;
+  private static timeVariablesCacheGmst_ = 0 as GreenwichMeanSiderealTime;
 }
