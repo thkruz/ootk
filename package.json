@@ -21,7 +21,8 @@
   "scripts": {
     "build": "tsup",
     "clean": "node ./scripts/cleanup.mjs",
-    "circular": "madge --circular --extensions ts src/main.ts",
+    "circular": "node scripts/check-circular.mjs",
+    "circular:list": "madge --circular --extensions ts src/main.ts",
     "circular:image": "madge --circular --image circular-deps.svg --extensions ts src/main.ts",
     "lint": "npx eslint src",
     "lint:fix": "npx eslint src --fix",
@@ -33,8 +34,8 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "prepublishOnly": "npm run test:all",
-    "version": "npm run build && auto-changelog && git add CHANGELOG.md"
+    "prepare": "husky",
+    "prepublishOnly": "npm run test:all"
   },
   "repository": {
     "type": "git",
@@ -58,14 +59,19 @@
     "url": "https://github.com/thkruz/ootk/issues"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
     "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
     "@vitest/coverage-v8": "^4.0.18",
     "astronomy-engine": "^2.1.19",
     "auto-changelog": "^2.5.0",
+    "conventional-changelog-conventionalcommits": "^10.2.1",
     "eslint": "^9.39.1",
+    "husky": "^9.1.7",
     "madge": "^8.0.0",
+    "semantic-release": "^25.0.5",
     "ts-node": "^10.9.2",
     "tsup": "^8.5.1",
     "tsx": "^4.20.6",

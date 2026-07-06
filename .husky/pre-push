@@ -1,0 +1,7 @@
+# Mirror the CI gate locally so failures surface BEFORE they hit GitHub.
+# Matches the fast jobs in .github/workflows/ci.yml. Bypass with `--no-verify`
+# only when you know what you're doing.
+npm run lint && npm run circular && npm run test
+
+# To also gate the slower build + integration tests before every push, swap the
+# line above for:  npm run lint && npm run circular && npm run test:all
