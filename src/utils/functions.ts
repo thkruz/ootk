@@ -632,21 +632,16 @@ export const dopplerFactor = (
   position: EcefVec3<Kilometers>,
   velocity: EcefVec3<KilometersPerSecond>,
 ): number => {
-  const range = <EcefVec3>{
-    x: position.x - location.x,
-    y: position.y - location.y,
-    z: position.z - location.z,
-  };
-  const distance = Math.hypot(range.x, range.y, range.z);
-  const rangeVel = <EcefVec3<KilometersPerSecond>>{
-    x: velocity.x + angularVelocityOfEarth * location.y,
-    y: velocity.y - angularVelocityOfEarth * location.x,
-    z: velocity.z,
-  };
-  const rangeRate = (range.x * rangeVel.x + range.y * rangeVel.y + range.z * rangeVel.z) / distance;
-  const dopplerFactor = 1 - rangeRate / cKmPerSec;
+  const rangeX = position.x - location.x;
+  const rangeY = position.y - location.y;
+  const rangeZ = position.z - location.z;
+  // Math.sqrt of the dot product beats Math.hypot — this is a hot path
+  const distance = Math.sqrt(rangeX * rangeX + rangeY * rangeY + rangeZ * rangeZ);
+  const rangeVelX = velocity.x + angularVelocityOfEarth * location.y;
+  const rangeVelY = velocity.y - angularVelocityOfEarth * location.x;
+  const rangeRate = (rangeX * rangeVelX + rangeY * rangeVelY + rangeZ * velocity.z) / distance;
 
-  return dopplerFactor;
+  return 1 - rangeRate / cKmPerSec;
 };
 
 /**
