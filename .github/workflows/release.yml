@@ -1,12 +1,14 @@
 name: Release
 
-# On every push to main, re-run the CI gate and then hand off to
-# semantic-release. It reads the conventional commits since the last tag,
-# computes the bump (feat -> minor, BREAKING CHANGE -> major, everything else
-# -> patch, per .releaserc.json), updates package.json + CHANGELOG.md, tags,
-# creates the GitHub release, and publishes to npm with provenance.
+# On every push to main, build the package and hand off to semantic-release.
+# It reads the conventional commits since the last tag, computes the bump
+# (feat -> minor, BREAKING CHANGE -> major, everything else -> patch, per
+# .releaserc.json), updates package.json + CHANGELOG.md, tags, creates the
+# GitHub release, and publishes to npm with provenance.
 #
-# Nothing publishes unless the gate passes. semantic-release itself no-ops when
+# Tests are NOT re-run here: ci.yml gates lint/unit/integration on every PR, so
+# main is already verified before this runs. Re-running the full suite in the
+# publish path only adds flaky-failure surface. semantic-release no-ops when
 # there are no releasable commits, so an empty run is harmless.
 on:
   push:
@@ -42,17 +44,11 @@ jobs:
 
       - run: npm ci --ignore-scripts
 
-      # --- CI gate (mirrors ci.yml). No publish if any of these fail. ---
-      - name: Lint
-        run: npm run lint
-      - name: Circular dependency check
-        run: npm run circular
+      # Lint / unit / integration tests already gate every PR before it can
+      # merge to main (see ci.yml), so main is verified by the time this runs.
+      # Here we only rebuild to confirm the package is publishable, then release.
       - name: Build
         run: npm run build
-      - name: Unit tests
-        run: npm run test
-      - name: Integration tests
-        run: npm run test:integration:only
 
       # --- Release (no-ops when there are no releasable commits) ---
       - name: semantic-release

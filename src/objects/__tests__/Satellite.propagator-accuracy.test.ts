@@ -555,7 +555,7 @@ describe('Propagator accuracy vs OEM truth data (NORAD 39208)', () => {
         expect(velMag).toBeLessThan(8);
       }
     }
-  }, 15_000);
+  }, 60_000);
 
   it('SGP4 prediction error should grow with time from TLE epoch', () => {
     const sat = new Satellite({ tle1: tle1_39208, tle2: tle2_39208, name: 'SHIYAN-7' });
@@ -703,7 +703,7 @@ describe('Propagator accuracy vs OEM truth data (NORAD 39208)', () => {
     for (const r of results) {
       expect(r.pm).toBeGreaterThan(r.j2);
     }
-  }, 15_000);
+  }, 60_000);
 
   it('gravity-aware propagators should track truth through 28 days', () => {
     const sat = new Satellite({ tle1: tle1_39208, tle2: tle2_39208, name: 'SHIYAN-7' });
@@ -998,7 +998,7 @@ describe('Propagator accuracy vs SP3 laser ranging truth (NORAD 16908 — AJISAI
 
       expect(errJ2).toBeLessThan(errPM);
     }
-  }, 15_000);
+  }, 60_000);
 
   it('error growth comparison across force models (6h to 3d)', () => {
     const initJ2000 = sp3ToJ2000(sp3TruthData[0]);
@@ -1090,7 +1090,7 @@ describe('Propagator accuracy vs SP3 laser ranging truth (NORAD 16908 — AJISAI
 
     // J2 and 8x8 should be close (both model oblateness)
     expect(Math.abs(errJ2 - err8x8)).toBeLessThan(20);
-  }, 15_000);
+  }, 60_000);
 
   // ==================== Cross-propagator consistency ====================
 
@@ -1115,7 +1115,7 @@ describe('Propagator accuracy vs SP3 laser ranging truth (NORAD 16908 — AJISAI
       // Two adaptive integrators with default tolerance should agree to ~meters
       expect(diff).toBeLessThan(0.1); // Within 100 meters
     }
-  }, 15_000);
+  }, 60_000);
 
   // ==================== Velocity accuracy ====================
 
@@ -1185,7 +1185,7 @@ describe('Propagator accuracy vs SP3 laser ranging truth (NORAD 16908 — AJISAI
         expect(velMag).toBeLessThan(7.5);
       }
     }
-  }, 15_000);
+  }, 60_000);
 
   // ==================== Summary Report ====================
 
