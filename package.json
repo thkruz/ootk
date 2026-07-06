@@ -19,6 +19,8 @@
   ],
   "sideEffects": false,
   "scripts": {
+    "bench": "npm run build && node benchmark/run.mjs",
+    "bench:only": "node benchmark/run.mjs",
     "build": "tsup",
     "clean": "node ./scripts/cleanup.mjs",
     "circular": "node scripts/check-circular.mjs",
@@ -71,6 +73,7 @@
     "eslint": "^9.39.1",
     "husky": "^9.1.7",
     "madge": "^8.0.0",
+    "satellite.js": "^7.0.1",
     "semantic-release": "^25.0.5",
     "ts-node": "^10.9.2",
     "tsup": "^8.5.1",
