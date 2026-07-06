@@ -1,3 +1,8 @@
+# This is a LOCAL developer gate only. Never run it in CI — semantic-release
+# does its own `git push`, which would otherwise re-trigger this hook and
+# re-run the whole suite inside the release job. GitHub Actions sets CI=true.
+[ -n "$CI" ] && exit 0
+
 # Mirror the CI gate locally so failures surface BEFORE they hit GitHub.
 # Matches the fast jobs in .github/workflows/ci.yml. Bypass with `--no-verify`
 # only when you know what you're doing.
