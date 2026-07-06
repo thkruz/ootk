@@ -1,3 +1,5 @@
+## [7.0.1](https://github.com/thkruz/ootk/compare/v7.0.0...v7.0.1) (2026-07-06)
+
 ### Changelog
 
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
