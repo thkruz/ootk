@@ -44,7 +44,12 @@ jobs:
           cache: 'npm'
 
       - name: Configure Pages
+        # enablement: turn Pages on (build type = GitHub Actions) via the API if
+        # it isn't already, so the deploy step doesn't fail with
+        # "Deployment failed, try again later".
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       # --ignore-scripts skips husky install; no hooks needed to build docs.
       - run: npm ci --ignore-scripts
