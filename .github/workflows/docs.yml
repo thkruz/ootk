@@ -1,0 +1,70 @@
+name: Deploy Docs
+
+# Builds the VitePress site (docs/) and publishes it to GitHub Pages at
+# https://thkruz.github.io/ootk/ (base '/ootk/' is set in docs/.vitepress/config.mts).
+#
+# One-time setup: in the repo, Settings -> Pages -> Build and deployment ->
+# Source = "GitHub Actions". Until that is set, the deploy step will fail.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - '.github/workflows/docs.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+# Grant the token only what Pages deployment needs.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; don't cancel an in-progress one mid-publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build VitePress site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history so VitePress can read git-based last-updated
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      # --ignore-scripts skips husky install; no hooks needed to build docs.
+      - run: npm ci --ignore-scripts
+
+      - name: Build docs
+        run: npm run docs:build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/.vitepress/dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
