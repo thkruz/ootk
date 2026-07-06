@@ -205,11 +205,15 @@ export function lla2eci(lla: LlaVec3<Radians, Kilometers>, gmst: GreenwichMeanSi
 export function lla2sez<D extends number>(lla: LlaVec3<Radians, D>, ecef: EcefVec3<D>): SezVec3<D> {
   const lon = lla.lon;
   const lat = lla.lat;
+  const sinLat = Math.sin(lat);
+  const cosLat = Math.cos(lat);
+  const sinLon = Math.sin(lon);
+  const cosLon = Math.cos(lon);
 
   const observerEcef = llaRad2ecef({
     lat,
     lon,
-    alt: <Kilometers>0,
+    alt: lla.alt,
   });
 
   const rx = ecef.x - observerEcef.x;
@@ -217,11 +221,11 @@ export function lla2sez<D extends number>(lla: LlaVec3<Radians, D>, ecef: EcefVe
   const rz = ecef.z - observerEcef.z;
 
   // Top is short for topocentric
-  const south = Math.sin(lat) * Math.cos(lon) * rx + Math.sin(lat) * Math.sin(lon) * ry - Math.cos(lat) * rz;
+  const south = sinLat * cosLon * rx + sinLat * sinLon * ry - cosLat * rz;
 
-  const east = -Math.sin(lon) * rx + Math.cos(lon) * ry;
+  const east = -sinLon * rx + cosLon * ry;
 
-  const zenith = Math.cos(lat) * Math.cos(lon) * rx + Math.cos(lat) * Math.sin(lon) * ry + Math.sin(lat) * rz;
+  const zenith = cosLat * cosLon * rx + cosLat * sinLon * ry + sinLat * rz;
 
   return { s: <D>south, e: <D>east, z: <D>zenith };
 }
