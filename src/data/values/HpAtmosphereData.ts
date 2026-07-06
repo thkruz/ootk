@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,8 +21,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { hpAtmosphere } from './hpAtmosphere.js';
-import { HpAtmosphereResult } from './HpAtmosphereResult.js';
+import { hpAtmosphere } from './hpAtmosphere';
+import { HpAtmosphereResult } from './HpAtmosphereResult';
 
 // / Harris-Priester atmosphere entry for height, min, and max density values.
 export type HpAtmosphereEntry = [number, number, number];

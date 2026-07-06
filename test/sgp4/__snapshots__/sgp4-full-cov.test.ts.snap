@@ -1,7 +1,7 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Ensure bstar and ndot account for leading zeros rv2coe 1`] = `
-Object {
+exports[`Ensure bstar and ndot account for leading zeros > rv2coe 1`] = `
+{
   "a": 36127.16533103146,
   "arglat": 999999.1,
   "argp": 0.9317417321423879,

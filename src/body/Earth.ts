@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,27 +21,15 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  angularDiameter,
-  AngularDiameterMethod,
-  asec2rad,
-  DataHandler,
-  DEG2RAD,
-  earthGravityParam,
-  EpochUTC,
-  evalPoly,
-  Kilometers,
-  RAD2DEG,
-  Radians,
-  RadiansPerSecond,
-  secondsPerDay,
-  secondsPerSiderealDay,
-  TAU,
-  ttasec2rad,
-  Vector3D,
-} from '../main.js';
-import { NutationAngles } from './NutationAngles.js';
-import { PrecessionAngles } from './PrecessionAngles.js';
+import { AngularDiameterMethod } from '../enums/AngularDiameterMethod';
+import { DataHandler } from '../data/DataHandler';
+import { EpochUTC } from '../time/EpochUTC';
+import { Kilometers, Radians, RadiansPerSecond } from '../types/types';
+import { angularDiameter, evalPoly } from '../utils/functions';
+import { asec2rad, DEG2RAD, earthGravityParam, RAD2DEG, secondsPerDay, secondsPerSiderealDay, TAU, ttasec2rad } from '../utils/constants';
+import { Vector3D } from './../operations/Vector3D';
+import { NutationAngles } from './NutationAngles';
+import { PrecessionAngles } from './PrecessionAngles';
 
 // / Earth metrics and operations.
 export class Earth {

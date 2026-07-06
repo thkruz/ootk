@@ -4,10 +4,28 @@ coverage
 dist
 node_modules
 *.log
+.npmrc
+
+.claude
+.github/instructions
 
 test/performance
 test/satellite/transform*
 test/sgp4/sgp4prop
 
+FUTURE-WORK.md
+
+circular-deps.svg
+
 **/**.out
 .qodo
+
+src/fetch
+
+CLAUDE.md
+.dev.vars
+
+src/objects/__tests__/propagator-accuracy-summary.txt
+
+docs/.vitepress/cache
+docs/.vitepress/dist

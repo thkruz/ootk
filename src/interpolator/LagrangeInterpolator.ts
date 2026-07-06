@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,8 +15,12 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, EpochWindow, J2000, Kilometers, KilometersPerSecond, Seconds, Vector3D } from '../main.js';
-import { StateInterpolator } from './StateInterpolator.js';
+import { EpochUTC } from '../time/EpochUTC';
+import { EpochWindow } from '../time/EpochWindow';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond, Seconds } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
+import { StateInterpolator } from './StateInterpolator';
 
 export class LagrangeInterpolator extends StateInterpolator {
   private readonly t_: Float64Array;
@@ -90,7 +94,7 @@ export class LagrangeInterpolator extends StateInterpolator {
   }
 
   private static position_(xs: Float64Array, ys: Float64Array, x: number): number {
-    const k = xs.length - 1;
+    const k = xs.length;
     let result = 0.0;
 
     for (let j = 0; j < k; j++) {
@@ -174,7 +178,7 @@ export class LagrangeInterpolator extends StateInterpolator {
     }
     const offset = Math.floor(this.order / 2);
     const left = mid - offset;
-    const right = mid + offset - (this.order % 2 === 1 ? 1 : 0);
+    const right = left + this.order;
 
     if (left < 0) {
       return { left: 0, right: this.order };

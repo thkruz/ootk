@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,16 +21,17 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Seconds } from '../main.js';
-import { DEG2RAD, MS_PER_DAY, RAD2DEG, secondsPerWeek, TAU } from '../utils/constants.js';
-import { evalPoly } from '../utils/functions.js';
-import { DataHandler } from './../data/DataHandler.js';
-import { Epoch } from './Epoch.js';
-import { EpochGPS } from './EpochGPS.js';
-import { EpochTAI } from './EpochTAI.js';
-import { EpochTDB } from './EpochTDB.js';
-import { EpochTT } from './EpochTT.js';
+import { Seconds } from '../types/types';
+import { DEG2RAD, MS_PER_DAY, RAD2DEG, secondsPerWeek, TAU } from '../utils/constants';
+import { evalPoly } from '../utils/functions';
+import { DataHandler } from './../data/DataHandler';
+import { Epoch } from './Epoch';
+import { EpochGPS } from './EpochGPS';
+import { EpochTAI } from './EpochTAI';
+import { EpochTDB } from './EpochTDB';
+import { EpochTT } from './EpochTT';
 
+/** Parameters for creating an EpochUTC from date components. */
 type FromDateParams = {
   year: number;
   month: number;
@@ -40,6 +41,7 @@ type FromDateParams = {
   second?: number;
 };
 
+/** Internal parameters for POSIX conversion. */
 type DateToPosixParams = {
   year: number;
   month: number;
@@ -49,9 +51,72 @@ type DateToPosixParams = {
   second: number;
 };
 
+/**
+ * Represents an epoch in Coordinated Universal Time (UTC).
+ *
+ * EpochUTC is the **primary time class** for ootk and should be used as the
+ * default choice for most operations. It represents civil time with leap
+ * second corrections and serves as the entry point for conversions to other
+ * astronomical time scales.
+ *
+ * ## When to Use EpochUTC
+ * - Parsing and working with TLE (Two-Line Element) epochs
+ * - User-facing timestamps and I/O operations
+ * - General satellite tracking and pass predictions
+ * - Any operation where civil time is the natural choice
+ *
+ * ## Creating Instances
+ * ```typescript
+ * // Current time
+ * const now = EpochUTC.now();
+ *
+ * // From date components
+ * const epoch = EpochUTC.fromDate({ year: 2024, month: 6, day: 15, hour: 12 });
+ *
+ * // From JavaScript Date
+ * const epoch = EpochUTC.fromDateTime(new Date());
+ *
+ * // From ISO 8601 string
+ * const epoch = EpochUTC.fromDateTimeString('2024-06-15T12:00:00Z');
+ *
+ * // From definitive orbit format ("DDD/YYYY HH:MM:SS.sss")
+ * const epoch = EpochUTC.fromDefinitiveString('166/2024 12:00:00.000');
+ * ```
+ *
+ * ## Converting to Other Time Scales
+ * ```typescript
+ * const utc = EpochUTC.now();
+ *
+ * const tai = utc.toTAI();   // International Atomic Time
+ * const tt  = utc.toTT();    // Terrestrial Time
+ * const tdb = utc.toTDB();   // Barycentric Dynamical Time
+ * const gps = utc.toGPS();   // GPS Time (week/seconds)
+ * ```
+ *
+ * ## Time Arithmetic
+ * ```typescript
+ * const epoch = EpochUTC.now();
+ * const oneHourLater = epoch.roll(3600 as Seconds);
+ * const difference = oneHourLater.difference(epoch); // 3600 seconds
+ * ```
+ *
+ * ## Sidereal Time
+ * EpochUTC provides Greenwich Mean Sidereal Time (GMST) calculations,
+ * essential for converting between Earth-fixed and inertial reference frames:
+ * ```typescript
+ * const gmstRadians = epoch.gmstAngle();
+ * const gmstDegrees = epoch.gmstAngleDegrees();
+ * ```
+ *
+ * @see Epoch - Base class with common functionality
+ * @see EpochTAI - For continuous timekeeping without leap seconds
+ * @see EpochTT - For Earth-based astronomical observations
+ * @see EpochTDB - For planetary ephemerides
+ * @see EpochGPS - For GPS/GNSS applications
+ */
 export class EpochUTC extends Epoch {
   static now() {
-    return new EpochUTC(new Date().getTime() / 1000 as Seconds);
+    return new EpochUTC(Date.now() / 1000 as Seconds);
   }
 
   static fromDate({ year, month, day, hour = 0, minute = 0, second = 0 }: FromDateParams) {
@@ -80,7 +145,7 @@ export class EpochUTC extends Epoch {
     const dateFields = fields[0].split('/') as [string, string];
     const day = parseInt(dateFields[0]);
     const year = parseInt(dateFields[1]);
-    // eslint-disable-next-line prefer-destructuring
+
     const timeField = fields[1];
     // Add day - 1 days in milliseconds to the epoch.
     const dts = new Date(`${year}-01-01T${timeField}Z`).getTime() + (day - 1) * MS_PER_DAY;
@@ -120,14 +185,14 @@ export class EpochUTC extends Epoch {
   }
 
   toGPS(): EpochGPS {
-    const referenceTime = EpochUTC.fromDateTimeString('1980-01-06T00:00:00.000Z');
+    const referenceTime = EpochGPS.getReference();
     const ls = DataHandler.getInstance().getLeapSeconds(this.toJulianDate());
     const delta = this.roll(ls - EpochGPS.offset as Seconds).difference(referenceTime);
     const week = delta / secondsPerWeek;
     const weekFloor = Math.floor(week);
     const seconds = (week - weekFloor) * secondsPerWeek;
 
-    return new EpochGPS(weekFloor, seconds, referenceTime);
+    return new EpochGPS(weekFloor, seconds);
   }
 
   gmstAngle(): number {

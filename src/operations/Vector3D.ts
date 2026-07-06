@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,9 +21,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Kilometers, KilometersPerSecond, Radians, linearDistance } from '../main.js';
-import { Matrix } from './Matrix.js';
-import { Vector } from './Vector.js';
+import type { Kilometers, KilometersPerSecond, Radians } from '../types/types';
+import { linearDistance } from '../utils/linearDistance';
+import { Matrix } from './Matrix';
+import { Vector } from './Vector';
 
 // / 3-dimensional vector.
 export class Vector3D<T extends number = number> {
@@ -74,25 +75,6 @@ export class Vector3D<T extends number = number> {
   // / Convert this to a [Float64List] object.
   toArray() {
     return new Float64Array([this.x, this.y, this.z]);
-  }
-
-  /**
-   * Return the Vector3D element at the provided index.
-   * @deprecated don't do this
-   * @param index The index of the element to return.
-   * @returns The element at the provided index.
-   */
-  public getElement(index: number): number {
-    switch (index) {
-      case 0:
-        return this.x;
-      case 1:
-        return this.y;
-      case 2:
-        return this.z;
-      default:
-        throw new Error(`Index ${index} outside 3D vector bounds.`);
-    }
   }
 
   // / Convert this to a [Vector] object.
@@ -286,4 +268,6 @@ export class Vector3D<T extends number = number> {
 
     return new Vector(output);
   }
+
+  static readonly zero = new Vector3D<number>(0, 0, 0);
 }

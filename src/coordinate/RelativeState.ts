@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,10 +21,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Kilometers, KilometersPerSecond } from '../main.js';
-import { Matrix } from '../operations/Matrix.js';
-import { Vector3D } from '../operations/Vector3D.js';
-import { J2000 } from './J2000.js';
+import { Kilometers, KilometersPerSecond } from '../types/types';
+import { Matrix } from '../operations/Matrix';
+import { Vector3D } from '../operations/Vector3D';
+import { J2000 } from './J2000';
 
 /**
  * Represents the relative state of an object in 3D space.

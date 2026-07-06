@@ -23,12 +23,12 @@ jobs:
 
       - uses: actions/setup-node@v4.0.1
         with:
-          node-version: '20.x'
+          node-version: '24.x'
 
       - run: npm ci --ignore-scripts
 
       - run: npm run lint
-  build:
+  circular-check:
     needs: lint
     runs-on: ubuntu-latest
     steps:
@@ -36,7 +36,21 @@ jobs:
 
       - uses: actions/setup-node@v4.0.1
         with:
-          node-version: '20.x'
+          node-version: '24.x'
+
+      - run: npm ci --ignore-scripts
+
+      - name: Check for circular dependencies
+        run: npm run circular
+  build:
+    needs: circular-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.1.1
+
+      - uses: actions/setup-node@v4.0.1
+        with:
+          node-version: '24.x'
 
       - uses: actions/cache@v3
         env:
@@ -51,15 +65,24 @@ jobs:
       - run: npm ci --ignore-scripts
 
       - run: npm run build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
   test:
     needs: build
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['24.x']
     steps:
       - uses: actions/checkout@v4.1.1
 
       - uses: actions/setup-node@v4.0.1
         with:
-          node-version: '20.x'
+          node-version: ${{ matrix.node-version }}
 
       - uses: actions/cache@v3
         env:
@@ -67,11 +90,33 @@ jobs:
         with:
           path: |
             **/lib
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-node-${{ matrix.node-version }}-
 
       - run: npm ci --ignore-scripts
 
       - name: Test
         run: npm run test
+  test-integration:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['24.x']
+    steps:
+      - uses: actions/checkout@v4.1.1
+
+      - uses: actions/setup-node@v4.0.1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - run: npm ci --ignore-scripts
+
+      - name: Integration Tests
+        run: npm run test:integration:only

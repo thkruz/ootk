@@ -1,11 +1,16 @@
-import { Radians } from '../types/types.js';
+import { BaseObjectParams } from '../objects/BaseObject';
+import { Radians } from '../types/types';
 
-export interface StarObjectParams {
+export interface StarObjectParams extends BaseObjectParams {
   ra: Radians;
   dec: Radians;
   bf?: string;
   h?: string;
-  name?: string;
   pname?: string;
   vmag?: number;
+  constellation?: string;
+  colorTemp?: number;
+  hr?: number;
+  flamsteed?: string;
+  bayer?: string;
 }

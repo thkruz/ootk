@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,8 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable class-methods-use-this */
-import { RungeKuttaAdaptive } from './RungeKuttaAdaptive.js';
+
+import { RungeKuttaAdaptive } from './RungeKuttaAdaptive';
 
 export class DormandPrince54Propagator extends RungeKuttaAdaptive {
   private readonly a_: Float64Array = Float64Array.from([0.0, 1.0 / 5.0, 3.0 / 10.0, 4.0 / 5.0, 8.0 / 9.0, 1.0, 1.0]);

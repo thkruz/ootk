@@ -1,0 +1,46 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Epoch > should convert to Julian centuries 1`] = `0.21162217659137578`;
+
+exports[`Epoch > should convert to a DateTime object 1`] = `2021-03-01T00:00:00.000Z`;
+
+exports[`Epoch > should convert to a Julian date 1`] = `2459274.5`;
+
+exports[`Epoch > should convert to a string 1`] = `"2021-03-01T00:00:00.000Z"`;
+
+exports[`Epoch > should convert to an Excel string 1`] = `"2021-03-01T00:00:00"`;
+
+exports[`Epoch > should convert to an epoch year and day 1`] = `
+{
+  "epochDay": "060.00000000",
+  "epochYr": "21",
+}
+`;
+
+exports[`Epoch > should handle century year not divisible by 400 1`] = `
+{
+  "epochDay": "001.00000000",
+  "epochYr": "00",
+}
+`;
+
+exports[`Epoch > should handle leap year in toEpochYearAndDay 1`] = `
+{
+  "epochDay": "060.00000000",
+  "epochYr": "20",
+}
+`;
+
+exports[`Epoch > should handle non-leap century year 1`] = `
+{
+  "epochDay": "060.00000000",
+  "epochYr": "00",
+}
+`;
+
+exports[`Epoch > should identify non-leap year (not divisible by 4) 1`] = `
+{
+  "epochDay": "002.00000000",
+  "epochYr": "22",
+}
+`;

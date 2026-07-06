@@ -1,57 +1,83 @@
 {
   "name": "ootk",
-  "version": "5.1.1",
+  "version": "7.0.0",
   "type": "module",
-  "module": "dist/main.js",
   "description": "Orbital Object Toolkit including Multiple Propagators, Initial Orbit Determination, and Maneuver Calculations.",
+  "exports": {
+    ".": {
+      "types": "./dist/main.d.ts",
+      "import": "./dist/main.js",
+      "require": "./dist/main.cjs",
+      "default": "./dist/main.js"
+    }
+  },
+  "main": "dist/main.cjs",
+  "module": "dist/main.js",
+  "types": "dist/main.d.ts",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
   "scripts": {
-    "build": "npm run clean && npx tsc -p tsconfig.build.json",
+    "build": "tsup",
     "clean": "node ./scripts/cleanup.mjs",
+    "circular": "node scripts/check-circular.mjs",
+    "circular:list": "madge --circular --extensions ts src/main.ts",
+    "circular:image": "madge --circular --image circular-deps.svg --extensions ts src/main.ts",
     "lint": "npx eslint src",
     "lint:fix": "npx eslint src --fix",
-    "test": "jest",
-    "test:coverage": "jest --coverage",
-    "version": "npm run build && auto-changelog && git add CHANGELOG.md"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "npm run build && vitest run --config test/integration/vitest.config.mts",
+    "test:integration:only": "vitest run --config test/integration/vitest.config.mts",
+    "test:all": "npm run test && npm run test:integration",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "prepare": "husky",
+    "prepublishOnly": "npm run test:all"
   },
-  "main": "dist/main.js",
-  "typings": "dist/main.d.ts",
   "repository": {
     "type": "git",
-    "url": "git://github.com/thkruz/ootk"
+    "url": "git+https://github.com/thkruz/ootk.git"
   },
   "keywords": [
+    "space",
     "sgp4",
     "orbit",
     "toolkit",
-    "space",
     "satellite",
     "radar",
     "iod"
   ],
   "author": "Theodore Kruczek <theodore.kruczek@gmail.com> (https://github.com/ootk/)",
-  "license": "APGL-3.0",
+  "license": "AGPL-3.0-or-later",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "bugs": {
     "url": "https://github.com/thkruz/ootk/issues"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.10",
-    "@babel/plugin-transform-runtime": "^7.26.10",
-    "@babel/preset-env": "^7.26.9",
-    "@babel/preset-typescript": "^7.26.0",
-    "@types/jest": "^29.5.14",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@types/jest": "^30.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/parser": "^8.48.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "astronomy-engine": "^2.1.19",
     "auto-changelog": "^2.5.0",
-    "babel-eslint": "^10.1.0",
-    "babel-jest": "^28.1.3",
-    "babel-loader": "^9.2.1",
-    "eslint": "^8.57.1",
-    "fix-esm-import-path": "^1.10.1",
-    "jest": "^28.1.3",
-    "ts-jest": "^28.0.8",
+    "conventional-changelog-conventionalcommits": "^10.2.1",
+    "eslint": "^9.39.1",
+    "husky": "^9.1.7",
+    "madge": "^8.0.0",
+    "semantic-release": "^25.0.5",
     "ts-node": "^10.9.2",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.2"
+    "tsup": "^8.5.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitepress": "2.0.0-alpha.17",
+    "vitest": "^4.0.18"
   },
   "homepage": "https://github.com/thkruz/ootk"
 }

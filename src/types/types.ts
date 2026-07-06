@@ -1,7 +1,7 @@
 /**
  * @author @thkruz Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,8 +15,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Vector3D, PassType, Satellite, CommLink, SatelliteParams, SensorParams } from '../main.js';
-import { Sgp4ErrorCode } from '../sgp4/sgp4-error.js';
+import type { PassType } from '../enums/PassType';
+import type { Satellite } from '../objects/Satellite';
+import type { Vector3D } from '../operations/Vector3D';
+import { Sgp4ErrorCode } from '../sgp4/sgp4-error';
+export { PayloadStatus } from './PayloadStatus';
 
 /**
  * Represents a distinct type.
@@ -102,9 +105,25 @@ export type RadiansPerSecond = Distinct<number, 'RadiansPerSecond'>;
 export type DegreesPerSecond = Distinct<number, 'DegreesPerSecond'>;
 
 /**
+ * Represents a value in degrees per day.
+ */
+export type DegreesPerDay = Distinct<number, 'DegreesPerDay'>;
+
+/**
  * Represents a value in meters per second.
  */
 export type MetersPerSecond = Distinct<number, 'MetersPerSecond'>;
+
+/**
+ * Reference frame type for coordinate systems.
+ * This is a phantom type - it exists only at compile time for type safety.
+ *
+ * - TEME: True Equator Mean Equinox (SGP4 output frame)
+ * - J2000: J2000 Earth-Centered Inertial (mean equator and equinox of J2000.0)
+ * - GCRF: Geocentric Celestial Reference Frame (ICRF aligned)
+ * - ITRF: International Terrestrial Reference Frame (Earth-fixed)
+ */
+export type ReferenceFrame = 'TEME' | 'J2000' | 'GCRF' | 'ITRF';
 
 /**
  * Represents a three-dimensional vector.
@@ -115,6 +134,9 @@ export type MetersPerSecond = Distinct<number, 'MetersPerSecond'>;
  * @template Units The unit of measure used for the dimensions. This is
  * typically a type representing a distance, such as kilometers or meters. The
  * default is Kilometers.
+ * @template Frame The reference frame for the coordinates. This is a phantom type
+ * that exists only at compile time for type safety. Defaults to 'TEME' since
+ * SGP4 outputs TEME coordinates.
  * x The x dimension of the vector, representing the distance from the
  * origin to the point in the x direction.
  * y The y dimension of the vector, representing the distance from the
@@ -122,30 +144,39 @@ export type MetersPerSecond = Distinct<number, 'MetersPerSecond'>;
  * vector, representing the distance from the origin to the point in the z
  * direction.
  */
-export type Vec3<Units = Kilometers> = {
+export type Vec3<Units = Kilometers, Frame extends ReferenceFrame = 'TEME'> = {
   x: Units;
   y: Units;
   z: Units;
+  /** Phantom type for reference frame - not present at runtime */
+  readonly __frame?: Frame;
 };
 
 /**
- * Represents a three-dimensional vector in Earth-Centered Inertial (ECI)
- * coordinates.
- *
- * This type is used to represent a point in space in terms of x, y, and z
- * coordinates. It is a generic type that allows for flexibility in the units of
- * measure used for each dimension. The default unit of measure is Kilometers.
- * x The x dimension of the vector, representing the distance from the
- * origin to the point in the x direction.
- * y The y dimension of the vector, representing the distance from the
- * origin to the point in the y direction. @property z The z dimension of the
- * vector, representing the distance from the origin to the point in the z
- * direction.
+ * TEME (True Equator Mean Equinox) frame vector.
+ * This is the native output frame of SGP4/SDP4 propagation.
  */
-export type EciVec3<Units = Kilometers> = Vec3<Units>;
+export type TemeVec3<Units = Kilometers> = Vec3<Units, 'TEME'>;
 
 /**
- * Represents a three-dimensional vector in Earth-Centered Fixed (ECF)
+ * J2000 frame vector (Mean equator and equinox of J2000.0).
+ */
+export type J2000Vec3<Units = Kilometers> = Vec3<Units, 'J2000'>;
+
+/**
+ * GCRF (Geocentric Celestial Reference Frame) vector.
+ * This is aligned with the ICRF (International Celestial Reference Frame).
+ */
+export type GcrfVec3<Units = Kilometers> = Vec3<Units, 'GCRF'>;
+
+/**
+ * ITRF (International Terrestrial Reference Frame) vector.
+ * This is an Earth-fixed frame that rotates with the Earth.
+ */
+export type ItrfVec3<Units = Kilometers> = Vec3<Units, 'ITRF'>;
+
+/**
+ * Represents a three-dimensional vector in Earth-Centered Earth Fixed (ECEF)
  * coordinates.
  *
  * NOTE: ECF (Earth-Centered Fixed) and ECEF (Earth-Centered, Earth-Fixed) are
@@ -153,28 +184,11 @@ export type EciVec3<Units = Kilometers> = Vec3<Units>;
  * with respect to the Earth, meaning that the coordinates of a point in this
  * system do not change even as the Earth rotates.
  *
- * The difference between the two is that ECF is a Cartesian coordinate system,
- * while ECEF is a spherical coordinate system. The ECF system is used in this
- * library because it is easier to work with in the context of the SGP4
- * algorithm.
- *
  * This type is used to represent a point in space in terms of x, y, and z
  * coordinates. It is a generic type that allows for flexibility in the units of
  * measure used for each dimension. The default unit of measure is Kilometers.
- * x The x dimension of the vector, representing the distance from the
- * origin to the point in the x direction.
- * y The y dimension of the vector, representing the distance from the
- * origin to the point in the y direction. @property z The z dimension of the
- * vector, representing the distance from the origin to the point in the z
- * direction.
  */
-export type EcfVec3<Units = Kilometers> = Vec3<Units>;
-
-/**
- * Represents a three-dimensional vector in Earth-Centered Earth-Fixed (ECEF)
- * coordinates.
- */
-export type EcefVec3<Units = Kilometers> = EcfVec3<Units>;
+export type EcefVec3<Units = Kilometers> = Vec3<Units>;
 
 /**
  * Represents a three-dimensional vector in East, North, Up (ENU) coordinates.
@@ -394,34 +408,37 @@ export interface SatelliteRecord {
  * function. It consists of two main properties: position and velocity, each of
  * which is a three-dimensional vector.
  *
+ * **IMPORTANT: Both position and velocity are in the TEME (True Equator Mean Equinox)
+ * reference frame.** TEME is the native output frame of the SGP4/SDP4 propagator.
+ *
  * The position and velocity vectors are represented as objects with x, y, and z
- * properties, each of which is a number. Alternatively, they can be a boolean
- * value.
+ * properties, each of which is a number. Alternatively, they can be false if
+ * propagation fails.
  *
  * This type is primarily used in the context of satellite tracking and
  * prediction, where it is crucial to know both the current position and
  * velocity of a satellite.
  */
 export type StateVectorSgp4 = {
-  position:
-  | {
-    x: Kilometers;
-    y: Kilometers;
-    z: Kilometers;
-  }
-  | false;
-  velocity:
-  | {
-    x: KilometersPerSecond;
-    y: KilometersPerSecond;
-    z: KilometersPerSecond;
-  }
-  | false;
+  /** Position in TEME (True Equator Mean Equinox) frame in kilometers */
+  position: TemeVec3<Kilometers> | false;
+  /** Velocity in TEME (True Equator Mean Equinox) frame in km/s */
+  velocity: TemeVec3<KilometersPerSecond> | false;
 };
 
-export type PosVel<T = Kilometers, T2 = KilometersPerSecond> = {
-  position: Vec3<T>;
-  velocity: Vec3<T2>;
+/**
+ * Position and velocity state vector.
+ * @template PosUnits Unit of measure for position (default: Kilometers)
+ * @template VelUnits Unit of measure for velocity (default: KilometersPerSecond)
+ * @template Frame Reference frame for the coordinates (default: 'TEME')
+ */
+export type PosVel<
+  PosUnits = Kilometers,
+  VelUnits = KilometersPerSecond,
+  Frame extends ReferenceFrame = 'TEME'
+> = {
+  position: Vec3<PosUnits, Frame>;
+  velocity: Vec3<VelUnits, Frame>;
 };
 
 /**
@@ -573,7 +590,14 @@ export enum SpaceObjectType {
   NOTIONAL = 29,
   FRAGMENT = 30,
   SHORT_TERM_FENCE = 31,
-  MAX_SPACE_OBJECT_TYPE = 32,
+  EPHEMERIS_SATELLITE = 32,
+  TERRESTRIAL_PLANET = 33,
+  GAS_GIANT = 34,
+  ICE_GIANT = 35,
+  DWARF_PLANET = 36,
+  MOON = 37,
+  DYNAMIC_GROUND_OBJECT = 38,
+  MAX_SPACE_OBJECT_TYPE = 40,
 }
 
 /**
@@ -711,8 +735,6 @@ export type StringifiedNumber = `${number}.${number}`;
 
 /**
  * Represents a set of data containing both Line 1 and Line 2 TLE information.
- *
- * TODO: TleParams types should be more consistent.
  */
 export type TleParams = {
   sat?: Satellite;
@@ -721,13 +743,27 @@ export type TleParams = {
   rasc: string | number;
   argPe: string | number;
   meana: string | number;
-  ecen: string;
-  epochyr: string;
-  epochday: string;
+  ecen: string | number;
+  epochyr: string | number;
+  epochday: string | number;
   /** COSPAR International Designator */
   intl: string;
   /** alpha 5 satellite number */
   scc: string;
+  /** B* drag term (1/Earth radii). Used when `sat` is not provided. */
+  bstar?: number;
+  /** First derivative of mean motion / 2 (rev/day^2). Used when `sat` is not provided. */
+  meanMotionDot?: number;
+  /** Second derivative of mean motion / 6 (rev/day^3). Used when `sat` is not provided. */
+  meanMotionDdot?: number;
+  /** Classification type (default 'U'). Used when `sat` is not provided. */
+  classification?: string;
+  /** Revolution number at epoch. Used when `sat` is not provided. */
+  revAtEpoch?: number;
+  /** Element set number (default 999). Used when `sat` is not provided. */
+  elementSetNo?: number;
+  /** Ephemeris type (default 0). Used when `sat` is not provided. */
+  ephemerisType?: number;
 };
 // / Position and velocity [Vector3D] container.
 
@@ -743,88 +779,6 @@ export enum ZoomValue {
   MAX = 1,
 }
 
-/*
- * + Operational
- * - Nonoperational
- * P Partially Operational
- * Partially fulfilling primary mission or secondary mission(s)
- * B Backup/Standby
- * Previously operational satellite put into reserve status
- * S Spare
- * New satellite awaiting full activation
- * X Extended Mission
- * D Decayed
- * ? Unknown
- */
-export enum PayloadStatus {
-  OPERATIONAL = '+',
-  NONOPERATIONAL = '-',
-  PARTIALLY_OPERATIONAL = 'P',
-  BACKUP_STANDBY = 'B',
-  SPARE = 'S',
-  EXTENDED_MISSION = 'X',
-  DECAYED = 'D',
-  UNKNOWN = '?'
-}
-
-export interface DetailedSatelliteParams extends SatelliteParams {
-  id: number;
-  active?: boolean;
-  configuration?: string;
-  country?: string;
-  dryMass?: string;
-  equipment?: string;
-  launchDate?: string;
-  launchMass?: string;
-  launchSite?: string;
-  launchVehicle?: string;
-  lifetime?: string | number;
-  maneuver?: string;
-  manufacturer?: string;
-  mission?: string;
-  motor?: string;
-  owner?: string;
-  bus?: string;
-  payload?: string;
-  power?: string;
-  purpose?: string;
-  length?: string;
-  diameter?: string;
-  shape?: string;
-  span?: string;
-  user?: string;
-  vmag?: number | null;
-  rcs?: number | null;
-  source?: string;
-  altId?: string;
-  altName?: string;
-  status?: PayloadStatus;
-}
-
-export interface DetailedSensorParams extends SensorParams {
-  /** The country that owns the sensor */
-  country?: string;
-  /** 3 Letter Designation */
-  shortName?: string;
-  changeObjectInterval?: Milliseconds;
-  commLinks?: CommLink[];
-  freqBand?: string;
-  static?: boolean;
-  sensorId?: number;
-  url?: string;
-  /** Does this sensor use a volumetric search pattern? */
-  volume?: boolean;
-  /** How far away should we zoom when selecting this sensor? */
-  zoom?: ZoomValue;
-  /** This is the name of the object in the array */
-  objName?: string;
-  /** This is the name of the object in the UI */
-  uiName?: string;
-  /** This is the specific system (ex. AN/FPS-132) */
-  system?: string;
-  /** This is who operates the sensor */
-  operator?: string;
-}
 /**
  * The RUV coordinate system is a spherical coordinate system with the origin at
  * the radar. The RUV coordinate system is defined with respect to the radar

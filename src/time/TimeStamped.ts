@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,26 +21,60 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { EpochUTC } from './EpochUTC.js';
+import { ValidationError } from '../errors';
+import type { EpochUTC } from './EpochUTC';
 
 export class TimeStamped<T> {
+  /**
+   * Timestamped value.
+   */
+  private readonly value_: T;
+  /**
+   * Timestamp epoch.
+   */
+  readonly epoch_: EpochUTC;
+
   /**
    * Create a new time stamped value container at the provided epoch.
    * @param epoch The timestamp epoch.
    * @param value The timestamped value.
    */
   constructor(epoch: EpochUTC, value: T) {
-    this.epoch = epoch;
-    this.value = value;
+    this.epoch_ = epoch;
+    this.value_ = value;
   }
 
   /**
-   * Timestamp epoch.
+   * Get the timestamped value.
+   * @returns The timestamped value.
    */
-  readonly epoch: EpochUTC;
+  get value(): T {
+    return this.value_;
+  }
 
   /**
-   * Timestamped value.
+   * Set the timestamped value.
+   * @param _ The timestamped value.
+   * @throws Cannot set value of TimeStamped object; it is readonly.
    */
-  readonly value: T;
+  set value(_: T) {
+    throw new ValidationError('Cannot set value of TimeStamped object; it is readonly', 'value');
+  }
+
+  /**
+   * Get the timestamp epoch.
+   * @returns The timestamp epoch.
+   */
+  get epoch(): EpochUTC {
+    return this.epoch_;
+  }
+
+  /**
+   * Set the timestamp epoch.
+   * @param _ The timestamp epoch.
+   * @throws Cannot set epoch of TimeStamped object; it is readonly.
+   */
+  set epoch(_: EpochUTC) {
+    throw new ValidationError('Cannot set epoch of TimeStamped object; it is readonly', 'epoch');
+  }
 }

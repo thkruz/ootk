@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,42 +21,67 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-export * from './enums/index.js';
+export * from './errors/index';
 
-export * from './types/types.js';
+export * from './enums/index';
 
-export * from './interfaces/index.js';
+export * from './types/types';
 
-export * from './time/index.js';
+export * from './interfaces/index';
 
-export * from './transforms/index.js';
+export * from './time/index';
 
-export * from './utils/index.js';
+export * from './transforms/index';
 
-export * from './operations/operations.js';
+export * from './utils/index';
 
-export { BaseObject } from './objects/index.js';
+export * from './operations/operations';
 
-export { Earth } from './body/index.js';
+export { BaseObject } from './objects/index';
 
-export * from './coordinate/index.js';
+export { Earth } from './body/index';
 
-export * from './observation/index.js';
+export * from './coordinate/index';
 
-export * from './data/DataHandler.js';
+export * from './observation/index';
 
-export * from './sgp4/index.js';
+export * from './data/DataHandler';
 
-export * from './objects/index.js';
+export * from './sgp4/index';
 
-export * from './body/index.js';
+export * from './objects/index';
 
-export * from './operations/index.js';
+export * from './body/index';
 
-export * from './force/index.js';
+export * from './operations/index';
 
-export * from './propagator/index.js';
+export * from './force/index';
 
-export * from './orbit_determination/index.js';
+export * from './propagator/index';
 
-export * from './covariance/index.js';
+export * from './orbit-determination/index';
+
+export * from './covariance/index';
+
+export * from './conjunction/index';
+
+export * from './sensor/index';
+
+export * from './parsers/index';
+
+export * from './comm/index';
+
+export * from './interpolator/index';
+
+export * from './maneuver/index';
+
+// Note: fetch module not exported - HorizonsAPI uses browser fetch which isn't available in Node.js
+// export * from './fetch/index';
+
+export * from './optimize/index';
+
+export * from './scheduling/index';
+
+export * from './constellation/index';
+
+export * from './orbit-design/index';

@@ -1,3 +1,4 @@
+import { TleLine1 } from '../../src/main';
 import { Tle } from '../../src/main';
 import { tleData } from './tleData';
 
@@ -189,5 +190,204 @@ describe('Valid TLEs', () => {
         });
       });
     });
+  });
+});
+
+describe('meanMoDev1 leading character combinations', () => {
+  // Base TLE line with meanMoDev1 field at substring(33, 43)
+  // Original: '1 25544U 98067A   22203.46960946  .00003068  00000+0  61583-4 0  9996'
+  //                                              ^^^^^^^^^^
+  //                                              positions 33-42 (10 chars)
+  const prefix = '1 25544U 98067A   22203.46960946 ';
+  const suffix = ' 00000+0  61583-4 0  9996';
+
+  const buildLine1 = (meanMoDev1Field: string): TleLine1 => `${prefix}${meanMoDev1Field}${suffix}` as TleLine1;
+
+  it('should parse with leading space (standard)', () => {
+    const line1 = buildLine1(' .00003068');
+
+    expect(Tle.meanMoDev1(line1)).toBe(0.00003068);
+  });
+
+  it('should parse with leading + sign', () => {
+    const line1 = buildLine1('+.00003068');
+
+    expect(Tle.meanMoDev1(line1)).toBe(0.00003068);
+  });
+
+  it('should parse with leading 0', () => {
+    const line1 = buildLine1('0.00003068');
+
+    expect(Tle.meanMoDev1(line1)).toBe(0.00003068);
+  });
+
+  it('should parse with leading - sign', () => {
+    const line1 = buildLine1('-.00003068');
+
+    expect(Tle.meanMoDev1(line1)).toBe(-0.00003068);
+  });
+
+  it('should parse positive value with + and leading zero', () => {
+    const line1 = buildLine1('+0.0003068');
+
+    expect(Tle.meanMoDev1(line1)).toBe(0.0003068);
+  });
+
+  it('should parse negative value with leading zero', () => {
+    const line1 = buildLine1('-0.0003068');
+
+    expect(Tle.meanMoDev1(line1)).toBe(-0.0003068);
+  });
+
+  it('should parse zero value', () => {
+    const line1 = buildLine1(' .00000000');
+
+    expect(Tle.meanMoDev1(line1)).toBe(0);
+  });
+
+  it('should parse zero with + sign', () => {
+    const line1 = buildLine1('+.00000000');
+
+    expect(Tle.meanMoDev1(line1)).toBe(0);
+  });
+
+  it('should parse zero with 0 prefix', () => {
+    const line1 = buildLine1('0.00000000');
+
+    expect(Tle.meanMoDev1(line1)).toBe(0);
+  });
+});
+
+describe('bstar leading character combinations', () => {
+  // Base TLE line with BSTAR field at substring(53, 61) — 8 chars
+  // Original: '1 25544U 98067A   22203.46960946  .00003068  00000+0  61583-4 0  9996'
+  //                                                                  ^^^^^^^^
+  //                                                                  positions 53-60 (8 chars)
+  // Format: [symbol][5-digit mantissa][exponent symbol][exponent digit]
+  // e.g., ' 61583-4' → 0.61583 * 10^-4 = 0.000061583
+  const prefix = '1 25544U 98067A   22203.46960946  .00003068  00000+0 ';
+  const suffix = ' 0  9996';
+
+  const buildLine1 = (bstarField: string): TleLine1 => `${prefix}${bstarField}${suffix}` as TleLine1;
+
+  it('should parse with leading space (standard)', () => {
+    const line1 = buildLine1(' 61583-4');
+
+    expect(Tle.bstar(line1)).toBe(0.000061583);
+  });
+
+  it('should parse with leading + sign', () => {
+    const line1 = buildLine1('+61583-4');
+
+    expect(Tle.bstar(line1)).toBe(0.000061583);
+  });
+
+  it('should parse with leading 0', () => {
+    const line1 = buildLine1('061583-4');
+
+    expect(Tle.bstar(line1)).toBe(0.000061583);
+  });
+
+  it('should parse with leading - sign', () => {
+    const line1 = buildLine1('-61583-4');
+
+    expect(Tle.bstar(line1)).toBe(-0.000061583);
+  });
+
+  it('should parse zero BSTAR with space', () => {
+    const line1 = buildLine1(' 00000+0');
+
+    expect(Tle.bstar(line1)).toBe(0);
+  });
+
+  it('should parse zero BSTAR with + sign', () => {
+    const line1 = buildLine1('+00000+0');
+
+    expect(Tle.bstar(line1)).toBe(0);
+  });
+
+  it('should parse zero BSTAR with 0 prefix', () => {
+    const line1 = buildLine1('000000+0');
+
+    expect(Tle.bstar(line1)).toBe(0);
+  });
+
+  it('should parse positive exponent', () => {
+    const line1 = buildLine1(' 12345+2');
+
+    expect(Tle.bstar(line1)).toBeCloseTo(12.345, 10);
+  });
+
+  it('should parse negative value with positive exponent', () => {
+    const line1 = buildLine1('-12345+2');
+
+    expect(Tle.bstar(line1)).toBeCloseTo(-12.345, 10);
+  });
+
+  it('should parse a high-drag mantissa whose integer digit fills column 54', () => {
+    // Real reentering object 30819: BSTAR field "156214+0" → 1.56214 × 10^0.
+    const line1 = buildLine1('156214+0');
+
+    expect(Tle.bstar(line1)).toBeCloseTo(1.56214, 10);
+  });
+
+  it('should parse a leading mantissa digit with a negative exponent', () => {
+    const line1 = buildLine1('156214-1');
+
+    expect(Tle.bstar(line1)).toBeCloseTo(0.156214, 10);
+  });
+
+  it('should still reject a non-numeric, non-sign mantissa symbol', () => {
+    const line1 = buildLine1('X56214+0');
+
+    expect(() => Tle.bstar(line1)).toThrow(/Invalid BSTAR symbol/u);
+  });
+});
+
+describe('ephemerisType leniency', () => {
+  // Standard ISS line 1; the ephemeris type sits at column 63 (index 62).
+  const base = '1 25544U 98067A   22203.46960946  .00003068  00000+0  61583-4 0  9996' as TleLine1;
+  const withType = (t: string): TleLine1 => `${base.substring(0, 62)}${t}${base.substring(63)}` as TleLine1;
+
+  it('accepts the standard type 0', () => {
+    expect(Tle.ephemerisType(withType('0'))).toBe(0);
+  });
+
+  it('tolerates the legacy type 1', () => {
+    expect(Tle.ephemerisType(withType('1'))).toBe(1);
+  });
+
+  it('rejects SGP4-XP (type 4) with a specific message', () => {
+    expect(() => Tle.ephemerisType(withType('4'))).toThrow(/SGP4-XP/u);
+  });
+
+  it('rejects other values as invalid', () => {
+    expect(() => Tle.ephemerisType(withType('2'))).toThrow(/Invalid ephemeris type/u);
+    expect(() => Tle.ephemerisType(withType('3'))).toThrow(/Invalid ephemeris type/u);
+  });
+});
+
+describe('calcElsetAge honors the supplied reference date', () => {
+  // Epoch: 2022, day-of-year 203.46960946.
+  const line1 = '1 25544U 98067A   22203.46960946  .00003068  00000+0  61583-4 0  9996' as TleLine1;
+
+  it('measures age in days against the reference time, not today', () => {
+    // 2022-08-01 is day-of-year 213 → 213 - 203.46960946.
+    const age = Tle.calcElsetAge(line1, new Date('2022-08-01T00:00:00Z'), 'days');
+
+    expect(age).toBeCloseTo(9.53039054, 5);
+  });
+
+  it('accounts for the reference year (not just day-of-year)', () => {
+    // One year later, same day-of-year → ~365 days older.
+    const age = Tle.calcElsetAge(line1, new Date('2023-07-22T00:00:00Z'), 'days');
+
+    expect(age).toBeCloseTo(364.53039054, 4);
+  });
+
+  it('honors the reference time-of-day', () => {
+    const age = Tle.calcElsetAge(line1, new Date('2022-08-01T12:00:00Z'), 'days');
+
+    expect(age).toBeCloseTo(10.03039054, 5);
   });
 });

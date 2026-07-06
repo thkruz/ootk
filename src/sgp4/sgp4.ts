@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * This class was ported from the python-sgp4 library by Brandon Rhodes. That library
  * is licensed under the MIT license and he maintains the copyright for that work.
@@ -21,20 +21,20 @@
  */
 
 // NOTE: This file is meant to maintain as much of the original format as possible.
-/* eslint-disable complexity */
+
 /* eslint-disable max-statements */
 /* eslint-disable max-lines-per-function */
 /* eslint-disable max-lines */
-/* eslint-disable @typescript-eslint/no-loss-of-precision */
 
-import { Sgp4OpsMode } from '../enums/Sgp4OpsMode.js';
-import { OmmParsedDataFormat } from '../interfaces/OmmFormat.js';
-import { Tle } from '../main.js';
+
+import { Sgp4OpsMode } from '../enums/Sgp4OpsMode';
+import { OmmParsedDataFormat } from '../interfaces/OmmFormat';
+import { convertA5to6Digit } from '../coordinate/alpha5';
 import {
   GreenwichMeanSiderealTime, Kilometers, KilometersPerSecond, SatelliteRecord, StateVectorSgp4, Vec3Flat,
-} from '../types/types.js';
-import { DEG2RAD, PI, TAU, temp4, x2o3 } from '../utils/constants.js';
-import { Sgp4ErrorCode } from './sgp4-error.js';
+} from '../types/types';
+import { DEG2RAD, PI, TAU, temp4, x2o3 } from '../utils/constants';
+import { Sgp4ErrorCode } from './sgp4-error';
 
 export enum Sgp4GravConstants {
   wgs72old = 'wgs72old',
@@ -332,7 +332,11 @@ export class Sgp4 {
      */
     const xpdotp = 1440.0 / (2.0 * PI); // 229.1831180523293;
 
-    satrec.satnum = tleLine1.substring(2, 7);
+    // JSC Vimpel TLEs (flagged by a 'V' in the classification column, index 7)
+    // leave the catalog-number field blank. Substitute a sentinel so the strict
+    // alpha-5 converter in sgp4init_ doesn't reject the otherwise-valid TLE; the
+    // satnum here is only a label on the propagator record.
+    satrec.satnum = tleLine1.charAt(7) === 'V' ? '0' : tleLine1.substring(2, 7);
 
     satrec.epochyr = parseInt(tleLine1.substring(18, 20));
     satrec.epochdays = parseFloat(tleLine1.substring(20, 32));
@@ -1123,6 +1127,14 @@ export class Sgp4 {
       tempa = tempa - satrec.d2 * t2 - satrec.d3 * t3 - satrec.d4 * t4;
       tempe += satrec.bstar * satrec.cc5 * (Math.sin(mm) - satrec.sinmao);
       templ = templ + satrec.t3cof * t3 + t4 * (satrec.t4cof + satrec.t * satrec.t5cof);
+    }
+
+    // Catch decayed satellites where tempa has gone negative.
+    // tempa^2 hides the sign, producing plausible position but absurd velocity.
+    if (tempa <= 0) {
+      satrec.error = Sgp4ErrorCode.SATELLITE_DECAYED;
+
+      return { position: false, velocity: false };
     }
 
     let nm = satrec.no;
@@ -3541,7 +3553,7 @@ export class Sgp4 {
      * Ex. Z1234 = 351234
      */
 
-    satrec.satnum = Tle.convertA5to6Digit(satn);
+    satrec.satnum = convertA5to6Digit(satn);
 
     /*
      * Sgp4fix - note the following variables are also passed directly via satrec.

@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,7 +15,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Matrix, Radians, RadiansPerSecond, Vector, Vector3D, wrapAngle } from '../main.js';
+import { Matrix } from './Matrix';
+import { Radians, RadiansPerSecond } from '../types/types';
+import { Vector } from './Vector';
+import { Vector3D } from './Vector3D';
+import { wrapAngle } from '../utils/functions';
 
 export class Quaternion {
   x: number;

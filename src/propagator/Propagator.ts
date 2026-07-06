@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,10 +15,12 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Thrust } from '../force/Thrust.js';
-import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
-import { EpochUTC, J2000, Seconds } from '../main.js';
-import { GoldenSection } from './../optimize/GoldenSection.js';
+import { Thrust } from '../force/Thrust';
+import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
+import { EpochUTC } from '../time/EpochUTC';
+import { J2000 } from '../coordinate/J2000';
+import { Seconds } from '../types/types';
+import { GoldenSection } from './../optimize/GoldenSection';
 
 // Propagator base class.
 export abstract class Propagator {
@@ -93,7 +95,7 @@ export abstract class Propagator {
   ephemerisManeuver(
     start: EpochUTC,
     finish: EpochUTC,
-    maneuvers: Thrust[],
+    _maneuvers: Thrust[],
     interval = 60.0 as Seconds,
   ): VerletBlendInterpolator {
     const output: J2000[] = [];

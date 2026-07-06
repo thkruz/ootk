@@ -1,10 +1,10 @@
-/* eslint-disable max-lines */
+
 /**
  * @author Theodore Kruczek
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -22,13 +22,13 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Sgp4OpsMode } from '../enums/Sgp4OpsMode.js';
-import { Sgp4, Vector3D } from '../main.js';
-import { Sgp4GravConstants } from '../sgp4/sgp4.js';
-import { EpochUTC } from '../time/EpochUTC.js';
+import { Sgp4OpsMode } from '../enums/Sgp4OpsMode';
+import { ParseError, PropagationError } from '../errors';
+import { Vector3D } from '../operations/Vector3D';
+import { Sgp4, Sgp4GravConstants } from '../sgp4/sgp4';
+import { EpochUTC } from '../time/EpochUTC';
 import {
   Degrees,
-  EciVec3,
   Kilometers,
   KilometersPerSecond,
   Line1Data,
@@ -37,15 +37,32 @@ import {
   SatelliteRecord,
   Seconds,
   StateVectorSgp4,
+  TemeVec3,
   TleData,
   TleDataFull,
   TleLine1,
   TleLine2,
-} from '../types/types.js';
-import { DEG2RAD, earthGravityParam, RAD2DEG, secondsPerDay, TAU } from '../utils/constants.js';
-import { getDayOfYear, newtonNu, toPrecision } from '../utils/functions.js';
-import { ClassicalElements, FormatTle, TEME } from './index.js';
-import { TleFormatData } from './tle-format-data.js';
+} from '../types/types';
+import { DEG2RAD, earthGravityParam, RAD2DEG, secondsPerDay, TAU } from '../utils/constants';
+import { getDayOfYear, newtonNu, toPrecision } from '../utils/functions';
+import { ALPHA5, convert6DigitToA5, convertA5to6Digit } from './alpha5';
+import type { ClassicalElements } from './ClassicalElements';
+import { FormatTle } from './FormatTle';
+import { TEME } from './TEME';
+import { TleFormatData } from './tle-format-data';
+
+/**
+ * Classification of a satellite catalog number by its representation.
+ *
+ * - `numeric5` — 1-5 numeric digits, value 0-99 999.
+ * - `alpha5` — 5 chars, leading letter (A-Z, excl. I/O), value 100 000-339 999.
+ * - `numeric6` — 6 numeric digits, value 100 000-339 999.
+ * - `extended` — 7+ numeric digits (e.g. CelesTrak supplemental 9-digit IDs).
+ *   Cannot be encoded in TLE cols 3-7 without truncation; canonical ID lives
+ *   on `Satellite.sccNum`.
+ * - `invalid` — empty, malformed, or otherwise unclassifiable.
+ */
+export type SatNumKind = 'numeric5' | 'alpha5' | 'numeric6' | 'extended' | 'invalid';
 
 /**
  * Tle is a static class with a collection of methods for working with TLEs.
@@ -57,36 +74,10 @@ export class Tle {
   satnum: number;
   private readonly satrec_: SatelliteRecord;
   /**
-   * Mapping of alphabets to their corresponding numeric values.
+   * Mapping of alpha-5 leading letters to their numeric values. Sourced from the
+   * leaf `alpha5` module so TLE format helpers can share it without importing Tle.
    */
-  private static readonly alpha5_ = {
-    A: '10',
-    B: '11',
-    C: '12',
-    D: '13',
-    E: '14',
-    F: '15',
-    G: '16',
-    H: '17',
-    // I is skipped on purpose
-    J: '18',
-    K: '19',
-    L: '20',
-    M: '21',
-    N: '22',
-    // O is skipped on purpose
-    P: '23',
-    Q: '24',
-    R: '25',
-    S: '26',
-    T: '27',
-    U: '28',
-    V: '29',
-    W: '30',
-    X: '31',
-    Y: '32',
-    Z: '33',
-  } as const;
+  private static readonly alpha5_ = ALPHA5;
   /** The argument of perigee field. */
   private static readonly argPerigee_ = new TleFormatData(35, 42);
   /** The BSTAR drag term field. */
@@ -139,7 +130,9 @@ export class Tle {
     this.line1 = line1 as TleLine1;
     this.line2 = line2 as TleLine2;
     this.epoch = Tle.parseEpoch_(line1.substring(18, 32));
-    this.satnum = parseInt(Tle.convertA5to6Digit(line1.substring(2, 7)));
+    // Tle.satNum tolerates a blank catalog field (JSC Vimpel TLEs), returning
+    // NaN instead of throwing inside the strict alpha-5 validator.
+    this.satnum = Tle.satNum(this.line1);
     this.satrec_ = Sgp4.createSatrec(line1, line2, gravConst, opsMode);
   }
 
@@ -248,7 +241,9 @@ export class Tle {
     }
 
     const epochJday = epochDayOfYear + (epochYearFull * 365);
-    const currentJday = getDayOfYear() + (currentYearFull * 365);
+    // Use nowInput's day-of-year (not today's) so a caller-supplied reference time
+    // — e.g. a historic catalog's snapshot epoch — is honored consistently.
+    const currentJday = getDayOfYear(nowInput) + (currentYearFull * 365);
     const currentTime = (nowInput.getUTCHours() * 3600 + nowInput.getUTCMinutes() * 60 +
       nowInput.getUTCSeconds()) / 86400;
     const daysOld = (currentJday + currentTime) - epochJday;
@@ -279,7 +274,7 @@ export class Tle {
     const stateVector = Sgp4.propagate(this.satrec_, epoch.difference(this.epoch) / 60.0);
 
     if (!stateVector) {
-      throw new Error('Propagation failed');
+      throw new PropagationError('TLE propagation failed', epoch.toDateTime());
     }
 
     Tle.sv2rv_(stateVector, r, v);
@@ -298,8 +293,8 @@ export class Tle {
    * @param v - The array to store the velocity values.
    */
   private static sv2rv_(stateVector: StateVectorSgp4, r: Float64Array, v: Float64Array) {
-    const pos = stateVector.position as EciVec3;
-    const vel = stateVector.velocity as EciVec3<KilometersPerSecond>;
+    const pos = stateVector.position as TemeVec3;
+    const vel = stateVector.velocity as TemeVec3<KilometersPerSecond>;
 
     r[0] = pos.x;
     r[1] = pos.y;
@@ -402,7 +397,7 @@ export class Tle {
     const argPe = parseFloat(tleLine2.substring(Tle.argPerigee_.start, Tle.argPerigee_.stop));
 
     if (!(argPe >= 0 && argPe <= 360)) {
-      throw new Error(`Invalid argument of perigee: ${argPe}`);
+      throw new ParseError(`Invalid argument of perigee: ${argPe}`, 'TLE');
     }
 
     return toPrecision(argPe, 4) as Degrees;
@@ -422,26 +417,37 @@ export class Tle {
     const BSTAR_PART_4 = Tle.bstar_.stop - 1;
 
     const bstarSymbol = tleLine1.substring(Tle.bstar_.start, BSTAR_PART_2);
-    // Decimal place is assumed
-    let bstar1 = parseFloat(`0.${tleLine1.substring(BSTAR_PART_2, BSTAR_PART_3)}`);
+    const mantissaFraction = tleLine1.substring(BSTAR_PART_2, BSTAR_PART_3);
     const exponentSymbol = tleLine1.substring(BSTAR_PART_3, BSTAR_PART_4);
     let exponent = parseInt(tleLine1.substring(BSTAR_PART_4, Tle.bstar_.stop));
 
     if (exponentSymbol === '-') {
       exponent *= -1;
-    } else if (exponentSymbol !== '+') {
-      throw new Error(`Invalid BSTAR symbol: ${bstarSymbol}`);
+    } else if (exponentSymbol !== '+' && exponentSymbol !== ' ' && exponentSymbol !== '0') {
+      throw new ParseError(`Invalid BSTAR exponent symbol: ${exponentSymbol}`, 'TLE');
     }
 
-    bstar1 *= 10 ** exponent;
+    /*
+     * Column 54 is normally the mantissa sign with an assumed leading decimal point,
+     * e.g. " 36771-4" → 0.36771e-4. High-drag (reentering) element sets overflow a
+     * sixth significant digit into this column, e.g. "156214+0", where it is the
+     * integer part of the mantissa → 1.56214e0. Treat a leading digit as that integer
+     * part rather than rejecting it.
+     */
+    let sign = 1;
+    let integerPart = '0';
 
     if (bstarSymbol === '-') {
-      bstar1 *= -1;
-    } else if (bstarSymbol === '+' || bstarSymbol === ' ') {
-      // Do nothing
+      sign = -1;
+    } else if (bstarSymbol === '+' || bstarSymbol === ' ' || bstarSymbol === '0') {
+      // Assumed-decimal form: integer part stays 0.
+    } else if ((/^\d$/u).test(bstarSymbol)) {
+      integerPart = bstarSymbol;
     } else {
-      throw new Error(`Invalid BSTAR symbol: ${bstarSymbol}`);
+      throw new ParseError(`Invalid BSTAR symbol: ${bstarSymbol}`, 'TLE');
     }
+
+    const bstar1 = sign * parseFloat(`${integerPart}.${mantissaFraction}`) * 10 ** exponent;
 
     return toPrecision(bstar1, 14);
   }
@@ -485,7 +491,7 @@ export class Tle {
     const ecc = parseFloat(`0.${tleLine2.substring(Tle.eccentricity_.start, Tle.eccentricity_.stop)}`);
 
     if (!(ecc >= 0 && ecc <= 1)) {
-      throw new Error(`Invalid eccentricity: ${ecc}`);
+      throw new ParseError(`Invalid eccentricity: ${ecc}`, 'TLE');
     }
 
     return toPrecision(ecc, 7);
@@ -504,23 +510,26 @@ export class Tle {
 
   /**
    * Private value - used by United States Space Force to reference the orbit model used to generate the Tle. Will
-   * always be seen as zero externally (e.g. by "us", unless you are "them" - in which case, hello!).
+   * almost always be seen as zero externally (e.g. by "us", unless you are "them" - in which case, hello!).
    *
-   * Starting in 2024, this may contain a 4 if the Tle was generated using the new SGP4-XP model. Until the source code
-   * is released, there is no way to support that format in JavaScript or TypeScript.
+   * A value of 1 is tolerated in addition to 0: the field is informational and does not change how SGP4/SDP4
+   * propagate the element set, and a handful of archival TLEs carry a 1 (originally an SGP marker).
+   *
+   * A value of 4 indicates the SGP4-XP model. Until that source code is released there is no way to support that
+   * format in JavaScript or TypeScript, so it is rejected explicitly. Any other value is treated as malformed.
    * @example 0
    * @param tleLine1 The first line of the Tle to parse.
-   * @returns The ephemeris type.
+   * @returns The ephemeris type (0 or 1).
    */
-  static ephemerisType(tleLine1: TleLine1): 0 {
+  static ephemerisType(tleLine1: TleLine1): 0 | 1 {
     const ephemerisType = parseInt(tleLine1.substring(Tle.ephemerisType_.start, Tle.ephemerisType_.stop));
 
-    if (ephemerisType !== 0 && ephemerisType !== 4) {
-      throw new Error('Invalid ephemeris type');
+    if (ephemerisType === 4) {
+      throw new ParseError('SGP4-XP ephemeris type is not supported', 'TLE');
     }
 
-    if (ephemerisType === 4) {
-      throw new Error('SGP4-XP is not supported');
+    if (ephemerisType !== 0 && ephemerisType !== 1) {
+      throw new ParseError(`Invalid ephemeris type: ${ephemerisType}`, 'TLE');
     }
 
     return ephemerisType;
@@ -536,7 +545,7 @@ export class Tle {
     const epochDay = parseFloat(tleLine1.substring(Tle.epochDay_.start, Tle.epochDay_.stop));
 
     if (epochDay < 1 || epochDay > 366.99999999) {
-      throw new Error('Invalid epoch day');
+      throw new ParseError(`Invalid epoch day: ${epochDay}`, 'TLE');
     }
 
     return toPrecision(epochDay, 8);
@@ -552,7 +561,7 @@ export class Tle {
     const epochYear = parseInt(tleLine1.substring(Tle.epochYear_.start, Tle.epochYear_.stop));
 
     if (epochYear < 0 || epochYear > 99) {
-      throw new Error('Invalid epoch year');
+      throw new ParseError(`Invalid epoch year: ${epochYear}`, 'TLE');
     }
 
     return epochYear;
@@ -568,7 +577,7 @@ export class Tle {
     const epochYear = parseInt(tleLine1.substring(Tle.epochYear_.start, Tle.epochYear_.stop));
 
     if (epochYear < 0 || epochYear > 99) {
-      throw new Error('Invalid epoch year');
+      throw new ParseError(`Invalid epoch year: ${epochYear}`, 'TLE');
     }
 
     if (epochYear < 57) {
@@ -589,7 +598,7 @@ export class Tle {
     const inc = parseFloat(tleLine2.substring(Tle.inclination_.start, Tle.inclination_.stop));
 
     if (inc < 0 || inc > 180) {
-      throw new Error(`Invalid inclination: ${inc}`);
+      throw new ParseError(`Invalid inclination: ${inc}`, 'TLE');
     }
 
     return toPrecision(inc, 4) as Degrees;
@@ -656,7 +665,7 @@ export class Tle {
     const lineNum = parseInt(tleLine.substring(Tle.lineNumber_.start, Tle.lineNumber_.stop));
 
     if (lineNum !== 1 && lineNum !== 2) {
-      throw new Error('Invalid line number');
+      throw new ParseError(`Invalid TLE line number: ${lineNum}`, 'TLE');
     }
 
     return lineNum;
@@ -673,7 +682,7 @@ export class Tle {
     const meanA = parseFloat(tleLine2.substring(Tle.meanAnom_.start, Tle.meanAnom_.stop));
 
     if (!(meanA >= 0 && meanA <= 360)) {
-      throw new Error(`Invalid mean anomaly: ${meanA}`);
+      throw new ParseError(`Invalid mean anomaly: ${meanA}`, 'TLE');
     }
 
     return toPrecision(meanA, 4) as Degrees;
@@ -688,10 +697,11 @@ export class Tle {
    * @returns The first derivative of the mean motion.
    */
   static meanMoDev1(tleLine1: TleLine1): number {
-    const meanMoDev1 = parseFloat(tleLine1.substring(Tle.meanMoDev1_.start, Tle.meanMoDev1_.stop));
+    const raw = tleLine1.substring(Tle.meanMoDev1_.start, Tle.meanMoDev1_.stop).trim();
+    const meanMoDev1 = parseFloat(raw.startsWith('+') ? raw.substring(1) : raw);
 
     if (isNaN(meanMoDev1)) {
-      throw new Error('Invalid first derivative of mean motion.');
+      throw new ParseError('Invalid first derivative of mean motion', 'TLE');
     }
 
     return toPrecision(meanMoDev1, 8);
@@ -711,7 +721,7 @@ export class Tle {
     const meanMoDev2 = parseFloat(tleLine1.substring(Tle.meanMoDev2_.start, Tle.meanMoDev2_.stop));
 
     if (isNaN(meanMoDev2)) {
-      throw new Error('Invalid second derivative of mean motion.');
+      throw new ParseError('Invalid second derivative of mean motion', 'TLE');
     }
 
     // NOTE: Should this limit to a specific number of decimals?
@@ -729,7 +739,7 @@ export class Tle {
     const meanMo = parseFloat(tleLine2.substring(Tle.meanMo_.start, Tle.meanMo_.stop));
 
     if (!(meanMo > 0 && meanMo <= 18)) {
-      throw new Error(`Invalid mean motion: ${meanMo}`);
+      throw new ParseError(`Invalid mean motion: ${meanMo}`, 'TLE');
     }
 
     return toPrecision(meanMo, 8);
@@ -758,7 +768,7 @@ export class Tle {
     const rightAscension = parseFloat(tleLine2.substring(Tle.rightAscension_.start, Tle.rightAscension_.stop));
 
     if (!(rightAscension >= 0 && rightAscension <= 360)) {
-      throw new Error(`Invalid Right Ascension: ${rightAscension}`);
+      throw new ParseError(`Invalid right ascension: ${rightAscension}`, 'TLE');
     }
 
     return toPrecision(rightAscension, 4) as Degrees;
@@ -797,6 +807,16 @@ export class Tle {
    */
   static satNum(tleLine: TleLine1 | TleLine2): number {
     const satNumStr = tleLine.substring(Tle.satNum_.start, Tle.satNum_.stop);
+
+    // JSC Vimpel TLEs leave the catalog-number field blank (they carry their
+    // designator elsewhere and are flagged by a 'V' in the classification
+    // column). A blank field is not a number — return NaN rather than letting
+    // the strict alpha-5 validator throw. Genuinely malformed (non-blank)
+    // fields still throw so real corruption is caught.
+    if (satNumStr.trim().length === 0) {
+      return NaN;
+    }
+
     const sixDigitSatNum = Tle.convertA5to6Digit(satNumStr);
 
     return parseInt(sixDigitSatNum);
@@ -894,20 +914,26 @@ export class Tle {
     const line1 = Tle.parseLine1(tleLine1);
     const line2 = Tle.parseLine2(tleLine2);
 
-    if (line1.satNum !== line2.satNum) {
-      throw new Error('Satellite numbers do not match');
+    // JSC Vimpel TLEs (flagged by a 'V' in the classification column) leave the
+    // catalog-number field blank, so both lines parse to NaN and the numeric/raw
+    // match checks below would reject them. Exempt only Vimpel TLEs; every other
+    // TLE must still have matching satellite numbers across both lines.
+    const isVimpel = line1.classification === 'V';
+
+    if (!isVimpel && line1.satNum !== line2.satNum) {
+      throw new ParseError('Satellite numbers do not match between TLE lines', 'TLE');
     }
 
-    if (line1.satNumRaw !== line2.satNumRaw) {
-      throw new Error('Raw satellite numbers do not match');
+    if (!isVimpel && line1.satNumRaw !== line2.satNumRaw) {
+      throw new ParseError('Raw satellite numbers do not match between TLE lines', 'TLE');
     }
 
     if (line1.lineNumber1 !== 1) {
-      throw new Error('First line number must be 1');
+      throw new ParseError('First TLE line number must be 1', 'TLE');
     }
 
     if (line2.lineNumber2 !== 2) {
-      throw new Error('Second line number must be 2');
+      throw new ParseError('Second TLE line number must be 2', 'TLE');
     }
 
     return {
@@ -940,85 +966,98 @@ export class Tle {
     const line1 = Tle.parseLine1(tleLine1);
     const line2 = Tle.parseLine2(tleLine2);
 
-    if (line1.satNum !== line2.satNum) {
-      throw new Error('Satellite numbers do not match');
+    // See Tle.parse: JSC Vimpel TLEs (classification 'V') have blank catalog
+    // numbers and are exempt from the cross-line satellite-number match checks.
+    const isVimpel = line1.classification === 'V';
+
+    if (!isVimpel && line1.satNum !== line2.satNum) {
+      throw new ParseError('Satellite numbers do not match between TLE lines', 'TLE');
     }
 
-    if (line1.satNumRaw !== line2.satNumRaw) {
-      throw new Error('Raw satellite numbers do not match');
+    if (!isVimpel && line1.satNumRaw !== line2.satNumRaw) {
+      throw new ParseError('Raw satellite numbers do not match between TLE lines', 'TLE');
     }
 
     if (line1.lineNumber1 !== 1) {
-      throw new Error('First line number must be 1');
+      throw new ParseError('First TLE line number must be 1', 'TLE');
     }
 
     if (line2.lineNumber2 !== 2) {
-      throw new Error('Second line number must be 2');
+      throw new ParseError('Second TLE line number must be 2', 'TLE');
     }
 
     return { ...line1, ...line2 };
   }
 
   /**
-   * Converts a 6 digit SCC number to a 5 digit SCC alpha 5 number
-   * @param sccNum The 6 digit SCC number
-   * @returns The 5 digit SCC alpha 5 number
+   * Classifies a satellite catalog number by representation. See {@link SatNumKind}.
+   * Pure function; no side effects.
+   * @param sccNum The catalog number string.
+   * @returns The {@link SatNumKind} describing the input.
    */
-  static convert6DigitToA5(sccNum: string): string {
-    // Only applies to 6 digit numbers
-    if (sccNum.length < 6) {
-      return sccNum;
+  static classifySatNum(sccNum: string): SatNumKind {
+    if (typeof sccNum !== 'string') {
+      return 'invalid';
     }
 
-    if (typeof sccNum[0] !== 'string') {
-      throw new Error('Invalid SCC number');
+    const trimmed = sccNum.trim();
+
+    if (trimmed.length === 0) {
+      return 'invalid';
     }
 
-    // Already an alpha 5 number
-    if (RegExp(/[A-Z]/iu, 'u').test(sccNum[0])) {
-      return sccNum;
+    const first = trimmed[0];
+
+    // Alpha-5: exactly 5 chars, leading letter from the alpha5_ map.
+    if (trimmed.length === 5 && first in Tle.alpha5_) {
+      return (/^\d{4}$/u).test(trimmed.slice(1)) ? 'alpha5' : 'invalid';
     }
 
-    // Extract the trailing 4 digits
-    const rest = sccNum.slice(2, 6);
+    // Otherwise must be all digits.
+    if (!(/^\d+$/u).test(trimmed)) {
+      return 'invalid';
+    }
 
-    /*
-     * Convert the first two digit numbers into a Letter. Skip I and O as they
-     * look too similar to 1 and 0 A=10, B=11, C=12, D=13, E=14, F=15, G=16,
-     * H=17, J=18, K=19, L=20, M=21, N=22, P=23, Q=24, R=25, S=26, T=27, U=28,
-     * V=29, W=30, X=31, Y=32, Z=33
-     */
-    let first = parseInt(`${sccNum[0]}${sccNum[1]}`);
-    const iPlus = first >= 18 ? 1 : 0;
-    const tPlus = first >= 24 ? 1 : 0;
+    if (trimmed.length <= 5) {
+      return 'numeric5';
+    }
 
-    first = first + iPlus + tPlus;
+    if (trimmed.length === 6) {
+      return parseInt(trimmed, 10) <= 339999 ? 'numeric6' : 'extended';
+    }
 
-    return `${String.fromCharCode(first + 55)}${rest}`;
+    return 'extended';
   }
 
   /**
-   * Converts a 5-digit SCC number to a 6-digit SCC number.
-   * @param sccNum - The 5-digit SCC number to convert.
-   * @returns The converted 6-digit SCC number.
+   * Converts a 6-digit numeric SCC number to its 5-character alpha-5 form.
+   *
+   * Inputs shorter than 6 chars or already in alpha-5 form pass through unchanged.
+   *
+   * @param sccNum The SCC number to convert.
+   * @returns The 5-character alpha-5 representation.
+   * @throws {ValidationError} If `sccNum` exceeds the alpha-5 range (numeric value > 339 999,
+   *   or length > 6). For such IDs the canonical value should be kept on
+   *   `Satellite.sccNum` and the TLE column populated with the last 5 digits.
+   */
+  static convert6DigitToA5(sccNum: string): string {
+    return convert6DigitToA5(sccNum);
+  }
+
+  /**
+   * Converts a 5-character alpha-5 SCC number to its 6-digit numeric form.
+   *
+   * Inputs shorter than 5 chars pass through unchanged. Numeric inputs without
+   * an alpha-5 leading letter pass through unchanged (5-digit numeric, in-range
+   * 6-digit numeric, and extended 7+ digit numeric IDs are all identity).
+   *
+   * @param sccNum The SCC number to convert.
+   * @returns The 6-digit numeric representation, or the input itself if it
+   *   is already a numeric form.
+   * @throws {ValidationError} If `sccNum` is malformed: 6-digit numeric whose
+   *   value exceeds 339 999, or contains stray letters in a non-leading position.
    */
   static convertA5to6Digit(sccNum: string): string {
-    if (sccNum.length < 5) {
-      return sccNum;
-    }
-
-    const values = sccNum.toUpperCase().split('');
-
-    if (!values[0]) {
-      throw new Error('Invalid SCC number');
-    }
-
-    if (values[0] in Tle.alpha5_) {
-      const firstLetter = values[0] as keyof typeof Tle.alpha5_;
-
-      values[0] = Tle.alpha5_[firstLetter];
-    }
-
-    return values.join('');
+    return convertA5to6Digit(sccNum);
   }
 }

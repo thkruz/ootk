@@ -1,5 +1,5 @@
 import { Sgp4OpsMode } from '../../src/enums/Sgp4OpsMode';
-import { EciVec3, KilometersPerSecond, Sgp4, Vec3Flat } from '../../src/main';
+import { TemeVec3, KilometersPerSecond, Sgp4, Vec3Flat } from '../../src/main';
 import { Sgp4GravConstants } from '../../src/sgp4/sgp4';
 import { sgp4FullCov } from './sgp4-full-cov';
 import { sgp4FullCovFail } from './sgp4-full-cov-fail';
@@ -24,8 +24,8 @@ describe('Verification TLE Data in Appendix D of Revisiting Spacetrack Report #3
           const sgp4Result = Sgp4.propagate(satrec, expected.time);
 
           expect(sgp4Result).not.toBe(false);
-          const position = sgp4Result?.position as EciVec3;
-          const velocity = sgp4Result?.velocity as EciVec3<KilometersPerSecond>;
+          const position = sgp4Result?.position as TemeVec3;
+          const velocity = sgp4Result?.velocity as TemeVec3<KilometersPerSecond>;
 
           expect(position.x).toBeCloseTo(expected.position.x);
           expect(position.y).toBeCloseTo(expected.position.y);

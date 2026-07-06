@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,18 +21,55 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Seconds } from '../main.js';
-import { secondsPerDay } from '../utils/constants.js';
+import { ValidationError } from '../errors';
+import { Seconds } from '../types/types';
+import { secondsPerDay } from '../utils/constants';
 
-// / Base class for [Epoch] data.
+/**
+ * Base class for all Epoch time representations.
+ *
+ * The Epoch class hierarchy provides precise time handling for orbital mechanics
+ * calculations. Different astronomical time scales are required for different
+ * applications:
+ *
+ * ## Class Hierarchy
+ * ```
+ * Epoch (base class)
+ * ├── EpochUTC  - Coordinated Universal Time (primary user-facing class)
+ * ├── EpochTAI  - International Atomic Time
+ * ├── EpochTT   - Terrestrial Time
+ * └── EpochTDB  - Barycentric Dynamical Time
+ *
+ * EpochGPS      - GPS Time (standalone, week/seconds format)
+ * ```
+ *
+ * ## Time Scale Conversion Chain
+ * ```
+ * UTC ──(+leap seconds)──► TAI ──(+32.184s)──► TT ──(+relativistic)──► TDB
+ *  │
+ *  └──(week/seconds since 1980-01-06)──► GPS
+ * ```
+ *
+ * ## Internal Representation
+ * All Epoch subclasses store time as POSIX seconds (seconds since
+ * 1970-01-01T00:00:00.000 in their respective time scale). This provides
+ * a consistent internal representation while allowing conversions between
+ * time scales.
+ *
+ * @see EpochUTC - The primary entry point for time operations
+ * @see EpochTAI - For continuous atomic timekeeping
+ * @see EpochTT - For Earth-based astronomical observations
+ * @see EpochTDB - For planetary ephemerides and solar system calculations
+ * @see EpochGPS - For GPS/GNSS applications
+ */
 export class Epoch {
   /*
    * Create a new [Epoch] object given the number of seconds elapsed since the
    * [posix] epoch _(`1970-01-01T00:00:00.000`)_ in the [Epoch] time scale.
    */
-  constructor(public posix: Seconds) {
-    if (posix < 0) {
-      throw new Error('Epoch cannot be negative');
+  constructor(public posix: Seconds = Date.now() / 1000 as Seconds) {
+    if (Number.isNaN(posix)) {
+      throw new ValidationError('Epoch posix time must be a valid number', 'posix', posix);
     }
   }
 
@@ -64,7 +101,17 @@ export class Epoch {
     const currentDateObj = this.toDateTime();
     const epochYear = currentDateObj.getUTCFullYear().toString().slice(2, 4);
     const epochDay = this.getDayOfYear_(currentDateObj);
-    const timeOfDay = (currentDateObj.getUTCHours() * 60 + currentDateObj.getUTCMinutes()) / 1440;
+    /*
+     * Full time-of-day precision. Dropping seconds here truncates a generated
+     * TLE's epoch to the whole minute, which shows up as up to ~59 seconds of
+     * pure in-track position error (hundreds of km in LEO).
+     */
+    const timeOfDay = (
+      currentDateObj.getUTCHours() * 3600 +
+      currentDateObj.getUTCMinutes() * 60 +
+      currentDateObj.getUTCSeconds() +
+      currentDateObj.getUTCMilliseconds() / 1000
+    ) / 86400;
     const epochDayStr = (epochDay + timeOfDay).toFixed(8).padStart(12, '0');
 
     return {

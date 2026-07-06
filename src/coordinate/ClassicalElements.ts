@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,22 +21,17 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { OrbitRegime } from '../enums/OrbitRegime.js';
-import { ClassicalElementsParams } from '../interfaces/ClassicalElementsParams.js';
-import {
-  Degrees,
-  Earth,
-  Kilometers,
-  KilometersPerSecond,
-  Minutes, PositionVelocity,
-  Radians, Seconds,
-} from '../main.js';
-import { Vector3D } from '../operations/Vector3D.js';
-import { EpochUTC } from '../time/EpochUTC.js';
-import { earthGravityParam, MINUTES_PER_DAY, RAD2DEG, sec2min, TAU } from '../utils/constants.js';
-import { clamp, matchHalfPlane, newtonNu } from '../utils/functions.js';
-import { EquinoctialElements } from './EquinoctialElements.js';
-import { StateVector } from './StateVector.js';
+import { OrbitRegime } from '../enums/OrbitRegime';
+import { ClassicalElementsParams } from '../interfaces/ClassicalElementsParams';
+import { Degrees, Kilometers, KilometersPerSecond, Minutes, PositionVelocity, Radians, Seconds } from '../types/types';
+import { Earth } from '../body/Earth';
+import { J2000 } from './J2000';
+import { Vector3D } from '../operations/Vector3D';
+import { EpochUTC } from '../time/EpochUTC';
+import { earthGravityParam, MINUTES_PER_DAY, RAD2DEG, sec2min, TAU } from '../utils/constants';
+import { clamp, matchHalfPlane, newtonNu } from '../utils/functions';
+import { EquinoctialElements } from './EquinoctialElements';
+import { StateVector } from './StateVector';
 
 /**
  * The ClassicalElements class represents the classical orbital elements of an object.
@@ -106,16 +101,32 @@ export class ClassicalElements {
     const h = pos.cross(vel);
     const i = Math.acos(clamp(h.z / h.magnitude(), -1.0, 1.0)) as Radians;
     const n = Vector3D.zAxis.cross(h);
-    let o = Math.acos(clamp(n.x / n.magnitude(), -1.0, 1.0)) as Radians;
+    const nMag = n.magnitude();
+    let o: Radians;
+    let w: Radians;
 
-    if (n.y < 0) {
-      o = TAU - o as Radians;
+    if (nMag < 1e-12) {
+      // Equatorial orbit: RAAN is undefined, set to 0; measure argPerigee from X-axis
+      o = 0 as Radians;
+      if (e > 1e-12) {
+        w = Math.atan2(eVec.y, eVec.x) as Radians;
+        if (w < 0) {
+          w = w + TAU as Radians;
+        }
+      } else {
+        w = 0 as Radians;
+      }
+    } else {
+      o = Math.acos(clamp(n.x / nMag, -1.0, 1.0)) as Radians;
+      if (n.y < 0) {
+        o = TAU - o as Radians;
+      }
+      w = n.angle(eVec);
+      if (eVec.z < 0) {
+        w = TAU - w as Radians;
+      }
     }
-    let w = n.angle(eVec);
 
-    if (eVec.z < 0) {
-      w = TAU - w as Radians;
-    }
     let v = eVec.angle(pos);
 
     if (pos.dot(vel) < 0) {
@@ -270,6 +281,16 @@ export class ClassicalElements {
   }
 
   /**
+   * Converts the classical elements to J2000 state vector.
+   * @return The J2000 state vector.
+   */
+  toJ2000(): J2000 {
+    const { position, velocity } = this.toPositionVelocity();
+
+    return new J2000(this.epoch, position, velocity);
+  }
+
+  /**
    * Converts the classical elements to equinoctial elements.
    * @returns The equinoctial elements.
    */
@@ -314,7 +335,7 @@ export class ClassicalElements {
       eaFinal = eaTemp;
     }
     const cosEaFinal = Math.cos(eaFinal);
-    let vFinal = clamp(Math.acos((cosEaFinal - this.eccentricity) / (1 - this.eccentricity * cosEaFinal)), -1, 1);
+    let vFinal = Math.acos(clamp((cosEaFinal - this.eccentricity) / (1 - this.eccentricity * cosEaFinal), -1, 1));
 
     vFinal = matchHalfPlane(vFinal, eaFinal);
 
@@ -328,5 +349,56 @@ export class ClassicalElements {
       trueAnomaly: vFinal as Radians,
       mu: this.mu,
     });
+  }
+
+  /**
+   * Calculates the J2 nodal precession rate (RAAN drift rate).
+   *
+   * The nodal precession is caused by Earth's oblateness (J2 perturbation) and
+   * causes the right ascension of the ascending node to drift over time.
+   *
+   * @returns Precession rate in radians per second.
+   *
+   * @example
+   * ```ts
+   * const elements = ClassicalElements.fromStateVector(state);
+   * const raanDriftPerDay = elements.nodalPrecessionRate * 86400; // rad/day
+   * const raanDriftDegreesPerDay = raanDriftPerDay * RAD2DEG; // deg/day
+   * ```
+   */
+  get nodalPrecessionRate(): number {
+    const Re = Earth.radiusEquator; // km
+    const a = this.semimajorAxis; // km
+    const e = this.eccentricity;
+    const i = this.inclination; // radians
+    const n = this.meanMotion; // rad/s
+
+    // J2 nodal precession: Ω̇ = -3/2 * (Re/a)² * (1-e²)^-2 * J2 * n * cos(i)
+    return (-3 / 2) * (Re / a) ** 2 / (1 - e * e) ** 2 * Earth.j2 * n * Math.cos(i);
+  }
+
+  /**
+   * Returns the RAAN normalized for J2 precession since the epoch.
+   *
+   * This accounts for the secular drift of the right ascension due to
+   * Earth's oblateness, allowing comparison of RAAN values across different epochs.
+   *
+   * @param targetEpoch - The epoch to normalize the RAAN to.
+   * @returns The normalized RAAN in radians, wrapped to [0, 2π).
+   *
+   * @example
+   * ```ts
+   * const elements = ClassicalElements.fromStateVector(state);
+   * const futureEpoch = elements.epoch.roll(86400); // 1 day later
+   * const normalizedRaan = elements.normalizedRaan(futureEpoch);
+   * ```
+   */
+  normalizedRaan(targetEpoch: EpochUTC): Radians {
+    const deltaSeconds = targetEpoch.difference(this.epoch);
+    const precessionRad = this.nodalPrecessionRate * deltaSeconds;
+    const newRaan = this.rightAscension + precessionRad;
+
+    // Wrap to [0, 2π)
+    return (((newRaan % TAU) + TAU) % TAU) as Radians;
   }
 }

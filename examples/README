@@ -1,4 +1,21 @@
-Run the examples using tsx.
+# Examples
 
-Example:
-npx tsx .\examples\julian.ts -p ./examples/tsconfig.json
+Runnable demonstration scripts for ootk. Each script is embedded, section by
+section, in the VitePress documentation site (`docs/examples/`), so keep the
+`// #region` markers intact when editing: the docs pages reference them by name.
+
+The scripts import from `'ootk'`, which resolves to the built `dist/` output via
+npm package self-reference. Build once, then run any example with tsx:
+
+```bash
+npm run build
+npx tsx ./examples/satellite-passes.ts
+```
+
+Browse the annotated versions with explanations and expected output:
+
+```bash
+npm run docs:dev
+```
+
+then open the Examples section.

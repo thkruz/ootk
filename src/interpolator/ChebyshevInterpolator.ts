@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,9 +15,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, EpochWindow, J2000 } from '../main.js';
-import { ChebyshevCoefficients } from './ChebyshevCoefficients.js';
-import { StateInterpolator } from './StateInterpolator.js';
+import { EpochUTC } from '../time/EpochUTC';
+import { EpochWindow } from '../time/EpochWindow';
+import { J2000 } from '../coordinate/J2000';
+import { ChebyshevCoefficients } from './ChebyshevCoefficients';
+import { StateInterpolator } from './StateInterpolator';
 
 /**
  * Compressed Chebyshev ephemeris interpolator.

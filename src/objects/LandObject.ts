@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,9 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { BaseObjectParams, Degrees, Kilometers } from '../main.js';
-import { BaseObject } from './BaseObject.js';
-/* eslint-disable class-methods-use-this */
+import { BaseObjectParams } from '../interfaces/BaseObjectParams';
+import { Degrees, Kilometers } from '../types/types';
+import { BaseObject } from './BaseObject';
+
 
 export interface LandObjectParams extends BaseObjectParams {
   lat: Degrees;
@@ -28,9 +29,9 @@ export interface LandObjectParams extends BaseObjectParams {
 }
 
 export class LandObject extends BaseObject {
-  lat: Degrees;
-  lon: Degrees;
-  alt: Kilometers;
+  readonly lat: Degrees;
+  readonly lon: Degrees;
+  readonly alt: Kilometers;
   country?: string;
   Code?: string;
 
@@ -39,9 +40,24 @@ export class LandObject extends BaseObject {
     this.lat = info.lat;
     this.lon = info.lon;
     this.alt = info.alt;
+    this.country = info.country;
+    this.Code = info.Code;
   }
 
   isLandObject() {
     return true;
+  }
+
+  /**
+   * Returns type-specific serialization data.
+   */
+  protected serializeSpecific(): Record<string, unknown> {
+    return {
+      lat: this.lat,
+      lon: this.lon,
+      alt: this.alt,
+      country: this.country,
+      Code: this.Code,
+    };
   }
 }

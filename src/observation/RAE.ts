@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,15 +21,15 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable no-undefined */
-import { ITRF } from '../coordinate/ITRF.js';
-import { J2000 } from '../coordinate/J2000.js';
-import { AngularDistanceMethod } from '../enums/AngularDistanceMethod.js';
-import { Degrees, Kilometers, KilometersPerSecond, Radians } from '../main.js';
-import { Vector3D } from '../operations/Vector3D.js';
-import { EpochUTC } from '../time/EpochUTC.js';
-import { DEG2RAD, halfPi, RAD2DEG, TAU } from '../utils/constants.js';
-import { angularDistance } from '../utils/functions.js';
+
+import { ITRF } from '../coordinate/ITRF';
+import { J2000 } from '../coordinate/J2000';
+import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';
+import { Degrees, Kilometers, KilometersPerSecond, Radians } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
+import { EpochUTC } from '../time/EpochUTC';
+import { DEG2RAD, halfPi, RAD2DEG, TAU } from '../utils/constants';
+import { angularDistance } from '../utils/functions';
 
 // / Range, azimuth, and elevation.
 export class RAE {

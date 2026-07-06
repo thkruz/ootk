@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,13 +15,19 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ForceModel } from '../force/ForceModel.js';
-import { Thrust } from '../force/Thrust.js';
-import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, Vector, Vector3D } from '../main.js';
-import { VerletBlendInterpolator } from './../interpolator/VerletBlendInterpolator.js';
-import { Propagator } from './Propagator.js';
-import { RkCheckpoint } from './RkCheckpoint.js';
-import { RkResult } from './RkResult.js';
+import { ValidationError } from '../errors';
+import { EpochUTC } from '../time/EpochUTC';
+import { ForceModel } from '../force/ForceModel';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond, Seconds } from '../types/types';
+import { RkCheckpoint } from './RkCheckpoint';
+import { RkResult } from './RkResult';
+import { Thrust } from '../force/Thrust';
+import { Vector } from '../operations/Vector';
+import { Vector3D } from '../operations/Vector3D';
+import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
+
+import { Propagator } from './Propagator';
 
 // / Adaptive Runge-Kutta propagator base class.
 export abstract class RungeKuttaAdaptive extends Propagator {
@@ -101,6 +107,14 @@ export abstract class RungeKuttaAdaptive extends Propagator {
   }
 
   private integrate_(state: J2000, step: Seconds): RkResult {
+    // Check for NaN in input
+    if (!Number.isFinite(step)) {
+      throw new ValidationError('Step size must be a finite number', 'step', step);
+    }
+    if (!Number.isFinite(state.epoch.posix)) {
+      throw new ValidationError('Epoch must be a finite number', 'epoch', state.epoch.posix);
+    }
+
     const k: Vector[] = new Array(this.a.length).fill(Vector.origin3);
     const y = state.position.join(state.velocity) as Vector<Kilometers>;
 
@@ -121,16 +135,37 @@ export abstract class RungeKuttaAdaptive extends Propagator {
       y1 = y1.add(k[i].scale(this.ch[i])) as Vector<Kilometers>;
       y2 = y2.add(k[i].scale(this.c[i])) as Vector<Kilometers>;
     }
-    const teVal = y1.distance(y2);
-    let hNew = 0.9 * step * (this.tolerance_ / teVal) ** (1.0 / this.order);
+    let teVal = y1.distance(y2);
+
+    if (teVal === 0) {
+      teVal = Number.EPSILON;
+    }
+
+    // Guard against division by zero or very small errors
+    if (!Number.isFinite(teVal) || teVal === 0) {
+      throw new ValidationError('Integration error value must be finite and non-zero', 'error', teVal);
+    }
+
     const hOld = Math.abs(step);
+    let hNew = 0.9 * hOld * (this.tolerance_ / teVal) ** (1.0 / this.order);
 
     hNew = Math.max(0.2 * hOld, Math.min(5.0 * hOld, hNew));
     hNew = Math.max(1e-5, Math.min(1000.0, hNew));
 
+    // Verify step size is valid
+    if (!Number.isFinite(hNew)) {
+      throw new ValidationError('Computed step size must be finite', 'stepSize', hNew);
+    }
+
+    const newEpoch = state.epoch.roll(step);
+
+    if (!Number.isFinite(newEpoch.posix)) {
+      throw new ValidationError('Computed epoch must be finite', 'epoch', newEpoch.posix);
+    }
+
     return new RkResult(
       new J2000(
-        state.epoch.roll(step),
+        newEpoch,
         y1.toVector3D(0) as Vector3D<Kilometers>,
         y1.toVector3D(3) as Vector3D<KilometersPerSecond>,
       ),
@@ -141,6 +176,8 @@ export abstract class RungeKuttaAdaptive extends Propagator {
 
   propagate(epoch: EpochUTC): J2000 {
     let delta = epoch.difference(this._cacheState.epoch);
+    let consecutiveFailures = 0;
+    const maxConsecutiveFailures = 1000;
 
     while (delta !== 0) {
       const direction = delta >= 0 ? 1 : -1;
@@ -149,7 +186,26 @@ export abstract class RungeKuttaAdaptive extends Propagator {
 
       this._stepSize = result.newStep;
       if (result.error > this.tolerance_) {
+        consecutiveFailures++;
+        if (consecutiveFailures >= maxConsecutiveFailures) {
+          return this._cacheState;
+        }
         continue;
+      }
+      consecutiveFailures = 0;
+      // Validate result.state before assigning
+      if (!Number.isFinite(result.state.epoch.posix)) {
+        throw new ValidationError('Propagated epoch must be finite', 'epoch', result.state.epoch.posix);
+      }
+      if (!Number.isFinite(result.state.position.x) ||
+        !Number.isFinite(result.state.position.y) ||
+        !Number.isFinite(result.state.position.z)) {
+        throw new ValidationError('Propagated position must be finite', 'position', result.state.position);
+      }
+      if (!Number.isFinite(result.state.velocity.x) ||
+        !Number.isFinite(result.state.velocity.y) ||
+        !Number.isFinite(result.state.velocity.z)) {
+        throw new ValidationError('Propagated velocity must be finite', 'velocity', result.state.velocity);
       }
       this._cacheState = result.state;
       delta = epoch.difference(this._cacheState.epoch);

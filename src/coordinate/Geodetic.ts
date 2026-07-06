@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,13 +21,16 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth } from '../body/Earth.js';
-import { AngularDistanceMethod, Degrees, GroundObject, Kilometers, KilometersPerSecond, Radians } from '../main.js';
-import { Vector3D } from '../operations/Vector3D.js';
-import { EpochUTC } from '../time/EpochUTC.js';
-import { DEG2RAD, RAD2DEG } from '../utils/constants.js';
-import { angularDistance } from '../utils/functions.js';
-import { ITRF } from './ITRF.js';
+import { Earth } from '../body/Earth';
+import { ValidationError } from '../errors';
+import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';
+import { Degrees, Kilometers, KilometersPerSecond, Radians } from '../types/types';
+import { GroundStation } from '../objects/GroundStation';
+import { Vector3D } from '../operations/Vector3D';
+import { EpochUTC } from '../time/EpochUTC';
+import { DEG2RAD, RAD2DEG } from '../utils/constants';
+import { angularDistance } from '../utils/functions';
+import { ITRF } from './ITRF';
 
 /**
  * This Geodetic class represents a geodetic coordinate in three-dimensional
@@ -39,21 +42,25 @@ import { ITRF } from './ITRF.js';
  * class, which is used to represent an object on the surface of the Earth.
  */
 export class Geodetic {
-  lat: Radians;
-  lon: Radians;
-  alt: Kilometers;
+  readonly lat: Radians;
+  readonly lon: Radians;
+  readonly alt: Kilometers;
 
   constructor(latitude: Radians, longitude: Radians, altitude: Kilometers) {
     if (Math.abs(latitude) > Math.PI / 2) {
-      throw new RangeError('Latitude must be between -90° and 90° in Radians.');
+      throw new ValidationError('Latitude must be between -90° and 90° in Radians', 'latitude', latitude);
     }
 
     if (Math.abs(longitude) > Math.PI) {
-      throw new RangeError('Longitude must be between -180° and 180° in Radians.');
+      throw new ValidationError('Longitude must be between -180° and 180° in Radians', 'longitude', longitude);
     }
 
     if (altitude < -Earth.radiusMean) {
-      throw new RangeError(`Altitude must be greater than ${-Earth.radiusMean} km. Got ${altitude} km.`);
+      throw new ValidationError(
+        `Altitude must be greater than ${-Earth.radiusMean} km`,
+        'altitude',
+        altitude,
+      );
     }
 
     this.lat = latitude;
@@ -104,11 +111,11 @@ export class Geodetic {
   }
 
   /**
-   * Converts the geodetic coordinates to a ground position.
-   * @returns The ground position object.
+   * Converts the geodetic coordinates to a ground station.
+   * @returns The ground station object.
    */
-  toGroundObject(): GroundObject {
-    return new GroundObject({
+  toGroundStation(): GroundStation {
+    return new GroundStation({
       lat: this.latDeg as Degrees,
       lon: this.lonDeg as Degrees,
       alt: this.alt,

@@ -3,442 +3,435 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [5.1.1](https://github.com/thkruz/ootk/compare/v5.0.0-0...5.1.1)
+#### [7.0.0](https://github.com/thkruz/ootk/compare/v6.0.7...7.0.0)
 
+- fix(examples): :bug: repair example scripts against current API [`086771c`](https://github.com/thkruz/ootk/commit/086771c73d9c7895d27dfd22bd813ef48c3ea4c4)
+- docs(vitepress): :memo: add VitePress documentation site with example walkthroughs [`1d8d230`](https://github.com/thkruz/ootk/commit/1d8d2305d46a447e6dba6218514bac5a1fc4e931)
+- feat(orbit-design): :sparkles: add computeInclinationFromAzimuth helper [`8e5129e`](https://github.com/thkruz/ootk/commit/8e5129e8cca3be2da362847d94630cee2c2fbe96)
+- ci: :wrench: run CI on Node 24 (npm 11) to fix package-lock sync; bump engines to node &gt;=20 [`c181ac5`](https://github.com/thkruz/ootk/commit/c181ac5bd352f90180a8eb44ec6648912b1cf056)
+- test(exports): :white_check_mark: add localeCompare compare function to export key sorts [`ea0b454`](https://github.com/thkruz/ootk/commit/ea0b4542f9edd4ecc5c317f903d43e6d63087e8c)
+- style(keywords): :art: reorder keywords in package.json [`1344643`](https://github.com/thkruz/ootk/commit/1344643977fafa19e41bc5acb7de8f4440ce5a42)
+- fix(observation): :bug: export Observation classes from package root [`77f4e64`](https://github.com/thkruz/ootk/commit/77f4e641439d3fb41c086d6dbf80b3935c3426c3)
+- chore(deps): :wrench: bump vitepress to 2.0.0-alpha.17 to clear dev-server CVEs [`151051c`](https://github.com/thkruz/ootk/commit/151051cd34e8c39694950714adc4de493909dcd4)
+- chore: :wrench: update package-lock.json for dependencies [`83d8037`](https://github.com/thkruz/ootk/commit/83d8037f7452540489daf2791594476aa16c1feb)
+
+#### [v6.0.7](https://github.com/thkruz/ootk/compare/v6.0.6...v6.0.7)
+
+> 23 June 2026 
+
+- feat(orbit-determination): :sparkles: add rv2tle for IOD from state vectors [`23178b0`](https://github.com/thkruz/ootk/commit/23178b087f171b6c31716090b0c0a33cec37e7d6)
+- test(Satellite): :white_check_mark: pin sccNum derivation across all 5 sccNum forms [`01c704b`](https://github.com/thkruz/ootk/commit/01c704bdcd786d60bc7e3919df5721f1ac7d8d98)
+- feat(Satellite): :sparkles: enforce display-canonical numeric sccNum invariant [`bc10faf`](https://github.com/thkruz/ootk/commit/bc10faf42c8a5d35ae93702349fe480e8e123905)
+- fix(tle): :bug: handle real-world TLE edge cases in parsing and age [`e69f602`](https://github.com/thkruz/ootk/commit/e69f602642f1fe2a5ea668cb78e1e66fef31f0a6)
+- test(parsers): :white_check_mark: add OdmExporter KVN export tests [`2f05f07`](https://github.com/thkruz/ootk/commit/2f05f070b134c9a8b60673a4d10727dcb20ed3bd)
+- feat(photometry): :sparkles: add RCS-based visual magnitude estimator [`25debfd`](https://github.com/thkruz/ootk/commit/25debfd1523fe1dde4b57dcb8231077402ab61e0)
+- feat(covariance): :sparkles: add RIC display-radii scaling helper [`0fdb613`](https://github.com/thkruz/ootk/commit/0fdb613101cfacc16fce4cea17a4d94036eb1e73)
+- test(OrbitFinder): :white_check_mark: pin extended-sccNum TLE generation behavior [`2f061e1`](https://github.com/thkruz/ootk/commit/2f061e1a8670b129761aef841f9f7d1933268c64)
+- fix(tle): :bug: tolerate blank catalog number on JSC Vimpel TLEs [`edcc5a6`](https://github.com/thkruz/ootk/commit/edcc5a69d7657b4eb5e27ff83294962382b589ef)
+- feat(covariance): :sparkles: add cappedScreeningCovarianceFromTle for debris screening [`66b3955`](https://github.com/thkruz/ootk/commit/66b395547bbb0f39c92720d2f92e7cd0099cce8e)
+- feat(Satellite): :sparkles: strip leading zeros from sccNum for natural-number canonical form [`7b06e93`](https://github.com/thkruz/ootk/commit/7b06e93ff63b6f2758c9ae674319190a70abf459)
+- fix(OrbitFinder): :bug: keep TLE satnum 5-char for extended sccNums [`e206d29`](https://github.com/thkruz/ootk/commit/e206d291aeaf694b0470c7d5ec4206f3978cd1f6)
+- fix(time): :bug: use full time-of-day precision in TLE epoch generation [`e3c3f28`](https://github.com/thkruz/ootk/commit/e3c3f28c387a083ca419a63231fd805e91048997)
+- test(tle): :white_check_mark: update snapshot for full-precision TLE epoch [`188e487`](https://github.com/thkruz/ootk/commit/188e487b51da9dbd7718dade62eaa80186c9ddca)
+- fix(sgp4): :bug: handle blank Vimpel catalog number in createSatrec [`6d13f77`](https://github.com/thkruz/ootk/commit/6d13f77fa38a84e898b26032eede079c9d3de9e3)
+
+#### [v6.0.6](https://github.com/thkruz/ootk/compare/v6.0.4...v6.0.6)
+
+> 27 May 2026 
+
+- feat(Satellite): add support for OMM ID conversion and classification of satellite catalog numbers [`379e9b5`](https://github.com/thkruz/ootk/commit/379e9b5062f9d222736d83d6f36ae0e90af49559)
+- fix(HorizonsParser): :bug: improve target name extraction logic [`37f600a`](https://github.com/thkruz/ootk/commit/37f600aa0649e6deac3b110baba51ee8b6fade3e)
+- feat(OdmExporter): :sparkles: add OEM export from state vectors [`d738f8a`](https://github.com/thkruz/ootk/commit/d738f8a012d2a33512387e451e559eca26b02de7)
+- test(EpochUTC): :white_check_mark: add tests for pre-1970 dates [`d58ec39`](https://github.com/thkruz/ootk/commit/d58ec395163f29610c313c3d434ac93131460194)
+- fix(Tle): :bug: add debug info for TLE line validation [`84bc268`](https://github.com/thkruz/ootk/commit/84bc2687816ce2ea7b9a987604f4f3d0fc5e98b1)
+- chore(package): :wrench: bump version to 6.0.5 [`5063a8d`](https://github.com/thkruz/ootk/commit/5063a8d3233291b6f9902f2eae69517aa7679554)
+- fix(CatalogSource): :bug: add UNKNOWN source to enum [`0e0054e`](https://github.com/thkruz/ootk/commit/0e0054e8c7da919967da3a716a6304b0bc55fd8d)
+
+#### [v6.0.4](https://github.com/thkruz/ootk/compare/v6.0.2...v6.0.4)
+
+> 22 March 2026 
+
+- chore(package): :wrench: bump version to 6.0.4 [`4925527`](https://github.com/thkruz/ootk/commit/4925527adfc91e88e5884db1d28cab840ce9981d)
+- test(FormatTle): :white_check_mark: add CelesTrak stations validation tests [`773cf97`](https://github.com/thkruz/ootk/commit/773cf97e74a0e628698ef5371e248c5fe5aae3d4)
+- fix(ClassicalElements): :bug: handle equatorial orbits in fromStateVector [`1b6d7f9`](https://github.com/thkruz/ootk/commit/1b6d7f9b2aac09994df5f433da49e0c432d09f88)
+- fix(FormatTle): :bug: fix TLE formatting to match NORAD/CelesTrak conventions [`8862276`](https://github.com/thkruz/ootk/commit/88622764a3b6828ccd2ed953925ccafa763ea2a5)
+- fix(Epoch): :bug: allow pre-1970 POSIX timestamps for historic TLEs [`3776ada`](https://github.com/thkruz/ootk/commit/3776ada2110a623f85a94ff087982a4a8094a26d)
+- fix(CatalogSource): :bug: update catalog source names to match standards [`a28ef5d`](https://github.com/thkruz/ootk/commit/a28ef5d0d2681f63f5c79f75570e4539f203ebf0)
+- test(FormatTle): :white_check_mark: update test expectations for new TLE formatting [`a522f08`](https://github.com/thkruz/ootk/commit/a522f0803334f6cd6107335b80217cb9f45ac228)
+- fix(Tle): :bug: handle additional BSTAR exponent symbols [`2b31e4f`](https://github.com/thkruz/ootk/commit/2b31e4fc097582ee8644ebec50b4c20ef4e41932)
+- chore(package): :wrench: bump version to 6.0.3 [`56e6b13`](https://github.com/thkruz/ootk/commit/56e6b1354b7f1c12755e0833c80af25531b5cbc3)
+- test(FormatTle): :white_check_mark: fix line 2 expected value for new formatting [`198faa0`](https://github.com/thkruz/ootk/commit/198faa0b11051ed5965e157e475f6f5a6b54bc43)
+
+#### [v6.0.2](https://github.com/thkruz/ootk/compare/v6.0.1...v6.0.2)
+
+> 13 March 2026 
+
+- feat(FormatTle): :sparkles: enhance TLE generation with new formatting [`c7cc06f`](https://github.com/thkruz/ootk/commit/c7cc06fb7b3470937f43ef79c175a7d07297b961)
+- feat(Satellite): :sparkles: update OMM parsing to use Number [`8e5357c`](https://github.com/thkruz/ootk/commit/8e5357c784ad57bf15997af627a6f5ca9536bb87)
+- feat(OmmParser): :sparkles: add JSON parsing for CelesTrak OMM [`42587bc`](https://github.com/thkruz/ootk/commit/42587bcbacbef5942f3a6a6bae9cf9d9efa09a8f)
+- feat(OmmFormat): :sparkles: update data format to support numeric types [`1a051ff`](https://github.com/thkruz/ootk/commit/1a051ffe7e517adbc895678bc0378dc9530491c9)
+- feat(TleParams): :sparkles: add additional satellite parameters [`e3e4ef8`](https://github.com/thkruz/ootk/commit/e3e4ef87c94275e42c13c0beedd390e70a655031)
+- chore(package): :wrench: bump version to 6.0.2 [`9573455`](https://github.com/thkruz/ootk/commit/9573455557ac8e0782ad08f7337eb543449016ae)
+- test(integration): :white_check_mark: update export snapshot for new OMM exports [`63e06e4`](https://github.com/thkruz/ootk/commit/63e06e42b762aa154a7d37fe31d476484c093db3)
+
+#### [v6.0.1](https://github.com/thkruz/ootk/compare/v6.0.0...v6.0.1)
+
+> 12 March 2026 
+
+- feat(parsers): :sparkles: add OMM parser and types [`253b1c2`](https://github.com/thkruz/ootk/commit/253b1c2208325997b2fa9ef19a79363b36c506fe)
+- test(OmmParser): :white_check_mark: add unit tests for OMM parsing [`057a7fd`](https://github.com/thkruz/ootk/commit/057a7fde4925f81dbb1beb2784a83bd8f50eb415)
+- test(Tle): :white_check_mark: add tests for meanMoDev1 and bstar parsing [`13ee240`](https://github.com/thkruz/ootk/commit/13ee240644b242123e0780557721d18247ae4ee9)
+- chore(gitignore): :wastebasket: update .gitignore to include propagator accuracy summary file [`a87119c`](https://github.com/thkruz/ootk/commit/a87119c2f3624c157abda186c4754cbb81493239)
+- feat(Satellite): :sparkles: add fromOmm method for satellite creation [`6dfb390`](https://github.com/thkruz/ootk/commit/6dfb39027b67875ccaf8987da49218f2a17113d6)
+- fix(Tle): :bug: handle '0' as valid BSTAR symbol [`7dded61`](https://github.com/thkruz/ootk/commit/7dded6167597678d2a749954f4416b2283008928)
+- chore(package): :wrench: bump version to 6.0.1 [`9b88b46`](https://github.com/thkruz/ootk/commit/9b88b461440f250be487e41d75942a528ececa8b)
+- chore(gitignore): :wastebasket: fix path format for propagator accuracy summary file [`b8ff3b3`](https://github.com/thkruz/ootk/commit/b8ff3b364329cbcf72f96f1d9560952989151776)
+
+### [v6.0.0](https://github.com/thkruz/ootk/compare/v1.0.4...v6.0.0)
+
+> 29 November 2025 
+
+- docs: add comprehensive advanced features guide [`#41`](https://github.com/thkruz/ootk/pull/41)
+- docs: add comprehensive user guide and getting started documentation [`#39`](https://github.com/thkruz/ootk/pull/39)
+- feat: add high accuracy conjunction assessment workflow [`#37`](https://github.com/thkruz/ootk/pull/37)
+- feat: add comprehensive examples for library features [`#38`](https://github.com/thkruz/ootk/pull/38)
+- Lambert Satellite Integration [`#36`](https://github.com/thkruz/ootk/pull/36)
+- Development [`#35`](https://github.com/thkruz/ootk/pull/35)
 - Development [`#33`](https://github.com/thkruz/ootk/pull/33)
 - Version 5 [`#32`](https://github.com/thkruz/ootk/pull/32)
 - Develop [`#29`](https://github.com/thkruz/ootk/pull/29)
 - Version 4.0.0 [`#24`](https://github.com/thkruz/ootk/pull/24)
 - Delete LICENSE [`#25`](https://github.com/thkruz/ootk/pull/25)
 - Develop [`#23`](https://github.com/thkruz/ootk/pull/23)
-- feat: :sparkles: merge ootk-core back into ootk [`bcbee46`](https://github.com/thkruz/ootk/commit/bcbee4629de3e454bcd888a488bd6d7639f3ac47)
-- docs: :page_facing_up: transfer more license to Kruczek Labs LLC [`34178fc`](https://github.com/thkruz/ootk/commit/34178fc90ec6968e6eacb8d7475ddd453df5e540)
-- chore: remove @thkruz handle from file headers; tidy imports/exports and minor formatting [`be21d87`](https://github.com/thkruz/ootk/commit/be21d87f58867b2cdb119502c25b6ae2b71d0940)
-- refactor: :recycle: improve naming consistency [`1405f62`](https://github.com/thkruz/ootk/commit/1405f62b8bbf824f8c0f41f5eec6b2d1a2513b36)
-- feat: :sparkles: add covariance ellipsoid calculations [`26cdcac`](https://github.com/thkruz/ootk/commit/26cdcac13f5ebfb805ee2760ccd76801e43f96c0)
-- docs: :page_facing_up: transfer license to Kruczek Labs LLC [`bdb1494`](https://github.com/thkruz/ootk/commit/bdb14941a52d1c2402f7149408a235fd226c519e)
-- refactor: :label: remove unnecessary type assertions [`c1230fb`](https://github.com/thkruz/ootk/commit/c1230fb474c71853928173df711bbbca0866d990)
-- feat: :sparkles: add status parameter to DetailedSatellite class [`3b1b8c2`](https://github.com/thkruz/ootk/commit/3b1b8c2b30bd9c3d14e7ce70067607a8d1366825)
-- docs: :page_facing_up: transfer more license to Kruczek Labs LLC [`65de7fb`](https://github.com/thkruz/ootk/commit/65de7fbeca6827c77a4b5f9e85cd2e300d650219)
-- build: :lock: fix security issues [`e3ad7c5`](https://github.com/thkruz/ootk/commit/e3ad7c565ea4062e2927ce6d6c3df8e9b94bea5d)
-- refactor: :label: remove unnecessary type assertions [`e23c679`](https://github.com/thkruz/ootk/commit/e23c679ab6d025511b8783db81724133e3e778d6)
-- docs: :page_facing_up: transfer more license to Kruczek Labs LLC [`a9c5d84`](https://github.com/thkruz/ootk/commit/a9c5d84269cdca87006cfec882f50a14ca2f5070)
-- refactor: :recycle: improve naming consistency [`f51025b`](https://github.com/thkruz/ootk/commit/f51025be13ed5c938aa331e2cbbe7413c32ad224)
-- build: :label: add strict null checks [`82e0761`](https://github.com/thkruz/ootk/commit/82e07616b198f2084b7d7e5d3993e9bd12407a91)
-- feat: :sparkles: add PayloadStatus enum [`9828703`](https://github.com/thkruz/ootk/commit/9828703c3eef82676a54d06f5ab3adb40f296660)
-- refactor: :label: remove unnecessary type assertions [`6de14db`](https://github.com/thkruz/ootk/commit/6de14db719910ca5d6b9c241a16c9db59a0921de)
-- Update LICENSE for v4.0.0 [`f9514a0`](https://github.com/thkruz/ootk/commit/f9514a07c4ddbe0f9d8df8679b5c6169d719419a)
-- test: :adhesive_bandage: fix broken tests [`df737f2`](https://github.com/thkruz/ootk/commit/df737f2d47cac43f9056f9c9d0d596daf9080741)
-- docs: :memo: update README [`0494f3e`](https://github.com/thkruz/ootk/commit/0494f3e3d455b18ebf105c3becc6ef846b2f9869)
-- test: :white_check_mark: fix test [`e533d26`](https://github.com/thkruz/ootk/commit/e533d26442784872bf118c74582d07fff9d3aae9)
-- refactor: :label: remove unnecessary type assertions [`7e6b78b`](https://github.com/thkruz/ootk/commit/7e6b78b307aabecf36805919d68c67cb705cde19)
-- refactor: :label: remove unnecessary type assertions [`3240407`](https://github.com/thkruz/ootk/commit/3240407d6f21c768da83eaebafcfe6c4df1b7c7b)
-- fix: :bug: treat m === 0 as valid by checking explicit null before propagation [`226f0e7`](https://github.com/thkruz/ootk/commit/226f0e7420d79e006a340ff490a3e80c44c457d8)
-- docs: :bookmark: bump version [`ae02a3d`](https://github.com/thkruz/ootk/commit/ae02a3da4b5e6d2767e067c8793d3a097e5f021b)
-- refactor: :rotating_light: fix linter issue with line length [`540f8ac`](https://github.com/thkruz/ootk/commit/540f8acdab910df70a3031f7ef3036aeab905ac1)
-- refactor: :rotating_light: fix linter issue with line length [`822062f`](https://github.com/thkruz/ootk/commit/822062fde22f140ed489c34bc6265a893424da92)
-- docs: :memo: make Celestial vs Star more clear [`499bdb2`](https://github.com/thkruz/ootk/commit/499bdb231ba496c58467ddbb99e7ac961f935755)
-- feat: :sparkles: add launchPad to DetailedSatellite [`648c90a`](https://github.com/thkruz/ootk/commit/648c90af9367b023ca59f38590477d680973e3cc)
-- build: :arrow_up: bump ootk-core [`be33f7f`](https://github.com/thkruz/ootk/commit/be33f7f915d68421bb895ef2a52c91a42996ce03)
-- build: :arrow_up: bump ootk-core [`af78108`](https://github.com/thkruz/ootk/commit/af78108d45fbaab4b2c6c853112ffd08ae5cdb0f)
-- fix: :arrow_up: bump ootk-core [`2f0ac47`](https://github.com/thkruz/ootk/commit/2f0ac47d4a9ae18ebd58b72b4db98610b20aa267)
-- chore: :memo: add todo for later [`022525f`](https://github.com/thkruz/ootk/commit/022525ff38feb8070df4039fb29739f0ed005d5a)
-- refactor: :coffin: remove old export [`a4371f8`](https://github.com/thkruz/ootk/commit/a4371f8573ed6c7c008732885555f26b379d5e1a)
-- docs: :bulb: remove unnecessary todo [`5e7a51e`](https://github.com/thkruz/ootk/commit/5e7a51ef0b9faaa91767b84c802340fdaceee6b8)
-
-#### [v5.0.0-0](https://github.com/thkruz/ootk/compare/v4.0.9...v5.0.0-0)
-
-> 23 August 2024 
-
-- refactor: :recycle: Merge ootk-core with ootk for upgrade to v5 [`1e137bb`](https://github.com/thkruz/ootk/commit/1e137bba174072586cf748fee18b3dbd793c7fc7)
-- fix: :memo: fix outdated documentation [`0f6c26f`](https://github.com/thkruz/ootk/commit/0f6c26f40edaa5d8fe275b8aa967e5a00188beca)
-
-#### [v4.0.9](https://github.com/thkruz/ootk/compare/v4.0.8...v4.0.9)
-
-> 20 March 2025 
-
-- feat: :sparkles: add launchPad to DetailedSatellite [`648c90a`](https://github.com/thkruz/ootk/commit/648c90af9367b023ca59f38590477d680973e3cc)
-
-#### [v4.0.8](https://github.com/thkruz/ootk/compare/v4.0.7...v4.0.8)
-
-> 20 March 2025 
-
-- build: :arrow_up: bump ootk-core [`be33f7f`](https://github.com/thkruz/ootk/commit/be33f7f915d68421bb895ef2a52c91a42996ce03)
-
-#### [v4.0.7](https://github.com/thkruz/ootk/compare/v4.0.6...v4.0.7)
-
-> 20 March 2025 
-
-- build: :lock: fix security issues [`e3ad7c5`](https://github.com/thkruz/ootk/commit/e3ad7c565ea4062e2927ce6d6c3df8e9b94bea5d)
-
-#### [v4.0.6](https://github.com/thkruz/ootk/compare/v4.0.5...v4.0.6)
-
-> 1 March 2025 
-
-- build: :arrow_up: bump ootk-core [`af78108`](https://github.com/thkruz/ootk/commit/af78108d45fbaab4b2c6c853112ffd08ae5cdb0f)
-
-#### [v4.0.5](https://github.com/thkruz/ootk/compare/v4.0.4...v4.0.5)
-
-> 14 January 2025 
-
-- feat: :sparkles: add status parameter to DetailedSatellite class [`3b1b8c2`](https://github.com/thkruz/ootk/commit/3b1b8c2b30bd9c3d14e7ce70067607a8d1366825)
-
-#### [v4.0.4](https://github.com/thkruz/ootk/compare/v4.0.3...v4.0.4)
-
-> 14 January 2025 
-
-- feat: :sparkles: add PayloadStatus enum [`9828703`](https://github.com/thkruz/ootk/commit/9828703c3eef82676a54d06f5ab3adb40f296660)
-
-#### [v4.0.3](https://github.com/thkruz/ootk/compare/v4.0.2...v4.0.3)
-
-> 31 December 2024 
-
-- fix: :arrow_up: bump ootk-core [`2f0ac47`](https://github.com/thkruz/ootk/commit/2f0ac47d4a9ae18ebd58b72b4db98610b20aa267)
-
-#### [v4.0.2](https://github.com/thkruz/ootk/compare/v4.0.1...v4.0.2)
-
-> 3 August 2024 
-
-- fix: :arrow_up: bump ootk-core [`3c87557`](https://github.com/thkruz/ootk/commit/3c875578298b20a3906cf00e45e5bedf55cfa43f)
-
-#### [v4.0.1](https://github.com/thkruz/ootk/compare/v4.0.0...v4.0.1)
-
-> 25 June 2024 
-
-- build: :arrow_up: bump ootk-core [`2ff598e`](https://github.com/thkruz/ootk/commit/2ff598ec309be005a40335b99eb1b232b646f44b)
-
-### [v4.0.0](https://github.com/thkruz/ootk/compare/v4.0.0-17...v4.0.0)
-
-> 4 April 2024 
-
-- fix: :arrow_up: bump ootk-core [`edaafb7`](https://github.com/thkruz/ootk/commit/edaafb7ee1092064addd040d438d100f6b84514b)
-
-#### [v4.0.0-17](https://github.com/thkruz/ootk/compare/v4.0.0-16...v4.0.0-17)
-
-> 30 March 2024 
-
-- build: :arrow_up: bump ootk-core [`9ac1464`](https://github.com/thkruz/ootk/commit/9ac1464338284e6169304e44ceecb9c978543203)
-
-#### [v4.0.0-16](https://github.com/thkruz/ootk/compare/v4.0.0-15...v4.0.0-16)
-
-> 24 March 2024 
-
-- build: :arrow_up: bump ootk-core [`f5152ed`](https://github.com/thkruz/ootk/commit/f5152ed69c98f92e354240dfe36589fad81e1fa6)
-
-#### [v4.0.0-15](https://github.com/thkruz/ootk/compare/v4.0.0-14...v4.0.0-15)
-
-> 24 March 2024 
-
-- feat: :sparkles: Add node support [`7d28c3f`](https://github.com/thkruz/ootk/commit/7d28c3f5de0e3e9d2dd13bbf5cdfd5527f6126a8)
-
-#### [v4.0.0-14](https://github.com/thkruz/ootk/compare/v4.0.0-13...v4.0.0-14)
-
-> 23 March 2024 
-
-- fix: :bug: fix issue with vite [`9b540f9`](https://github.com/thkruz/ootk/commit/9b540f9231076ce8670eb2230321b592d0696b99)
-
-#### [v4.0.0-13](https://github.com/thkruz/ootk/compare/v4.0.0-12...v4.0.0-13)
-
-> 23 March 2024 
-
-- fix: :bug: add fix for vite compiler [`c72bd38`](https://github.com/thkruz/ootk/commit/c72bd38df2be1fef82603e85fd687a2e3f67ca83)
-- feat: :sparkles: add new catalog sources [`9dd4160`](https://github.com/thkruz/ootk/commit/9dd41607da91e4daffd8456f795239e945493a2d)
-
-#### [v4.0.0-12](https://github.com/thkruz/ootk/compare/v4.0.0-11...v4.0.0-12)
-
-> 11 March 2024 
-
-- refactor: :recycle: move freqBand from RfSensor to DetailedSensor [`185cc50`](https://github.com/thkruz/ootk/commit/185cc506482c0e0224ff0392e6bb1bad599d54ec)
-
-#### [v4.0.0-11](https://github.com/thkruz/ootk/compare/v4.0.0-10...v4.0.0-11)
-
-> 11 March 2024 
-
-- refactor: :recycle: update RfSensor to allow multiple faces [`179b486`](https://github.com/thkruz/ootk/commit/179b486bbbd9355569414f9ca7ca82aaa374ca93)
-- refactor: :recycle: update transforms to allow multiple faces [`53c8877`](https://github.com/thkruz/ootk/commit/53c887730d389b06f18889d4f2170a1e4ac82993)
-
-#### [v4.0.0-10](https://github.com/thkruz/ootk/compare/v4.0.0-9...v4.0.0-10)
-
-> 11 March 2024 
-
-- refactor: :recycle: make rfSensor an extension of DetailedSensor [`add7613`](https://github.com/thkruz/ootk/commit/add7613c9cea3ddf56b5da0accef36b8b866b144)
-
-#### [v4.0.0-9](https://github.com/thkruz/ootk/compare/v4.0.0-8...v4.0.0-9)
-
-> 19 February 2024 
-
-- feat: :sparkles: add forces and propagators [`177c88b`](https://github.com/thkruz/ootk/commit/177c88b308760c08e592d409f106cbfe2b0b98ac)
-- docs: :memo: update documentation [`754e2e1`](https://github.com/thkruz/ootk/commit/754e2e183fdb6930a0192b0452137f99f420fd6d)
-- feat: :sparkles: add detailedsatellite cloning [`63aeb77`](https://github.com/thkruz/ootk/commit/63aeb77d3d24071a1d66e5396b27e8c89fe34198)
-- build: :arrow_up: bump ootk-core [`62f40d2`](https://github.com/thkruz/ootk/commit/62f40d2e8fd629b7dfc55b2c40e52e40cf2069aa)
-- build: :arrow_up: bump ootk-core [`8d15b97`](https://github.com/thkruz/ootk/commit/8d15b972d7a9dd49a6c2e2773509ac23735da476)
-- chore: :technologist: remove prettier recommendation [`def01c6`](https://github.com/thkruz/ootk/commit/def01c647b3a09c799b1c2b47c766afed4368ab3)
-
-#### [v4.0.0-8](https://github.com/thkruz/ootk/compare/v4.0.0-7...v4.0.0-8)
-
-> 21 January 2024 
-
-- fix: :bug: make vmag and rcs nullable [`0750c9a`](https://github.com/thkruz/ootk/commit/0750c9aebee45bf0cba773b7d09ad91b3d29dbd7)
-
-#### [v4.0.0-7](https://github.com/thkruz/ootk/compare/v4.0.0-6...v4.0.0-7)
-
-> 21 January 2024 
-
-- build: :arrow_up: bump ootk-core [`188513f`](https://github.com/thkruz/ootk/commit/188513fabd9a1f621547769b9624c0dfcddee59d)
-
-#### [v4.0.0-6](https://github.com/thkruz/ootk/compare/v4.0.0-5...v4.0.0-6)
-
-> 20 January 2024 
-
-- build: :arrow_up: bump ootk-core [`c7c5350`](https://github.com/thkruz/ootk/commit/c7c5350d47d20ffb5453ccfcb490164a00b50a9e)
-
-#### [v4.0.0-5](https://github.com/thkruz/ootk/compare/v4.0.0-4...v4.0.0-5)
-
-> 20 January 2024 
-
-- build: :arrow_up: bump ootk-core [`d19fd5b`](https://github.com/thkruz/ootk/commit/d19fd5b80b7b223a91c56a64b9564350cd9a90d0)
-
-#### [v4.0.0-4](https://github.com/thkruz/ootk/compare/v4.0.0-3...v4.0.0-4)
-
-> 17 January 2024 
-
-- fix: :adhesive_bandage: fix import statements [`e923dde`](https://github.com/thkruz/ootk/commit/e923ddefe856711c8216e006dc7463827960900e)
-
-#### [v4.0.0-3](https://github.com/thkruz/ootk/compare/v4.0.0-2...v4.0.0-3)
-
-> 17 January 2024 
-
-- fix: :bug: fix Vimpel TLEs [`6092a4b`](https://github.com/thkruz/ootk/commit/6092a4b411c1092ee75ed6c34eee499cfa3cefef)
-- fix: :bug: fix enum [`009342f`](https://github.com/thkruz/ootk/commit/009342f15e9f03de98e477c3c7ce1ef7534caa2d)
-
-#### [v4.0.0-2](https://github.com/thkruz/ootk/compare/v4.0.0-1...v4.0.0-2)
-
-> 17 January 2024 
-
-- refactor: :recycle: move derivative from ootk-core [`9a9b50d`](https://github.com/thkruz/ootk/commit/9a9b50d4402b24398d920ae4ef0a76a7d19edabf)
-- build: :arrow_up: bump ootk-core [`efc4aa0`](https://github.com/thkruz/ootk/commit/efc4aa0caf7182afd9fbba7e29a50a8defd16ebe)
-- test: :white_check_mark: update snapshots [`ca95ad6`](https://github.com/thkruz/ootk/commit/ca95ad65be2de3f818390585a7bc1749ca7bf918)
-
-#### [v4.0.0-1](https://github.com/thkruz/ootk/compare/v4.0.0-0...v4.0.0-1)
-
-> 17 January 2024 
-
-- feat: :sparkles: integrate ootk-core v1.0.7 [`101eeb6`](https://github.com/thkruz/ootk/commit/101eeb6a21008ce198832818154fa0442691e4ad)
-- refactor: :recycle: refactor to match latest ootk-core [`ae37922`](https://github.com/thkruz/ootk/commit/ae3792283571c69ff0d6406188d0c7219215c56f)
-- docs: :page_facing_up: add license to all major files [`8549064`](https://github.com/thkruz/ootk/commit/8549064fe77001e2501f13d67588cbc0dfd490cb)
-- ci: :construction_worker: update github ci/cd pipeline [`670b252`](https://github.com/thkruz/ootk/commit/670b2526669dbb4478499d6587b4dc729c373745)
-- fix: :rotating_light: fix linter errors [`195c5eb`](https://github.com/thkruz/ootk/commit/195c5eb8ebfa68221241d7ceabc6522b8f12bd1b)
-- fix: :bug: cleanup integration with ootk-core [`227169e`](https://github.com/thkruz/ootk/commit/227169e3f4191a9f3cf3c58c50d645274e8e1120)
-- test: :white_check_mark: fix test config [`5e5a673`](https://github.com/thkruz/ootk/commit/5e5a6730b67a9b4c448ccc970c80b06c446515d8)
-- fix: :bug: fix imports [`de5459d`](https://github.com/thkruz/ootk/commit/de5459dd9c69afcd08b3002af87d661ccdb47bde)
-
-#### [v4.0.0-0](https://github.com/thkruz/ootk/compare/v1.8.1...v4.0.0-0)
-
-> 7 January 2024 
-
-- feat: :truck: split ootk-core functions into new library [`d4982be`](https://github.com/thkruz/ootk/commit/d4982be23ec1318f1e2de6a8ecf7f7fa92594069)
-- feat: :sparkles: port functions from pious_squid [`69aaf26`](https://github.com/thkruz/ootk/commit/69aaf26d4d8c99912cc5bf0f1c9ad6e0674b15eb)
-- fix: :label: add strict typing for units [`ff98aa0`](https://github.com/thkruz/ootk/commit/ff98aa09158e2da75ab2f2942639f18f09de21aa)
-- refactor: :label: update docs and typing [`92e14a1`](https://github.com/thkruz/ootk/commit/92e14a1ea0c708d7bd91d3a25a0da48d73859ed3)
-- feat: :sparkles: merge sun calculations [`7f4146e`](https://github.com/thkruz/ootk/commit/7f4146e2d67793806f2f3e6b69183bff65a41b05)
-- feat: :sparkles: update transforms [`c6824a4`](https://github.com/thkruz/ootk/commit/c6824a4f22aab24b5e30a5a733e8af4b42d85ae0)
-- feat: :sparkles: integration with KeepTrack [`a8cc11d`](https://github.com/thkruz/ootk/commit/a8cc11df0b648e99ec10baaff03ba83addc6f47f)
-- fix: :bug: validate against keeptrack [`702307c`](https://github.com/thkruz/ootk/commit/702307c31deb501d1b0ba3d0c656b7406baed80a)
-- refactor: :recycle: refactor with better typing and _ suffix for private methods [`4b14b64`](https://github.com/thkruz/ootk/commit/4b14b64290ffe71ed8fbaebd20ca16e8abf2ce4e)
-- docs: :label: expand documentation of types [`a517a24`](https://github.com/thkruz/ootk/commit/a517a242f4b35d5a5795ce9032d7672219b0bd1f)
-- fix: :bug: fix Satellite class [`20bc194`](https://github.com/thkruz/ootk/commit/20bc19434f97e101c7f555774859a970db1cebd7)
-- test: :white_check_mark: add more testing to sensor [`2bef00d`](https://github.com/thkruz/ootk/commit/2bef00d172d23de2a8b5aae73ea385880ac58fb2)
-- fix: :bug: fix degrees vs radians issues [`6103597`](https://github.com/thkruz/ootk/commit/61035971e037483cc62f01cf08c397085c746694)
-- refactor: :recycle: refactor common celestial equations out of sun and moon [`7f65165`](https://github.com/thkruz/ootk/commit/7f6516525b90019b31520525a9d2adf643ad3fd0)
-- feat: :sparkles: add transforms for radar coordinate systems [`c836753`](https://github.com/thkruz/ootk/commit/c8367533788760ce2189795ac370812d9377a75a)
-- test: :bug: fix broken tests [`735e480`](https://github.com/thkruz/ootk/commit/735e480627f85f2dfa7de1bcc8ece32032ad5fd5)
-- test: :construction_worker: update jest and ts configs [`039b195`](https://github.com/thkruz/ootk/commit/039b195b4c63185345936b47fa57937b4ec458e3)
-- refactor: :recycle: reduce complexity [`de70bda`](https://github.com/thkruz/ootk/commit/de70bda0eefb0bb02bf1e55e81781ee81df80358)
-- test: :white_check_mark: add more tests [`27ed272`](https://github.com/thkruz/ootk/commit/27ed27265e35d4575b2e2bb12f50ca8b187f0d96)
-- build: :package: update package scripts and dependencies [`a4efe23`](https://github.com/thkruz/ootk/commit/a4efe2384b53b1c5d6c95e4a6bea2d585048832c)
-- feat: :sparkles: add new functions to the sat object [`475df09`](https://github.com/thkruz/ootk/commit/475df09182a09c94497261c35f7904f5810cd2a9)
-- chore: :fire: remove old files [`797007c`](https://github.com/thkruz/ootk/commit/797007c2c0a89e86c90d964e3a6fc699705c31cd)
-- chore: :rotating_light: fix minor linter errors [`1682292`](https://github.com/thkruz/ootk/commit/16822921b96a24f477789b19b02a5363a93f94fb)
-- build: :construction_worker: update babel config [`f028e5e`](https://github.com/thkruz/ootk/commit/f028e5ee7b839414fd4d785bb6a04e93619afcb6)
-- fix: :label: fix incorrect units [`d790d63`](https://github.com/thkruz/ootk/commit/d790d63f3502f9a5b0c793f88ff7cc48d252717d)
-- refactor: :label: improved type checking [`7e30df4`](https://github.com/thkruz/ootk/commit/7e30df4f2c481b84ee1843c453af4124988bcfea)
-- chore: :art: update prettier config [`6a816c9`](https://github.com/thkruz/ootk/commit/6a816c905b1ec250053ff77ea0e2c88d96233836)
-- refactor: :green_heart: improve build [`0f4f74c`](https://github.com/thkruz/ootk/commit/0f4f74cc0daa8453317039936a35d9238c6c6a07)
-- fix: :label: mark parameters optional per @weedgrease suggestion [`48cb0de`](https://github.com/thkruz/ootk/commit/48cb0dea834229ec56155d4f2e69ef1c87ed908e)
-- docs: :package: update package.json [`b49eddc`](https://github.com/thkruz/ootk/commit/b49eddcc60d0635a1a6f3c13e28aa5a2ae2cf4c3)
-- feat: :hammer: add dev script for opening lcov [`1d034da`](https://github.com/thkruz/ootk/commit/1d034daa28b713370855482c6a75317921fe6550)
-- chore: :rotating_light: update eslint config [`b90e585`](https://github.com/thkruz/ootk/commit/b90e58529144fb34db52a0b085cd2dbc9369d6d1)
-- refactor: :lock: update dependencies [`a0ce1d5`](https://github.com/thkruz/ootk/commit/a0ce1d5ff296fb3aa728277cd2fee47a355fd250)
-- build: :bug: fix jest dependencies [`96792e9`](https://github.com/thkruz/ootk/commit/96792e9a9d90c08c23bb81e10beefcc083ae658e)
-- refactor: :rotating_light: hide wasm work [`a372498`](https://github.com/thkruz/ootk/commit/a372498ea1861edf046eee488149b1cfdb2761ac)
-- fix: :bug: fix bug in how alpha 5 was calculated [`c36cd0c`](https://github.com/thkruz/ootk/commit/c36cd0c6899f4858514f69aeff5095692d812d85)
-- refactor: :label: update return type [`1e841de`](https://github.com/thkruz/ootk/commit/1e841de543153aa5a0f7de936c8aaf1c03f65580)
-- feat: :label: use generics [`2c3a843`](https://github.com/thkruz/ootk/commit/2c3a8435cd14eb43d2ff5ac430b85a516b899b66)
-- fix: :bug: fix rng vs range usage [`a9917c3`](https://github.com/thkruz/ootk/commit/a9917c3d5314332710f5153762b0fd2b1c49c433)
-- refactor: :rotating_light: fix linter error on enum [`097e50b`](https://github.com/thkruz/ootk/commit/097e50b85779feb20671e5725c0b6df437694a22)
-- refactor: :fire: remove assemblyscript references [`9c5a87d`](https://github.com/thkruz/ootk/commit/9c5a87d2455d06f0d36b87ecd31aa644e1d7ab62)
-
-#### [v1.8.1](https://github.com/thkruz/ootk/compare/v1.8.0...v1.8.1)
-
-> 24 August 2022 
-
-- fix: :ambulance: fix radians vs degrees in sensor.ts [`d69200f`](https://github.com/thkruz/ootk/commit/d69200ff86beb932235f11fa0fbd86f6b9401ecc)
-
-#### [v1.8.0](https://github.com/thkruz/ootk/compare/v1.7.0...v1.8.0)
-
-> 24 August 2022 
-
-- feat: :sparkles: add getDayOfYear functionality [`46ffa20`](https://github.com/thkruz/ootk/commit/46ffa20e22478a2e1780276fe96321c32aa66a85)
-
-#### [v1.7.0](https://github.com/thkruz/ootk/compare/v1.6.4...v1.7.0)
-
-> 23 August 2022 
-
-- feat: :sparkles: add fov functions to sensor [`90d0d2e`](https://github.com/thkruz/ootk/commit/90d0d2ea20d3796f285d680eac8851fc829cc73a)
-
-#### [v1.6.4](https://github.com/thkruz/ootk/compare/v1.6.3...v1.6.4)
-
-> 22 August 2022 
-
-- docs: :label: fix type label for RaeVec3 [`df0d9dd`](https://github.com/thkruz/ootk/commit/df0d9dd577302b0c57f285ce650a77b325314080)
-
-#### [v1.6.3](https://github.com/thkruz/ootk/compare/v1.6.2...v1.6.3)
-
-> 13 February 2021 
-
 - Develop [`#22`](https://github.com/thkruz/ootk/pull/22)
 - Develop [`#21`](https://github.com/thkruz/ootk/pull/21)
 - Develop [`#20`](https://github.com/thkruz/ootk/pull/20)
 - Develop [`#19`](https://github.com/thkruz/ootk/pull/19)
 - Develop [`#18`](https://github.com/thkruz/ootk/pull/18)
-- Update README.md [`61827e5`](https://github.com/thkruz/ootk/commit/61827e5aa74d761f64ad907bb919ae3922658127)
-
-#### [v1.6.2](https://github.com/thkruz/ootk/compare/v1.6.1...v1.6.2)
-
-> 22 August 2022 
-
-- fix: :pencil2: fix typo in sez2rae [`509bf07`](https://github.com/thkruz/ootk/commit/509bf0754ef4e5e50a4aa4571af178ffd219ba6b)
-
-#### [v1.6.1](https://github.com/thkruz/ootk/compare/v1.6.0...v1.6.1)
-
-> 12 August 2022 
-
-- docs: :memo: update readme with examples [`4434dd7`](https://github.com/thkruz/ootk/commit/4434dd72c9369e71ef07deaed0370071e23743a2)
-- fix: :bug: fix sez2rae returning radians not degrees [`429bab4`](https://github.com/thkruz/ootk/commit/429bab41dd75a659614bbfe229bf6e4c72921c41)
-
-#### [v1.6.0](https://github.com/thkruz/ootk/compare/v1.5.5...v1.6.0)
-
-> 12 August 2022 
-
-- test: :camera_flash: add snapshots of correct position/velocity calculations [`bdf6aa5`](https://github.com/thkruz/ootk/commit/bdf6aa59eff77fa7891719c5283c220d2cf83b6c)
-- test: :white_check_mark: add test catalog and test creator [`e785e78`](https://github.com/thkruz/ootk/commit/e785e780c9156482aa6eb8a979885ec6f7ad23ac)
-- test: :white_check_mark: add full catalog validation tests [`97cb4c1`](https://github.com/thkruz/ootk/commit/97cb4c1caa9933d206b3807da381c0b83c4fa5ae)
-- test: :white_check_mark: add testing from sgp4prop [`de1d87f`](https://github.com/thkruz/ootk/commit/de1d87f3ecb687f1be295545381bb8bfdf195bbe)
-- chore: :coffin: remove non-public tests [`c1af668`](https://github.com/thkruz/ootk/commit/c1af66821e9058605e003676292ec7d66e33749e)
-- refactor: :label: fix types for moon-math.ts [`41bd18c`](https://github.com/thkruz/ootk/commit/41bd18c04fac9dae9f631b1e391b2deef4df258d)
-- docs: :test_tube: add example of bad TLEs [`f2bc0b9`](https://github.com/thkruz/ootk/commit/f2bc0b989d04604f0c1252de2e43e99b462458d9)
-
-#### [v1.5.5](https://github.com/thkruz/ootk/compare/v1.5.4...v1.5.5)
-
-> 8 August 2022 
-
-- fix: :pencil2: fix bug with h vs el [`9affaaf`](https://github.com/thkruz/ootk/commit/9affaafcd35b34c5765161966fdeb06e51182c81)
-
-#### [v1.5.4](https://github.com/thkruz/ootk/compare/v1.5.3...v1.5.4)
-
-> 8 August 2022 
-
-- fix: :bug: correct bug in deep space math [`c7ec9ca`](https://github.com/thkruz/ootk/commit/c7ec9ca017b2ebe0ce41af1c9e7934794e19da3e)
-
-#### [v1.5.3](https://github.com/thkruz/ootk/compare/v1.5.2...v1.5.3)
-
-#### [v1.5.2](https://github.com/thkruz/ootk/compare/v1.5.1...v1.5.2)
-
-> 6 August 2022 
-
-- fix: :bug: fix math for getStarAzEl [`0a0ee9a`](https://github.com/thkruz/ootk/commit/0a0ee9a10dfc9a278e20051b71e2dcd625b49e8a)
-
-#### [v1.5.1](https://github.com/thkruz/ootk/compare/v1.5.0...v1.5.1)
-
-> 6 August 2022 
-
-- build: :label: update build script to include all type data [`ce752f9`](https://github.com/thkruz/ootk/commit/ce752f9edb4ebba3ca65588611cb109d990c3270)
-
-#### [v1.5.0](https://github.com/thkruz/ootk/compare/v1.4.0...v1.5.0)
-
-> 29 July 2022 
-
-- fix: :bug: fix issues with jday calculations in Sgp4 [`7ceb301`](https://github.com/thkruz/ootk/commit/7ceb301b2a7c23d9d6439f4f1e1b801dbacd468c)
-- fix: :bug: fix bug with timezone differences [`d796c65`](https://github.com/thkruz/ootk/commit/d796c65ad052c975808b05d3d356537405342b71)
-
-#### [v1.4.0](https://github.com/thkruz/ootk/compare/v1.3.1...v1.4.0)
-
-> 28 July 2022 
-
-- feat: :sparkles: [`e83c0fc`](https://github.com/thkruz/ootk/commit/e83c0fc6083e37ddee0beb3668dd0a7469a69dce)
-
-#### [v1.3.1](https://github.com/thkruz/ootk/compare/v1.3.0...v1.3.1)
-
-> 27 July 2022 
-
-- feat: :sparkles: add getSolarTime [`a812450`](https://github.com/thkruz/ootk/commit/a812450d3bc335e168fc9a2a04630a3ae754316d)
-
-#### [v1.3.0](https://github.com/thkruz/ootk/compare/v1.2.0...v1.3.0)
-
-> 27 July 2022 
-
-- feat: :sparkles: add space objects, sunMath, and moonMath [`e7e9fc3`](https://github.com/thkruz/ootk/commit/e7e9fc390f46e1aaedd47595d7fc0ad9e228b6e9)
-
-#### [v1.2.0](https://github.com/thkruz/ootk/compare/v1.1.0...v1.2.0)
-
-> 26 July 2022 
-
-- feat: :sparkles: add Sat class [`281a9c5`](https://github.com/thkruz/ootk/commit/281a9c57ecaf9472cf305eb5f5d3ab8fe5f39e7b)
-- docs: :memo: update changelog [`19b70f8`](https://github.com/thkruz/ootk/commit/19b70f80fb0e5c963f47dccbcf0c5d9451133121)
-
-#### [v1.1.0](https://github.com/thkruz/ootk/compare/v1.0.8...v1.1.0)
-
-> 26 July 2022 
-
-- feat: :sparkles: add TLE parsing utility [`e9acd7c`](https://github.com/thkruz/ootk/commit/e9acd7cda738ef501733808b011d4496bddf05cf)
-
-#### [v1.0.8](https://github.com/thkruz/ootk/compare/v1.0.7...v1.0.8)
-
-> 20 July 2022 
-
-- refactor: :label: export types [`12ce662`](https://github.com/thkruz/ootk/commit/12ce66207406330a27fe3791effd7660ef61349b)
-
-#### [v1.0.7](https://github.com/thkruz/ootk/compare/v1.0.6...v1.0.7)
-
-> 20 July 2022 
-
-- build: :label: include type definition in dist folder [`4114ccd`](https://github.com/thkruz/ootk/commit/4114ccdabe4b1c7d957d017179d7700129643f83)
-
-#### [v1.0.6](https://github.com/thkruz/ootk/compare/v1.0.4...v1.0.6)
-
-> 20 July 2022 
-
 - build(umd.js): renamed es modules to be .es.js files [`#17`](https://github.com/thkruz/ootk/pull/17)
 - Rebase [`#16`](https://github.com/thkruz/ootk/pull/16)
 - Multithread [`#15`](https://github.com/thkruz/ootk/pull/15)
 - 1.0.4 [`#14`](https://github.com/thkruz/ootk/pull/14)
+- test: :camera_flash: update snapshots to deal with floating point errors [`9ee23a1`](https://github.com/thkruz/ootk/commit/9ee23a1d10977db13142cea65e4d2405ef3a5573)
+- refactor: :recycle: update and modernize body module to use astronomy-engine [`a56c10c`](https://github.com/thkruz/ootk/commit/a56c10cbd7abe03a4c78cad8fc6aa488fef53298)
+- feat: :sparkles: Add CDM types and parsing/exporting logic [`85ddedd`](https://github.com/thkruz/ootk/commit/85ddedd2b373b3f27a5657f9e7eee7607e304d41)
+- test: :sparkles: add integration tests for core functionality [`f8c380c`](https://github.com/thkruz/ootk/commit/f8c380c36322b4a6bfbe09b36989d2c93bc5b0f5)
+- refactor: :recycle: complete phase 1A of objects module refactor [`0f75b33`](https://github.com/thkruz/ootk/commit/0f75b33f603b1e710e63c2084806f415d737c4c1)
+- feat: :sparkles: Add communication devices and tests [`e840337`](https://github.com/thkruz/ootk/commit/e840337e90feff225af9243e654802c4981d01e9)
+- feat: :sparkles: Add OEM parsing and data structures [`c0967d1`](https://github.com/thkruz/ootk/commit/c0967d1efe1c788dd3628ddf41ad3e3e57a1a8e7)
+- feat: :sparkles: add PassiveRFSensor and PhasedArrayRadar classes [`935a778`](https://github.com/thkruz/ootk/commit/935a77826c5bc2033609f2136fd81eaeda84b543)
+- test: :rocket: add LambertIOD test suite for orbit determination [`c26343b`](https://github.com/thkruz/ootk/commit/c26343b7cf581568f28ec6d49aefb0e146fd11d7)
+- refactor: :recycle: Rename ECF to ECEF in codebase [`0ef09ea`](https://github.com/thkruz/ootk/commit/0ef09ea91930eb5eb235732a3e2069523ed06346)
+- Implement tests for GaussIOD and GoodingIOD; refactor ModifiedGoodingIOD and RungeKuttaAdaptive for improved error handling and integration logic [`5da537b`](https://github.com/thkruz/ootk/commit/5da537b9c82cecdfddc4284f805a927ca9cd043b)
+- test: :zap: improve test performance [`cd82439`](https://github.com/thkruz/ootk/commit/cd8243917a413aeabe2542657e93b0e595b3c58e)
+- feat(ootk): :sparkles: add interpolator, maneuver and orbit-design modules [`dd8e395`](https://github.com/thkruz/ootk/commit/dd8e395a90ce63338b1e97edab863932d998c2dc)
+- feat: :sparkles: Add ScheduledContact and tests [`fa11c93`](https://github.com/thkruz/ootk/commit/fa11c93687c2cc0687bd473b21efe699fa9581ec)
+- test: :white_check_mark: Add tests for DynamicGroundObject [`e35c4a9`](https://github.com/thkruz/ootk/commit/e35c4a99d997436bf0148999f7cd1e7ab9c357f1)
+- test(satellite): :white_check_mark: add unit tests for propagators [`d7ef3b5`](https://github.com/thkruz/ootk/commit/d7ef3b5322e0fe848823fa0b8e0054aac76adcf7)
+- test: :sparkles: add comprehensive tests for Levenberg-MarquardtOD [`c9d458a`](https://github.com/thkruz/ootk/commit/c9d458af8f27c587bce68e4108a1f4633e9fa18e)
+- docs: add Lambert integration guide and examples [`eb83cf5`](https://github.com/thkruz/ootk/commit/eb83cf50fa19e2115be0577938e4c7594391d10c)
+- docs(time): enhance documentation for time classes and conversions [`6dd3c5e`](https://github.com/thkruz/ootk/commit/6dd3c5ead6f431cf6ea1b2c790c2f14fcc012a88)
+- feat: :sparkles: Add RepeatGroundTrack and tests [`4541925`](https://github.com/thkruz/ootk/commit/4541925c44d77b0aef1501cba620cfbb759b9cfb)
+- test: :white_check_mark: add integration tests for built package [`688f339`](https://github.com/thkruz/ootk/commit/688f339f4881190debee54507edb302ddbce080d)
+- refactor: 🔧 rename private methods for consistency and clarity [`34d28e0`](https://github.com/thkruz/ootk/commit/34d28e04a1a8aa54deeeaa2d0cc1e756cc9bd33c)
+- feat: :sparkles: add AccessCalculator and AccessWindow types [`32abe79`](https://github.com/thkruz/ootk/commit/32abe795021435356c2a2910e0d7e5894e11ee5d)
+- test: :camera_flash: update coordinate module snapshots for Vitest [`5135e7e`](https://github.com/thkruz/ootk/commit/5135e7e36cc0f7c8bd2209e08578b50c9eaaebc3)
+- test: :camera_flash: update coordinate module snapshots for Vitest [`c35f910`](https://github.com/thkruz/ootk/commit/c35f910da78215889c22daced8bb1db8f849e12d)
+- test: :white_check_mark: add tests for interpolators [`43e9aad`](https://github.com/thkruz/ootk/commit/43e9aadb3593c811518652b2c9a6503431edfa08)
+- feat: :sparkles: Add ConstellationGenerator and tests [`c50d16f`](https://github.com/thkruz/ootk/commit/c50d16f5b6fe1c43364a9561abd43c4551894249)
+- feat: :sparkles: Add custom error classes for ootk [`79baa37`](https://github.com/thkruz/ootk/commit/79baa377dd288d175c6eaee3769076ca70ea5099)
+- feat: :sparkles: add VisualizationHelpers and related types [`278e8bd`](https://github.com/thkruz/ootk/commit/278e8bd513b0f84d83b535f79adcff929badafff)
+- docs: :memo: add comprehensive coordinate systems guide [`24bfedd`](https://github.com/thkruz/ootk/commit/24bfedd71c5517cd99f3cb97c2487379d3308c37)
+- test: :truck: move tests into __tests__ folders for easier management [`bd907d8`](https://github.com/thkruz/ootk/commit/bd907d80bcf91842cf673bfe1d6fd59cabecfbdd)
+- feat: :sparkles: add clone methods for sensor and device classes [`51cbb97`](https://github.com/thkruz/ootk/commit/51cbb977db928a623f3b7741b399443714a42c28)
+- feat: :sparkles: add OrbitFinder class for satellite orbits [`448eef9`](https://github.com/thkruz/ootk/commit/448eef9f5dc16aeca45eca6e7c6cc1e3ffdde2c7)
+- test(integration): :white_check_mark: add pre-publish integration tests [`f50e22a`](https://github.com/thkruz/ootk/commit/f50e22a6b33213ba9daba13d1e9f196e2261bebe)
+- feat: :sparkles: add SunStatus enum for illumination states [`97c188b`](https://github.com/thkruz/ootk/commit/97c188b31679e9f2b5cb904477f085665337a0fd)
+- feat: :sparkles: Add HorizonsParser and tests [`d808d1e`](https://github.com/thkruz/ootk/commit/d808d1eaed2fc03d8db4596686a8d7dfec822d42)
+- test: :camera_flash: update operations module snapshots for Vitest [`0547cc3`](https://github.com/thkruz/ootk/commit/0547cc3b92c63d64a3efd28c022df2656a8292ed)
+- test: :camera_flash: update operations module snapshots for Vitest [`725d6ea`](https://github.com/thkruz/ootk/commit/725d6ea72e12cd6d0a7e1fea7ab9f3f2a100e61b)
+- refactor: :recycle: change sensor and object IDs to numbers [`d69137b`](https://github.com/thkruz/ootk/commit/d69137b2e41f4bd204f1fc8ee0a18533449216ea)
+- build: :arrow_up: upgrade all dependencies to most current [`fedc88b`](https://github.com/thkruz/ootk/commit/fedc88bdbbe3acd087509e5e33b4d62bbbaf7e05)
+- feat(parsers): :sparkles: add OdmExporter and export options [`dc43ffc`](https://github.com/thkruz/ootk/commit/dc43ffc641aac466a2a3700dbd714988df989209)
+- test(create-covariance-from-tle): :sparkles: add tests for covariance creation from TLE [`6ace6b2`](https://github.com/thkruz/ootk/commit/6ace6b21197790ce75e067a2243728dd843231cd)
+- docs: :memo: update copyright year to 2025-2026 [`0cceb50`](https://github.com/thkruz/ootk/commit/0cceb50c1878f0e04a148da529ae0b5850fd83ab)
+- feat(ootk): :satellite: add NASA JPL Horizons client + constants/interfaces; extend SpaceObjectType with planetary/moon types and update tsconfig lib [`76ed1f7`](https://github.com/thkruz/ootk/commit/76ed1f7e05c37cc1cde69887acea2a6153275c4f)
+- remove: :fire: delete Horizons API client and constants [`18aed53`](https://github.com/thkruz/ootk/commit/18aed53fa6b114095d20a9c214a66a9f6afc482e)
+- test(sgp4): :white_check_mark: add unit tests for Sgp4Propagator functionality [`038c912`](https://github.com/thkruz/ootk/commit/038c9128d705507acbe7638da00fe03464d92539)
+- test(propagator): :white_check_mark: add unit tests for MockPropagator and RungeKutta4Propagator [`84aef88`](https://github.com/thkruz/ootk/commit/84aef88855c43960549dc51d45bc10056c3b978c)
+- docs(readme): :sparkles: add comprehensive documentation for orbit determination algorithms [`8ed7178`](https://github.com/thkruz/ootk/commit/8ed7178536e3894a96e932a6a9d3c783a30f4097)
+- docs(readme): :sparkles: add README for optimize module with examples [`491bbed`](https://github.com/thkruz/ootk/commit/491bbedff9a0a6ec257ad3d7c626de99fa584567)
+- docs: :memo: update documentation for coordinate transformations [`b37ba1b`](https://github.com/thkruz/ootk/commit/b37ba1b13adf7269fe90ba242f34f2a6a333af58)
+- test: :white_check_mark: add tests for optimization algorithms [`78199f4`](https://github.com/thkruz/ootk/commit/78199f46933af9497340c3d29a4723d8a46cf1d2)
+- feat: :sparkles: add history tracking to Satellite class [`5ab6b1e`](https://github.com/thkruz/ootk/commit/5ab6b1e2bb0d4133e65d7d27c2ec1ba876c9eccc)
+- test(kepler): :white_check_mark: add comprehensive tests for KeplerPropagator [`cc61975`](https://github.com/thkruz/ootk/commit/cc61975031e58ed91a38fedfc6f61e45d44b200a)
+- feat: :sparkles: make lat, lon, alt properties readonly [`f3ad72c`](https://github.com/thkruz/ootk/commit/f3ad72c9e7a2ed0c831e8f491a146bbf63599952)
+- docs(readme): :memo: add detailed documentation for orbital propagators [`6f033f2`](https://github.com/thkruz/ootk/commit/6f033f26caa9d46b09e74310ab656ec320b23a44)
+- test: :camera_flash: update observation module snapshots for Vitest [`cc1d7d5`](https://github.com/thkruz/ootk/commit/cc1d7d5869654d7576f9e21452f7ec859d9a16ba)
+- test: :camera_flash: update observation module snapshots for Vitest [`26e205b`](https://github.com/thkruz/ootk/commit/26e205bac9152eaa0a4fe019bb4ab10ce3166018)
+- feat: :sparkles: implement RAE methods in SpaceObject class [`2f00d20`](https://github.com/thkruz/ootk/commit/2f00d20109d3cae549bf1c2d8e12a922da1ebe5d)
+- refactor(simplex): :recycle: move SimplexEntry to internal directory [`0680b95`](https://github.com/thkruz/ootk/commit/0680b951724845c032030b26baa0136329f11474)
+- refactor(smoothing): :recycle: convert ExponentialSmoothing class to functions [`e0c978b`](https://github.com/thkruz/ootk/commit/e0c978b6c38811a8b8675bafb54c06ef0725b349)
+- test: :white_check_mark: add tests for Hill class methods [`475acc3`](https://github.com/thkruz/ootk/commit/475acc3334dbba4717d7f250d4fffff3e3c14a65)
+- docs(golden-section): :memo: enhance documentation and examples for optimizer [`b627eaf`](https://github.com/thkruz/ootk/commit/b627eaf6fa6a00ceceb3b28d10756cbf3498a383)
+- test: :camera_flash: update time module snapshots for Vitest [`1f427ff`](https://github.com/thkruz/ootk/commit/1f427ff3b6d082bdc9bdf0d9e72e550e02ef804d)
+- feat: :sparkles: add validation errors for sensor parent checks [`824c8bf`](https://github.com/thkruz/ootk/commit/824c8bf41348ccdd68928301de0e5bc350721058)
+- test: :camera_flash: update time module snapshots for Vitest [`aa0313b`](https://github.com/thkruz/ootk/commit/aa0313ba8264a3864abe439d8df4180841d03e95)
+- feat: :sparkles: enhance visibility checks for Transmitter [`1701853`](https://github.com/thkruz/ootk/commit/1701853a8ec4f0cf26ae6432ec7134f6b1b8ec98)
+- feat: :sparkles: add history tracking and cloning options [`261dc52`](https://github.com/thkruz/ootk/commit/261dc52c98dd18c9c2a598a327c51e14f5feb84d)
+- refactor: :recycle: replace EciVec3 with TemeVec3 types [`00e3af3`](https://github.com/thkruz/ootk/commit/00e3af33ddcbdebf57c3b771c9ae1af649e3b190)
+- refactor: :recycle: streamline imports and enhance AccessWindow [`6a71aec`](https://github.com/thkruz/ootk/commit/6a71aec8504b9f797cfe7a1f5c1afc80f00ee6d2)
+- refactor(polynomial-regression): :recycle: move PolynomicalRegressionResult to internal directory [`c6a7fd5`](https://github.com/thkruz/ootk/commit/c6a7fd5eb88b4b0b05113ecc33ee017399ddcc3e)
+- docs: :memo: add examples for SunBody, Satellite, and Sensor [`f4a1c9e`](https://github.com/thkruz/ootk/commit/f4a1c9e0681b34e8f8d409a15bd2d0bd390ef2e4)
+- docs(simple-linear-regression): :memo: enhance class documentation and examples [`23ce52f`](https://github.com/thkruz/ootk/commit/23ce52f1ab650db9654f4faae254fbe6ad9215d6)
+- docs(polynomial-regression): :memo: enhance documentation and examples for optimizer [`9f8c019`](https://github.com/thkruz/ootk/commit/9f8c019666aea11e1e2a2f63343142f67ba727ec)
+- build: :building_construction: migrate to tsup for ESM builds [`5b505cd`](https://github.com/thkruz/ootk/commit/5b505cd15c1218b45d8072fcae42de2f95732da9)
+- refactor(objects): :recycle: remove PropagatorType from ObjectTypes [`98d4d8f`](https://github.com/thkruz/ootk/commit/98d4d8ff5ae42e48be4e369a77ba34e95a0e6dd5)
+- test: :white_check_mark: migrate test files from Jest to Vitest [`3bdcf24`](https://github.com/thkruz/ootk/commit/3bdcf24f746833a03aa8acc076e080babe8aaa7c)
+- test: :truck: move tests into __tests__ folders for easier management [`507cb3d`](https://github.com/thkruz/ootk/commit/507cb3d2a2081c538506568ede11e98707836de8)
+- refactor: :recycle: update SpaceObject to use TEME frame [`1b046f9`](https://github.com/thkruz/ootk/commit/1b046f9b9ddb030f38758f1ca7de1c92fa07365c)
+- refactor(orbit_determination): improve GoodingIOD and ModifiedGoodingIOD structure [`993a790`](https://github.com/thkruz/ootk/commit/993a79065cabb4b8b562b4bf0c45436b25265d3a)
+- build: :wrench: migrate from Jest to Vitest [`4138c43`](https://github.com/thkruz/ootk/commit/4138c4380bcd6c97bfeafe66078551f8eb3f8111)
+- test: :white_check_mark: add tests for ephemerisManeuver [`3b8e24f`](https://github.com/thkruz/ootk/commit/3b8e24ff9916bdb1a7ff04a3baa1986ae80d2a75)
+- feat: :sparkles: add angle calculations for satellites and Sun [`5d2fc8a`](https://github.com/thkruz/ootk/commit/5d2fc8affc7af755c377638e835e2aede6289dde)
+- chore(gitignore): :sparkles: add CLAUDE.md to .gitignore [`3b32de8`](https://github.com/thkruz/ootk/commit/3b32de845f568b88893d4cc2db6a5d2740a9829f)
+- build: :wrench: add ESM import path fixer for dist output [`07be71c`](https://github.com/thkruz/ootk/commit/07be71c7b14140bb8f93a364afe63f0111ce2596)
+- test: :white_check_mark: add tests for ModifiedGoodingIOD [`3795c53`](https://github.com/thkruz/ootk/commit/3795c531c4fe4f968eb64fa3d0d959bfcbc79799)
+- refactor(conjunction): :recylce: update ConjunctionEvent constructor to use params object [`284dc02`](https://github.com/thkruz/ootk/commit/284dc02b6573ef7be66fa9721c47539d3bb5dfe7)
+- test: :white_check_mark: add integration test infrastructure with Vitest [`0431ecc`](https://github.com/thkruz/ootk/commit/0431eccd2c9b19b4724ba8dc816d0397aae7a1d6)
+- test: :camera_flash: update utils module snapshots for Vitest [`76daf1e`](https://github.com/thkruz/ootk/commit/76daf1ea2c9d1a8e5801cb35e6e7cf675d1d4a0d)
+- test: :white_check_mark: add unit tests for conversions [`ec789f4`](https://github.com/thkruz/ootk/commit/ec789f4b9e786559b3807afdf8fda6f7a28fdc23)
+- feat: :sparkles: add interpolator and maneuver modules [`6f94279`](https://github.com/thkruz/ootk/commit/6f94279d25a2f17c7743e990f5ac62110af8707d)
+- style: :art: fix indentation and license header in source files [`d43bdb7`](https://github.com/thkruz/ootk/commit/d43bdb70b7df5b911c623739da4aa319dc3168d8)
+- test: :camera_flash: update utils module snapshots for Vitest [`f7930db`](https://github.com/thkruz/ootk/commit/f7930db9a19e6f55fc190fd891572b62a2aa9753)
+- refactor(chebyshev): :recycle: improve documentation and method naming [`007d17e`](https://github.com/thkruz/ootk/commit/007d17e271119593b21292bf3fc1a3a0efdd6899)
+- test(propagator): :white_check_mark: add SP3 accuracy comparison results [`d06617c`](https://github.com/thkruz/ootk/commit/d06617ce6b5311b720a55c157ee261ec30a0197b)
+- docs: :memo: update documentation [`fa530aa`](https://github.com/thkruz/ootk/commit/fa530aaec393a40b518549ef2bbd1b234c8c60e6)
+- refactor(conjunction): :sparkles: reorganize imports and improve covariance handling [`e1a0d28`](https://github.com/thkruz/ootk/commit/e1a0d28e5cdeb9253d35fe559658b21f73c8bc5b)
+- feat(numerical-propagator): :sparkles: add NumericalPropagatorOptions interface [`5723c02`](https://github.com/thkruz/ootk/commit/5723c020791f1bec0e920e088ac106f84d7b4854)
+- test: :camera_flash: update transforms module snapshots for Vitest [`16ac8a4`](https://github.com/thkruz/ootk/commit/16ac8a4cc616d0e9469e4d135913a6ba378f2a24)
+- test: :camera_flash: update transforms module snapshots for Vitest [`bf3fecb`](https://github.com/thkruz/ootk/commit/bf3fecbe021bc2502acf1859ea49945f0b9afb2d)
+- refactor(conjunction): :sparkles: remove unnecessary file extensions from imports [`04efea0`](https://github.com/thkruz/ootk/commit/04efea0bf93c96d4239367553488bca90c11755e)
+- refactor(downhill-simplex): :recycle: improve method naming and documentation [`acfb462`](https://github.com/thkruz/ootk/commit/acfb4621fe29816a5a3baeb06351050a7494ad3d)
+- refactor: :recycle: update sensor imports and exports [`33d40e4`](https://github.com/thkruz/ootk/commit/33d40e4c5b0469d5422d8953060b7ffec4e63ae2)
+- ci: :construction_worker: add circular-check and integration test jobs [`bf9fa35`](https://github.com/thkruz/ootk/commit/bf9fa3502a321828233437bdf772fd4cdb98fc5e)
+- test: :camera_flash: update body module snapshots for Vitest [`b3ff8e4`](https://github.com/thkruz/ootk/commit/b3ff8e402ffb000f8ae94ff77cc58a2d23c9e73c)
+- test: :camera_flash: update body module snapshots for Vitest [`7589ca4`](https://github.com/thkruz/ootk/commit/7589ca487eab7294121ddcddd2f2e307ed43d6f2)
+- feat(enums): :sparkles: add PropagatorType enum with implementations [`20fd9f6`](https://github.com/thkruz/ootk/commit/20fd9f6230639d702124fdc8c087fbdb5c8b800e)
+- feat: :sparkles: add fromPosVel method for RIC coordinates [`93b0e68`](https://github.com/thkruz/ootk/commit/93b0e68907f3f225f3a20977ffabcbab6af345b6)
+- refactor: :recycle: simplify imports in multiple files [`cf97616`](https://github.com/thkruz/ootk/commit/cf97616e967f16e7e351abe8396023d960d9af3e)
+- test(body): update Moon snapshots for getMoonTimes (including timezone adjustment) and rae [`7612eca`](https://github.com/thkruz/ootk/commit/7612eca02a77dc5d53ddb56a2e5def4c6383cab5)
+- fix: :bug: resolve circular dependency in types.ts [`9b9dc88`](https://github.com/thkruz/ootk/commit/9b9dc88012a2efb2d32458bf8d2ac63797f45a81)
+- feat: :sparkles: add additional star parameters to interface [`6bf1f21`](https://github.com/thkruz/ootk/commit/6bf1f215557efd5ec49bfcf3e085dba3b572541e)
+- feat: :sparkles: add PayloadStatus type [`e691a5d`](https://github.com/thkruz/ootk/commit/e691a5db862cb9141a07a38d29ab8e5e0b7bf203)
+- fix: :bug: replace @src/ path alias with relative imports [`3169ba5`](https://github.com/thkruz/ootk/commit/3169ba5cf62cc2f78e6baac5571f570ae38ea476)
+- refactor: :recycle: Update sun position methods in force classes [`13dc9c0`](https://github.com/thkruz/ootk/commit/13dc9c02925a231ac724694cec8517951369a34d)
+- fix(package): :bug: fix license typo and configure dual ESM/CJS exports [`ba956a8`](https://github.com/thkruz/ootk/commit/ba956a80b5370d724ce0582ab8794d79cff03fc6)
+- test: :sparkles: add tests for factorial function with edge cases [`aec8e93`](https://github.com/thkruz/ootk/commit/aec8e9333fc6ca9b300afb3ee6f7861b9d0961ef)
+- test: :camera_flash: update sgp4 module snapshots for Vitest [`9bce358`](https://github.com/thkruz/ootk/commit/9bce3588b48cf3d8ed420574ab9fdf5bfa8c1b91)
+- test: :camera_flash: update sgp4 module snapshots for Vitest [`af2b4e2`](https://github.com/thkruz/ootk/commit/af2b4e2fa7cb80a11a2bd1ec0ed63ec23b48a954)
+- refactor: :recycle: clean up exports in index.ts [`ee556b2`](https://github.com/thkruz/ootk/commit/ee556b2cd8fb60d818f73c8e6e6c0d913b273cc4)
+- fix: :bug: correct maneuver filtering logic in propagator [`6dd0d1a`](https://github.com/thkruz/ootk/commit/6dd0d1ab2c7d9c8a36877ed0d729e5269175ef96)
+- build: :wrench: add madge configuration for circular dependency detection [`c164f92`](https://github.com/thkruz/ootk/commit/c164f9206ea499ededeadcc0062850a262204c24)
+- chore(ci): :wrench: add Node 18 to test matrix [`a851aec`](https://github.com/thkruz/ootk/commit/a851aecad7be4df3f5aa1daf96533c29079522c3)
+- build: :package: add madge, vitest and integration test scripts [`5b93c82`](https://github.com/thkruz/ootk/commit/5b93c82a9860f2ca13efd4de667f47ef5d210eb1)
+- feat: :sparkles: Integrate astronomy-engine for star position [`b8f940a`](https://github.com/thkruz/ootk/commit/b8f940aed765a5ba755eb126e20f08c09ad46d54)
+- refactor(conjunction): :sparkles: remove file extensions from imports [`4df0ad8`](https://github.com/thkruz/ootk/commit/4df0ad88e1b826cdae50fcbbec7c66ca49ad6bd8)
+- fix: :bug: resolve circular dependencies in operations module [`bffe544`](https://github.com/thkruz/ootk/commit/bffe544c757cda090fbc9f02d13d09ea085dbca0)
+- refactor(conjunction): :sparkles: remove unnecessary file extensions from exports [`2f1856b`](https://github.com/thkruz/ootk/commit/2f1856bbf012fc0c99d6f79569ff2f553a396e0c)
+- fix: :bug: initialize Float64Arrays with coeffs length [`66565ce`](https://github.com/thkruz/ootk/commit/66565ce96e9e863c89e499eaab1f95aa73897e9c)
+- refactor: :recycle: rename astronomicalUnit to KM_PER_AU and update usages in Sun & SolarRadiationPressure [`6bc4943`](https://github.com/thkruz/ootk/commit/6bc494365e8302c92b681456a0a22b090f8edf2b)
+- chore(build): :wrench: bundle astronomy-engine and add CJS output [`1ed5e98`](https://github.com/thkruz/ootk/commit/1ed5e98fcdff33228e06a00016a6f292863695d3)
+- test(create-sample-covariance-from-tle): :white_check_mark: add test for realistic covariance creation [`8e7806e`](https://github.com/thkruz/ootk/commit/8e7806e24e0b5594c1b8fa7a633d4515d2d2b67f)
+- fix(sgp4): :bug: handle decayed satellites in Sgp4 class [`c4b985a`](https://github.com/thkruz/ootk/commit/c4b985af00f74ec04bb8ccd1c8168384d28b011d)
+- test(probability): :white_check_mark: adjust relative velocity and position for encounter plane [`9e112b0`](https://github.com/thkruz/ootk/commit/9e112b05d9570e876c661a914c6e22b194076adc)
+- refactor: :recycle: Correct export test for CelestialBody [`ceb0c58`](https://github.com/thkruz/ootk/commit/ceb0c58af29369d10485ff2a4db9d98d1a1aa685)
+- refactor(GaussIOD): reorganize import statements for better clarity [`842b458`](https://github.com/thkruz/ootk/commit/842b458b309cfbc78eafb162359b4a8d2c499cc9)
+- feat(optimize): :sparkles: add index file to export optimization modules [`64485c2`](https://github.com/thkruz/ootk/commit/64485c2a6e2a5e3b60c9f1ba1c16174e6c7bcccf)
+- refactor(functions): :sparkles: optimize log10, array2d, and distance calculations [`0c4dc65`](https://github.com/thkruz/ootk/commit/0c4dc6540d5e6d534933705c6a8a70fe3d2b8566)
+- chore(ootk): bump @typescript-eslint/eslint-plugin & parser to ^8.46.2 and refresh package-lock.json [`e340ccc`](https://github.com/thkruz/ootk/commit/e340ccc84207b744e0ef1623c6f1a542fd07b5d8)
+- refactor: :recycle: update tsconfig to exclude test files [`4b06dad`](https://github.com/thkruz/ootk/commit/4b06dad3133435a60562d61b22c1bf7e03776d4c)
+- fix(ootk): add missing SpaceObjectType string mappings for terrestrial/gas/ice/dwarf planets and moon [`9b49f2f`](https://github.com/thkruz/ootk/commit/9b49f2f09862d4fa9bc324c913f61dea22698873)
+- test: :wrench: increase timeout for ConjunctionAssessment high-fidelity tests [`7e1e498`](https://github.com/thkruz/ootk/commit/7e1e4989c2ca8a9f84cba199fc7d67c691f3bd0a)
+- chore: :wrench: update .gitignore to include new files [`d8a565a`](https://github.com/thkruz/ootk/commit/d8a565a8fb9ee4e21d6a28ba92f004ac5ac6a9a1)
+- chore: :wrench: update version to 6.0.0-rc.4 [`ae88268`](https://github.com/thkruz/ootk/commit/ae8826827e56168b90c162b1ef9cd86a01202e08)
+- refactor(main): :sparkles: remove unnecessary file extensions from exports [`6467bfa`](https://github.com/thkruz/ootk/commit/6467bfa913cf13ce0a1e7e8573ba3efc913e58f8)
+- chore(package): update version to 6.0.0-rc.2 [`6316048`](https://github.com/thkruz/ootk/commit/63160480d8c06913fa50cd5f78e9811ba530cf56)
+- chore(.gitignore): :wrench: add .dev.vars to ignore list [`355e740`](https://github.com/thkruz/ootk/commit/355e740a6179e78e267cbbd16527b2e4bb86a51c)
+- feat(orbit-determination): :sparkles: add maxIter option to SolveOptions [`2571b7b`](https://github.com/thkruz/ootk/commit/2571b7bceabfe3b9c7584bbf54ae4e217093bf77)
+- chore: :wrench: update repository URL format in package.json [`d38f1c5`](https://github.com/thkruz/ootk/commit/d38f1c5328d75f6b7044adf301ea42bb9d5d15d6)
+- chore: :wrench: update version to 6.0.0-rc.5 in package.json [`52c65a2`](https://github.com/thkruz/ootk/commit/52c65a2b0ec901f915fc91ea104ac4b92e73426b)
+- fix: :bug: resolve circular dependency in Earth class [`be38190`](https://github.com/thkruz/ootk/commit/be38190bf6b1cd58953b725760d6d3dbeebe891a)
+- chore: :wrench: update coveragePathIgnorePatterns in jest config [`c275e6b`](https://github.com/thkruz/ootk/commit/c275e6b74b8aee1d18e1f44097051180e1a59299)
+- chore: :truck: update import path for transformsData [`b022166`](https://github.com/thkruz/ootk/commit/b0221668108cac5cf0372687d7044a91a21bbcda)
+- refactor(orbit-determination): :recycle: move CostFunction import to internal directory [`a3e00b1`](https://github.com/thkruz/ootk/commit/a3e00b11ae2d301b9ef8e89a832661ca432821be)
+- refactor(conjunction): :sparkles: rename parameter for clarity in initializeCovarianceSamples [`50e2da8`](https://github.com/thkruz/ootk/commit/50e2da8fd1f7996c7fffb9d28beff33da2fb0a0a)
+- chore(package): update version to 6.0.0-rc.3 [`02aa5b3`](https://github.com/thkruz/ootk/commit/02aa5b39cbd7570f9c494ab0d4b85b1312c7818f)
+- fix: :bug: export PayloadStatus from types module [`247323a`](https://github.com/thkruz/ootk/commit/247323aefb79bbf613993502275c3130ad54d049)
+- chore: :wrench: add .npmrc to .gitignore [`6b4dfe7`](https://github.com/thkruz/ootk/commit/6b4dfe7f40d5c07d1cbcc9f848dd4255f2fa2fbf)
+- test: :wrench: exclude integration tests from Jest [`08fc0ed`](https://github.com/thkruz/ootk/commit/08fc0edd53494a6a176d810dac62fe73c781fd19)
+- refactor: :truck: rename all iod tests to match main files [`9272b24`](https://github.com/thkruz/ootk/commit/9272b24fc983c132b850607880aa770789091f19)
+- docs: update CHANGELOG (add v5.1.1 entries and reorder v4/v5 sections) [`e4a0574`](https://github.com/thkruz/ootk/commit/e4a057462d523a7eb40fff5fc6eaecb231ec15bf)
+- feat: :sparkles: merge ootk-core back into ootk [`bcbee46`](https://github.com/thkruz/ootk/commit/bcbee4629de3e454bcd888a488bd6d7639f3ac47)
+- feat: :truck: split ootk-core functions into new library [`d4982be`](https://github.com/thkruz/ootk/commit/d4982be23ec1318f1e2de6a8ecf7f7fa92594069)
+- test: :camera_flash: add snapshots of correct position/velocity calculations [`bdf6aa5`](https://github.com/thkruz/ootk/commit/bdf6aa59eff77fa7891719c5283c220d2cf83b6c)
+- test: :white_check_mark: add test catalog and test creator [`e785e78`](https://github.com/thkruz/ootk/commit/e785e780c9156482aa6eb8a979885ec6f7ad23ac)
+- feat: :sparkles: port functions from pious_squid [`69aaf26`](https://github.com/thkruz/ootk/commit/69aaf26d4d8c99912cc5bf0f1c9ad6e0674b15eb)
+- fix: :label: add strict typing for units [`ff98aa0`](https://github.com/thkruz/ootk/commit/ff98aa09158e2da75ab2f2942639f18f09de21aa)
+- feat: :sparkles: integrate ootk-core v1.0.7 [`101eeb6`](https://github.com/thkruz/ootk/commit/101eeb6a21008ce198832818154fa0442691e4ad)
+- feat: :sparkles: add Sat class [`281a9c5`](https://github.com/thkruz/ootk/commit/281a9c57ecaf9472cf305eb5f5d3ab8fe5f39e7b)
+- docs: :page_facing_up: transfer more license to Kruczek Labs LLC [`34178fc`](https://github.com/thkruz/ootk/commit/34178fc90ec6968e6eacb8d7475ddd453df5e540)
+- refactor: :label: update docs and typing [`92e14a1`](https://github.com/thkruz/ootk/commit/92e14a1ea0c708d7bd91d3a25a0da48d73859ed3)
+- feat: :sparkles: merge sun calculations [`7f4146e`](https://github.com/thkruz/ootk/commit/7f4146e2d67793806f2f3e6b69183bff65a41b05)
+- test: :white_check_mark: add full catalog validation tests [`97cb4c1`](https://github.com/thkruz/ootk/commit/97cb4c1caa9933d206b3807da381c0b83c4fa5ae)
+- feat: :sparkles: update transforms [`c6824a4`](https://github.com/thkruz/ootk/commit/c6824a4f22aab24b5e30a5a733e8af4b42d85ae0)
+- feat: :sparkles: add TLE parsing utility [`e9acd7c`](https://github.com/thkruz/ootk/commit/e9acd7cda738ef501733808b011d4496bddf05cf)
+- feat: :sparkles: [`e83c0fc`](https://github.com/thkruz/ootk/commit/e83c0fc6083e37ddee0beb3668dd0a7469a69dce)
+- test: :white_check_mark: add testing from sgp4prop [`de1d87f`](https://github.com/thkruz/ootk/commit/de1d87f3ecb687f1be295545381bb8bfdf195bbe)
+- feat: :sparkles: add space objects, sunMath, and moonMath [`e7e9fc3`](https://github.com/thkruz/ootk/commit/e7e9fc390f46e1aaedd47595d7fc0ad9e228b6e9)
+- refactor: :recycle: refactor to match latest ootk-core [`ae37922`](https://github.com/thkruz/ootk/commit/ae3792283571c69ff0d6406188d0c7219215c56f)
+- feat: :sparkles: integration with KeepTrack [`a8cc11d`](https://github.com/thkruz/ootk/commit/a8cc11df0b648e99ec10baaff03ba83addc6f47f)
+- docs: :page_facing_up: add license to all major files [`8549064`](https://github.com/thkruz/ootk/commit/8549064fe77001e2501f13d67588cbc0dfd490cb)
+- fix: :bug: validate against keeptrack [`702307c`](https://github.com/thkruz/ootk/commit/702307c31deb501d1b0ba3d0c656b7406baed80a)
+- chore(ootk): standardize imports/exports, refine base APIs, bump version [`8a6a365`](https://github.com/thkruz/ootk/commit/8a6a3656ce392f3a9663693046097e7b5eacb648)
+- refactor: :recycle: refactor with better typing and _ suffix for private methods [`4b14b64`](https://github.com/thkruz/ootk/commit/4b14b64290ffe71ed8fbaebd20ca16e8abf2ce4e)
 - refactor: :recycle: consolidate constants and types [`69032ad`](https://github.com/thkruz/ootk/commit/69032adcde7c013b069dc4d58bdb2c88af45d4b5)
 - fix(ootk-sgp4): moved variables to local scope for speed vs reduced garbage collection [`5f41d12`](https://github.com/thkruz/ootk/commit/5f41d125c19d217e28a4278041549e5a6d51368b)
 - refactor: :recycle: code cleanup [`6d9cc64`](https://github.com/thkruz/ootk/commit/6d9cc649d5c3e4787fdf8e61ccc7192a79ca5d9e)
+- docs: :label: expand documentation of types [`a517a24`](https://github.com/thkruz/ootk/commit/a517a242f4b35d5a5795ce9032d7672219b0bd1f)
+- feat: :sparkles: Add node support [`7d28c3f`](https://github.com/thkruz/ootk/commit/7d28c3f5de0e3e9d2dd13bbf5cdfd5527f6126a8)
+- fix: :bug: fix Satellite class [`20bc194`](https://github.com/thkruz/ootk/commit/20bc19434f97e101c7f555774859a970db1cebd7)
+- feat: :sparkles: add fov functions to sensor [`90d0d2e`](https://github.com/thkruz/ootk/commit/90d0d2ea20d3796f285d680eac8851fc829cc73a)
+- chore: remove @thkruz handle from file headers; tidy imports/exports and minor formatting [`be21d87`](https://github.com/thkruz/ootk/commit/be21d87f58867b2cdb119502c25b6ae2b71d0940)
 - test: :white_check_mark: improve test coverage [`bfe4f9f`](https://github.com/thkruz/ootk/commit/bfe4f9f093905aab8204667d7917b32684bfb9d1)
 - feat(ootk-multi): added multithreading class [`774ec62`](https://github.com/thkruz/ootk/commit/774ec62adf67267c2c58d9a4bc275ed806499595)
+- test: :white_check_mark: add more testing to sensor [`2bef00d`](https://github.com/thkruz/ootk/commit/2bef00d172d23de2a8b5aae73ea385880ac58fb2)
+- fix: :bug: fix degrees vs radians issues [`6103597`](https://github.com/thkruz/ootk/commit/61035971e037483cc62f01cf08c397085c746694)
+- refactor: :recycle: improve naming consistency [`1405f62`](https://github.com/thkruz/ootk/commit/1405f62b8bbf824f8c0f41f5eec6b2d1a2513b36)
+- feat: :sparkles: add getSolarTime [`a812450`](https://github.com/thkruz/ootk/commit/a812450d3bc335e168fc9a2a04630a3ae754316d)
+- feat: :sparkles: add covariance ellipsoid calculations [`26cdcac`](https://github.com/thkruz/ootk/commit/26cdcac13f5ebfb805ee2760ccd76801e43f96c0)
 - refactor: :recycle: use const more often [`27d23e0`](https://github.com/thkruz/ootk/commit/27d23e0791c3dffedd6faca6153ea898504c5331)
+- refactor: :recycle: refactor common celestial equations out of sun and moon [`7f65165`](https://github.com/thkruz/ootk/commit/7f6516525b90019b31520525a9d2adf643ad3fd0)
 - ci: :construction_worker: update ci [`9698423`](https://github.com/thkruz/ootk/commit/96984235de22486c569a29aae7eaa7ff8ecfbf09)
 - refactor: :rotating_light: fix linter errors [`b85a4b8`](https://github.com/thkruz/ootk/commit/b85a4b85b6f5128a6f13283e24c70376b2f048eb)
 - test(multi.test.js): increased testing coverage of multi module [`e258121`](https://github.com/thkruz/ootk/commit/e2581219d376add019d82dbf8f6b73299b668077)
+- feat: :sparkles: add transforms for radar coordinate systems [`c836753`](https://github.com/thkruz/ootk/commit/c8367533788760ce2189795ac370812d9377a75a)
+- test: :bug: fix broken tests [`735e480`](https://github.com/thkruz/ootk/commit/735e480627f85f2dfa7de1bcc8ece32032ad5fd5)
+- feat: :sparkles: add forces and propagators [`177c88b`](https://github.com/thkruz/ootk/commit/177c88b308760c08e592d409f106cbfe2b0b98ac)
+- fix: :bug: fix issues with jday calculations in Sgp4 [`7ceb301`](https://github.com/thkruz/ootk/commit/7ceb301b2a7c23d9d6439f4f1e1b801dbacd468c)
+- test: :construction_worker: update jest and ts configs [`039b195`](https://github.com/thkruz/ootk/commit/039b195b4c63185345936b47fa57937b4ec458e3)
+- docs: :page_facing_up: transfer license to Kruczek Labs LLC [`bdb1494`](https://github.com/thkruz/ootk/commit/bdb14941a52d1c2402f7149408a235fd226c519e)
 - fix(ootk-sgp4): moved constants to local scope for speed increase despite memory usage [`11b8c72`](https://github.com/thkruz/ootk/commit/11b8c72e94c1f83259f5db5e966448f091c84f85)
+- refactor: :recycle: update RfSensor to allow multiple faces [`179b486`](https://github.com/thkruz/ootk/commit/179b486bbbd9355569414f9ca7ca82aaa374ca93)
+- fix: :memo: fix outdated documentation [`0f6c26f`](https://github.com/thkruz/ootk/commit/0f6c26f40edaa5d8fe275b8aa967e5a00188beca)
+- refactor: :label: remove unnecessary type assertions [`c1230fb`](https://github.com/thkruz/ootk/commit/c1230fb474c71853928173df711bbbca0866d990)
+- ci: :construction_worker: update github ci/cd pipeline [`670b252`](https://github.com/thkruz/ootk/commit/670b2526669dbb4478499d6587b4dc729c373745)
+- docs: :memo: update documentation [`754e2e1`](https://github.com/thkruz/ootk/commit/754e2e183fdb6930a0192b0452137f99f420fd6d)
+- fix: :rotating_light: fix linter errors [`195c5eb`](https://github.com/thkruz/ootk/commit/195c5eb8ebfa68221241d7ceabc6522b8f12bd1b)
+- chore: :coffin: remove non-public tests [`c1af668`](https://github.com/thkruz/ootk/commit/c1af66821e9058605e003676292ec7d66e33749e)
+- refactor: :recycle: reduce complexity [`de70bda`](https://github.com/thkruz/ootk/commit/de70bda0eefb0bb02bf1e55e81781ee81df80358)
+- test: :white_check_mark: add more tests [`27ed272`](https://github.com/thkruz/ootk/commit/27ed27265e35d4575b2e2bb12f50ca8b187f0d96)
 - fix(ootk-multi): improved multithreading algorithm to reduce garbage collection and variable cloning [`f9e5d63`](https://github.com/thkruz/ootk/commit/f9e5d6353ed091f232d885be4546afdca816c3d1)
+- fix: :bug: cleanup integration with ootk-core [`227169e`](https://github.com/thkruz/ootk/commit/227169e3f4191a9f3cf3c58c50d645274e8e1120)
 - ci: :construction_worker: remove useless failing ci test [`b559e16`](https://github.com/thkruz/ootk/commit/b559e16cfe236a0dc93ab3cffcae0506d0efaa2d)
+- feat: :sparkles: add getDayOfYear functionality [`46ffa20`](https://github.com/thkruz/ootk/commit/46ffa20e22478a2e1780276fe96321c32aa66a85)
+- docs: :memo: update readme with examples [`4434dd7`](https://github.com/thkruz/ootk/commit/4434dd72c9369e71ef07deaed0370071e23743a2)
 - docs: :memo: update changelog [`2b021f6`](https://github.com/thkruz/ootk/commit/2b021f6bedd1953d40d6b0d6a48442c12c406831)
+- feat: :sparkles: add status parameter to DetailedSatellite class [`3b1b8c2`](https://github.com/thkruz/ootk/commit/3b1b8c2b30bd9c3d14e7ce70067607a8d1366825)
+- build: :package: update package scripts and dependencies [`a4efe23`](https://github.com/thkruz/ootk/commit/a4efe2384b53b1c5d6c95e4a6bea2d585048832c)
+- fix: :bug: fix Vimpel TLEs [`6092a4b`](https://github.com/thkruz/ootk/commit/6092a4b411c1092ee75ed6c34eee499cfa3cefef)
+- docs: :page_facing_up: transfer more license to Kruczek Labs LLC [`65de7fb`](https://github.com/thkruz/ootk/commit/65de7fbeca6827c77a4b5f9e85cd2e300d650219)
+- build: :lock: fix security issues [`e3ad7c5`](https://github.com/thkruz/ootk/commit/e3ad7c565ea4062e2927ce6d6c3df8e9b94bea5d)
+- refactor: :label: remove unnecessary type assertions [`e23c679`](https://github.com/thkruz/ootk/commit/e23c679ab6d025511b8783db81724133e3e778d6)
+- docs: :page_facing_up: transfer more license to Kruczek Labs LLC [`a9c5d84`](https://github.com/thkruz/ootk/commit/a9c5d84269cdca87006cfec882f50a14ca2f5070)
+- feat: :sparkles: add new functions to the sat object [`475df09`](https://github.com/thkruz/ootk/commit/475df09182a09c94497261c35f7904f5810cd2a9)
+- refactor: :recycle: improve naming consistency [`f51025b`](https://github.com/thkruz/ootk/commit/f51025be13ed5c938aa331e2cbbe7413c32ad224)
+- refactor: :recycle: move derivative from ootk-core [`9a9b50d`](https://github.com/thkruz/ootk/commit/9a9b50d4402b24398d920ae4ef0a76a7d19edabf)
+- chore: :fire: remove old files [`797007c`](https://github.com/thkruz/ootk/commit/797007c2c0a89e86c90d964e3a6fc699705c31cd)
+- build: :label: add strict null checks [`82e0761`](https://github.com/thkruz/ootk/commit/82e07616b198f2084b7d7e5d3993e9bd12407a91)
+- fix: :bug: fix bug with timezone differences [`d796c65`](https://github.com/thkruz/ootk/commit/d796c65ad052c975808b05d3d356537405342b71)
+- chore: :rotating_light: fix minor linter errors [`1682292`](https://github.com/thkruz/ootk/commit/16822921b96a24f477789b19b02a5363a93f94fb)
+- feat: :sparkles: add PayloadStatus enum [`9828703`](https://github.com/thkruz/ootk/commit/9828703c3eef82676a54d06f5ab3adb40f296660)
+- build: :construction_worker: update babel config [`f028e5e`](https://github.com/thkruz/ootk/commit/f028e5ee7b839414fd4d785bb6a04e93619afcb6)
+- refactor: :label: remove unnecessary type assertions [`6de14db`](https://github.com/thkruz/ootk/commit/6de14db719910ca5d6b9c241a16c9db59a0921de)
+- docs: :memo: update changelog [`19b70f8`](https://github.com/thkruz/ootk/commit/19b70f80fb0e5c963f47dccbcf0c5d9451133121)
 - test(tests): updated references to .es.js files [`0d2fec2`](https://github.com/thkruz/ootk/commit/0d2fec262776b511d3b5f0e9f756456329f9a590)
+- Update LICENSE for v4.0.0 [`f9514a0`](https://github.com/thkruz/ootk/commit/f9514a07c4ddbe0f9d8df8679b5c6169d719419a)
+- refactor: :label: fix types for moon-math.ts [`41bd18c`](https://github.com/thkruz/ootk/commit/41bd18c04fac9dae9f631b1e391b2deef4df258d)
+- refactor: :label: export types [`12ce662`](https://github.com/thkruz/ootk/commit/12ce66207406330a27fe3791effd7660ef61349b)
+- test: :adhesive_bandage: fix broken tests [`df737f2`](https://github.com/thkruz/ootk/commit/df737f2d47cac43f9056f9c9d0d596daf9080741)
+- fix: :label: fix incorrect units [`d790d63`](https://github.com/thkruz/ootk/commit/d790d63f3502f9a5b0c793f88ff7cc48d252717d)
+- docs: :test_tube: add example of bad TLEs [`f2bc0b9`](https://github.com/thkruz/ootk/commit/f2bc0b989d04604f0c1252de2e43e99b462458d9)
+- fix: :bug: add fix for vite compiler [`c72bd38`](https://github.com/thkruz/ootk/commit/c72bd38df2be1fef82603e85fd687a2e3f67ca83)
+- refactor: :recycle: make rfSensor an extension of DetailedSensor [`add7613`](https://github.com/thkruz/ootk/commit/add7613c9cea3ddf56b5da0accef36b8b866b144)
+- build: :arrow_up: bump ootk-core [`9ac1464`](https://github.com/thkruz/ootk/commit/9ac1464338284e6169304e44ceecb9c978543203)
+- refactor: :recycle: move freqBand from RfSensor to DetailedSensor [`185cc50`](https://github.com/thkruz/ootk/commit/185cc506482c0e0224ff0392e6bb1bad599d54ec)
+- refactor: :label: improved type checking [`7e30df4`](https://github.com/thkruz/ootk/commit/7e30df4f2c481b84ee1843c453af4124988bcfea)
+- chore: :art: update prettier config [`6a816c9`](https://github.com/thkruz/ootk/commit/6a816c905b1ec250053ff77ea0e2c88d96233836)
+- refactor: :green_heart: improve build [`0f4f74c`](https://github.com/thkruz/ootk/commit/0f4f74cc0daa8453317039936a35d9238c6c6a07)
+- docs: :memo: update README [`0494f3e`](https://github.com/thkruz/ootk/commit/0494f3e3d455b18ebf105c3becc6ef846b2f9869)
+- test: :white_check_mark: fix test [`e533d26`](https://github.com/thkruz/ootk/commit/e533d26442784872bf118c74582d07fff9d3aae9)
+- build: :label: update build script to include all type data [`ce752f9`](https://github.com/thkruz/ootk/commit/ce752f9edb4ebba3ca65588611cb109d990c3270)
+- refactor: :label: remove unnecessary type assertions [`7e6b78b`](https://github.com/thkruz/ootk/commit/7e6b78b307aabecf36805919d68c67cb705cde19)
+- feat: :sparkles: add detailedsatellite cloning [`63aeb77`](https://github.com/thkruz/ootk/commit/63aeb77d3d24071a1d66e5396b27e8c89fe34198)
+- fix: :label: mark parameters optional per @weedgrease suggestion [`48cb0de`](https://github.com/thkruz/ootk/commit/48cb0dea834229ec56155d4f2e69ef1c87ed908e)
+- fix: :bug: fix math for getStarAzEl [`0a0ee9a`](https://github.com/thkruz/ootk/commit/0a0ee9a10dfc9a278e20051b71e2dcd625b49e8a)
+- refactor: :recycle: update transforms to allow multiple faces [`53c8877`](https://github.com/thkruz/ootk/commit/53c887730d389b06f18889d4f2170a1e4ac82993)
+- docs: :package: update package.json [`b49eddc`](https://github.com/thkruz/ootk/commit/b49eddcc60d0635a1a6f3c13e28aa5a2ae2cf4c3)
+- docs: :label: fix type label for RaeVec3 [`df0d9dd`](https://github.com/thkruz/ootk/commit/df0d9dd577302b0c57f285ce650a77b325314080)
+- build: :label: include type definition in dist folder [`4114ccd`](https://github.com/thkruz/ootk/commit/4114ccdabe4b1c7d957d017179d7700129643f83)
+- fix: :ambulance: fix radians vs degrees in sensor.ts [`d69200f`](https://github.com/thkruz/ootk/commit/d69200ff86beb932235f11fa0fbd86f6b9401ecc)
+- fix: :bug: correct bug in deep space math [`c7ec9ca`](https://github.com/thkruz/ootk/commit/c7ec9ca017b2ebe0ce41af1c9e7934794e19da3e)
 - ci: :construction_worker: use node 17 in ci [`383d55d`](https://github.com/thkruz/ootk/commit/383d55d44a2cdec5808d32dbc57241035572a0b0)
+- fix: :bug: make vmag and rcs nullable [`0750c9a`](https://github.com/thkruz/ootk/commit/0750c9aebee45bf0cba773b7d09ad91b3d29dbd7)
+- feat: :hammer: add dev script for opening lcov [`1d034da`](https://github.com/thkruz/ootk/commit/1d034daa28b713370855482c6a75317921fe6550)
+- chore: :rotating_light: update eslint config [`b90e585`](https://github.com/thkruz/ootk/commit/b90e58529144fb34db52a0b085cd2dbc9369d6d1)
+- refactor: :lock: update dependencies [`a0ce1d5`](https://github.com/thkruz/ootk/commit/a0ce1d5ff296fb3aa728277cd2fee47a355fd250)
 - feat(ootk-utils): added createVec method [`0c87700`](https://github.com/thkruz/ootk/commit/0c87700bdf15aaab33e7ca4b44b6b885cd545530)
+- build: :bug: fix jest dependencies [`96792e9`](https://github.com/thkruz/ootk/commit/96792e9a9d90c08c23bb81e10beefcc083ae658e)
+- refactor: :rotating_light: hide wasm work [`a372498`](https://github.com/thkruz/ootk/commit/a372498ea1861edf046eee488149b1cfdb2761ac)
+- refactor: :label: remove unnecessary type assertions [`3240407`](https://github.com/thkruz/ootk/commit/3240407d6f21c768da83eaebafcfe6c4df1b7c7b)
+- build: :arrow_up: bump ootk-core [`efc4aa0`](https://github.com/thkruz/ootk/commit/efc4aa0caf7182afd9fbba7e29a50a8defd16ebe)
+- fix: :pencil2: fix typo in sez2rae [`509bf07`](https://github.com/thkruz/ootk/commit/509bf0754ef4e5e50a4aa4571af178ffd219ba6b)
+- fix: :adhesive_bandage: fix import statements [`e923dde`](https://github.com/thkruz/ootk/commit/e923ddefe856711c8216e006dc7463827960900e)
+- fix: :bug: treat m === 0 as valid by checking explicit null before propagation [`226f0e7`](https://github.com/thkruz/ootk/commit/226f0e7420d79e006a340ff490a3e80c44c457d8)
+- docs: :bookmark: bump version [`ae02a3d`](https://github.com/thkruz/ootk/commit/ae02a3da4b5e6d2767e067c8793d3a097e5f021b)
+- refactor: :rotating_light: fix linter issue with line length [`540f8ac`](https://github.com/thkruz/ootk/commit/540f8acdab910df70a3031f7ef3036aeab905ac1)
+- refactor: :rotating_light: fix linter issue with line length [`822062f`](https://github.com/thkruz/ootk/commit/822062fde22f140ed489c34bc6265a893424da92)
+- feat: :sparkles: add new catalog sources [`9dd4160`](https://github.com/thkruz/ootk/commit/9dd41607da91e4daffd8456f795239e945493a2d)
+- test: :white_check_mark: fix test config [`5e5a673`](https://github.com/thkruz/ootk/commit/5e5a6730b67a9b4c448ccc970c80b06c446515d8)
+- fix: :bug: fix imports [`de5459d`](https://github.com/thkruz/ootk/commit/de5459dd9c69afcd08b3002af87d661ccdb47bde)
+- fix: :bug: fix sez2rae returning radians not degrees [`429bab4`](https://github.com/thkruz/ootk/commit/429bab41dd75a659614bbfe229bf6e4c72921c41)
+- build: :arrow_up: bump ootk-core [`62f40d2`](https://github.com/thkruz/ootk/commit/62f40d2e8fd629b7dfc55b2c40e52e40cf2069aa)
+- docs: :memo: make Celestial vs Star more clear [`499bdb2`](https://github.com/thkruz/ootk/commit/499bdb231ba496c58467ddbb99e7ac961f935755)
+- feat: :sparkles: add launchPad to DetailedSatellite [`648c90a`](https://github.com/thkruz/ootk/commit/648c90af9367b023ca59f38590477d680973e3cc)
+- build: :arrow_up: bump ootk-core [`be33f7f`](https://github.com/thkruz/ootk/commit/be33f7f915d68421bb895ef2a52c91a42996ce03)
+- build: :arrow_up: bump ootk-core [`af78108`](https://github.com/thkruz/ootk/commit/af78108d45fbaab4b2c6c853112ffd08ae5cdb0f)
+- fix: :arrow_up: bump ootk-core [`2f0ac47`](https://github.com/thkruz/ootk/commit/2f0ac47d4a9ae18ebd58b72b4db98610b20aa267)
+- fix: :arrow_up: bump ootk-core [`3c87557`](https://github.com/thkruz/ootk/commit/3c875578298b20a3906cf00e45e5bedf55cfa43f)
+- build: :arrow_up: bump ootk-core [`2ff598e`](https://github.com/thkruz/ootk/commit/2ff598ec309be005a40335b99eb1b232b646f44b)
+- fix: :arrow_up: bump ootk-core [`edaafb7`](https://github.com/thkruz/ootk/commit/edaafb7ee1092064addd040d438d100f6b84514b)
+- build: :arrow_up: bump ootk-core [`f5152ed`](https://github.com/thkruz/ootk/commit/f5152ed69c98f92e354240dfe36589fad81e1fa6)
+- fix: :bug: fix issue with vite [`9b540f9`](https://github.com/thkruz/ootk/commit/9b540f9231076ce8670eb2230321b592d0696b99)
+- build: :arrow_up: bump ootk-core [`8d15b97`](https://github.com/thkruz/ootk/commit/8d15b972d7a9dd49a6c2e2773509ac23735da476)
+- build: :arrow_up: bump ootk-core [`188513f`](https://github.com/thkruz/ootk/commit/188513fabd9a1f621547769b9624c0dfcddee59d)
+- build: :arrow_up: bump ootk-core [`c7c5350`](https://github.com/thkruz/ootk/commit/c7c5350d47d20ffb5453ccfcb490164a00b50a9e)
+- build: :arrow_up: bump ootk-core [`d19fd5b`](https://github.com/thkruz/ootk/commit/d19fd5b80b7b223a91c56a64b9564350cd9a90d0)
+- fix: :bug: fix enum [`009342f`](https://github.com/thkruz/ootk/commit/009342f15e9f03de98e477c3c7ce1ef7534caa2d)
+- test: :white_check_mark: update snapshots [`ca95ad6`](https://github.com/thkruz/ootk/commit/ca95ad65be2de3f818390585a7bc1749ca7bf918)
+- fix: :bug: fix bug in how alpha 5 was calculated [`c36cd0c`](https://github.com/thkruz/ootk/commit/c36cd0c6899f4858514f69aeff5095692d812d85)
+- refactor: :label: update return type [`1e841de`](https://github.com/thkruz/ootk/commit/1e841de543153aa5a0f7de936c8aaf1c03f65580)
+- feat: :label: use generics [`2c3a843`](https://github.com/thkruz/ootk/commit/2c3a8435cd14eb43d2ff5ac430b85a516b899b66)
+- fix: :bug: fix rng vs range usage [`a9917c3`](https://github.com/thkruz/ootk/commit/a9917c3d5314332710f5153762b0fd2b1c49c433)
+- refactor: :rotating_light: fix linter error on enum [`097e50b`](https://github.com/thkruz/ootk/commit/097e50b85779feb20671e5725c0b6df437694a22)
+- fix: :pencil2: fix bug with h vs el [`9affaaf`](https://github.com/thkruz/ootk/commit/9affaafcd35b34c5765161966fdeb06e51182c81)
 - ci: :pencil2: fix typo in ci script [`841ae40`](https://github.com/thkruz/ootk/commit/841ae40a41a8a55ab3d10adc8c5b76f38157121b)
+- Update README.md [`61827e5`](https://github.com/thkruz/ootk/commit/61827e5aa74d761f64ad907bb919ae3922658127)
+- chore: :memo: add todo for later [`022525f`](https://github.com/thkruz/ootk/commit/022525ff38feb8070df4039fb29739f0ed005d5a)
+- refactor: :coffin: remove old export [`a4371f8`](https://github.com/thkruz/ootk/commit/a4371f8573ed6c7c008732885555f26b379d5e1a)
+- docs: :bulb: remove unnecessary todo [`5e7a51e`](https://github.com/thkruz/ootk/commit/5e7a51ef0b9faaa91767b84c802340fdaceee6b8)
+- chore: :technologist: remove prettier recommendation [`def01c6`](https://github.com/thkruz/ootk/commit/def01c647b3a09c799b1c2b47c766afed4368ab3)
+- refactor: :fire: remove assemblyscript references [`9c5a87d`](https://github.com/thkruz/ootk/commit/9c5a87d2455d06f0d36b87ecd31aa644e1d7ab62)
 
 #### [v1.0.4](https://github.com/thkruz/ootk/compare/v1.0.0...v1.0.4)
 

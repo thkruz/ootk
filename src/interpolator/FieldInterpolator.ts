@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,10 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable class-methods-use-this */
 
-import { Interpolator } from './Interpolator.js';
+import { Interpolator } from './Interpolator';
 
 // / Base class for arbitrary field interpolators.
 export abstract class FieldInterpolator extends Interpolator {
@@ -31,7 +29,5 @@ export abstract class FieldInterpolator extends Interpolator {
    * @param epoch Epoch to interpolate field values at.
    * @throws [Error] if the interpolator is not initialized.
    */
-  interpolate(final: unknown, EpochUTC: unknown, epoch: unknown) {
-    throw new Error('Method not implemented.');
-  }
+  abstract interpolate(final: unknown, EpochUTC: unknown, epoch: unknown): unknown;
 }

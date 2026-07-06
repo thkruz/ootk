@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,12 +15,13 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable class-methods-use-this */
-import { Thrust } from '../force/Thrust.js';
-import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
-import { EpochUTC, J2000, Tle } from '../main.js';
-import { Propagator } from './Propagator.js';
+
+import { Thrust } from '../force/Thrust';
+import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
+import { EpochUTC } from '../time/EpochUTC';
+import { J2000 } from '../coordinate/J2000';
+import { Tle } from '../coordinate/Tle';
+import { Propagator } from './Propagator';
 
 /**
  * Sgp4Propagator is a propagator that uses the SGP4 model to propagate the state of an object.
@@ -51,7 +52,7 @@ export class Sgp4Propagator extends Propagator {
    * @param maneuvers The array of thrust maneuvers.
    * @param interval The time interval in seconds.
    */
-  ephemerisManeuver(start: EpochUTC, finish: EpochUTC, maneuvers: Thrust[], interval = 60.0): VerletBlendInterpolator {
+  ephemerisManeuver(_start: EpochUTC, _finish: EpochUTC, _maneuvers: Thrust[], _interval = 60.0): VerletBlendInterpolator {
     throw new Error('Maneuvers cannot be modelled with SGP4.');
   }
 
@@ -61,7 +62,7 @@ export class Sgp4Propagator extends Propagator {
    * @param interval - The time interval for the maneuver (default: 60.0 seconds).
    * @throws Error if maneuvers cannot be modeled with SGP4.
    */
-  maneuver(maneuver: Thrust, interval = 60.0): J2000[] {
+  maneuver(_maneuver: Thrust, _interval = 60.0): J2000[] {
     throw new Error('Maneuvers cannot be modelled with SGP4.');
   }
 

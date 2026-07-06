@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,33 +21,98 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DataHandler } from '../data/DataHandler.js';
-import { Seconds } from '../main.js';
-import { secondsPerWeek } from '../utils/constants.js';
-import type { EpochUTC } from './EpochUTC.js';
-// / Global Positioning System _(GPS)_ formatted epoch.
+import { DataHandler } from '../data/DataHandler';
+import { ValidationError } from '../errors';
+import { Seconds } from '../types/types';
+import { secondsPerWeek } from '../utils/constants';
+import { EpochUTC } from './EpochUTC';
+
+/**
+ * Represents an epoch in GPS Time format.
+ *
+ * GPS Time uses a week number and seconds-into-week format, referenced to
+ * the GPS epoch of January 6, 1980, 00:00:00 UTC. Unlike UTC, GPS Time does
+ * **not** include leap seconds, so it runs ahead of UTC by the accumulated
+ * leap seconds since 1980 minus 19 seconds.
+ *
+ * ## GPS Time Structure
+ * GPS time is expressed as two components:
+ * - **Week number**: Weeks since January 6, 1980
+ * - **Seconds of week**: Seconds elapsed in the current week (0 to 604799)
+ *
+ * ## Relationship to Other Time Scales
+ * ```
+ * GPS = UTC + leap_seconds - 19
+ * GPS = TAI - 19
+ * ```
+ *
+ * The 19-second offset exists because GPS Time was synchronized with UTC
+ * when there were 19 leap seconds, and GPS Time has not added leap seconds
+ * since then.
+ *
+ * ## Week Number Rollover
+ * GPS receivers transmit week numbers with limited bits, causing rollover:
+ * - **10-bit rollover**: Every 1024 weeks (~19.7 years)
+ * - **13-bit rollover**: Every 8192 weeks (~157 years)
+ *
+ * Use `week10Bit` or `week13Bit` getters when interfacing with receivers
+ * that use these formats.
+ *
+ * ## When to Use EpochGPS
+ * - **GPS receiver data**: Parsing timestamps from GPS/GNSS receivers
+ * - **Navigation messages**: Working with GPS broadcast ephemerides
+ * - **GNSS applications**: Any Global Navigation Satellite System work
+ * - **Precise timing**: GPS provides nanosecond-level timing
+ *
+ * ## When NOT to Use EpochGPS
+ * - For general satellite tracking (use EpochUTC)
+ * - For astronomical calculations (use EpochTT or EpochTDB)
+ * - For user-facing timestamps (use EpochUTC)
+ *
+ * ## Creating and Converting Instances
+ * ```typescript
+ * // Convert from UTC to GPS
+ * const utc = EpochUTC.now();
+ * const gps = utc.toGPS();
+ *
+ * console.log(gps.week);      // Full week number
+ * console.log(gps.seconds);   // Seconds into week
+ * console.log(gps.week10Bit); // 10-bit week (for legacy receivers)
+ *
+ * // Convert back to UTC
+ * const utcAgain = gps.toUTC();
+ * ```
+ *
+ * @see EpochUTC - Primary time class, use toGPS() to convert
+ */
 export class EpochGPS {
   /**
    * Create a new GPS epoch given the [week] since reference epoch, and number
    * of [seconds] into the [week].
    * @param week Number of weeks since the GPS reference epoch.
    * @param seconds Number of seconds into the week.
-   * @param reference Reference should always be EpochUTC.fromDateTimeString('1980-01-06T00:00:00.000Z').
    */
-  constructor(public week: number, public seconds: number, reference: EpochUTC) {
+  constructor(public week: number, public seconds: number) {
     if (week < 0) {
-      throw new Error('GPS week must be non-negative.');
+      throw new ValidationError('GPS week must be non-negative', 'week', week);
     }
     if (seconds < 0 || seconds >= secondsPerWeek) {
-      throw new Error('GPS seconds must be within a week.');
+      throw new ValidationError('GPS seconds must be between 0 and 604799', 'seconds', seconds);
     }
-
-    // TODO: Set EpochGPS.reference statically without circular dependency.
-    EpochGPS.reference = reference;
   }
 
-  // / Number of weeks since the GPS reference epoch.
-  static reference: EpochUTC;
+  /** Cached GPS reference epoch (1980-01-06T00:00:00.000Z) */
+  private static reference_: EpochUTC | null = null;
+
+  /**
+   * Gets the GPS reference epoch (1980-01-06T00:00:00.000Z).
+   * Uses lazy initialization to avoid circular dependency issues.
+   */
+  static getReference(): EpochUTC {
+    EpochGPS.reference_ ??= EpochUTC.fromDateTimeString('1980-01-06T00:00:00.000Z');
+
+    return EpochGPS.reference_;
+  }
 
   // / GPS leap second difference from TAI/UTC offsets.
   static readonly offset = 19 as Seconds;
@@ -66,9 +131,9 @@ export class EpochGPS {
     return `${this.week}:${this.seconds.toFixed(3)}`;
   }
 
-  // / Convert this to a UTC epoch.
+  /** Convert this to a UTC epoch. */
   toUTC(): EpochUTC {
-    const init = EpochGPS.reference.roll((this.week * secondsPerWeek + this.seconds) as Seconds);
+    const init = EpochGPS.getReference().roll((this.week * secondsPerWeek + this.seconds) as Seconds);
     const ls = DataHandler.getInstance().getLeapSeconds(init.toJulianDate());
 
     return init.roll(-(ls - EpochGPS.offset) as Seconds);

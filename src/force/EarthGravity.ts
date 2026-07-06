@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,11 +15,16 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DataHandler, Earth, ITRF, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../main.js';
-/* eslint-disable class-methods-use-this */
+import { DataHandler } from '../data/DataHandler';
+import { Earth } from '../body/Earth';
+import { ITRF } from '../coordinate/ITRF';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
+
 // / Complex Earth gravity model, accounting for EGM-96 zonal, sectoral, and
 
-import { Force } from './Force.js';
+import { Force } from './Force';
 
 /**
  * designed to model the Earth's gravitational field, which is not uniformly distributed due to variations in mass
@@ -58,14 +63,14 @@ export class EarthGravity implements Force {
     this._asphericalFlag = degree >= 2;
   }
 
-  _spherical(state: J2000): Vector3D {
+  private spherical_(state: J2000): Vector3D {
     const rMag = state.position.magnitude();
 
     return state.position.scale(-Earth.mu / (rMag * rMag * rMag));
   }
 
-  // eslint-disable-next-line max-statements
-  _aspherical(state: J2000): Vector3D {
+
+  private aspherical_(state: J2000): Vector3D {
     const posEcef = state.toITRF().position;
     const ri = 1.0 / posEcef.magnitude();
     const xor = posEcef.x * ri;
@@ -98,7 +103,7 @@ export class EarthGravity implements Force {
 
     const dh = DataHandler.getInstance();
 
-    for (let n = 2, nm1 = 1, nm2 = 0, np1 = 3; n <= this.degree; nm2++, nm1++, n++, np1++) {
+    for (let n = 2, nm1 = 1, np1 = 3; n <= this.degree; nm1++, n++, np1++) {
       const twonm1 = 2.0 * n - 1.0;
 
       reorn *= reor;
@@ -120,7 +125,7 @@ export class EarthGravity implements Force {
 
         const lim = n < this.order ? n : this.order;
 
-        for (let m = 1, mm1 = 0, mm2 = -1, mp1 = 2, mp2 = 3; m <= lim; mm2++, mm1++, m++, mp1++, mp2++) {
+        for (let m = 1, mm1 = 0, mp1 = 2, mp2 = 3; m <= lim; mm1++, m++, mp1++, mp2++) {
           pN[mp1] = pNm2[mp1] + twonm1 * pNm1[m];
 
           const dm = m;
@@ -171,10 +176,10 @@ export class EarthGravity implements Force {
   }
 
   acceleration(state: J2000): Vector3D {
-    let accVec = this._spherical(state);
+    let accVec = this.spherical_(state);
 
     if (this._asphericalFlag) {
-      accVec = accVec.add(this._aspherical(state));
+      accVec = accVec.add(this.aspherical_(state));
     }
 
     return accVec;

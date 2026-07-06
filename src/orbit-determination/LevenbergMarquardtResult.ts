@@ -1,0 +1,42 @@
+/**
+ * @author Theodore Kruczek
+ * @license AGPL-3.0-or-later
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
+ *
+ * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ * Orbital Object ToolKit is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with
+ * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+import { StateCovariance } from '../covariance/StateCovariance';
+import { J2000 } from '../coordinate/J2000';
+
+// / Levenberg-Marquardt orbit determination result.
+export class LevenbergMarquardtResult {
+  /**
+   * Create a new [LevenbergMarquardtResult] object, containing the solved
+   * [state], [covariance], root-mean-squared error [rms], number of
+   * [iterations], and [converged] status.
+   * @param state The solved state.
+   * @param covariance The solved covariance.
+   * @param rms The root-mean-squared error.
+   * @param iterations The number of iterations performed.
+   * @param converged Whether the solver converged.
+   */
+  constructor(
+    public state: J2000,
+    public covariance: StateCovariance,
+    public rms: number,
+    public iterations: number,
+    public converged: boolean,
+  ) {
+    // Nothing to do here.
+  }
+}

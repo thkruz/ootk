@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,7 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DEG2RAD, Degrees, Matrix, RAD2DEG, Radians, Vector3D } from '../main.js';
+import { DEG2RAD, RAD2DEG } from '../utils/constants';
+import { Degrees, Radians } from '../types/types';
+import { Matrix } from './Matrix';
+import { Vector3D } from './Vector3D';
 
 // / Class containing Euler angles.
 export class EulerAngles {

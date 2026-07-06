@@ -1,0 +1,63 @@
+name: Release
+
+# On every push to main, re-run the CI gate and then hand off to
+# semantic-release. It reads the conventional commits since the last tag,
+# computes the bump (feat -> minor, BREAKING CHANGE -> major, everything else
+# -> patch, per .releaserc.json), updates package.json + CHANGELOG.md, tags,
+# creates the GitHub release, and publishes to npm with provenance.
+#
+# Nothing publishes unless the gate passes. semantic-release itself no-ops when
+# there are no releasable commits, so an empty run is harmless.
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write # tag + push CHANGELOG/package.json, create GitHub release
+  issues: write # semantic-release success/failure comments
+  pull-requests: write
+  id-token: write # npm provenance
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Gate + Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # semantic-release needs full history + tags
+          persist-credentials: false # semantic-release authenticates itself
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci --ignore-scripts
+
+      # --- CI gate (mirrors ci.yml). No publish if any of these fail. ---
+      - name: Lint
+        run: npm run lint
+      - name: Circular dependency check
+        run: npm run circular
+      - name: Build
+        run: npm run build
+      - name: Unit tests
+        run: npm run test
+      - name: Integration tests
+        run: npm run test:integration:only
+
+      # --- Release (no-ops when there are no releasable commits) ---
+      - name: semantic-release
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'

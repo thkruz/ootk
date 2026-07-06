@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,12 +21,12 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EquinoctialElementsParams } from '../interfaces/EquinoctialElementsParams.js';
-import { Kilometers, Minutes, PositionVelocity, Radians, Seconds } from '../main.js';
-import { EpochUTC } from '../time/EpochUTC.js';
-import { earthGravityParam, MINUTES_PER_DAY, TAU } from '../utils/constants.js';
-import { newtonM } from '../utils/functions.js';
-import { ClassicalElements } from './ClassicalElements.js';
+import { EquinoctialElementsParams } from '../interfaces/EquinoctialElementsParams';
+import { Kilometers, Minutes, PositionVelocity, Radians, Seconds } from '../types/types';
+import { EpochUTC } from '../time/EpochUTC';
+import { earthGravityParam, MINUTES_PER_DAY, TAU } from '../utils/constants';
+import { newtonM } from '../utils/functions';
+import { ClassicalElements } from './ClassicalElements';
 
 /**
  * Equinoctial elements are a set of orbital elements used to describe the

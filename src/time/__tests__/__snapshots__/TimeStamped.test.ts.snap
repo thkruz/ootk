@@ -1,0 +1,10 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`TimeStamped > should be constructed from an epoch 1`] = `
+TimeStamped {
+  "epoch_": EpochUTC {
+    "posix": 315964800,
+  },
+  "value_": "test",
+}
+`;

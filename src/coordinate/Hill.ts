@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,21 +15,15 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  Earth,
-  EpochUTC,
-  J2000,
-  Kilometers,
-  KilometersPerSecond,
-  Matrix,
-  MetersPerSecond,
-  RadiansPerSecond,
-  RelativeState,
-  Seconds,
-  Vector3D,
-} from '../main.js';
-import { Thrust } from './../force/Thrust.js';
-import { Waypoint } from './../maneuver/Waypoint.js';
+import { Earth } from '../body/Earth';
+import { EpochUTC } from '../time/EpochUTC';
+import { J2000 } from './J2000';
+import { Kilometers, KilometersPerSecond, MetersPerSecond, RadiansPerSecond, Seconds } from '../types/types';
+import { Matrix } from '../operations/Matrix';
+import { RelativeState } from './RelativeState';
+import { Vector3D } from '../operations/Vector3D';
+import { Thrust } from './../force/Thrust';
+import { Waypoint } from './../maneuver/Waypoint';
 
 // / Hill Modified Equidistant Cyllindrical _(EQCM)_ coordinates.
 export class Hill {

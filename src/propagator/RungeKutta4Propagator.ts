@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,11 +15,15 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ForceModel } from '../force/ForceModel.js';
-import { Thrust } from '../force/Thrust.js';
-import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator.js';
-import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, Vector, Vector3D } from '../main.js';
-import { Propagator } from './Propagator.js';
+import { ForceModel } from '../force/ForceModel';
+import { Thrust } from '../force/Thrust';
+import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
+import { EpochUTC } from '../time/EpochUTC';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond, Seconds } from '../types/types';
+import { Vector } from '../operations/Vector';
+import { Vector3D } from '../operations/Vector3D';
+import { Propagator } from './Propagator';
 
 // / Runge-Kutta 4 fixed numerical propagator.
 export class RungeKutta4Propagator extends Propagator {
@@ -59,10 +63,10 @@ export class RungeKutta4Propagator extends Propagator {
     maneuvers: Thrust[],
     interval = 60.0 as Seconds,
   ): VerletBlendInterpolator {
-    const tMvr = maneuvers.slice(0).filter((mvr) => mvr.start >= start || mvr.stop <= finish);
+    const tMvr = maneuvers.slice(0).filter((mvr) => mvr.start <= finish && mvr.stop >= start);
     const ephemeris: J2000[] = [];
 
-    if (tMvr[0].start > start) {
+    if (tMvr.length === 0 || tMvr[0].start > start) {
       ephemeris.push(this.propagate(start));
     }
     for (const mvr of tMvr) {

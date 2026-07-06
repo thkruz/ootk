@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,9 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { J2000, Vector3D } from '../main.js';
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable class-methods-use-this */
+import { J2000 } from '../coordinate/J2000';
+import { Vector3D } from '../operations/Vector3D';
+
 
 // / Base class for perturbation forces.
 export abstract class Force {
@@ -27,7 +27,5 @@ export abstract class Force {
    * @param state The state vector.
    * @throws If the force cannot be calculated.
    */
-  acceleration(state: J2000): Vector3D {
-    throw Error('Not implemented');
-  }
+  abstract acceleration(state: J2000): Vector3D;
 }

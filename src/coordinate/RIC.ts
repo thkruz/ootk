@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,9 +21,20 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Matrix } from '../operations/Matrix.js';
-import { J2000 } from './J2000.js';
-import { RelativeState } from './RelativeState.js';
+import { EpochUTC } from '../time/EpochUTC';
+import { Kilometers, KilometersPerSecond } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
+import { Matrix } from '../operations/Matrix';
+import { J2000 } from './J2000';
+import { RelativeState } from './RelativeState';
+
+/**
+ * Represents a position and velocity with x, y, z components.
+ */
+interface PosVelLike {
+  position: { x: number; y: number; z: number };
+  velocity: { x: number; y: number; z: number };
+}
 
 /**
  * Represents a Radial-Intrack-Crosstrack (RIC) coordinates.
@@ -59,6 +70,32 @@ export class RIC extends RelativeState {
    */
   static fromJ2000(state: J2000, origin: J2000): RIC {
     return RIC.fromJ2000Matrix(state, origin, RelativeState.createMatrix(origin.position, origin.velocity));
+  }
+
+  /**
+   * Creates a RIC coordinate from raw position/velocity objects.
+   * This is a convenience method that wraps fromJ2000 for simpler usage.
+   * @param state The state with position and velocity vectors.
+   * @param origin The origin (reference) with position and velocity vectors.
+   * @param epoch Optional epoch for the state vectors. Defaults to current time.
+   * @returns The RIC coordinate.
+   */
+  static fromPosVel(state: PosVelLike, origin: PosVelLike, epoch?: Date): RIC {
+    const epochUtc = epoch ? EpochUTC.fromDateTime(epoch) : EpochUTC.now();
+
+    const stateJ2000 = new J2000(
+      epochUtc,
+      new Vector3D<Kilometers>(state.position.x as Kilometers, state.position.y as Kilometers, state.position.z as Kilometers),
+      new Vector3D<KilometersPerSecond>(state.velocity.x as KilometersPerSecond, state.velocity.y as KilometersPerSecond, state.velocity.z as KilometersPerSecond),
+    );
+
+    const originJ2000 = new J2000(
+      epochUtc,
+      new Vector3D<Kilometers>(origin.position.x as Kilometers, origin.position.y as Kilometers, origin.position.z as Kilometers),
+      new Vector3D<KilometersPerSecond>(origin.velocity.x as KilometersPerSecond, origin.velocity.y as KilometersPerSecond, origin.velocity.z as KilometersPerSecond),
+    );
+
+    return RIC.fromJ2000(stateJ2000, originJ2000);
   }
 
   /**

@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,8 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Thrust } from '../force/Thrust.js';
-import { Earth, EpochUTC, MetersPerSecond, Seconds, SecondsPerMeterPerSecond } from '../main.js';
+import { Thrust } from '../force/Thrust';
+import { Earth } from '../body/Earth';
+import { EpochUTC } from '../time/EpochUTC';
+import { MetersPerSecond, Seconds, SecondsPerMeterPerSecond } from '../types/types';
 
 // / Container for a two-burn orbit transfer.
 export class TwoBurnOrbitTransfer {

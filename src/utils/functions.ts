@@ -1,9 +1,107 @@
-import { DifferentiableFunction } from '../main.js';
-/* eslint-disable require-jsdoc */
-import { AngularDiameterMethod } from '../enums/AngularDiameterMethod.js';
-import { AngularDistanceMethod } from '../enums/AngularDistanceMethod.js';
-import { EcfVec3, Kilometers, KilometersPerSecond, Radians, SpaceObjectType } from '../types/types.js';
-import { angularVelocityOfEarth, cKmPerSec } from './constants.js';
+
+import { AngularDiameterMethod } from '../enums/AngularDiameterMethod';
+import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';
+import { DifferentiableFunction, EcefVec3, Kilometers, KilometersPerSecond, Radians, SpaceObjectType, Vec3 } from '../types/types';
+import { angularVelocityOfEarth, cKmPerSec } from './constants';
+
+/**
+ * Converts magnitude to decibels.
+ * @param magnitude - The magnitude to convert (must be positive).
+ * @returns The value in decibels.
+ * @throws Error if magnitude is not positive.
+ * @example
+ * ```typescript
+ * const db = mag2db(1000); // Returns 30
+ * const db2 = mag2db(100); // Returns 20
+ * ```
+ */
+export function mag2db(magnitude: number): number {
+  if (magnitude <= 0) {
+    throw new Error('Magnitude must be positive for decibel conversion');
+  }
+
+  return 10 * Math.log10(magnitude);
+}
+
+/**
+ * Calculates the relative velocity between two velocity vectors.
+ * @param vel1 - First velocity vector in km/s.
+ * @param vel2 - Second velocity vector in km/s.
+ * @returns The magnitude of the relative velocity in km/s.
+ * @example
+ * ```typescript
+ * const v1 = { x: 7.0, y: 0.5, z: 0.1 };
+ * const v2 = { x: 6.8, y: 0.6, z: 0.2 };
+ * const relVel = relativeVelocity(v1, v2); // ~0.24 km/s
+ * ```
+ */
+export function relativeVelocity<T extends number>(vel1: Vec3<T>, vel2: Vec3<T>): T {
+  return Math.sqrt((vel1.x - vel2.x) ** 2 + (vel1.y - vel2.y) ** 2 + (vel1.z - vel2.z) ** 2) as T;
+}
+
+/**
+ * Shape type for RCS estimation.
+ */
+export type RcsShape = 'sphere' | 'cylinder' | 'cone' | 'hexagon' | 'cube';
+
+/**
+ * Estimates the Radar Cross Section (RCS) of an object based on its dimensions and shape.
+ * @param length - Length in meters.
+ * @param width - Width in meters.
+ * @param height - Height in meters.
+ * @param shape - The shape type ('sphere', 'cylinder', 'cone', 'hexagon', 'cube').
+ * @returns Estimated RCS in square meters.
+ * @example
+ * ```typescript
+ * const rcs = estimateRcs(2.0, 1.5, 1.5, 'cylinder');
+ * console.log(`Estimated RCS: ${rcs.toFixed(2)} m²`);
+ * ```
+ */
+export function estimateRcs(length: number, width: number, height: number, shape: string): number {
+  const shapeLower = shape.toLowerCase();
+
+  if (shapeLower.includes('sphere')) {
+    const rcs = Math.PI * (length / 2) ** 2;
+
+
+    return (Math.sqrt(rcs) * 3) / 2;
+  }
+
+  if (shapeLower.includes('cyl')) {
+    const minRcs = length * 2 * (width / 2);
+    const maxRcs = Math.PI * (length / 2) ** 2;
+    const rcs = (minRcs + maxRcs) / 2;
+
+
+    return (Math.sqrt(rcs) * 3) / 2;
+  }
+
+  if (shapeLower.includes('cone')) {
+    const rcs = (Math.PI * (width / 2) ** 2) / 2;
+
+
+    return (Math.sqrt(rcs) * 3) / 2;
+  }
+
+  if (shapeLower.includes('hex')) {
+    const minLength = Math.min(length * width, length * height, width * height);
+    const minRcs = (3 * ((Math.sqrt(3) / 2) * minLength ** 2)) / 4;
+    const maxLength = Math.max(length * width, length * height, width * height);
+    const maxRcs = (3 * ((Math.sqrt(3) / 2) * maxLength ** 2)) / 2;
+    const rcs = (minRcs + maxRcs) / 2;
+
+
+    return (Math.sqrt(rcs) * 3) / 2;
+  }
+
+  // Default to cube/box
+  const minRcs = Math.min(length * width, length * height, width * height);
+  const maxRcs = Math.max(length * width, length * height, width * height);
+  const rcs = (minRcs + maxRcs) / 2;
+
+
+  return (Math.sqrt(rcs) * 3) / 2;
+}
 
 /**
  * Calculates the factorial of a given number.
@@ -27,7 +125,7 @@ export function factorial(n: number): number {
  * @returns The base 10 logarithm of the input number.
  */
 export function log10(x: number): number {
-  return Math.log(x) / Math.LN10;
+  return Math.log10(x);
 }
 
 /**
@@ -393,7 +491,7 @@ export function array2d<T>(rows: number, columns: number, value: T): T[][] {
   const output: T[][] = [];
 
   for (let i = 0; i < rows; i++) {
-    output.push(Array(columns).fill(value));
+    output.push(new Array(columns).fill(value));
   }
 
   return output;
@@ -502,6 +600,13 @@ const spaceObjTypeStrMap_ = {
   [SpaceObjectType.NOTIONAL]: 'Notional',
   [SpaceObjectType.FRAGMENT]: 'Fragment',
   [SpaceObjectType.SHORT_TERM_FENCE]: 'Short Term Fence',
+  [SpaceObjectType.EPHEMERIS_SATELLITE]: 'Ephemeris Satellite',
+  [SpaceObjectType.TERRESTRIAL_PLANET]: 'Terrestrial Planet',
+  [SpaceObjectType.GAS_GIANT]: 'Gas Giant',
+  [SpaceObjectType.ICE_GIANT]: 'Ice Giant',
+  [SpaceObjectType.DWARF_PLANET]: 'Dwarf Planet',
+  [SpaceObjectType.MOON]: 'Moon',
+  [SpaceObjectType.DYNAMIC_GROUND_OBJECT]: 'Dynamic Ground Object',
   [SpaceObjectType.MAX_SPACE_OBJECT_TYPE]: 'Max Space Object Type',
 };
 
@@ -523,17 +628,17 @@ export const spaceObjType2Str = (spaceObjType: SpaceObjectType): string =>
  * @returns The calculated Doppler factor.
  */
 export const dopplerFactor = (
-  location: EcfVec3<Kilometers>,
-  position: EcfVec3<Kilometers>,
-  velocity: EcfVec3<KilometersPerSecond>,
+  location: EcefVec3<Kilometers>,
+  position: EcefVec3<Kilometers>,
+  velocity: EcefVec3<KilometersPerSecond>,
 ): number => {
-  const range = <EcfVec3>{
+  const range = <EcefVec3>{
     x: position.x - location.x,
     y: position.y - location.y,
     z: position.z - location.z,
   };
-  const distance = Math.sqrt(range.x ** 2 + range.y ** 2 + range.z ** 2);
-  const rangeVel = <EcfVec3<KilometersPerSecond>>{
+  const distance = Math.hypot(range.x, range.y, range.z);
+  const rangeVel = <EcefVec3<KilometersPerSecond>>{
     x: velocity.x + angularVelocityOfEarth * location.y,
     y: velocity.y - angularVelocityOfEarth * location.x,
     z: velocity.z,

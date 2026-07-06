@@ -1,7 +1,7 @@
 /**
  * @author Theodore Kruczek
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Orbital Object ToolKit is free software: you can redistribute it and/or modify it under the
  * terms of the GNU Affero General Public License as published by the Free Software
@@ -15,8 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth, J2000, Vector3D } from '../main.js';
-import { Force } from './Force.js';
+import { Earth } from '../body/Earth';
+import { J2000 } from '../coordinate/J2000';
+import { Vector3D } from '../operations/Vector3D';
+import { Force } from './Force';
 
 // / Simple central-body gravity model.
 export class Gravity implements Force {
@@ -36,7 +38,7 @@ export class Gravity implements Force {
    * @param state The J2000 state containing the position and velocity vectors.
    * @returns The gravitational force vector in spherical coordinates.
    */
-  private _spherical(state: J2000): Vector3D {
+  private spherical_(state: J2000): Vector3D {
     const rMag = state.position.magnitude();
 
     return state.position.scale(-this.mu / (rMag * rMag * rMag));
@@ -48,6 +50,6 @@ export class Gravity implements Force {
    * @returns The acceleration vector.
    */
   acceleration(state: J2000): Vector3D {
-    return this._spherical(state);
+    return this.spherical_(state);
   }
 }

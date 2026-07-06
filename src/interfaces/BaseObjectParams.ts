@@ -3,7 +3,7 @@
  * @description Orbital Object ToolKit (ootk) is a collection of tools for working
  * with satellites and other orbital objects.
  * @license AGPL-3.0-or-later
- * @copyright (c) 2025 Kruczek Labs LLC
+ * @copyright (c) 2025-2026 Kruczek Labs LLC
  *
  * Many of the classes are based off of the work of @david-rc-dayton and his
  * Pious Squid library (https://github.com/david-rc-dayton/pious_squid) which
@@ -21,13 +21,12 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EciVec3, KilometersPerSecond, SpaceObjectType } from '../types/types.js';
+import { SpaceObjectType } from '../types/types';
 
 export interface BaseObjectParams {
   id?: number;
   name?: string;
   type?: SpaceObjectType;
-  position?: EciVec3;
-  velocity?: EciVec3<KilometersPerSecond>;
   active?: boolean;
+  metadata?: Record<string, unknown>;
 }
