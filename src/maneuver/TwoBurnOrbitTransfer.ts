@@ -16,7 +16,9 @@
  */
 
 import { Thrust } from '../force/Thrust';
-import { Earth, EpochUTC, MetersPerSecond, Seconds, SecondsPerMeterPerSecond } from '../main';
+import { Earth } from '../body/Earth';
+import { EpochUTC } from '../time/EpochUTC';
+import { MetersPerSecond, Seconds, SecondsPerMeterPerSecond } from '../types/types';
 
 // / Container for a two-burn orbit transfer.
 export class TwoBurnOrbitTransfer {

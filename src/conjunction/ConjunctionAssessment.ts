@@ -15,11 +15,21 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  ConjunctionEvent, CovarianceFrame, CovarianceSample, EpochUTC, ForceModel, GoldenSection, J2000, Matrix,
-  ProbabilityOfCollision, Propagator, RIC, Sgp4Propagator, StateCovariance, Tle,
-  type Kilometers, type Seconds, type Vector3D,
-} from '../main';
+import type { Kilometers, Seconds } from '../types/types';
+import type { Vector3D } from '../operations/Vector3D';
+import { ConjunctionEvent } from './ConjunctionEvent';
+import { CovarianceFrame, StateCovariance } from '../covariance/StateCovariance';
+import { CovarianceSample } from '../covariance/CovarianceSample';
+import { EpochUTC } from '../time/EpochUTC';
+import { ForceModel } from '../force/ForceModel';
+import { GoldenSection } from '../optimize/GoldenSection';
+import { J2000 } from '../coordinate/J2000';
+import { Matrix } from '../operations/Matrix';
+import { ProbabilityOfCollision } from './ProbabilityOfCollision';
+import { Propagator } from '../propagator/Propagator';
+import { RIC } from '../coordinate/RIC';
+import { Sgp4Propagator } from '../propagator/Sgp4Propagator';
+import { Tle } from '../coordinate/Tle';
 import { RungeKutta89Propagator } from './../propagator/RungeKutta89Propagator';
 
 /**

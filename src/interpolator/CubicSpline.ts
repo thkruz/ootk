@@ -15,7 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Kilometers, KilometersPerSecond, Seconds, Vector3D } from '../main';
+import { Kilometers, KilometersPerSecond, Seconds } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
 
 // / Container for cubic spline data.
 export class CubicSpline {

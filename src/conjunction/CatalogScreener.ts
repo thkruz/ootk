@@ -19,7 +19,7 @@ import type { Tle } from '../coordinate/Tle';
 import type { StateCovariance } from '../covariance/StateCovariance';
 import type { ForceModel } from '../force/ForceModel';
 import type { EpochUTC } from '../time/EpochUTC';
-import type { Kilometers, Seconds } from '../main';
+import type { Kilometers, Seconds } from '../types/types';
 import { ConjunctionAssessment } from './ConjunctionAssessment';
 import type { ConjunctionEvent } from './ConjunctionEvent';
 import { ScreeningFilter } from './ScreeningFilter';

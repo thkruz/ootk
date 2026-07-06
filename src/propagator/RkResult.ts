@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { J2000 } from '../main';
+import { J2000 } from '../coordinate/J2000';
 
 // / Result of adaptive numerical integration.
 export class RkResult {

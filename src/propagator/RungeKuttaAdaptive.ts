@@ -16,10 +16,16 @@
  */
 
 import { ValidationError } from '../errors';
-import {
-  EpochUTC, ForceModel, J2000, Kilometers, KilometersPerSecond, RkCheckpoint, RkResult, Seconds,
-  Thrust, Vector, Vector3D, VerletBlendInterpolator,
-} from '../main';
+import { EpochUTC } from '../time/EpochUTC';
+import { ForceModel } from '../force/ForceModel';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond, Seconds } from '../types/types';
+import { RkCheckpoint } from './RkCheckpoint';
+import { RkResult } from './RkResult';
+import { Thrust } from '../force/Thrust';
+import { Vector } from '../operations/Vector';
+import { Vector3D } from '../operations/Vector3D';
+import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
 
 import { Propagator } from './Propagator';
 

@@ -22,23 +22,11 @@
  */
 
 import { Horizon, MakeTime, Observer } from 'astronomy-engine';
-import {
-  Degrees,
-  ecef2eci,
-  TemeVec3,
-  GreenwichMeanSiderealTime,
-  jday,
-  Kilometers,
-  LlaVec3,
-  MILLISECONDS_TO_DAYS,
-  Radians,
-  rae2ecef,
-  RaeVec3,
-  Sgp4,
-  SpaceObjectType,
-  StarObjectParams,
-  RAD2DEG,
-} from '../main';
+import { Degrees, GreenwichMeanSiderealTime, Kilometers, LlaVec3, Radians, RaeVec3, SpaceObjectType, TemeVec3 } from '../types/types';
+import { MILLISECONDS_TO_DAYS, RAD2DEG } from '../utils/constants';
+import { Sgp4 } from '../sgp4/sgp4';
+import { StarObjectParams } from '../interfaces/StarObjectParams';
+import { ecef2eci, jday, rae2ecef } from '../transforms/transforms';
 import { BaseObject } from './BaseObject';
 
 export class Star extends BaseObject {

@@ -22,7 +22,7 @@
  */
 
 import { ValidationError } from '../errors';
-import { Seconds } from '../main';
+import { Seconds } from '../types/types';
 import { secondsPerDay } from '../utils/constants';
 
 /**

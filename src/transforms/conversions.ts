@@ -22,7 +22,8 @@
  */
 
 import { ValidationError } from '../errors';
-import { DEG2RAD, Degrees, PI, RAD2DEG, Radians } from '../main';
+import { DEG2RAD, PI, RAD2DEG } from '../utils/constants';
+import { Degrees, Radians } from '../types/types';
 
 /**
  * Converts radians to degrees.

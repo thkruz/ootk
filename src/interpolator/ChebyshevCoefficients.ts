@@ -15,7 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Kilometers, KilometersPerSecond, PositionVelocity, Seconds, Vector3D } from '../main';
+import { Kilometers, KilometersPerSecond, PositionVelocity, Seconds } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
 
 // / Chebyshev compressed ephemeris coefficients.
 export class ChebyshevCoefficients {

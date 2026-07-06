@@ -15,17 +15,13 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {
-  DataHandler,
-  DEG2RAD,
-  Earth,
-  ITRF,
-  J2000,
-  Kilometers,
-  KilometersPerSecond,
-  Radians,
-  Vector3D,
-} from '../main';
+import { DEG2RAD } from '../utils/constants';
+import { DataHandler } from '../data/DataHandler';
+import { Earth } from '../body/Earth';
+import { ITRF } from '../coordinate/ITRF';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond, Radians } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
 import { Sun } from '../body/SunBody';
 import { Force } from './Force';
 

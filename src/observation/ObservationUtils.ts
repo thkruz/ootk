@@ -15,7 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Kilometers, KilometersPerSecond, Matrix, Radians, RadiansPerSecond, Vector3D } from '../main';
+import { Kilometers, KilometersPerSecond, Radians, RadiansPerSecond } from '../types/types';
+import { Matrix } from '../operations/Matrix';
+import { Vector3D } from '../operations/Vector3D';
 
 export const radecToPosition = (ra: Radians, dec: Radians, r: Kilometers): Vector3D<Kilometers> => {
   const ca = Math.cos(ra);

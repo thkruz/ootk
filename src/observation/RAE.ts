@@ -25,7 +25,7 @@
 import { ITRF } from '../coordinate/ITRF';
 import { J2000 } from '../coordinate/J2000';
 import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';
-import { Degrees, Kilometers, KilometersPerSecond, Radians } from '../main';
+import { Degrees, Kilometers, KilometersPerSecond, Radians } from '../types/types';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { DEG2RAD, halfPi, RAD2DEG, TAU } from '../utils/constants';

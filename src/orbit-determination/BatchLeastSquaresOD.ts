@@ -17,7 +17,13 @@
 
 import { CovarianceFrame, StateCovariance } from '../covariance/StateCovariance';
 import { ForceModel } from '../force/ForceModel';
-import { concat, EpochUTC, J2000, Kilometers, KilometersPerSecond, Matrix, Vector, Vector3D } from '../main';
+import { EpochUTC } from '../time/EpochUTC';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond } from '../types/types';
+import { Matrix } from '../operations/Matrix';
+import { Vector } from '../operations/Vector';
+import { Vector3D } from '../operations/Vector3D';
+import { concat } from '../utils/functions';
 import { Observation } from '../observation/Observation';
 import { PropagatorPairs } from '../observation/PropagatorPairs';
 import { KeplerPropagator } from '../propagator/KeplerPropagator';

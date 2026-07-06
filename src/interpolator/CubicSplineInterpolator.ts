@@ -15,7 +15,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, EpochWindow, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../main';
+import { EpochUTC } from '../time/EpochUTC';
+import { EpochWindow } from '../time/EpochWindow';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
 import { CubicSpline } from './CubicSpline';
 import { StateInterpolator } from './StateInterpolator';
 

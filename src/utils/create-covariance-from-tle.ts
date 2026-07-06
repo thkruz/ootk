@@ -1,4 +1,7 @@
-import { CovarianceFrame, CovarianceSample, Matrix, StateCovariance, Tle } from '../main';
+import { CovarianceFrame, StateCovariance } from '../covariance/StateCovariance';
+import { CovarianceSample } from '../covariance/CovarianceSample';
+import { Matrix } from '../operations/Matrix';
+import { Tle } from '../coordinate/Tle';
 
 /**
  * Creates a 6x6 state covariance matrix from a TLE

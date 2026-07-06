@@ -19,7 +19,7 @@ import { Earth } from '../body/Earth';
 import { ClassicalElements } from '../coordinate/ClassicalElements';
 import { J2000 } from '../coordinate/J2000';
 import { Thrust } from '../force/Thrust';
-import { Kilometers, KilometersPerSecond, MetersPerSecond, Seconds } from '../main';
+import { Kilometers, KilometersPerSecond, MetersPerSecond, Seconds } from '../types/types';
 import { PlaneChangeBurn } from '../maneuver/PlaneChangeBurn';
 import { Vector3D } from '../operations/Vector3D';
 import { KeplerPropagator } from '../propagator/KeplerPropagator';

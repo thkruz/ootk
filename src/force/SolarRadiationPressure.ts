@@ -15,7 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { J2000, KM_PER_AU, Vector3D } from '../main';
+import { J2000 } from '../coordinate/J2000';
+import { KM_PER_AU } from '../utils/constants';
+import { Vector3D } from '../operations/Vector3D';
 import { Sun } from '../body/SunBody';
 import { Force } from './Force';
 

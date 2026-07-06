@@ -16,7 +16,7 @@
  */
 
 import { ClassicalElements } from '../coordinate/ClassicalElements';
-import { Kilometers, Radians, Seconds } from '../main';
+import { Kilometers, Radians, Seconds } from '../types/types';
 import { EpochUTC } from '../time/EpochUTC';
 import { clamp, matchHalfPlane } from '../utils/functions';
 

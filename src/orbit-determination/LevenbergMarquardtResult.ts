@@ -16,7 +16,7 @@
  */
 
 import { StateCovariance } from '../covariance/StateCovariance';
-import { J2000 } from '../main';
+import { J2000 } from '../coordinate/J2000';
 
 // / Levenberg-Marquardt orbit determination result.
 export class LevenbergMarquardtResult {

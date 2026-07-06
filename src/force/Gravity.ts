@@ -15,7 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth, J2000, Vector3D } from '../main';
+import { Earth } from '../body/Earth';
+import { J2000 } from '../coordinate/J2000';
+import { Vector3D } from '../operations/Vector3D';
 import { Force } from './Force';
 
 // / Simple central-body gravity model.

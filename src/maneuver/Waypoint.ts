@@ -17,16 +17,11 @@
 
 import { Thrust } from '../force/Thrust';
 import { StateInterpolator } from '../interpolator/StateInterpolator';
-import {
-  EpochUTC,
-  J2000,
-  Kilometers,
-  KilometersPerSecond,
-  MetersPerSecond,
-  RIC,
-  SecondsPerMeterPerSecond,
-  Vector3D,
-} from '../main';
+import { EpochUTC } from '../time/EpochUTC';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond, MetersPerSecond, SecondsPerMeterPerSecond } from '../types/types';
+import { RIC } from '../coordinate/RIC';
+import { Vector3D } from '../operations/Vector3D';
 import { LambertIOD } from '../orbit-determination/LambertIOD';
 import { ForceModel } from './../force/ForceModel';
 import { DownhillSimplex } from './../optimize/DownhillSimplex';

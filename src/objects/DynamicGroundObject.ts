@@ -17,19 +17,8 @@
 
 import { Geodetic } from '../coordinate/Geodetic';
 import { J2000 } from '../coordinate/J2000';
-import {
-  Degrees,
-  EcefVec3,
-  TemeVec3,
-  Kilometers,
-  KilometersPerSecond,
-  LlaVec3,
-  Radians,
-  SpaceObjectType,
-  calcGmst,
-  lla2eci,
-  llaRad2ecef,
-} from '../main';
+import { Degrees, EcefVec3, Kilometers, KilometersPerSecond, LlaVec3, Radians, SpaceObjectType, TemeVec3 } from '../types/types';
+import { calcGmst, lla2eci, llaRad2ecef } from '../transforms/transforms';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { DEG2RAD, RAD2DEG } from '../utils/constants';

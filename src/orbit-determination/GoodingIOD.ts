@@ -17,7 +17,11 @@
 
 import { OrbitDeterminationError } from '../errors';
 import { ForceModel } from '../force/ForceModel';
-import { Earth, J2000, Kilometers, KilometersPerSecond, Seconds, TAU, Vector3D } from '../main';
+import { Earth } from '../body/Earth';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond, Seconds } from '../types/types';
+import { TAU } from '../utils/constants';
+import { Vector3D } from '../operations/Vector3D';
 import { ObservationOptical } from '../observation/ObservationOptical';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
 import { GaussIOD } from './GaussIOD';

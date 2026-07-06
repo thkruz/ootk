@@ -17,7 +17,7 @@
 
 import { Matrix } from '../operations/Matrix';
 import type { StateCovariance } from '../covariance/StateCovariance';
-import type { Kilometers } from '../main';
+import type { Kilometers } from '../types/types';
 import type { ConjunctionEvent } from './ConjunctionEvent';
 
 /**

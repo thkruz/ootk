@@ -18,7 +18,9 @@
 
 import { Thrust } from '../force/Thrust';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
-import { EpochUTC, J2000, Tle } from '../main';
+import { EpochUTC } from '../time/EpochUTC';
+import { J2000 } from '../coordinate/J2000';
+import { Tle } from '../coordinate/Tle';
 import { Propagator } from './Propagator';
 
 /**

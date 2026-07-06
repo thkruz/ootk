@@ -15,7 +15,12 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DataHandler, Earth, ITRF, J2000, Kilometers, KilometersPerSecond, Vector3D } from '../main';
+import { DataHandler } from '../data/DataHandler';
+import { Earth } from '../body/Earth';
+import { ITRF } from '../coordinate/ITRF';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
 
 // / Complex Earth gravity model, accounting for EGM-96 zonal, sectoral, and
 

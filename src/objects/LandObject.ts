@@ -15,7 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { BaseObjectParams, Degrees, Kilometers } from '../main';
+import { BaseObjectParams } from '../interfaces/BaseObjectParams';
+import { Degrees, Kilometers } from '../types/types';
 import { BaseObject } from './BaseObject';
 
 

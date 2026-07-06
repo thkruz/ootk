@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC } from '../main';
+import { EpochUTC } from '../time/EpochUTC';
 
 /**
  * Perform exponential smoothing on data set [xs] using the provided

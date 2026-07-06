@@ -18,20 +18,17 @@
 
 import { ForceModel } from '../force/ForceModel';
 import { Thrust } from '../force/Thrust';
-import {
-  Epoch,
-  EpochUTC,
-  J2000,
-  Kilometers,
-  KilometersPerSecond,
-  Matrix,
-  OrbitRegime,
-  RelativeState,
-  RIC,
-  Tle, Vec3Flat,
-  Vector,
-  Vector3D,
-} from '../main';
+import { Epoch } from '../time/Epoch';
+import { EpochUTC } from '../time/EpochUTC';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond, Vec3Flat } from '../types/types';
+import { Matrix } from '../operations/Matrix';
+import { OrbitRegime } from '../enums/OrbitRegime';
+import { RIC } from '../coordinate/RIC';
+import { RelativeState } from '../coordinate/RelativeState';
+import { Tle } from '../coordinate/Tle';
+import { Vector } from '../operations/Vector';
+import { Vector3D } from '../operations/Vector3D';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
 import { CovarianceFrame, StateCovariance } from './StateCovariance';
 

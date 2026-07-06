@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Vector } from '../../main';
+import { Vector } from '../../operations/Vector';
 
 /**
  * A cost function that evaluates a set of parameters and returns a score.

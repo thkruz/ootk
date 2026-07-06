@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { DifferentiableFunction } from '../main';
+import { DifferentiableFunction } from '../types/types';
 
 /**
  * Golden Section Search optimizer for finding the minimum or maximum of a

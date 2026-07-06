@@ -18,7 +18,7 @@
 import type { J2000 } from '../coordinate/J2000';
 import type { RIC } from '../coordinate/RIC';
 import type { StateCovariance } from '../covariance/StateCovariance';
-import type { Kilometers, KilometersPerSecond } from '../main';
+import type { Kilometers, KilometersPerSecond } from '../types/types';
 import { Matrix } from '../operations/Matrix';
 import type { EpochUTC } from '../time/EpochUTC';
 

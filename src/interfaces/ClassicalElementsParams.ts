@@ -21,7 +21,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, Kilometers, Radians } from '../main';
+import { EpochUTC } from '../time/EpochUTC';
+import { Kilometers, Radians } from '../types/types';
 
 export interface ClassicalElementsParams {
   epoch: EpochUTC;

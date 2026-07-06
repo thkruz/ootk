@@ -22,7 +22,7 @@ import { ParseError } from '../errors';
 import { ConjunctionEvent } from '../conjunction/ConjunctionEvent';
 import { Matrix } from '../operations/Matrix';
 import { EpochUTC } from '../time/EpochUTC';
-import type { Kilometers, KilometersPerSecond } from '../main';
+import type { Kilometers, KilometersPerSecond } from '../types/types';
 import { Vector3D } from '../operations/Vector3D';
 import type {
   CdmHeader,

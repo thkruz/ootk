@@ -25,7 +25,9 @@
 
 import { Earth } from '../body';
 import { J2000 } from '../coordinate';
-import { Kilometers, KilometersPerSecond, Matrix, Radians, Vector3D } from '../main';
+import { Kilometers, KilometersPerSecond, Radians } from '../types/types';
+import { Matrix } from '../operations/Matrix';
+import { Vector3D } from '../operations/Vector3D';
 import { ObservationOptical } from '../observation/ObservationOptical';
 import { DEG2RAD } from '../utils';
 import { GibbsIOD } from './GibbsIOD';

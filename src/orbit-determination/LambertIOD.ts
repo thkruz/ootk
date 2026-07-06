@@ -15,7 +15,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, Radians, Vector3D } from '../main';
+import { Earth } from '../body/Earth';
+import { EpochUTC } from '../time/EpochUTC';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond, Radians } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
 
 // / Lambert two-position and time initial orbit determination.
 export class LambertIOD {

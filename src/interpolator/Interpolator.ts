@@ -15,7 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, EpochWindow, Seconds } from '../main';
+import { EpochUTC } from '../time/EpochUTC';
+import { EpochWindow } from '../time/EpochWindow';
+import { Seconds } from '../types/types';
 
 // / Interpolator base class.
 export abstract class Interpolator {

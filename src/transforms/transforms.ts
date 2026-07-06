@@ -1,25 +1,8 @@
 import { ValidationError } from '../errors';
-import {
-  DEG2RAD,
-  Degrees,
-  Earth,
-  EcefVec3,
-  EnuVec3,
-  GreenwichMeanSiderealTime,
-  Kilometers,
-  LlaVec3,
-  MILLISECONDS_TO_DAYS,
-  PI,
-  RAD2DEG,
-  Radians,
-  RaeVec3,
-  RfVec3,
-  RuvVec3,
-  SezVec3,
-  Sgp4,
-  TAU,
-  TemeVec3,
-} from '../main';
+import { DEG2RAD, MILLISECONDS_TO_DAYS, PI, RAD2DEG, TAU } from '../utils/constants';
+import { Degrees, EcefVec3, EnuVec3, GreenwichMeanSiderealTime, Kilometers, LlaVec3, Radians, RaeVec3, RfVec3, RuvVec3, SezVec3, TemeVec3 } from '../types/types';
+import { Earth } from '../body/Earth';
+import { Sgp4 } from '../sgp4/sgp4';
 import type { GroundObject } from '../objects/GroundObject';
 import type { PhasedArrayRadar } from '../sensor/PhasedArrayRadar';
 

@@ -17,9 +17,12 @@
 
 import { OrbitDeterminationError } from '../errors';
 import { ForceModel } from '../force/ForceModel';
-import {
-  DEG2RAD, Earth, EpochUTC, halfPi, J2000, Kilometers, KilometersPerSecond, Radians, Vector3D,
-} from '../main';
+import { DEG2RAD, halfPi } from '../utils/constants';
+import { Earth } from '../body/Earth';
+import { EpochUTC } from '../time/EpochUTC';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond, Radians } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
 import { RungeKutta89Propagator } from '../propagator/RungeKutta89Propagator';
 
 /**

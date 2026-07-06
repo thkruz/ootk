@@ -17,7 +17,7 @@
 
 import type { Tle } from '../coordinate/Tle';
 import { DEG2RAD } from '../utils/constants';
-import type { Kilometers, Radians } from '../main';
+import type { Kilometers, Radians } from '../types/types';
 import type { ConjunctionEvent } from './ConjunctionEvent';
 
 /**

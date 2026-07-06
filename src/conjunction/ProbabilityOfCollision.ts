@@ -16,7 +16,7 @@
  */
 
 import type { StateCovariance } from '../covariance/StateCovariance';
-import type { Kilometers } from '../main';
+import type { Kilometers } from '../types/types';
 import { Matrix } from '../operations/Matrix';
 import { Vector3D } from '../operations/Vector3D';
 

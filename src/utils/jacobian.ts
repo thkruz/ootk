@@ -1,4 +1,6 @@
-import { array2d, Matrix, Vector } from '../main';
+import { Matrix } from '../operations/Matrix';
+import { Vector } from '../operations/Vector';
+import { array2d } from './functions';
 import { JacobianFunction } from '../types/types';
 
 /**

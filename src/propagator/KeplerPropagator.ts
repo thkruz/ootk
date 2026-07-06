@@ -17,7 +17,10 @@
 
 import { Thrust } from '../force/Thrust';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
-import { ClassicalElements, EpochUTC, J2000, Seconds } from '../main';
+import { ClassicalElements } from '../coordinate/ClassicalElements';
+import { EpochUTC } from '../time/EpochUTC';
+import { J2000 } from '../coordinate/J2000';
+import { Seconds } from '../types/types';
 import { Propagator } from './Propagator';
 
 // / Kepler analytical two-body propagator.

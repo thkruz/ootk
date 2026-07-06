@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Seconds } from '../main';
+import { Seconds } from '../types/types';
 import { DEG2RAD, MS_PER_DAY, RAD2DEG, secondsPerWeek, TAU } from '../utils/constants';
 import { evalPoly } from '../utils/functions';
 import { DataHandler } from './../data/DataHandler';

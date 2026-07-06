@@ -23,21 +23,9 @@
 
 import { Geodetic } from '../coordinate/Geodetic';
 import { J2000 } from '../coordinate/J2000';
-import {
-  DEG2RAD,
-  Degrees,
-  EcefVec3,
-  TemeVec3,
-  Kilometers,
-  KilometersPerSecond,
-  LlaVec3,
-  Radians,
-  RaeVec3,
-  SpaceObjectType,
-  calcGmst,
-  lla2eci,
-  llaRad2ecef,
-} from '../main';
+import { DEG2RAD } from '../utils/constants';
+import { Degrees, EcefVec3, Kilometers, KilometersPerSecond, LlaVec3, Radians, RaeVec3, SpaceObjectType, TemeVec3 } from '../types/types';
+import { calcGmst, lla2eci, llaRad2ecef } from '../transforms/transforms';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { BaseObject, BaseObjectParams } from './BaseObject';

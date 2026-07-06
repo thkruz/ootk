@@ -40,7 +40,7 @@ import { OmmDataFormat, OmmParsedDataFormat } from '../interfaces/OmmFormat';
 import { NumericalPropagatorOptions } from '../interfaces/NumericalPropagatorOptions';
 import { OptionsParams } from '../interfaces/OptionsParams';
 import { SatelliteParams } from '../interfaces/SatelliteParams';
-import { Sgp4 } from '../main';
+import { Sgp4 } from '../sgp4/sgp4';
 import { RAE } from '../observation/RAE';
 import { DormandPrince54Propagator } from '../propagator/DormandPrince54Propagator';
 import { KeplerPropagator } from '../propagator/KeplerPropagator';

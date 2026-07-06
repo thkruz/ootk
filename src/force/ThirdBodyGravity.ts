@@ -15,7 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { J2000, Vector3D } from '../main';
+import { J2000 } from '../coordinate/J2000';
+import { Vector3D } from '../operations/Vector3D';
 import { Moon, MoonBody } from '../body/MoonBody';
 import { Sun, SunBody } from '../body/SunBody';
 import { Force } from './Force';

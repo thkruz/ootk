@@ -16,7 +16,7 @@
  */
 
 
-import { evalPoly } from '../main';
+import { evalPoly } from '../utils/functions';
 import { DownhillSimplex } from './DownhillSimplex';
 import { PolynomicalRegressionResult } from './internal/PolynomicalRegressionResult';
 

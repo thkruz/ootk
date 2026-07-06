@@ -15,7 +15,10 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth, J2000, Vector, Vector3D } from '../main';
+import { Earth } from '../body/Earth';
+import { J2000 } from '../coordinate/J2000';
+import { Vector } from '../operations/Vector';
+import { Vector3D } from '../operations/Vector3D';
 import { AtmosphericDrag } from './AtmosphericDrag';
 import { EarthGravity } from './EarthGravity';
 import { Force } from './Force';

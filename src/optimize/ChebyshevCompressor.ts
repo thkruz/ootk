@@ -16,7 +16,9 @@
  */
 
 import { StateInterpolator } from '../interpolator/StateInterpolator';
-import { EpochUTC, Seconds, Vector3D } from '../main';
+import { EpochUTC } from '../time/EpochUTC';
+import { Seconds } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
 import { ChebyshevCoefficients } from './../interpolator/ChebyshevCoefficients';
 import { ChebyshevInterpolator } from './../interpolator/ChebyshevInterpolator';
 

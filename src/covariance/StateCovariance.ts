@@ -15,7 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Matrix, Vector } from '../main';
+import { Matrix } from '../operations/Matrix';
+import { Vector } from '../operations/Vector';
 
 /** Covariance Frame */
 export enum CovarianceFrame {

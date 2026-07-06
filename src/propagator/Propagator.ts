@@ -17,7 +17,9 @@
 
 import { Thrust } from '../force/Thrust';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
-import { EpochUTC, J2000, Seconds } from '../main';
+import { EpochUTC } from '../time/EpochUTC';
+import { J2000 } from '../coordinate/J2000';
+import { Seconds } from '../types/types';
 import { GoldenSection } from './../optimize/GoldenSection';
 
 // Propagator base class.

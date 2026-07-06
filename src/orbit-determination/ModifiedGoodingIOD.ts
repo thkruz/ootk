@@ -17,7 +17,12 @@
 
 import { OrbitDeterminationError } from '../errors';
 import { ForceModel } from '../force/ForceModel';
-import { Earth, EpochUTC, J2000, Kilometers, KilometersPerSecond, RadecTopocentric, Vector3D } from '../main';
+import { Earth } from '../body/Earth';
+import { EpochUTC } from '../time/EpochUTC';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond } from '../types/types';
+import { RadecTopocentric } from '../observation/RadecTopocentric';
+import { Vector3D } from '../operations/Vector3D';
 import { ObservationOptical } from '../observation/ObservationOptical';
 import { DownhillSimplex } from '../optimize/DownhillSimplex';
 import { CostFunction } from '../optimize/internal/SimplexEntry';

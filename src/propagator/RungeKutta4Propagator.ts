@@ -18,7 +18,11 @@
 import { ForceModel } from '../force/ForceModel';
 import { Thrust } from '../force/Thrust';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
-import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Seconds, Vector, Vector3D } from '../main';
+import { EpochUTC } from '../time/EpochUTC';
+import { J2000 } from '../coordinate/J2000';
+import { Kilometers, KilometersPerSecond, Seconds } from '../types/types';
+import { Vector } from '../operations/Vector';
+import { Vector3D } from '../operations/Vector3D';
 import { Propagator } from './Propagator';
 
 // / Runge-Kutta 4 fixed numerical propagator.

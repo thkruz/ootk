@@ -23,7 +23,7 @@
 
 import { DataHandler } from '../data/DataHandler';
 import { ValidationError } from '../errors';
-import { Seconds } from '../main';
+import { Seconds } from '../types/types';
 import { secondsPerWeek } from '../utils/constants';
 import { EpochUTC } from './EpochUTC';
 

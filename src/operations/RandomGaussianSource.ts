@@ -15,7 +15,8 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Vector, Vector3D } from '../main';
+import { Vector } from './Vector';
+import { Vector3D } from './Vector3D';
 import { BoxMuller } from './BoxMuller';
 
 export class RandomGaussianSource {

@@ -19,7 +19,8 @@ import { J2000 } from '../coordinate/J2000';
 import { ParseError } from '../errors';
 import { InterpolatorType } from '../objects/InterpolatorType';
 import { EpochUTC } from '../time/EpochUTC';
-import { Kilometers, KilometersPerSecond, Vector3D } from '../main';
+import { Kilometers, KilometersPerSecond } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
 import type { OemCovarianceMatrix, OemDataBlock, OemHeader, OemMetadata, ParsedOem } from './OemTypes';
 
 /**

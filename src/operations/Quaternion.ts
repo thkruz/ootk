@@ -15,7 +15,11 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Matrix, Radians, RadiansPerSecond, Vector, Vector3D, wrapAngle } from '../main';
+import { Matrix } from './Matrix';
+import { Radians, RadiansPerSecond } from '../types/types';
+import { Vector } from './Vector';
+import { Vector3D } from './Vector3D';
+import { wrapAngle } from '../utils/functions';
 
 export class Quaternion {
   x: number;

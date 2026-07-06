@@ -18,7 +18,8 @@
 import { ClassicalElements } from '../coordinate/ClassicalElements';
 import { Tle } from '../coordinate/Tle';
 import { J2000 } from '../coordinate/J2000';
-import { Sgp4, Vector3D } from '../main';
+import { Sgp4 } from '../sgp4/sgp4';
+import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { Kilometers, KilometersPerSecond, Radians } from '../types/types';
 import { TAU } from '../utils/constants';
