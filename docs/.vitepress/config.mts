@@ -3,7 +3,10 @@ import { defineConfig } from 'vitepress';
 export default defineConfig({
   title: 'ootk',
   description: 'Orbital Object Toolkit - satellite propagation, orbit determination, sensors, and maneuver planning in TypeScript',
-  base: '/ootk/',
+  // Served at the root of the custom domain (ootk.kruczeklabs.com), so base is
+  // '/'. If you ever drop the custom domain and serve at thkruz.github.io/ootk/,
+  // change this back to '/ootk/'.
+  base: '/',
   // README.md stays for GitHub folder browsing; index.md is the site home
   srcExclude: ['README.md'],
   themeConfig: {
