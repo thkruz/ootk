@@ -29,7 +29,7 @@
 
 import { Sgp4OpsMode } from '../enums/Sgp4OpsMode';
 import { OmmParsedDataFormat } from '../interfaces/OmmFormat';
-import { Tle } from '../main';
+import { convertA5to6Digit } from '../coordinate/alpha5';
 import {
   GreenwichMeanSiderealTime, Kilometers, KilometersPerSecond, SatelliteRecord, StateVectorSgp4, Vec3Flat,
 } from '../types/types';
@@ -3553,7 +3553,7 @@ export class Sgp4 {
      * Ex. Z1234 = 351234
      */
 
-    satrec.satnum = Tle.convertA5to6Digit(satn);
+    satrec.satnum = convertA5to6Digit(satn);
 
     /*
      * Sgp4fix - note the following variables are also passed directly via satrec.

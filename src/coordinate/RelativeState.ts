@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Kilometers, KilometersPerSecond } from '../main';
+import { Kilometers, KilometersPerSecond } from '../types/types';
 import { Matrix } from '../operations/Matrix';
 import { Vector3D } from '../operations/Vector3D';
 import { J2000 } from './J2000';

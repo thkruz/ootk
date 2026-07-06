@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Geodetic } from '../coordinate/Geodetic';
+import type { Geodetic } from '../coordinate/Geodetic';
 import { Degrees, Kilometers, SpaceObjectType } from '../types/types';
 import { GroundObject, GroundObjectParams } from './GroundObject';
 

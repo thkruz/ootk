@@ -23,7 +23,9 @@
 
 import { Earth } from '../body/Earth';
 import { ValidationError } from '../errors';
-import { AngularDistanceMethod, Degrees, GroundStation, Kilometers, KilometersPerSecond, Radians } from '../main';
+import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';
+import { Degrees, Kilometers, KilometersPerSecond, Radians } from '../types/types';
+import { GroundStation } from '../objects/GroundStation';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { DEG2RAD, RAD2DEG } from '../utils/constants';

@@ -22,7 +22,8 @@
  */
 
 import { ValidationError } from '../errors';
-import { StringifiedNumber, Tle, TleLine1, TleLine2, TleParams } from '../main';
+import { StringifiedNumber, TleLine1, TleLine2, TleParams } from '../types/types';
+import { convert6DigitToA5 } from './alpha5';
 
 /**
  * A class containing static methods for formatting TLEs (Two-Line Elements).
@@ -44,7 +45,7 @@ export abstract class FormatTle {
     // numeric inputs ("5", "25544") and alpha-5 inputs ("T0001") it's a
     // passthrough — so pad short numerics to 5 chars here so the TLE stays
     // 69 chars regardless of the caller's display-canonical sccNum form.
-    let scc = Tle.convert6DigitToA5(tleParams.scc);
+    let scc = convert6DigitToA5(tleParams.scc);
 
     if ((/^\d{1,4}$/u).test(scc)) {
       scc = scc.padStart(5, '0');

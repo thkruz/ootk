@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Iau1980Entry } from './Iau1980Data';
+import type { Iau1980Entry } from './Iau1980Data';
 
 // / Array of the first 4 IAU-1980 coefficients.
 export const iau1980: Iau1980Entry[] = [

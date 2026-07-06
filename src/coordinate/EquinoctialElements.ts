@@ -22,7 +22,7 @@
  */
 
 import { EquinoctialElementsParams } from '../interfaces/EquinoctialElementsParams';
-import { Kilometers, Minutes, PositionVelocity, Radians, Seconds } from '../main';
+import { Kilometers, Minutes, PositionVelocity, Radians, Seconds } from '../types/types';
 import { EpochUTC } from '../time/EpochUTC';
 import { earthGravityParam, MINUTES_PER_DAY, TAU } from '../utils/constants';
 import { newtonM } from '../utils/functions';

@@ -23,15 +23,9 @@
 
 import { OrbitRegime } from '../enums/OrbitRegime';
 import { ClassicalElementsParams } from '../interfaces/ClassicalElementsParams';
-import {
-  Degrees,
-  Earth,
-  J2000,
-  Kilometers,
-  KilometersPerSecond,
-  Minutes, PositionVelocity,
-  Radians, Seconds,
-} from '../main';
+import { Degrees, Kilometers, KilometersPerSecond, Minutes, PositionVelocity, Radians, Seconds } from '../types/types';
+import { Earth } from '../body/Earth';
+import { J2000 } from './J2000';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { earthGravityParam, MINUTES_PER_DAY, RAD2DEG, sec2min, TAU } from '../utils/constants';

@@ -21,7 +21,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { EpochUTC, Kilometers, KilometersPerSecond, Vector3D } from '../main';
+import { EpochUTC } from '../time/EpochUTC';
+import { Kilometers, KilometersPerSecond } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
 import { Matrix } from '../operations/Matrix';
 import { J2000 } from './J2000';
 import { RelativeState } from './RelativeState';

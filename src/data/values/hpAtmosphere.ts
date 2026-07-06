@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { HpAtmosphereEntry } from './HpAtmosphereData';
+import type { HpAtmosphereEntry } from './HpAtmosphereData';
 
 // / Harris-Priester atmosphere data, assuming mean solar flux.
 
