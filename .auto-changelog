@@ -1,7 +1,8 @@
 {
   "output": "CHANGELOG.md",
   "template": "changelog.hbs",
-  "package": true,
+  "package": false,
+  "unreleased": false,
   "hideCredit": true,
   "tagPrefix": "v",
   "commitLimit": false
