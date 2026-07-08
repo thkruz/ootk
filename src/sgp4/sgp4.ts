@@ -35,6 +35,9 @@ import {
 } from '../types/types';
 import { DEG2RAD, PI, TAU, temp4, x2o3 } from '../utils/constants';
 import { Sgp4ErrorCode } from './sgp4-error';
+import {
+  clearSgp4WasmBackend, getSgp4WasmBackendStats, isSgp4WasmBackendActive, setSgp4WasmBackend, Sgp4WasmBackendLike, stashTleLines, tryPropagateWasm,
+} from './sgp4-wasm-backend';
 
 export enum Sgp4GravConstants {
   wgs72old = 'wgs72old',
@@ -195,6 +198,46 @@ const step2 = 259200.0;
  *       ----------------------------------------------------------------
  */
 export class Sgp4 {
+  /**
+   * Routes all subsequent `createSatrec`/`propagate` calls in this JavaScript
+   * context through the USSF Astro Standards SGP4 wasm build instead of the
+   * pure-TypeScript implementation. Pass a loaded `Sgp4Wasm` or `Sgp4XpWasm`
+   * instance (see `src/external/`).
+   *
+   * satKeys are attached to satrecs lazily on first propagation, so the
+   * backend can be activated before or after satrecs are created. Satrecs
+   * without TLE lines (e.g. built from an OMM) and TLEs the wasm library
+   * rejects fall back to the TypeScript implementation permanently.
+   * @param wasm A loaded wasm SGP4 instance.
+   */
+  static useWasmBackend(wasm: Sgp4WasmBackendLike): void {
+    setSgp4WasmBackend(wasm);
+  }
+
+  /**
+   * Restores the pure-TypeScript SGP4 implementation.
+   */
+  static clearWasmBackend(): void {
+    clearSgp4WasmBackend();
+  }
+
+  /**
+   * Whether propagation is currently routed through a wasm backend.
+   */
+  static get isWasmBackendActive(): boolean {
+    return isSgp4WasmBackendActive();
+  }
+
+  /**
+   * Diagnostic counters for the wasm backend: distinct TLEs attached to the
+   * wasm registry vs permanently fallen back to the TypeScript
+   * implementation. A growing fallback count means part of the catalog is
+   * still propagating in TypeScript.
+   */
+  static get wasmBackendStats(): { attached: number; fallback: number } {
+    return getSgp4WasmBackendStats();
+  }
+
   /*
    * -----------------------------------------------------------------------------
    *
@@ -426,6 +469,9 @@ export class Sgp4 {
       xno: satrec.no,
       xnodeo: satrec.nodeo,
     });
+
+    // Stash the TLE lines so a wasm backend can attach a satKey lazily later
+    stashTleLines(satrec as unknown as SatelliteRecord, tleLine1, tleLine2);
 
     return satrec as unknown as SatelliteRecord;
   }
@@ -1083,6 +1129,13 @@ export class Sgp4 {
    *----------------------------------------------------------------------------
    */
   static propagate(satrec: SatelliteRecord, tsince: number): StateVectorSgp4 {
+    // Route through the Astro Standards wasm backend when one is active
+    const wasmResult = tryPropagateWasm(satrec, tsince);
+
+    if (wasmResult !== null) {
+      return wasmResult;
+    }
+
     /* ------------------ set mathematical constants --------------- */
     /*
      * Sgp4fix divisor for divide by zero check on inclination
