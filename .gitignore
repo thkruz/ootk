@@ -29,3 +29,10 @@ src/objects/__tests__/propagator-accuracy-summary.txt
 
 docs/.vitepress/cache
 docs/.vitepress/dist
+
+# License-restricted USSF Astro Standards Sgp4Prop WebAssembly artifacts
+# (space-track.org download; must never be committed or redistributed)
+src/external/Sgp4Prop.js
+src/external/Sgp4Prop.wasm
+src/external/Sgp4Prop.xp.js
+src/external/Sgp4Prop.xp.wasm

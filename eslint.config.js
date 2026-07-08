@@ -275,6 +275,8 @@ export default [
       'scripts/**',
       'node_modules/**',
       '**/*.config.{js,mjs,cjs,ts,mts,cts}',
+      // Gitignored USSF Astro Standards Emscripten artifacts
+      'src/external/Sgp4Prop*.js',
     ],
   },
   js.configs.recommended,
