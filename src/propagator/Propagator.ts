@@ -36,7 +36,8 @@ export abstract class Propagator {
     const output: J2000[] = [this.propagate(start)];
     let tempEpoch = start;
 
-    while (tempEpoch <= stop) {
+    // Compare raw POSIX seconds; relational operators on Epoch objects coerce via toISOString().
+    while (tempEpoch.posix <= stop.posix) {
       tempEpoch = tempEpoch.roll(interval);
       output.push(this.propagate(tempEpoch));
     }

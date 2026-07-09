@@ -280,7 +280,8 @@ export class Hill {
 
     // Note difference was once compareTo
     output.sort((a, b) => a.center.difference(b.center));
-    output = output.filter((mvr) => mvr.center >= this.epoch && mvr.center >= pivot);
+    // Compare raw POSIX seconds; relational operators on Epoch objects coerce via toISOString().
+    output = output.filter((mvr) => mvr.center.posix >= this.epoch.posix && mvr.center.posix >= pivot.posix);
     for (const mvr of output) {
       state = state.maneuver(mvr);
     }
