@@ -204,6 +204,7 @@ exports[`Export Snapshot > should export the expected public API surface 1`] = `
   "PropagationError",
   "Propagator",
   "PropagatorType",
+  "PropellantBudget",
   "Quaternion",
   "rad2deg",
   "RAD2DEG",
