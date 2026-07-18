@@ -31,4 +31,6 @@ export enum SensorType {
   PASSIVE_RF = 'PASSIVE_RF',
   /** Bistatic radio telescope */
   BISTATIC_RADIO_TELESCOPE = 'BISTATIC_RADIO_TELESCOPE',
+  /** Telemetry, tracking, and command antenna (cooperative tracking dish) */
+  TT_C_ANTENNA = 'TT_C_ANTENNA',
 }

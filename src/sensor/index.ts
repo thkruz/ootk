@@ -79,3 +79,7 @@ export { LaserRangingSensor, SLR_WAVELENGTHS } from './LaserRangingSensor';
 export type { LaserRangingSensorParams } from './LaserRangingSensor';
 export { PassiveRFSensor } from './PassiveRFSensor';
 export type { PassiveRFSensorParams } from './PassiveRFSensor';
+
+// Communication antennas
+export { TtcAntenna } from './TtcAntenna';
+export type { TtcAntennaParams } from './TtcAntenna';
