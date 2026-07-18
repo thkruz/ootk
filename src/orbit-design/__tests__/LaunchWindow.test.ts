@@ -1,8 +1,10 @@
+import { rv2tle } from '../../orbit-determination/Rv2Tle';
 import { Satellite } from '../../objects/Satellite';
-import { Degrees, TleLine1, TleLine2 } from '../../types/types';
-import { RAD2DEG } from '../../utils/constants';
+import { calcGmst } from '../../transforms';
+import { Degrees, GreenwichMeanSiderealTime, Radians, TleLine1, TleLine2 } from '../../types/types';
+import { DEG2RAD, RAD2DEG } from '../../utils/constants';
+import { groundTrackStateVector, semimajorAxisFromMeanMotion } from '../GroundTrackStateVector';
 import { LaunchWindowFinder } from '../LaunchWindow';
-import { OrbitFinder } from '../OrbitFinder';
 
 // Standard ISS TLE — inclination 51.6415, RAAN 161.8339 at epoch 22203.46960946.
 const tle1 = '1 25544U 98067A   22203.46960946  .00003068  00000+0  61583-4 0  9996' as TleLine1;
@@ -59,23 +61,31 @@ describe('LaunchWindowFinder geometry', () => {
   });
 });
 
-describe('LaunchWindowFinder vs OrbitFinder (physical cross-check)', () => {
-  it('matches the RAAN OrbitFinder produces when rotating an orbit over the site', () => {
+describe('LaunchWindowFinder vs ground-track state vector (physical cross-check)', () => {
+  it('matches the RAAN of an orbit placed over the site at the launch time', () => {
     const sat = new Satellite({ tle1, tle2 });
     const t = new Date('2022-07-22T12:00:00Z');
 
-    const result = new OrbitFinder(sat, KSC_LAT, KSC_LON, 'N', t).rotateOrbitToLatLon();
-
-    expect(result[0]).not.toBe('Error');
+    // Independently build an orbit passing over the site at t and read back its RAAN.
+    const state = groundTrackStateVector({
+      semimajorAxisKm: semimajorAxisFromMeanMotion(sat.meanMotion),
+      eccentricity: sat.eccentricity,
+      inclinationRad: (sat.inclination * DEG2RAD) as Radians,
+      latRad: (KSC_LAT * DEG2RAD) as Radians,
+      lonRad: (KSC_LON * DEG2RAD) as Radians,
+      gmstRad: calcGmst(t).gmst as GreenwichMeanSiderealTime,
+      direction: 'N',
+    })!;
+    const fit = rv2tle(t, state.position, state.velocity, { maxIterations: 30, toleranceKm: 1e-4 })!;
 
     // RAAN lives in TLE line 2, columns 18-25.
-    const orbitFinderRaan = parseFloat((result[1] as string).substring(17, 25));
+    const placedOrbitRaan = parseFloat(fit.tle2.substring(17, 25));
     const finder = new LaunchWindowFinder({ ...baseOptions, targetRaan: 0 as Degrees });
     const closedFormRaan = finder.achievableRaan(t);
 
-    // Closed form uses geocentric latitude while OrbitFinder matches the
-    // geodetic subpoint, so allow a degree of slack.
-    expect(Math.abs(norm180(closedFormRaan - orbitFinderRaan))).toBeLessThan(1);
+    // LaunchWindowFinder works in geocentric latitude while the placed orbit
+    // matches the geodetic subpoint, so allow a degree of slack.
+    expect(Math.abs(norm180(closedFormRaan - placedOrbitRaan))).toBeLessThan(1);
   });
 });
 
