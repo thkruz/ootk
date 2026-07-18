@@ -368,6 +368,49 @@ export class FieldOfView {
   }
 
   /**
+   * Samples a unit direction on or inside the FOV cone.
+   *
+   * The cone cross-section is parameterized like a standard 2D ellipse in
+   * angular (gnomonic) space: x = halfAngle * cos(t), y = minorHalfAngle * sin(t),
+   * where x is the off-boresight angle along the major axis (u) and y along the
+   * minor axis (v). Uniform steps in t produce well-distributed boundary points
+   * even for highly eccentric fans (e.g., an 80° x 1° fence radar), unlike
+   * uniform steps in the geometric position angle which clump at the fan tips.
+   *
+   * Points sampled with radialFraction < 1 always satisfy the elliptical cone
+   * containment check; radialFraction = 1 lies exactly on the boundary.
+   *
+   * @param t - Parametric ellipse angle in radians. t=0 points along the major
+   *            axis (+u), t=PI/2 along the minor axis (+v). Note this is NOT the
+   *            geometric position angle around the boresight.
+   * @param radialFraction - 0 = boresight, 1 = cone boundary (default: 1)
+   * @returns Unit direction vector in the FOV's reference frame (ENU for topocentric)
+   */
+  directionAt(t: Radians, radialFraction = 1): Vector3D {
+    const x = radialFraction * this.halfAngleRad_ * Math.cos(t);
+    const y = radialFraction * this.minorHalfAngleRad_ * Math.sin(t);
+    const theta = Math.hypot(x, y);
+
+    const { b, u, v } = this.boresightFrame_;
+
+    if (theta < EPS) {
+      return b;
+    }
+
+    const cosTheta = Math.cos(theta);
+    const sinTheta = Math.sin(theta);
+    // Unit vector in the u-v plane pointing from the boresight toward the sample
+    const rx = x / theta;
+    const ry = y / theta;
+
+    return new Vector3D(
+      cosTheta * b.x + sinTheta * (rx * u.x + ry * v.x),
+      cosTheta * b.y + sinTheta * (rx * u.y + ry * v.y),
+      cosTheta * b.z + sinTheta * (rx * u.z + ry * v.z),
+    );
+  }
+
+  /**
    * Gets the effective minimum elevation at a given azimuth.
    * Considers all applicable elevation masks and returns the most restrictive.
    *
