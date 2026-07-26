@@ -17,8 +17,10 @@
 
 export { LaunchTrajectoryGenerator } from './LaunchTrajectoryGenerator';
 export type { LaunchTrajectoryConfig } from './LaunchTrajectoryGenerator';
-export { OrbitFinder } from './OrbitFinder';
-export type { OrbitFinderOptions, OrbitParameters } from './OrbitFinder';
+export { LaunchWindowFinder } from './LaunchWindow';
+export type { LaunchWindowOptions, LaunchWindowResult } from './LaunchWindow';
+export { groundTrackStateVector, perigeeSpeed, semimajorAxisFromMeanMotion } from './GroundTrackStateVector';
+export type { GroundTrackState, GroundTrackStateOptions, StateVec3 } from './GroundTrackStateVector';
 export { RepeatGroundTrack } from './RepeatGroundTrack';
 export type {
   FindNearestOptions,

@@ -15,22 +15,21 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { Sgp4WasmBase } from './Sgp4WasmBase';
+
 /**
- * Enum representing different types of sensors.
+ * Classic SGP4 propagation via the official USSF Astro Standards
+ * "C Sgp4Prop WebAssembly" build (`Sgp4Prop.js` / `Sgp4Prop.wasm`).
+ *
+ * @example
+ * ```ts
+ * const sgp4 = await new Sgp4Wasm().load();
+ * const satKey = sgp4.addSat(line1, line2);
+ * sgp4.initSats([satKey]);
+ * const state = sgp4.propagateOne(satKey, 60); // 60 min past epoch
+ * ```
  */
-export enum SensorType {
-  /** Optical/visual sensor (telescope, camera) */
-  OPTICAL = 'OPTICAL',
-  /** Mechanical tracking radar (dish-based) */
-  MECHANICAL_RADAR = 'MECHANICAL_RADAR',
-  /** Phased array radar (electronic beam steering) */
-  PHASED_ARRAY_RADAR = 'PHASED_ARRAY_RADAR',
-  /** Laser ranging sensor (SLR - Satellite Laser Ranging) */
-  LASER_RANGING = 'LASER_RANGING',
-  /** Passive RF sensor (SIGINT, no transmission) */
-  PASSIVE_RF = 'PASSIVE_RF',
-  /** Bistatic radio telescope */
-  BISTATIC_RADIO_TELESCOPE = 'BISTATIC_RADIO_TELESCOPE',
-  /** Telemetry, tracking, and command antenna (cooperative tracking dish) */
-  TT_C_ANTENNA = 'TT_C_ANTENNA',
+export class Sgp4Wasm extends Sgp4WasmBase {
+  protected readonly defaultGlueFile_ = 'Sgp4Prop.js';
+  protected readonly defaultWasmFile_ = 'Sgp4Prop.wasm';
 }

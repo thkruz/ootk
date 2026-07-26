@@ -37,11 +37,14 @@ jobs:
         with:
           fetch-depth: 0 # full history so VitePress can read git-based last-updated
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Configure Pages
         # enablement: turn Pages on (build type = GitHub Actions) via the API if
@@ -52,10 +55,10 @@ jobs:
           enablement: true
 
       # --ignore-scripts skips husky install; no hooks needed to build docs.
-      - run: npm ci --ignore-scripts
+      - run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Build docs
-        run: npm run docs:build
+        run: pnpm run docs:build
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

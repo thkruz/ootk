@@ -63,14 +63,15 @@ export class RungeKutta4Propagator extends Propagator {
     maneuvers: Thrust[],
     interval = 60.0 as Seconds,
   ): VerletBlendInterpolator {
-    const tMvr = maneuvers.slice(0).filter((mvr) => mvr.start <= finish && mvr.stop >= start);
+    // Compare raw POSIX seconds; relational operators on Epoch objects coerce via toISOString().
+    const tMvr = maneuvers.slice(0).filter((mvr) => mvr.start.posix <= finish.posix && mvr.stop.posix >= start.posix);
     const ephemeris: J2000[] = [];
 
-    if (tMvr.length === 0 || tMvr[0].start > start) {
+    if (tMvr.length === 0 || tMvr[0].start.posix > start.posix) {
       ephemeris.push(this.propagate(start));
     }
     for (const mvr of tMvr) {
-      while (this.cacheState_.epoch < mvr.start) {
+      while (this.cacheState_.epoch.posix < mvr.start.posix) {
         const step = Math.min(mvr.start.difference(this.cacheState_.epoch), interval) as Seconds;
 
         this.propagate(this.cacheState_.epoch.roll(step));
@@ -101,7 +102,7 @@ export class RungeKutta4Propagator extends Propagator {
     this.forceModel_.loadManeuver(maneuver);
     const ephemeris: J2000[] = [tState];
 
-    while (tState.epoch < maneuver.stop) {
+    while (tState.epoch.posix < maneuver.stop.posix) {
       const step = Math.min(maneuver.stop.difference(tState.epoch), interval) as Seconds;
 
       tState = this.propagate(tState.epoch.roll(step));

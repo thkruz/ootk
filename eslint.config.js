@@ -275,6 +275,8 @@ export default [
       'scripts/**',
       'node_modules/**',
       '**/*.config.{js,mjs,cjs,ts,mts,cts}',
+      // Gitignored USSF Astro Standards Emscripten artifacts
+      'src/external/Sgp4Prop*.js',
     ],
   },
   js.configs.recommended,
@@ -305,6 +307,16 @@ export default [
       // TypeScript's compiler already resolves identifiers, and the legacy
       // config relied on env: browser/node globals we no longer enumerate.
       'no-undef': 'off',
+    },
+  },
+  {
+    // sgp4.ts is a line-by-line port of the AIAA reference implementation. Its
+    // variables are declared and zero-initialized up front the way the original
+    // source does, so the "assigned but overwritten before use" pattern is
+    // deliberate and must stay verbatim to keep the port diffable.
+    files: ['src/sgp4/**/*.ts'],
+    rules: {
+      'no-useless-assignment': 'off',
     },
   },
   {

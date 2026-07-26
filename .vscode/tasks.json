@@ -3,7 +3,7 @@
   "tasks": [
     {
       "label": "Build",
-      "command": "npm run build",
+      "command": "pnpm run build",
       "type": "shell",
       "args": [],
       "isBackground": true,
@@ -15,7 +15,7 @@
     },
     {
       "label": "Clean Dist Folder",
-      "command": "npm run clean",
+      "command": "pnpm run clean",
       "type": "shell",
       "args": [],
       "isBackground": true,
@@ -27,7 +27,7 @@
     },
     {
       "label": "Test for Coverage",
-      "command": "npm run test:coverage",
+      "command": "pnpm run test:coverage",
       "type": "shell",
       "args": [],
       "isBackground": true,

@@ -110,6 +110,7 @@ TODO              text
 .htaccess         text
 *.lock            text -diff
 package-lock.json text -diff
+pnpm-lock.yaml    text -diff
 *.toml            text
 *.yaml            text
 *.yml             text

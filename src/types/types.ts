@@ -597,6 +597,7 @@ export enum SpaceObjectType {
   DWARF_PLANET = 36,
   MOON = 37,
   DYNAMIC_GROUND_OBJECT = 38,
+  ASTEROID = 39,
   MAX_SPACE_OBJECT_TYPE = 40,
 }
 

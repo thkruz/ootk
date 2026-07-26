@@ -95,7 +95,7 @@ export class EphemerisBody extends CelestialBody {
     }
 
     // Determine SpaceObjectType from CelestialBodyType
-    let spaceObjectType = SpaceObjectType.UNKNOWN;
+    let spaceObjectType: SpaceObjectType;
 
     switch (params.bodyType) {
       case CelestialBodyType.DWARF_PLANET:

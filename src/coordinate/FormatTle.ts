@@ -264,36 +264,58 @@ export abstract class FormatTle {
    * Format a value in TLE exponential notation for BSTAR or mean motion ddot.
    * Format: "sNNNNN±N" (8 chars) where mantissa has implied leading decimal point.
    * Example: 0.00017507 → " 17507-3" (i.e., .17507 × 10^-3)
+   *
+   * The result is ALWAYS exactly 8 characters. The field has room for a 5-digit
+   * mantissa and a single-digit exponent, so values needing more are folded into
+   * what the format can express: magnitudes below 1e-10 become zero (the usual
+   * convention for a drag term too small to write), and the 1e9-and-up case is
+   * saturated. Anything longer would push every later column of TLE line 1 to the
+   * right, which silently corrupts ephemeris type, element number and checksum.
    * @param value - The value to format
    * @returns Formatted 8-character string
    */
   static formatTleExponential(value: number): string {
-    if (value === 0) {
+    if (value === 0 || !Number.isFinite(value)) {
       return ' 00000+0';
     }
 
     const sign = value >= 0 ? ' ' : '-';
     const absVal = Math.abs(value);
 
-    // Find exponent such that mantissa is in [0.1, 1.0)
+    /*
+     * Normalize to absVal === 0.MMMMM × 10^exponent. Math.log10 only gives a
+     * starting guess: it is exact for powers of ten (log10(0.01) === -2), but the
+     * division that follows is not, so the mantissa can land just outside [0.1, 1)
+     * — and rounding it to 5 digits can carry .99999… up to a 6-digit 100000.
+     * Renormalize AFTER rounding, on the integer, or that carry widens the field.
+     * Each pass moves the mantissa by a factor of ten toward the window, so both
+     * loops run at most once for any finite input.
+     */
     let exponent = Math.floor(Math.log10(absVal)) + 1;
-    let mantissa = absVal / 10 ** exponent;
+    let mantissa = Math.round((absVal / 10 ** exponent) * 100000);
 
-    // Guard against floating-point edge cases
-    if (mantissa >= 1) {
-      mantissa /= 10;
-      exponent++;
-    }
-    if (mantissa < 0.1 && mantissa > 0) {
-      mantissa *= 10;
+    while (mantissa < 10000) {
       exponent--;
+      mantissa = Math.round((absVal / 10 ** exponent) * 100000);
+    }
+    while (mantissa >= 100000) {
+      exponent++;
+      mantissa = Math.round((absVal / 10 ** exponent) * 100000);
     }
 
-    const mantissaStr = Math.round(mantissa * 100000).toString().padStart(5, '0');
-    const expSign = exponent >= 0 ? '+' : '-';
-    const expStr = Math.abs(exponent).toString();
+    // Too small for a one-digit exponent: the field cannot express it, so it is
+    // zero as far as the TLE is concerned.
+    if (exponent < -9) {
+      return ' 00000+0';
+    }
+    // Defensive only — BSTAR and mean motion ddot never approach 1e9.
+    if (exponent > 9) {
+      return `${sign}99999+9`;
+    }
 
-    return sign + mantissaStr + expSign + expStr;
+    const expSign = exponent >= 0 ? '+' : '-';
+
+    return sign + mantissa.toString() + expSign + Math.abs(exponent).toString();
   }
 
   /**
