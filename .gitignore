@@ -30,6 +30,11 @@ src/objects/__tests__/propagator-accuracy-summary.txt
 docs/.vitepress/cache
 docs/.vitepress/dist
 
+# Package Lock — repo uses pnpm; ignore npm/yarn lockfiles so a stray
+# `npm install` can't silently reintroduce one alongside pnpm-lock.yaml.
+package-lock.json
+yarn.lock
+
 # License-restricted USSF Astro Standards Sgp4Prop WebAssembly artifacts
 # (space-track.org download; must never be committed or redistributed)
 src/external/Sgp4Prop.js
