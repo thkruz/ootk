@@ -310,6 +310,16 @@ export default [
     },
   },
   {
+    // sgp4.ts is a line-by-line port of the AIAA reference implementation. Its
+    // variables are declared and zero-initialized up front the way the original
+    // source does, so the "assigned but overwritten before use" pattern is
+    // deliberate and must stay verbatim to keep the port diffable.
+    files: ['src/sgp4/**/*.ts'],
+    rules: {
+      'no-useless-assignment': 'off',
+    },
+  },
+  {
     // Tests are held to looser limits: long describe blocks, diagnostic
     // console output, `any` mocks, sync fs artifacts, and bare `new` inside
     // `expect(() => ...)` are all normal here.
