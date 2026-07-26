@@ -607,6 +607,7 @@ const spaceObjTypeStrMap_ = {
   [SpaceObjectType.DWARF_PLANET]: 'Dwarf Planet',
   [SpaceObjectType.MOON]: 'Moon',
   [SpaceObjectType.DYNAMIC_GROUND_OBJECT]: 'Dynamic Ground Object',
+  [SpaceObjectType.ASTEROID]: 'Asteroid',
   [SpaceObjectType.MAX_SPACE_OBJECT_TYPE]: 'Max Space Object Type',
 };
 
