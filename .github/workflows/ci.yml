@@ -4,53 +4,71 @@ on: [pull_request]
 
 jobs:
   compliance:
-    name: NPM Audit Report
+    name: Audit Report
     runs-on: ubuntu-latest
     steps:
-      # Checkout Code
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      # Audit Package.json
-      - name: NPM Audit Action
-        uses: oke-py/npm-audit-action@main
+      - uses: actions/checkout@v4.1.1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4.0.1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          node-version: '24.x'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Audit dependencies
+        run: pnpm audit
   lint:
     needs: compliance
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.1
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4.0.1
         with:
           node-version: '24.x'
+          cache: 'pnpm'
 
-      - run: npm ci --ignore-scripts
+      - run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - run: npm run lint
+      - run: pnpm run lint
   circular-check:
     needs: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.1
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4.0.1
         with:
           node-version: '24.x'
+          cache: 'pnpm'
 
-      - run: npm ci --ignore-scripts
+      - run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Check for circular dependencies
-        run: npm run circular
+        run: pnpm run circular
   build:
     needs: circular-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.1
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4.0.1
         with:
           node-version: '24.x'
+          cache: 'pnpm'
 
       - uses: actions/cache@v3
         env:
@@ -58,13 +76,13 @@ jobs:
         with:
           path: |
             **/lib
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - run: npm ci --ignore-scripts
+      - run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - run: npm run build
+      - run: pnpm run build
 
       - uses: actions/upload-artifact@v4
         with:
@@ -80,9 +98,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4.0.1
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
 
       - uses: actions/cache@v3
         env:
@@ -90,14 +112,14 @@ jobs:
         with:
           path: |
             **/lib
-          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-node-${{ matrix.node-version }}-
 
-      - run: npm ci --ignore-scripts
+      - run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Test
-        run: npm run test
+        run: pnpm run test
   test-integration:
     needs: build
     runs-on: ubuntu-latest
@@ -107,16 +129,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.1
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4.0.1
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
 
       - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
 
-      - run: npm ci --ignore-scripts
+      - run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Integration Tests
-        run: npm run test:integration:only
+        run: pnpm run test:integration:only
