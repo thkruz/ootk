@@ -156,13 +156,9 @@ export class GoodingIOD {
     rho1init: Kilometers | null = null, rho3init: Kilometers | null = null,
     nRev = 0, direction = true,
   ): J2000 {
-    let orbit: J2000 | null = null;
-
-
     if (rho1init === null || rho3init === null) {
       const gaussIod = new GaussIOD(this._mu);
-
-      orbit = gaussIod.estimate(o1, o2, o3);
+      const orbit = gaussIod.estimate(o1, o2, o3);
 
       if (orbit === null) {
         throw new OrbitDeterminationError('Gauss IOD failed to provide initial estimate for Gooding IOD', 'Gooding');
