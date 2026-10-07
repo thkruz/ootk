@@ -283,18 +283,19 @@ export class VisualizationHelpers {
     for (let i = 0; i < samples; i++) {
       const phi = (2 * Math.PI * i) / samples;
 
-      // For elliptical cone: theta varies with phi based on ellipse equation
-      // At boundary, the ellipse equation equals 1
-      const theta = Math.sqrt(
-        (fov.halfAngle * Math.cos(phi)) ** 2 +
-        (fov.minorHalfAngle * Math.sin(phi)) ** 2,
-      ) * DEG2RAD;
+      // phi is the parametric ellipse angle (as in FieldOfView.directionAt): the boundary
+      // point is (a cos phi, b sin phi) in the u-v plane, so it must be placed along that
+      // point's own direction, not along phi. (Using phi as the direction put elliptical
+      // boundary points up to 4x outside the FOV.)
+      const x = fov.halfAngle * Math.cos(phi) * DEG2RAD;
+      const y = fov.minorHalfAngle * Math.sin(phi) * DEG2RAD;
+      const theta = Math.hypot(x, y);
 
       // Build direction vector on cone surface
       const cosTheta = Math.cos(theta);
       const sinTheta = Math.sin(theta);
-      const cosPhi = Math.cos(phi);
-      const sinPhi = Math.sin(phi);
+      const cosPhi = theta > 0 ? x / theta : 1;
+      const sinPhi = theta > 0 ? y / theta : 0;
 
       const dir = {
         x: b.x * cosTheta + u.x * sinTheta * cosPhi + v.x * sinTheta * sinPhi,

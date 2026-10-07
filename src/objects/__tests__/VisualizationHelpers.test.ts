@@ -1,15 +1,20 @@
 import {
+  boresightFrameFromAzElRoll,
+  DEG2RAD,
   Degrees,
   ecef2eci,
   GroundStation,
   History,
   Kilometers,
   OpticalSensor,
+  Radians,
+  rae2enu,
   Satellite,
   SensorType,
   TleLine1,
   TleLine2,
   ValidationError,
+  Vector3D,
   VisualizationHelpers,
 } from '../../main';
 
@@ -411,6 +416,29 @@ describe('VisualizationHelpers', () => {
         expect(Number.isFinite(point.ecef.x)).toBe(true);
         expect(Number.isFinite(point.ecef.y)).toBe(true);
         expect(Number.isFinite(point.ecef.z)).toBe(true);
+      });
+
+      // Independent check: every boundary point must sit ON the elliptical cone, i.e. its
+      // angular offset (theta, phi) from the boresight frame satisfies the ellipse equation
+      // (theta cos phi / a)^2 + (theta sin phi / b)^2 = 1 that FieldOfView.contains uses.
+      // (Placing the point along the parametric angle instead of the point's own direction
+      // put off-axis points up to 4x outside the cone: the sum reached ~16.)
+      const { b, u, v } = boresightFrameFromAzElRoll((0 * DEG2RAD) as Radians, (45 * DEG2RAD) as Radians, 0 as Radians);
+      const a = 60 * DEG2RAD;
+      const bMinor = 20 * DEG2RAD;
+
+      // Points the elevation mask lifted to the horizon are no longer on the cone; skip them.
+      const onCone = boundary.filter((point) => point.el > 0.5);
+
+      expect(onCone.length).toBeGreaterThan(40);
+      onCone.forEach((point) => {
+        const enu = rae2enu({ rng: 1 as Kilometers, az: (point.az * DEG2RAD) as Radians, el: (point.el * DEG2RAD) as Radians });
+        const dir = new Vector3D(enu.x, enu.y, enu.z);
+        const theta = Math.acos(Math.min(1, dir.dot(b)));
+        const phi = Math.atan2(dir.dot(v), dir.dot(u));
+        const ellipse = ((theta * Math.cos(phi)) / a) ** 2 + ((theta * Math.sin(phi)) / bMinor) ** 2;
+
+        expect(ellipse).toBeCloseTo(1, 6);
       });
     });
 
