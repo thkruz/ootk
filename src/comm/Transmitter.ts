@@ -183,7 +183,8 @@ export class Transmitter extends CommunicationDevice {
     // SNR = Received Power - Noise Floor
     // Noise Floor = -174 dBm/Hz + 10*log10(BW) + Noise Figure
     // In dBW: Noise Floor = -204 dBW/Hz + 10*log10(BW) + Noise Figure
-    const noiseFloorDbw = -204 + 10 * Math.log10(this.bandwidth) + receiver.noiseFigure;
+    // The noise is what the receiver lets through: its bandwidth, not the transmitter's
+    const noiseFloorDbw = receiver.noiseFloor;
     const snr = (receivedPower - noiseFloorDbw) as Decibels;
 
     return {

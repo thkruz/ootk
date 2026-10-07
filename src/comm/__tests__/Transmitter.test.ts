@@ -8,7 +8,11 @@ import {
   Antenna,
   CommDeviceType,
   Decibels,
+  Degrees,
+  GroundStation,
   Hertz,
+  Kilometers,
+  Receiver,
   ModulationType,
   Transmitter,
   ValidationError,
@@ -160,5 +164,33 @@ describe('Transmitter', () => {
       expect(str).toContain('14.000 GHz');
       expect(str).toContain('QPSK');
     });
+  });
+});
+
+describe('Transmitter link budget noise bandwidth', () => {
+  it('uses the receiver bandwidth for the noise floor (snr = receivedPower - receiver.noiseFloor)', () => {
+    const date = new Date('2024-01-01T00:00:00Z');
+    const tx = new Transmitter({
+      id: 2001,
+      frequency: 2.2e9 as Hertz,
+      power: 10 as Watts,
+      bandwidth: 10e3 as Hertz,
+      antenna: new Antenna({ gain: 3 as Decibels }),
+    });
+    const rx = new Receiver({
+      id: 2002,
+      frequency: 2.2e9 as Hertz,
+      bandwidth: 5e6 as Hertz,
+      noiseFigure: 2 as Decibels,
+      minimumSnr: 10 as Decibels,
+      antenna: new Antenna({ gain: 30 as Decibels }),
+    });
+
+    tx.setParent(new GroundStation({ lat: 0 as Degrees, lon: 0 as Degrees, alt: 0 as Kilometers }));
+    rx.setParent(new GroundStation({ lat: 0.5 as Degrees, lon: 0 as Degrees, alt: 0 as Kilometers }));
+    const lb = tx.calculateLinkBudget(rx, date);
+
+    // Was 27 dB optimistic here: 10*log10(5e6 / 1e4) from using the 10 kHz transmit bandwidth
+    expect(lb.snr).toBeCloseTo(lb.receivedPower - rx.noiseFloor, 9);
   });
 });
