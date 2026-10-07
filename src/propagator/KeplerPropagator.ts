@@ -62,10 +62,10 @@ export class KeplerPropagator extends Propagator {
 
   ephemerisManeuver(start: EpochUTC, finish: EpochUTC, maneuvers: Thrust[], interval = 60.0): VerletBlendInterpolator {
     // Compare raw POSIX seconds; relational operators on Epoch objects coerce via toISOString().
-    const tMvr = maneuvers.slice(0).filter((mvr) => mvr.center.posix >= start.posix || mvr.center.posix <= finish.posix);
+    const tMvr = maneuvers.slice(0).filter((mvr) => mvr.center.posix >= start.posix && mvr.center.posix <= finish.posix);
     const ephemeris: J2000[] = [];
 
-    if (tMvr[0].start.posix > start.posix) {
+    if (tMvr.length === 0 || tMvr[0].start.posix > start.posix) {
       ephemeris.push(this.propagate(start));
     }
     for (const mvr of tMvr) {
@@ -101,5 +101,7 @@ export class KeplerPropagator extends Propagator {
 
   restore(index: number): void {
     this.cacheState_ = this.checkpoints_[index];
+    // propagate() works from elements_, so they must follow the restored state too
+    this.elements_ = this.cacheState_.toClassicalElements();
   }
 }
