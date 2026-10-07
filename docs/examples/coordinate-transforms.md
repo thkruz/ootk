@@ -19,7 +19,7 @@ npx tsx ./examples/coordinate-transforms.ts
 
 ## ECI and geodetic (LLA)
 
-`eci2lla` returns latitude and longitude in degrees with altitude in kilometers. Note the asymmetry: `lla2eci` expects radians, so the angles must be converted before going back. The small position difference on the return trip comes from the geodetic (ellipsoidal) altitude model.
+`eci2lla` returns WGS84 geodetic latitude and longitude in degrees with altitude in kilometers. To go back, `lla2ecef` puts the point on the same WGS84 ellipsoid (it takes degrees) and `ecef2eci` rotates it by GMST, so the round trip reproduces the input. (`lla2eci` is a spherical-Earth drawing helper: with these coordinates it would land about 7 km short at the equator and up to ~21 km off elsewhere.)
 
 <<< ../../examples/coordinate-transforms.ts#eci-lla
 
@@ -75,7 +75,7 @@ Geodetic Coordinates:
   Altitude:  399.86 km
 
 Converted back to ECI:
-  X: 6770.87 km
+  X: 6778.00 km
   Y: -0.00 km
   Z: 0.00 km
 

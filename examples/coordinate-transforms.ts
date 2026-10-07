@@ -21,7 +21,6 @@ import {
   Kilometers,
   KilometersPerSecond,
   lla2ecef,
-  lla2eci,
   Radians,
   RIC,
   Satellite,
@@ -78,14 +77,8 @@ console.log(`  Latitude:  ${lla.lat.toFixed(4)} deg`);
 console.log(`  Longitude: ${lla.lon.toFixed(4)} deg`);
 console.log(`  Altitude:  ${lla.alt.toFixed(2)} km`);
 
-// lla2eci expects radians, so convert the angles first
-const llaRad = {
-  lat: (lla.lat * (Math.PI / 180)) as Radians,
-  lon: (lla.lon * (Math.PI / 180)) as Radians,
-  alt: lla.alt,
-};
-
-const eciFromLla = lla2eci(llaRad, gmst.gmst);
+// Back to ECI: WGS84 geodetic -> ECEF (lla2ecef takes degrees), then rotate by GMST
+const eciFromLla = ecef2eci(lla2ecef(lla), gmst.gmst);
 
 console.log('\nConverted back to ECI:');
 console.log(`  X: ${eciFromLla.x.toFixed(2)} km`);

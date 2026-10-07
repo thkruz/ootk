@@ -33,12 +33,13 @@ export function ecef2eci<T extends number>(ecef: EcefVec3<T>, gmst: number): Tem
 }
 
 /**
- * Converts ECEF coordinates to ENU coordinates.
- * @param ecef - The ECEF coordinates.
- * @param lla - The LLA coordinates.
+ * Rotates an ECEF vector into the local East-North-Up axes at `lla` (a rotation only: pass
+ * a relative vector, e.g. target minus site, to get topocentric ENU).
+ * @param ecef - The ECEF vector.
+ * @param lla - The site latitude/longitude in RADIANS (geodetic).
  * @returns The ENU coordinates.
  */
-export function ecef2enu<T extends number>(ecef: EcefVec3<T>, lla: LlaVec3): EnuVec3<T> {
+export function ecef2enu<T extends number>(ecef: EcefVec3<T>, lla: LlaVec3<Radians, number>): EnuVec3<T> {
   const { lat, lon } = lla;
   const { x, y, z } = ecef;
   const e = (-Math.sin(lon) * x + Math.cos(lon) * y) as T;
@@ -169,15 +170,21 @@ export function lla2ecef<AltitudeUnits extends number>(lla: LlaVec3<Degrees, Alt
 }
 
 /**
- * Converts geodetic coordinates (lat/lon/alt) to TEME (True Equator Mean Equinox) coordinates.
+ * Places lat/lon/alt on a SPHERICAL Earth (radius `Earth.radiusMean`) and rotates it into
+ * TEME by GMST.
  *
- * **Coordinate Frame Transformation: Geodetic → TEME**
+ * **Spherical-Earth helper, not a WGS84 site position.** The latitude is used as if it were
+ * geocentric, so for a geodetic (WGS84) latitude the result is up to ~21 km from the true
+ * position (about 7 km above the ellipsoid at the equator, 14 km below it at the poles, and
+ * offset north-south at mid latitudes). It is meant for drawing on a spherical globe of
+ * radius `Earth.radiusMean`.
  *
- * Converts WGS84 geodetic coordinates to inertial TEME coordinates via ECEF
- * and GMST rotation. Uses spherical Earth approximation (Earth.radiusMean).
+ * For a physical site position (look angles, range, Doppler, orbit determination) use
+ * `ecef2eci(llaRad2ecef(lla), gmst)` (WGS84, TEME), `GroundObject.eci()`, or
+ * `GroundObject.toJ2000()` for J2000.
  *
  * @variation cached - results are cached
- * @param lla - Geodetic coordinates (lat/lon in radians, alt in km)
+ * @param lla - Latitude/longitude in radians and altitude above the sphere in km
  * @param gmst - Greenwich Mean Sidereal Time in radians
  * @returns TEME coordinates (inertial)
  */
@@ -306,10 +313,10 @@ export function rae2eci<D extends number>(
 
 /**
  * Converts a vector in RAE (Range, Azimuth, Elevation) coordinates to ENU (East, North, Up) coordinates.
- * @param rae - The vector in RAE coordinates.
+ * @param rae - The vector in RAE coordinates, with azimuth and elevation in RADIANS.
  * @returns The vector in ENU coordinates.
  */
-export function rae2enu(rae: RaeVec3): EnuVec3<Kilometers> {
+export function rae2enu(rae: RaeVec3<Kilometers, Radians>): EnuVec3<Kilometers> {
   const e = (rae.rng * Math.cos(rae.el) * Math.sin(rae.az)) as Kilometers;
   const n = (rae.rng * Math.cos(rae.el) * Math.cos(rae.az)) as Kilometers;
   const u = (rae.rng * Math.sin(rae.el)) as Kilometers;
@@ -571,7 +578,8 @@ export function uv2azel(u: number, v: number, coneHalfAngle: Radians): { az: Rad
   }
 
   const alpha = Math.asin(u) as Radians;
-  const beta = Math.asin(v) as Radians;
+  // azel2uv stores v = -sin(beta), so undo the sign here (the round trip mirrored elevation)
+  const beta = Math.asin(0 - v) as Radians; // 0 - v, not -v: keeps +0 for v = 0
   const az = ((alpha / 90) * (coneHalfAngle * RAD2DEG)) as Radians;
   const el = ((beta / 90) * (coneHalfAngle * RAD2DEG)) as Radians;
 

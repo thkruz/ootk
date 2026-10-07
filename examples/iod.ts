@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 // #region imports
 import {
-  DEG2RAD, Degrees, EpochUTC, J2000, Kilometers, KilometersPerSecond, RAE, Radians, Tle, Vector3D, calcGmst,
-  lla2eci, LambertIOD, GibbsIOD, HerrickGibbsIOD,
+  Degrees, EpochUTC, GroundStation, J2000, Kilometers, KilometersPerSecond, RAE, Tle, Vector3D,
+  LambertIOD, GibbsIOD, HerrickGibbsIOD,
 } from 'ootk';
 // #endregion imports
 
@@ -27,32 +27,18 @@ const rae3 = {
   az: 169 as Degrees,
   el: 14.7 as Degrees,
 };
-const sensor = {
-  lat: (41.754785 * DEG2RAD) as Radians,
-  lon: (-70.539151 * DEG2RAD) as Radians,
+const sensor = new GroundStation({
+  lat: 41.754785 as Degrees,
+  lon: -70.539151 as Degrees,
   alt: 0.085 as Kilometers,
-};
+});
 // #endregion setup-observations
 
 // #region rae-to-position
-const gmst = calcGmst(rae1.t.toDateTime());
-const sensorEci = lla2eci(sensor, gmst.gmst);
-
-const p1 = RAE.fromDegrees(rae1.t, rae1.rng, rae1.az, rae1.el).toStateVector(
-  new J2000(rae1.t,
-    new Vector3D(sensorEci.x, sensorEci.y, sensorEci.z), Vector3D.origin as Vector3D<KilometersPerSecond>,
-  ),
-);
-const p2 = RAE.fromDegrees(rae2.t, rae2.rng, rae2.az, rae2.el).toStateVector(
-  new J2000(rae2.t,
-    new Vector3D(sensorEci.x, sensorEci.y, sensorEci.z), Vector3D.origin as Vector3D<KilometersPerSecond>,
-  ),
-);
-const p3 = RAE.fromDegrees(rae3.t, rae3.rng, rae3.az, rae3.el).toStateVector(
-  new J2000(rae3.t,
-    new Vector3D(sensorEci.x, sensorEci.y, sensorEci.z), Vector3D.origin as Vector3D<KilometersPerSecond>,
-  ),
-);
+// The site's J2000 state at each measurement time: WGS84 position, Earth-rotation velocity
+const p1 = RAE.fromDegrees(rae1.t, rae1.rng, rae1.az, rae1.el).toStateVector(sensor.toJ2000(rae1.t.toDateTime()));
+const p2 = RAE.fromDegrees(rae2.t, rae2.rng, rae2.az, rae2.el).toStateVector(sensor.toJ2000(rae2.t.toDateTime()));
+const p3 = RAE.fromDegrees(rae3.t, rae3.rng, rae3.az, rae3.el).toStateVector(sensor.toJ2000(rae3.t.toDateTime()));
 // #endregion rae-to-position
 
 // #region eci-positions
