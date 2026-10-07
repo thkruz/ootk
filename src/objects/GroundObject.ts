@@ -25,7 +25,7 @@ import { Geodetic } from '../coordinate/Geodetic';
 import { J2000 } from '../coordinate/J2000';
 import { DEG2RAD } from '../utils/constants';
 import { Degrees, EcefVec3, Kilometers, KilometersPerSecond, LlaVec3, Radians, RaeVec3, SpaceObjectType, TemeVec3 } from '../types/types';
-import { calcGmst, lla2eci, llaRad2ecef } from '../transforms/transforms';
+import { calcGmst, ecef2eci, lla2eci, llaRad2ecef } from '../transforms/transforms';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { BaseObject, BaseObjectParams } from './BaseObject';
@@ -89,6 +89,12 @@ export abstract class GroundObject extends BaseObject {
 
   /**
    * Calculates the Earth-Centered Inertial (ECI) position vector of the ground object at a given date.
+   *
+   * Uses the WGS84 ellipsoid (the same {@link llaRad2ecef} position that `ecef()` and
+   * `Satellite.rae()` use), rotated into TEME by GMST. It deliberately does not use the
+   * spherical-Earth `lla2eci()`: at mid latitudes that puts the observer ~20 km away from
+   * its WGS84 position, which skewed `Satellite.dopplerFactor()` by up to ~0.2 km/s of range
+   * rate near closest approach.
    * @variation optimized version of this.toGeodetic().toITRF().toJ2000().position;
    * @param date The date for which to calculate the ECI position vector. Defaults to the current date.
    * @returns The ECI position vector of the ground object.
@@ -96,7 +102,7 @@ export abstract class GroundObject extends BaseObject {
   eci(date: Date = new Date()): TemeVec3<Kilometers> {
     const { gmst } = calcGmst(date);
 
-    return lla2eci(this.toGeodetic(), gmst);
+    return ecef2eci(llaRad2ecef(this.llaRad()), gmst);
   }
 
   /**
@@ -148,6 +154,8 @@ export abstract class GroundObject extends BaseObject {
    * @returns J2000 state vector
    */
   toJ2000(date: Date = new Date()): J2000 {
+    // Still the spherical-Earth lla2eci() position, unlike eci(). Moving it to WGS84
+    // pushes the GoodingIOD LEO test past its 20 km SMA tolerance, so it is a separate change.
     const { gmst } = calcGmst(date);
     const position = lla2eci(this.llaRad(), gmst);
 

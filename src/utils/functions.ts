@@ -623,9 +623,19 @@ export const spaceObjType2Str = (spaceObjType: SpaceObjectType): string =>
  * Calculates the Doppler factor for a given location, position, and velocity.
  * The Doppler factor is a measure of the change in frequency or wavelength of a wave
  * as observed by an observer moving relative to the source of the wave.
- * @param location - The location vector of the observer.
- * @param position - The position vector of the source.
- * @param velocity - The velocity vector of the source.
+ *
+ * Returns `1 - rangeRate / c`, so observed = transmitted * factor: above 1 while the
+ * source approaches, below 1 while it recedes.
+ *
+ * All three vectors must be in the same inertial frame (TEME, as from `Satellite.eci()`
+ * and `GroundObject.eci()`), despite the `EcefVec3` parameter types: the observer is
+ * treated as Earth-fixed and its rotational velocity (omega x r) is subtracted here.
+ * The observer position must be the WGS84 one that `rae()` uses; a spherical-Earth
+ * observer (`lla2eci()`) sits ~20 km off at mid latitudes and skews the range rate by
+ * up to ~0.2 km/s near closest approach.
+ * @param location - The observer position (inertial frame, km).
+ * @param position - The source position (inertial frame, km).
+ * @param velocity - The source velocity (inertial frame, km/s).
  * @returns The calculated Doppler factor.
  */
 export const dopplerFactor = (
