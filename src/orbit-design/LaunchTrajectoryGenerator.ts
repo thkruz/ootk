@@ -17,9 +17,10 @@
 
 import { Earth } from '../body/Earth';
 import { ClassicalElements } from '../coordinate/ClassicalElements';
+import { Geodetic } from '../coordinate/Geodetic';
 import { J2000 } from '../coordinate/J2000';
 import { Thrust } from '../force/Thrust';
-import { Kilometers, KilometersPerSecond, MetersPerSecond, Seconds } from '../types/types';
+import { Kilometers, KilometersPerSecond, MetersPerSecond, Radians, Seconds } from '../types/types';
 import { PlaneChangeBurn } from '../maneuver/PlaneChangeBurn';
 import { Vector3D } from '../operations/Vector3D';
 import { KeplerPropagator } from '../propagator/KeplerPropagator';
@@ -426,9 +427,8 @@ export class LaunchTrajectoryGenerator {
         launchLatDeg * DEG2RAD, launchLonDeg * DEG2RAD, azimuthRad, dr,
       );
 
-      // Convert geodetic to ECI (using GMST for Earth rotation)
-      const gmst = epoch.gmstAngle();
-      const pos = LaunchTrajectoryGenerator.geodeticToEci_(lat, lon, alt, gmst);
+      // Convert geodetic to J2000 (WGS84 site, full ITRF -> J2000 rotation)
+      const pos = LaunchTrajectoryGenerator.geodeticToJ2000_(lat, lon, alt, epoch);
 
       positions.push({ epoch, pos });
     }
@@ -559,21 +559,18 @@ export class LaunchTrajectoryGenerator {
   }
 
   /**
-   * Convert geodetic coordinates to ECI position.
-   * Uses spherical Earth approximation (consistent with lla2eci in transforms.ts).
+   * Convert geodetic coordinates to a J2000 position.
+   *
+   * The point is placed on the WGS84 ellipsoid in ITRF and rotated into J2000 with
+   * precession, nutation and sidereal time, so the trajectory starts on the same launch
+   * site a `GroundObject` at those coordinates reports. (A spherical Earth rotated by GMST
+   * alone, the earlier model, is a TEME position on the wrong surface: the pad sat ~17 km
+   * off on the sphere plus up to ~40 km of precession and nutation since J2000.)
    */
-  private static geodeticToEci_(latRad: number, lonRad: number, altKm: number, gmst: number): Vector3D<Kilometers> {
-    const cosLat = Math.cos(latRad);
-    const sinLat = Math.sin(latRad);
-    const cosLon = Math.cos(lonRad + gmst);
-    const sinLon = Math.sin(lonRad + gmst);
-    const r = Earth.radiusMean + altKm;
+  private static geodeticToJ2000_(latRad: number, lonRad: number, altKm: number, epoch: EpochUTC): Vector3D<Kilometers> {
+    const lonWrapped = Math.atan2(Math.sin(lonRad), Math.cos(lonRad));
 
-    return new Vector3D<Kilometers>(
-      r * cosLat * cosLon as Kilometers,
-      r * cosLat * sinLon as Kilometers,
-      r * sinLat as Kilometers,
-    );
+    return new Geodetic(latRad as Radians, lonWrapped as Radians, altKm as Kilometers).toITRF(epoch).toJ2000().position;
   }
 
   /**

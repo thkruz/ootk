@@ -192,6 +192,19 @@ describe('LaunchTrajectoryGenerator', () => {
       expect(posMag).toBeLessThan(Earth.radiusMean + 10);
     });
 
+    it('should start on the launch pad in J2000 (round-trips to the site lat/lon/alt in ITRF)', () => {
+      // Independent reference: the first J2000 state, rotated to ITRF with precession,
+      // nutation and sidereal time, must sit on the WGS84 launch site. It was ~17 km off
+      // (spherical Earth) plus up to ~40 km (a GMST-only rotation labelled J2000).
+      const states = LaunchTrajectoryGenerator.generate({ ...baseConfig, launchAltKm: 0.01 });
+      const geo = states[0].toITRF().toGeodetic();
+      const kmPerDeg = (Earth.radiusMean * Math.PI) / 180;
+
+      expect(Math.abs(geo.latDeg - baseConfig.launchLatDeg) * kmPerDeg).toBeLessThan(0.01);
+      expect(Math.abs(geo.lonDeg - baseConfig.launchLonDeg) * kmPerDeg * Math.cos(baseConfig.launchLatDeg * Math.PI / 180)).toBeLessThan(0.01);
+      expect(Math.abs(geo.alt - 0.01)).toBeLessThan(0.01);
+    });
+
     it('should end at roughly the target orbit altitude', () => {
       const states = LaunchTrajectoryGenerator.generate(baseConfig);
       const lastState = states[states.length - 1];
