@@ -44,7 +44,7 @@ import {
   TleLine2,
 } from '../types/types';
 import { DEG2RAD, earthGravityParam, RAD2DEG, secondsPerDay, TAU } from '../utils/constants';
-import { getDayOfYear, newtonNu, toPrecision } from '../utils/functions';
+import { newtonNu, toPrecision } from '../utils/functions';
 import { ALPHA5, convert6DigitToA5, convertA5to6Digit } from './alpha5';
 import type { ClassicalElements } from './ClassicalElements';
 import { FormatTle } from './FormatTle';
@@ -226,27 +226,10 @@ export class Tle {
     outputUnits: 'days' | 'hours' | 'minutes' | 'seconds' = 'days',
   ): number {
     nowInput ??= new Date();
-    const currentYearFull = nowInput.getUTCFullYear();
-    const currentYearShort = currentYearFull % 100;
-
-    const epochYearShort = parseInt(tle1.substring(18, 20), 10);
-    const epochDayOfYear = parseFloat(tle1.substring(20, 32));
-
-    let epochYearFull: number;
-
-    if (epochYearShort <= currentYearShort) {
-      epochYearFull = 2000 + epochYearShort;
-    } else {
-      epochYearFull = 1900 + epochYearShort;
-    }
-
-    const epochJday = epochDayOfYear + (epochYearFull * 365);
-    // Use nowInput's day-of-year (not today's) so a caller-supplied reference time
-    // — e.g. a historic catalog's snapshot epoch — is honored consistently.
-    const currentJday = getDayOfYear(nowInput) + (currentYearFull * 365);
-    const currentTime = (nowInput.getUTCHours() * 3600 + nowInput.getUTCMinutes() * 60 +
-      nowInput.getUTCSeconds()) / 86400;
-    const daysOld = (currentJday + currentTime) - epochJday;
+    // Real elapsed time from the parsed epoch (same 57 year pivot as the constructor). The
+    // old day-count used 365-day years, so it was a day short across every leap day.
+    const epochMs = Tle.parseEpoch_(tle1.substring(18, 32)).toDateTime().getTime();
+    const daysOld = (nowInput.getTime() - epochMs) / 86400000;
 
     switch (outputUnits) {
       case 'hours':
