@@ -24,6 +24,7 @@ import {
   KM_PER_AU,
   MakeTime,
   Observer,
+  SearchAltitude,
   SearchRiseSet,
 } from 'astronomy-engine';
 import { BaseObject, BaseObjectParams } from '../objects/BaseObject';
@@ -204,7 +205,9 @@ export abstract class CelestialBody extends BaseObject {
    * Gets rise, transit, and set times for this body as seen from a ground location.
    * @param observer - The ground observer location
    * @param date - The starting date for the search
-   * @param minElevation - Minimum elevation angle in degrees (default 0)
+   * @param minElevation - Elevation threshold in degrees (default 0). At 0 the times are the
+   * usual rise/set (upper limb on the horizon, with refraction); otherwise they are when the
+   * body's centre crosses that geometric elevation.
    * @returns Rise, transit, and set times (null if body doesn't rise/set)
    */
   getRiseSetTimes(
@@ -220,8 +223,14 @@ export abstract class CelestialBody extends BaseObject {
     const time = MakeTime(date);
 
     // Search for rise (direction = +1) and set (direction = -1)
-    const riseTime = SearchRiseSet(this.astronomyBody_, obs, +1, time, 1, minElevation);
-    const setTime = SearchRiseSet(this.astronomyBody_, obs, -1, time, 1, minElevation);
+    // SearchRiseSet's sixth argument is metres above ground, not an angle, so a non-zero
+    // elevation threshold has to go through SearchAltitude.
+    const body = this.astronomyBody_;
+    const search = (direction: number) => (minElevation === 0
+      ? SearchRiseSet(body, obs, direction, time, 1)
+      : SearchAltitude(body, obs, direction, time, 1, minElevation));
+    const riseTime = search(+1);
+    const setTime = search(-1);
 
     // For transit, search for the next rise, then find when elevation peaks
     // This is a simplified approach - astronomy-engine doesn't have a direct transit search
@@ -249,14 +258,17 @@ export abstract class CelestialBody extends BaseObject {
 
   /**
    * Calculates the angular diameter of this body as seen from a given position.
-   * @param observerPos - The observer's position in km
+   * @param observerPos - The observer's position in km (J2000, at `date`)
+   * @param date - The time of `observerPos` (defaults to now). The body is placed at this
+   * time; without it a past or future observer position was paired with the body's
+   * position now.
    * @returns Angular diameter in radians
    */
-  getAngularDiameter(observerPos: Vector3D<Kilometers>): Radians {
+  getAngularDiameter(observerPos: Vector3D<Kilometers>, date: Date = new Date()): Radians {
     if (!this.radius) {
       throw new Error(`${this.name} does not have a defined radius`);
     }
-    const distance = observerPos.subtract(this.eci()).magnitude();
+    const distance = observerPos.subtract(this.eci(date)).magnitude();
 
     return (2 * Math.atan(this.radius / distance)) as Radians;
   }

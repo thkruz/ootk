@@ -15,7 +15,10 @@ import {
   Meters,
   EpochUTC,
   J2000,
+  GroundStation,
+  RAD2DEG,
 } from '../../main';
+import { Body, GeoVector, KM_PER_AU, MakeTime } from 'astronomy-engine';
 
 describe('SunBody', () => {
   const testDate = new Date('2024-06-21T12:00:00Z'); // Summer solstice
@@ -99,15 +102,14 @@ describe('SunBody', () => {
       expect(position).toBeInstanceOf(Vector3D);
     });
 
-    it('should differ from eci due to light travel time', () => {
-      const eci = Sun.eci(testDate);
+    it('equals astronomy-engine apparent GeoVector (light time applied once)', () => {
+      // GeoVector(Sun, t, aberration=true) is already light-time and aberration corrected;
+      // eciApparent used to roll back another ~499 s (~20 arcsec more).
+      const v = GeoVector(Body.Sun, MakeTime(testDate), true);
+      const ref = new Vector3D(v.x * KM_PER_AU, v.y * KM_PER_AU, v.z * KM_PER_AU);
       const apparent = Sun.eciApparent(testDate);
 
-      // Positions should differ - light time correction causes ~500,000 km difference
-      const diff = eci.subtract(apparent).magnitude();
-
-      expect(diff).toBeGreaterThan(0);
-      expect(diff).toBeLessThan(100000); // Less than 100,000 km difference
+      expect(apparent.angle(ref as Vector3D<Kilometers>) * RAD2DEG * 3600).toBeLessThan(0.001);
     });
   });
 
@@ -171,6 +173,13 @@ describe('SunBody', () => {
   });
 
   describe('getTimes', () => {
+    it('does not modify the Date it is given', () => {
+      const d = new Date('2024-06-21T04:00:00Z');
+
+      Sun.getTimes(d, 40.7 as Degrees, -74.0 as Degrees, 0 as Meters);
+      expect(d.toISOString()).toBe('2024-06-21T04:00:00.000Z');
+    });
+
     it('should return sun times for a location', () => {
       const times = Sun.getTimes(testDate, 40.7 as Degrees, -74.0 as Degrees, 0 as Meters);
 
@@ -223,5 +232,24 @@ describe('SunBody', () => {
       expect(sunPos).toBeInstanceOf(Vector3D);
       expect(sunPos.magnitude()).toBeGreaterThan(100_000_000);
     });
+  });
+});
+
+describe('Sun.getSunriseSunset', () => {
+  it('returns the times the Sun centre crosses the requested elevation', () => {
+    // Used to throw: the elevation went into astronomy-engine's metres-above-ground argument
+    const site = new GroundStation({ lat: 40 as Degrees, lon: -75 as Degrees, alt: 0 as Kilometers });
+    const { sunrise, sunset } = Sun.getSunriseSunset(site, new Date('2024-06-21T00:00:00Z'));
+
+    expect(sunrise).not.toBeNull();
+    expect(sunset).not.toBeNull();
+    expect(Sun.getAzEl(site, sunrise!, false).el).toBeCloseTo(-0.833, 2);
+    expect(Sun.getAzEl(site, sunset!, false).el).toBeCloseTo(-0.833, 2);
+    // USNO: sunrise 09:32 UTC at 40N 75W on 2024-06-21
+    expect(Math.abs(sunrise!.getTime() - Date.parse('2024-06-21T09:32:00Z'))).toBeLessThan(90e3);
+
+    const civil = Sun.getSunriseSunset(site, new Date('2024-06-21T00:00:00Z'), -6 as Degrees);
+
+    expect(Sun.getAzEl(site, civil.sunrise!, false).el).toBeCloseTo(-6, 2);
   });
 });
