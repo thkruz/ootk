@@ -18,7 +18,7 @@
 import { ParseError } from '../errors';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
-import { Kilometers, KilometersPerSecond } from '../types/types';
+import { Kilometers, KilometersPerSecond, Seconds } from '../types/types';
 
 /**
  * Converts a Julian Date to a JavaScript Date.
@@ -31,6 +31,18 @@ function julianDateToDate(jd: number): Date {
   const unixMs = (jd - 2440587.5) * 86400000;
 
   return new Date(unixMs);
+}
+
+/**
+ * Converts a time read on the TDB scale (Horizons vector tables are JDTDB) to UTC.
+ * TT is used for TDB: they differ by under 2 ms.
+ * @param tdb - The TDB time, stored as if it were a UTC Date
+ * @returns The UTC epoch
+ */
+function tdbDateToEpochUtc(tdb: Date): EpochUTC {
+  const j2000Posix = 946728000; // 2000-01-01T12:00:00, the J2000 reference instant
+
+  return EpochUTC.fromJ2000TTSeconds((tdb.getTime() / 1000 - j2000Posix) as Seconds);
 }
 
 /**
@@ -151,23 +163,40 @@ export class HorizonsParser {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
 
-      // Parse metadata
-      if (line.startsWith('Target body name:')) {
-        targetName = this.extractTargetName_(line, 'Target body name:');
-        metadata.targetName = targetName;
-      } else if (line.startsWith('Center body name:')) {
-        centerBody = this.extractValue_(line, 'Center body name:');
-        metadata.centerBody = centerBody;
-      } else if (line.startsWith('Center-site name:') && !centerBody) {
-        centerBody = this.extractValue_(line, 'Center-site name:');
-        metadata.centerBody = centerBody;
-      } else if (line.startsWith('Output type:')) {
-        metadata.outputType = this.extractValue_(line, 'Output type:');
-      } else if (line.startsWith('Reference frame:')) {
-        referenceFrame = this.extractValue_(line, 'Reference frame:');
-        metadata.referenceFrame = referenceFrame;
-      } else if (line.startsWith('Output units:')) {
-        metadata.outputUnits = this.extractValue_(line, 'Output units:');
+      // Parse metadata. Horizons pads labels before the colon for column
+      // alignment (e.g. "Output units    : KM-S"), so match label-then-colon
+      // rather than an exact "Label:" prefix.
+      const meta = this.matchMetadataLine_(line);
+
+      if (meta) {
+        switch (meta.label) {
+          case 'Target body name':
+            targetName = this.stripNameSuffixes_(meta.value);
+            metadata.targetName = targetName;
+            break;
+          case 'Center body name':
+            centerBody = meta.value;
+            metadata.centerBody = centerBody;
+            break;
+          case 'Center-site name':
+            if (!centerBody) {
+              centerBody = meta.value;
+              metadata.centerBody = centerBody;
+            }
+            break;
+          case 'Output type':
+            metadata.outputType = meta.value;
+            break;
+          case 'Reference frame':
+            referenceFrame = meta.value;
+            metadata.referenceFrame = referenceFrame;
+            break;
+          case 'Output units':
+            metadata.outputUnits = meta.value;
+            break;
+          default:
+            break;
+        }
       }
 
       // Check for data section start/end
@@ -228,11 +257,14 @@ export class HorizonsParser {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
 
-      // Parse metadata
-      if (line.startsWith('Target body name:')) {
-        targetName = this.extractTargetName_(line, 'Target body name:');
-      } else if (line.startsWith('Center-site name:')) {
-        observerLocation = this.extractValue_(line, 'Center-site name:');
+      // Parse metadata (tolerating Horizons' padded-colon alignment)
+      const targetRaw = this.extractLabeledValue_(line, 'Target body name');
+      const siteRaw = this.extractLabeledValue_(line, 'Center-site name');
+
+      if (targetRaw !== null) {
+        targetName = this.stripNameSuffixes_(targetRaw);
+      } else if (siteRaw !== null) {
+        observerLocation = siteRaw;
       }
 
       // Check for data section
@@ -264,27 +296,60 @@ export class HorizonsParser {
 
   // ==================== Private Helper Methods ====================
 
+  /** Metadata labels recognized in Horizons output headers. */
+  private static readonly metadataLabels_ = [
+    'Target body name',
+    'Center body name',
+    'Center-site name',
+    'Output type',
+    'Reference frame',
+    'Output units',
+  ] as const;
+
   /**
-   * Extracts a value from a key: value line.
+   * Extracts a metadata value from a `Label : value` line, tolerating the
+   * column-aligned padding Horizons inserts before the colon (e.g.
+   * "Output units    : KM-S"). Returns null if the line does not carry the
+   * given label.
    */
-  private static extractValue_(line: string, key: string): string {
-    const value = line.substring(key.length).trim();
+  private static extractLabeledValue_(line: string, label: string): string | null {
+    if (!line.startsWith(label)) {
+      return null;
+    }
+
+    const rest = line.substring(label.length);
+    const colonIdx = rest.indexOf(':');
+
+    if (colonIdx === -1 || rest.substring(0, colonIdx).trim().length > 0) {
+      return null;
+    }
 
     // Remove trailing metadata separated by 2+ spaces (e.g., "{source: astDys}")
-    return value.split(/\s{2,}/u)[0].trim();
+    return rest.substring(colonIdx + 1).trim().split(/\s{2,}/u)[0].trim();
+  }
+
+  /** Returns the first recognized metadata label/value on the line, if any. */
+  private static matchMetadataLine_(line: string): { label: string; value: string } | null {
+    for (const label of this.metadataLabels_) {
+      const value = this.extractLabeledValue_(line, label);
+
+      if (value !== null) {
+        return { label, value };
+      }
+    }
+
+    return null;
   }
 
   /**
-   * Extracts the target body name, stripping parenthetical descriptors and IDs.
+   * Strips parenthetical descriptors and IDs from a target body name.
    *
    * Horizons format examples:
-   * - "1 Ceres                       {source: astDys}" → "1 Ceres"
-   * - "Artemis II (spacecraft) (-1024) {source: ...}"  → "Artemis II"
-   * - "Mars (499)"                                     → "Mars"
+   * - "1 Ceres"                       → "1 Ceres"
+   * - "Artemis II (spacecraft) (-1024)" → "Artemis II"
+   * - "Mars (499)"                    → "Mars"
    */
-  private static extractTargetName_(line: string, key: string): string {
-    const raw = this.extractValue_(line, key);
-
+  private static stripNameSuffixes_(raw: string): string {
     // Strip parenthetical suffixes: "(spacecraft)", "(-1024)", "(499)", etc.
     // Stop at the first '(' that is preceded by a space (part of a suffix, not the name itself)
     const parenIdx = raw.search(/\s\(/u);
@@ -326,7 +391,8 @@ export class HorizonsParser {
             return null;
           }
 
-          const epoch = EpochUTC.fromDateTime(julianDateToDate(jd));
+          // Horizons vector tables give JDTDB, which runs ~69 s ahead of UTC
+          const epoch = tdbDateToEpochUtc(julianDateToDate(jd));
           const x = parseFloat(parts[1]) as Kilometers;
           const y = parseFloat(parts[2]) as Kilometers;
           const z = parseFloat(parts[3]) as Kilometers;
@@ -372,7 +438,9 @@ export class HorizonsParser {
     const month = monthMap[monthStr] ?? 0;
 
     const date = new Date(Date.UTC(year, month, day, hour, minute, Math.floor(second), (second % 1) * 1000));
-    const epoch = EpochUTC.fromDateTime(date);
+    // Vector tables are on TDB (the line ends "TDB"); only a line marked UT is already UTC
+    const isUt = (/\bUTC?\b/u).test(line.slice(dateMatch[0].length));
+    const epoch = isUt ? EpochUTC.fromDateTime(date) : tdbDateToEpochUtc(date);
 
     // Parse position line (next line)
     let nextIndex = currentIndex + 1;

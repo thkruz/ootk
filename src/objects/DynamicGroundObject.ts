@@ -17,9 +17,8 @@
 
 import { Geodetic } from '../coordinate/Geodetic';
 import { J2000 } from '../coordinate/J2000';
-import { Degrees, EcefVec3, Kilometers, KilometersPerSecond, LlaVec3, Radians, SpaceObjectType, TemeVec3 } from '../types/types';
-import { calcGmst, lla2eci, llaRad2ecef } from '../transforms/transforms';
-import { Vector3D } from '../operations/Vector3D';
+import { Degrees, EcefVec3, Kilometers, LlaVec3, SpaceObjectType, TemeVec3 } from '../types/types';
+import { calcGmst, ecef2eci, llaRad2ecef } from '../transforms/transforms';
 import { EpochUTC } from '../time/EpochUTC';
 import { DEG2RAD, RAD2DEG } from '../utils/constants';
 import { BaseObjectParams } from './BaseObject';
@@ -221,45 +220,41 @@ export class DynamicGroundObject extends GroundObject {
 
   /**
    * Gets the ECI (Earth-Centered Inertial) position at a specific time.
+   *
+   * The WGS84 position from {@link getEcef} rotated into TEME by GMST, the same model
+   * `GroundObject.eci()` uses (not the spherical-Earth `lla2eci()`).
    * @param time - The time to get position for
-   * @returns ECI position vector, or null if time is outside waypoint range
+   * @returns ECI (TEME) position vector, or null if time is outside waypoint range
    */
   getEci(time: Date): TemeVec3<Kilometers> | null {
-    const lla = this.getLLA(time);
+    const ecef = this.getEcef(time);
 
-    if (!lla) {
+    if (!ecef) {
       return null;
     }
 
-    const llaRad: LlaVec3<Radians, Kilometers> = {
-      lat: (lla.lat * DEG2RAD) as Radians,
-      lon: (lla.lon * DEG2RAD) as Radians,
-      alt: lla.alt,
-    };
-
     const { gmst } = calcGmst(time);
 
-    return lla2eci(llaRad, gmst);
+    return ecef2eci(ecef, gmst);
   }
 
   /**
    * Converts position at a specific time to J2000 inertial coordinates.
-   * Ground objects have zero velocity in the inertial frame (ignoring Earth rotation).
+   *
+   * The WGS84 position is rotated from ITRF into J2000 with precession, nutation and
+   * sidereal time, as in `GroundObject.toJ2000()`. The velocity is the Earth-rotation
+   * velocity (omega x r); the platform's own motion between waypoints is not included.
    * @param time - The time for the conversion
    * @returns J2000 state vector, or null if time is outside waypoint range
    */
   getJ2000(time: Date): J2000 | null {
-    const eci = this.getEci(time);
+    const geodetic = this.getGeodetic(time);
 
-    if (!eci) {
+    if (!geodetic) {
       return null;
     }
 
-    return new J2000(
-      EpochUTC.fromDateTime(time),
-      new Vector3D(eci.x, eci.y, eci.z),
-      new Vector3D(0 as KilometersPerSecond, 0 as KilometersPerSecond, 0 as KilometersPerSecond),
-    );
+    return geodetic.toITRF(EpochUTC.fromDateTime(time)).toJ2000();
   }
 
   /**

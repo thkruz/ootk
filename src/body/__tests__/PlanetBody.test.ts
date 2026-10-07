@@ -16,6 +16,9 @@ import {
   Pluto,
   CelestialBodyType,
   Vector3D,
+  Degrees,
+  GroundStation,
+  Kilometers,
 } from '../../main';
 
 describe('PlanetBody', () => {
@@ -253,5 +256,35 @@ describe('PlanetBody', () => {
 
       expect(diff).toBeGreaterThan(1_000_000);
     });
+  });
+});
+
+describe('PlanetBody frames and thresholds', () => {
+  const date = new Date('2024-01-01T00:00:00Z');
+
+  it('velocity() is heliocentric: matches the derivative of heliocentric()', () => {
+    const h = 60e3;
+    const p1 = Mars.heliocentric(new Date(date.getTime() + h));
+    const p0 = Mars.heliocentric(new Date(date.getTime() - h));
+    const fd = p1.subtract(p0).scale(1 / (2 * h / 1000));
+
+    // Was 14 m/s off (barycentric velocity)
+    expect(Mars.velocity(date).subtract(fd).magnitude()).toBeLessThan(1e-4);
+  });
+
+  it('getRiseSetTimes(minElevation) returns when the centre crosses that elevation', () => {
+    const site = new GroundStation({ lat: 40 as Degrees, lon: -75 as Degrees, alt: 0 as Kilometers });
+    const { rise, set } = Saturn.getRiseSetTimes(site, date, 10 as Degrees);
+
+    // The 10 deg went into astronomy-engine's metres-above-ground argument
+    expect(Saturn.getAzEl(site, rise!, false).el).toBeCloseTo(10, 2);
+    expect(Saturn.getAzEl(site, set!, false).el).toBeCloseTo(10, 2);
+  });
+
+  it('getAngularDiameter() places the body at the observer time', () => {
+    const d = new Date('2020-06-01T00:00:00Z');
+    const halfway = Mars.eci(d).scale(0.5);
+
+    expect(Mars.getAngularDiameter(halfway, d)).toBeCloseTo(2 * Math.atan(Mars.radius! / Mars.eci(d).magnitude() * 2), 12);
   });
 });

@@ -19,7 +19,7 @@ import {
   Body,
   MakeTime,
   Observer,
-  SearchRiseSet,
+  SearchAltitude,
 } from 'astronomy-engine';
 import { GroundObject } from '../objects/GroundObject';
 import { Vector3D } from '../operations/Vector3D';
@@ -137,19 +137,16 @@ export class SunBody extends CelestialBody {
   }
 
   /**
-   * Gets the Sun's apparent position (corrected for light travel time).
+   * Gets the Sun's apparent position (corrected for light travel time and aberration).
+   *
+   * Same as {@link eci}: astronomy-engine's `GeoVector` already applies the light-time and
+   * aberration corrections. (This used to roll the time back by another ~499 s, putting the
+   * Sun a further ~20 arcsec along its path.)
    * @param date - The date/time for the position calculation
-   * @returns Position vector in kilometers
+   * @returns Position vector in kilometers (J2000)
    */
   eciApparent(date: Date = new Date()): Vector3D<Kilometers> {
-    const pos = this.eci(date);
-    const distance = pos.magnitude();
-    const lightTimeSec = distance / cKmPerSec;
-
-    // Roll back time by light travel time
-    const adjustedDate = new Date(date.getTime() - lightTimeSec * 1000);
-
-    return this.eci(adjustedDate);
+    return this.eci(date);
   }
 
   /**
@@ -227,8 +224,13 @@ export class SunBody extends CelestialBody {
 
   /**
    * Determines if a satellite is in Earth's shadow.
+   *
+   * The test is a cylinder-plus-cone that tracks the umbra boundary closely (within ~0.01 deg
+   * of the `lightingRatio` umbra edge in LEO); a satellite in the penumbra counts as lit. Use
+   * {@link lightingRatio} when partial illumination matters.
    * @param epoch - The epoch for the calculation
-   * @param satPos - The satellite's ECI position in kilometers
+   * @param satPos - The satellite's position in J2000 (the frame of `eci()`), km; a TEME
+   * position from `Satellite.eci()` is ~0.3 deg off in 2026
    * @example
    * ```typescript
    * import { Sun, Satellite, EpochUTC, Vector3D, Kilometers, Seconds } from 'ootk';
@@ -237,14 +239,8 @@ export class SunBody extends CelestialBody {
    * const now = new Date();
    * const epoch = new EpochUTC((now.getTime() / 1000) as Seconds);
    *
-   * const pv = satellite.eci(now);
-   * if (pv) {
-   *   const satPos = new Vector3D<Kilometers>(
-   *     pv.position.x as Kilometers,
-   *     pv.position.y as Kilometers,
-   *     pv.position.z as Kilometers
-   *   );
-   *
+   * const satPos = satellite.toJ2000(now).position; // J2000, like Sun.eci()
+   * {
    *   const inShadow = Sun.shadow(epoch, satPos);
    *   console.log(inShadow ? 'Satellite is in eclipse' : 'Satellite is sunlit');
    *
@@ -330,11 +326,12 @@ export class SunBody extends CelestialBody {
 
   /**
    * Calculates the Sun's angular diameter as seen from a position.
-   * @param obsPos - Observer position in kilometers
+   * @param obsPos - Observer position in kilometers (J2000, at `date`)
+   * @param date - The time of `obsPos` (defaults to now)
    * @returns Angular diameter in radians
    */
-  diameter(obsPos: Vector3D<Kilometers>): Radians {
-    const sunPos = this.eci();
+  diameter(obsPos: Vector3D<Kilometers>, date: Date = new Date()): Radians {
+    const sunPos = this.eci(date);
     const distance = obsPos.subtract(sunPos).magnitude();
 
     return (2 * Math.asin(SunBody.RADIUS / distance)) as Radians;
@@ -389,7 +386,8 @@ export class SunBody extends CelestialBody {
       throw new Error('longitude missing');
     }
 
-    const date = dateVal instanceof Date ? dateVal : new Date(dateVal);
+    // Copy: setHours below must not move the caller's Date (AccessCalculator reads it afterwards)
+    const date = new Date(dateVal instanceof Date ? dateVal.getTime() : dateVal);
 
     if (isUtc) {
       date.setUTCHours(12, 0, 0, 0);
@@ -422,9 +420,13 @@ export class SunBody extends CelestialBody {
 
   /**
    * Gets sunrise and sunset times using astronomy-engine.
+   *
+   * The times are when the Sun's centre crosses `minElevation` (geometric altitude). The
+   * default -0.833 deg is the standard sunrise/sunset definition (refraction plus the solar
+   * semidiameter); -6, -12 and -18 give civil, nautical and astronomical twilight.
    * @param observer - Ground observer location
    * @param date - The date for calculation
-   * @param minElevation - Minimum elevation in degrees (default -0.833 for standard sunrise)
+   * @param minElevation - Elevation of the Sun's centre in degrees (default -0.833 for standard sunrise)
    */
   getSunriseSunset(
     observer: GroundObject,
@@ -434,8 +436,10 @@ export class SunBody extends CelestialBody {
     const obs = new Observer(observer.lat, observer.lon, observer.alt * 1000);
     const time = MakeTime(date);
 
-    const sunrise = SearchRiseSet(Body.Sun, obs, +1, time, 1, minElevation);
-    const sunset = SearchRiseSet(Body.Sun, obs, -1, time, 1, minElevation);
+    // SearchRiseSet's sixth argument is metres above ground, not an angle (a negative value
+    // throws), so an elevation threshold needs SearchAltitude.
+    const sunrise = SearchAltitude(Body.Sun, obs, +1, time, 1, minElevation);
+    const sunset = SearchAltitude(Body.Sun, obs, -1, time, 1, minElevation);
 
     return {
       sunrise: sunrise?.date ?? null,

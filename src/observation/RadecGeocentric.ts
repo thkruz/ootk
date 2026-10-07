@@ -70,10 +70,10 @@ export class RadecGeocentric {
     declinationRateDegrees?: Degrees,
     rangeRate?: KilometersPerSecond,
   ): RadecGeocentric {
-    const rightAscensionRate = rightAscensionRateDegrees
+    const rightAscensionRate = typeof rightAscensionRateDegrees === 'number'
       ? rightAscensionRateDegrees * DEG2RAD as RadiansPerSecond
       : null;
-    const declinationRate = declinationRateDegrees ? declinationRateDegrees * DEG2RAD as RadiansPerSecond : null;
+    const declinationRate = typeof declinationRateDegrees === 'number' ? declinationRateDegrees * DEG2RAD as RadiansPerSecond : null;
 
     return new RadecGeocentric(
       epoch,
@@ -114,7 +114,7 @@ export class RadecGeocentric {
 
     return new RadecGeocentric(
       state.epoch,
-      rightAscension % TAU as Radians,
+      (((rightAscension % TAU) + TAU) % TAU) as Radians,
       declination as Radians,
       rMag,
       rightAscensionRate as RadiansPerSecond,
@@ -128,7 +128,10 @@ export class RadecGeocentric {
    * @returns The right ascension in degrees.
    */
   get rightAscensionDegrees(): Degrees {
-    return this.rightAscension * RAD2DEG as Degrees;
+    // [0, 360), like RadecTopocentric (atan2 gives negative right ascensions)
+    const deg = this.rightAscension * RAD2DEG;
+
+    return (((deg % 360) + 360) % 360) as Degrees;
   }
 
   /**
@@ -144,7 +147,7 @@ export class RadecGeocentric {
    * @returns The right ascension rate in degrees per second, or null if it is not available.
    */
   get rightAscensionRateDegrees(): DegreesPerSecond | null {
-    return this.rightAscensionRate ? this.rightAscensionRate * RAD2DEG as DegreesPerSecond : null;
+    return typeof this.rightAscensionRate === 'number' ? this.rightAscensionRate * RAD2DEG as DegreesPerSecond : null;
   }
 
   /**
@@ -152,7 +155,7 @@ export class RadecGeocentric {
    * @returns The rate of change of declination in degrees per second, or null if not available.
    */
   get declinationRateDegrees(): DegreesPerSecond | null {
-    return this.declinationRate ? this.declinationRate * RAD2DEG as DegreesPerSecond : null;
+    return typeof this.declinationRate === 'number' ? this.declinationRate * RAD2DEG as DegreesPerSecond : null;
   }
 
   /**
@@ -175,7 +178,7 @@ export class RadecGeocentric {
    * @throws Error if the right ascension rate or declination rate is missing.
    */
   velocity(range?: Kilometers, rangeRate?: KilometersPerSecond): Vector3D<KilometersPerSecond> {
-    if (!this.rightAscensionRate || !this.declinationRate) {
+    if (typeof this.rightAscensionRate !== 'number' || typeof this.declinationRate !== 'number') {
       throw new Error('Velocity unsolvable, missing ra/dec rates.');
     }
     const r = range ?? this.range ?? 1.0 as Kilometers;

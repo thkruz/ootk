@@ -43,7 +43,7 @@ Differencing the received frequency over a short interval gives the Doppler rate
 
 ## Manual dopplerFactor
 
-The standalone `dopplerFactor(location, position, velocity)` utility is what the `Satellite` method uses internally: observer ECI position (from `GroundObject.eci(date)`, which returns a bare `{x, y, z}` vector), plus the satellite's ECI position and velocity from `Satellite.eci(date)`. The results match the method exactly.
+The standalone `dopplerFactor(location, position, velocity)` utility is what the `Satellite` method uses internally: observer ECI position (from `GroundObject.eci(date)`, which returns a bare `{x, y, z}` vector on the WGS84 ellipsoid, the same observer position `rae()` uses), plus the satellite's ECI position and velocity from `Satellite.eci(date)`. The results match the method exactly.
 
 <<< ../../examples/doppler.ts#manual-doppler-factor
 
@@ -61,10 +61,10 @@ Time: 2024-01-28T12:00:00.000Z
 === Example 1: Basic Doppler Shift Calculation ===
 
 Doppler Calculations:
-  Doppler Factor: 0.99999592
+  Doppler Factor: 0.99999596
   Transmit Frequency: 437.8000 MHz
   Received Frequency: 437.7982 MHz
-  Frequency Shift: -1.79 kHz
+  Frequency Shift: -1.77 kHz
 
 Satellite Position:
   Azimuth: 309.5°
@@ -75,17 +75,17 @@ Satellite Position:
 
 Time      El    Range    Doppler      Freq Shift
 ────────  ───  ────────  ──────────  ────────────
-12:00:00  -54.7°  10918.1 km  0.99999592      -1.79 kHz
-12:01:00  -55.2°  10987.5 km  0.99999628      -1.63 kHz
-12:02:00  -55.8°  11050.3 km  0.99999666      -1.46 kHz
-12:03:00  -56.2°  11106.1 km  0.99999705      -1.29 kHz
-12:04:00  -56.7°  11154.8 km  0.99999745      -1.12 kHz
-12:05:00  -57.0°  11196.1 km  0.99999787      -0.93 kHz
-12:06:00  -57.3°  11229.8 km  0.99999829      -0.75 kHz
-12:07:00  -57.6°  11255.8 km  0.99999873      -0.56 kHz
-12:08:00  -57.7°  11273.9 km  0.99999917      -0.36 kHz
-12:09:00  -57.8°  11284.0 km  0.99999962      -0.17 kHz
-12:10:00  -57.9°  11285.9 km  1.00000008       0.03 kHz
+12:00:00  -54.7°  10918.1 km  0.99999596      -1.77 kHz
+12:01:00  -55.2°  10987.6 km  0.99999632      -1.61 kHz
+12:02:00  -55.8°  11050.3 km  0.99999670      -1.44 kHz
+12:03:00  -56.2°  11106.1 km  0.99999709      -1.27 kHz
+12:04:00  -56.7°  11154.8 km  0.99999750      -1.10 kHz
+12:05:00  -57.0°  11196.1 km  0.99999791      -0.91 kHz
+12:06:00  -57.3°  11229.9 km  0.99999834      -0.73 kHz
+12:07:00  -57.6°  11255.9 km  0.99999877      -0.54 kHz
+12:08:00  -57.7°  11274.0 km  0.99999922      -0.34 kHz
+12:09:00  -57.8°  11284.0 km  0.99999967      -0.15 kHz
+12:10:00  -57.9°  11285.9 km  1.00000012       0.05 kHz
 
 === Example 3: Doppler Shift Across Different Bands ===
 
@@ -93,12 +93,12 @@ Time: 2024-01-28T12:05:00.000Z
 
 Band       Frequency       Received Freq    Shift
 ────────  ──────────────  ──────────────  ─────────
-VHF       145.8 MHz       145.7997 MHz    -311.06 Hz
-UHF       437.8 MHz       437.7991 MHz    -934.04 Hz
-L-band    1575.42 MHz (GPS L1)  1.5754 GHz      - 3.36 kHz
-S-band    2.2 GHz         2.2000 GHz      - 4.69 kHz
-X-band    8.4 GHz         8.4000 GHz      -17.92 kHz
-Ku-band   12 GHz          12.0000 GHz     -25.60 kHz
+VHF       145.8 MHz       145.7997 MHz    -304.41 Hz
+UHF       437.8 MHz       437.7991 MHz    -914.07 Hz
+L-band    1575.42 MHz (GPS L1)  1.5754 GHz      - 3.29 kHz
+S-band    2.2 GHz         2.2000 GHz      - 4.59 kHz
+X-band    8.4 GHz         8.4000 GHz      -17.54 kHz
+Ku-band   12 GHz          12.0000 GHz     -25.05 kHz
 
 ISS Orbital Velocity: ~7.66 km/s
 Max Doppler Factor: ±0.002555%
@@ -114,7 +114,7 @@ Theoretical Maximum Frequency Shifts:
 === Example 5: Using dopplerFactor Utility Function ===
 
 Observer ECI Position (km):
-  [-2608.11, -3973.30, 4242.78]
+  [-2614.91, -3983.67, 4225.37]
 
 Satellite ECI Position (km):
   [-1574.82, 6481.63, 1292.52]
@@ -122,6 +122,6 @@ Satellite ECI Position (km):
 Satellite ECI Velocity (km/s):
   [-4.9744, -0.0382, -5.8304]
 
-Calculated Doppler Factor: 0.99999592
-Satellite method result: 0.99999592
+Calculated Doppler Factor: 0.99999596
+Satellite method result: 0.99999596
 ```

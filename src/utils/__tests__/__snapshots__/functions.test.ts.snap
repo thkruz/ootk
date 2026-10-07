@@ -70,7 +70,7 @@ exports[`functions > should be calculate wrapAngle 1`] = `1`;
 
 exports[`functions > should be calculate wrapAngle 2`] = `-1.2831853071795862`;
 
-exports[`functions > should be calculate wrapAngle 3`] = `-5`;
+exports[`functions > should be calculate wrapAngle 3`] = `1.2831853071795862`;
 
 exports[`should be calculate derivative 1`] = `[Function]`;
 

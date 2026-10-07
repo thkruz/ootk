@@ -225,7 +225,7 @@ export abstract class RungeKuttaAdaptive extends Propagator {
     this.forceModel_.loadManeuver(maneuver);
     const ephemeris: J2000[] = [tState];
 
-    while (tState.epoch < maneuver.stop) {
+    while (tState.epoch.posix < maneuver.stop.posix) {
       const step = Math.min(maneuver.stop.difference(tState.epoch), interval) as Seconds;
 
       tState = this.propagate(tState.epoch.roll(step));
@@ -242,14 +242,15 @@ export abstract class RungeKuttaAdaptive extends Propagator {
     maneuvers: Thrust[],
     interval = 60.0 as Seconds,
   ): VerletBlendInterpolator {
-    const tMvr = maneuvers.filter((mvr) => mvr.start >= start || mvr.stop <= finish);
+    // Compare raw POSIX seconds; relational operators on Epoch objects coerce via toISOString().
+    const tMvr = maneuvers.filter((mvr) => mvr.start.posix >= start.posix || mvr.stop.posix <= finish.posix);
     const ephemeris: J2000[] = [];
 
-    if (tMvr[0].start > start) {
+    if (tMvr[0].start.posix > start.posix) {
       ephemeris.push(this.propagate(start));
     }
     for (const mvr of tMvr) {
-      while (this._cacheState.epoch < mvr.start) {
+      while (this._cacheState.epoch.posix < mvr.start.posix) {
         const step = Math.min(mvr.start.difference(this._cacheState.epoch), interval) as Seconds;
 
         this.propagate(this._cacheState.epoch.roll(step));

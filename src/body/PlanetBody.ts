@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Body, BaryState, Illumination, MakeTime } from 'astronomy-engine';
+import { Body, HelioState, Illumination, MakeTime } from 'astronomy-engine';
 import { Vector3D } from '../operations/Vector3D';
 import { Degrees, Kilometers, KilometersPerSecond, SpaceObjectType } from '../types/types';
 import { KM_PER_AU } from '../utils/constants';
@@ -253,7 +253,9 @@ export class PlanetBody extends CelestialBody {
    */
   velocity(date: Date = new Date()): Vector3D<KilometersPerSecond> {
     const time = MakeTime(date);
-    const state = BaryState(this.planetData_.body, time);
+    // HelioState: the doc promises heliocentric; BaryState is relative to the solar-system
+    // barycentre, which moves ~10-15 m/s with respect to the Sun
+    const state = HelioState(this.planetData_.body, time);
 
     return new Vector3D(
       (state.vx * AU_PER_DAY_TO_KM_PER_S) as KilometersPerSecond,

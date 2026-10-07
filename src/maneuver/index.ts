@@ -22,5 +22,7 @@
  */
 
 export { PlaneChangeBurn } from './PlaneChangeBurn';
+export { PropellantBudget } from './PropellantBudget';
 export { Waypoint } from './Waypoint';
 export { TwoBurnOrbitTransfer } from './TwoBurnOrbitTransfer';
+export type { HohmannTransferWithPlaneChangeResult, PlaneChangeAssignment } from './TwoBurnOrbitTransfer';

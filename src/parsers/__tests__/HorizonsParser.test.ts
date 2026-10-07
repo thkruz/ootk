@@ -40,6 +40,18 @@ $$EOE
       expect(firstEntry.epoch.toDateTime()).toBeInstanceOf(Date);
     });
 
+    it('converts the TDB epochs of a vector table to UTC', () => {
+      // 2024: TDB - UTC = 32.184 s + 37 leap seconds = 69.184 s (was read as UTC directly)
+      const result = HorizonsParser.parseVectors(sampleVectorData);
+
+      expect(Math.abs(result.ephemeris[0].epoch.toDateTime().getTime() - Date.parse('2024-11-30T23:58:50.816Z'))).toBeLessThan(2);
+
+      // A line explicitly marked UT is taken as UTC
+      const ut = HorizonsParser.parseVectors(sampleVectorData.replaceAll(' TDB', ' UT'));
+
+      expect(ut.ephemeris[0].epoch.toDateTime().toISOString()).toBe('2024-12-01T00:00:00.000Z');
+    });
+
     it('should extract position vector', () => {
       const result = HorizonsParser.parseVectors(sampleVectorData);
       const firstEntry = result.ephemeris[0];
@@ -81,6 +93,35 @@ $$EOE
       const result = HorizonsParser.parseVectors(sampleVectorData);
 
       expect(result.isHeliocentric).toBe(true);
+    });
+
+    it('should parse metadata with the Horizons API column-aligned padding before colons', () => {
+      // The live API pads labels for column alignment ("Output units    : KM-S")
+      const apiStyleData = `API VERSION: 1.2
+API SOURCE: NASA/JPL Horizons API
+*******************************************************************************
+Target body name: Voyager 2 (spacecraft) (-32)    {source: Voyager_2_ST+refit2022_m}
+Center body name: Earth (399)                     {source: Voyager_2_ST+refit2022_m}
+Start time      : A.D. 1977-Aug-23 00:00:00.0000 TDB
+Stop  time      : A.D. 2036-Jan-01 00:00:00.0000 TDB
+Output units    : KM-S
+Reference frame : ICRF
+$$SOE
+2443378.500000000 = A.D. 1977-Aug-23 00:00:00.0000 TDB
+ 1.043744232520084E+06 -1.056784981848003E+06  3.312092912365380E+05
+ 1.234567890123456E+01 -2.345678901234567E+01  3.456789012345678E+00
+$$EOE
+*******************************************************************************`;
+
+      const result = HorizonsParser.parseVectors(apiStyleData);
+
+      expect(result.targetName).toBe('Voyager 2');
+      expect(result.centerBody).toBe('Earth (399)');
+      expect(result.referenceFrame).toBe('ICRF');
+      expect(result.metadata.outputUnits).toBe('KM-S');
+      expect(result.isHeliocentric).toBe(false);
+      expect(result.ephemeris).toHaveLength(1);
+      expect(result.ephemeris[0].velocity).toBeDefined();
     });
   });
 

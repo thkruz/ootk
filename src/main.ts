@@ -85,3 +85,5 @@ export * from './scheduling/index';
 export * from './constellation/index';
 
 export * from './orbit-design/index';
+
+export * from './external/index';

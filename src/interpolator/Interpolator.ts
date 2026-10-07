@@ -29,10 +29,15 @@ export abstract class Interpolator {
    * cached value range.
    */
   inWindow(epoch: EpochUTC): boolean {
-    const start = this.window().start;
-    const stop = this.window().end;
+    const window = this.window();
 
-    return start <= epoch && epoch <= stop;
+    /*
+     * Compare the raw POSIX seconds, NOT the Epoch objects. Relational operators
+     * on objects trigger ToPrimitive -> Epoch.toString() -> Date.toISOString() on
+     * every operand, which is a heavy per-frame cost when this runs in the render
+     * loop (see ChebyshevInterpolator.interpolate).
+     */
+    return window.start.posix <= epoch.posix && epoch.posix <= window.end.posix;
   }
 
   /*
@@ -41,14 +46,17 @@ export abstract class Interpolator {
    * Returns `null` if there is no overlap between interpolators.
    */
   overlap(interpolator: Interpolator): EpochWindow | null {
-    const x1 = this.window().start;
-    const x2 = this.window().end;
-    const y1 = interpolator.window().start;
-    const y2 = interpolator.window().end;
+    // Compare raw POSIX seconds to avoid Epoch object coercion (toISOString) - see inWindow().
+    const a = this.window();
+    const b = interpolator.window();
+    const x1 = a.start.posix;
+    const x2 = a.end.posix;
+    const y1 = b.start.posix;
+    const y2 = b.end.posix;
 
     if (x1 <= y2 && y1 <= x2) {
-      const e1 = new EpochUTC(Math.max(x1.posix, y1.posix) as Seconds);
-      const e2 = new EpochUTC(Math.min(x2.posix, y2.posix) as Seconds);
+      const e1 = new EpochUTC(Math.max(x1, y1) as Seconds);
+      const e2 = new EpochUTC(Math.min(x2, y2) as Seconds);
 
       return new EpochWindow(e1, e2);
     }

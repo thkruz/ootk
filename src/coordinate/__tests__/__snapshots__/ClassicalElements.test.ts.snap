@@ -85,7 +85,7 @@ ClassicalElements {
   "inclination": 0.7503068041317154,
   "mu": 398600.4415,
   "rightAscension": 0.17555503341584255,
-  "semimajorAxis": 6935.754028093152,
+  "semimajorAxis": 6935.75402809315,
   "trueAnomaly": 5.749771010517163,
 }
 `;
@@ -101,6 +101,6 @@ ClassicalElements {
   "mu": 398600.4415,
   "rightAscension": 0.028239555738616327,
   "semimajorAxis": 6943.547853722985,
-  "trueAnomaly": 0.6234422142843716,
+  "trueAnomaly": 0.6234422142848703,
 }
 `;

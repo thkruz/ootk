@@ -19,7 +19,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "bench": "npm run build && node benchmark/run.mjs",
+    "bench": "pnpm run build && node benchmark/run.mjs",
     "bench:only": "node benchmark/run.mjs",
     "build": "tsup",
     "changelog": "auto-changelog",
@@ -27,18 +27,18 @@
     "circular": "node scripts/check-circular.mjs",
     "circular:list": "madge --circular --extensions ts src/main.ts",
     "circular:image": "madge --circular --image circular-deps.svg --extensions ts src/main.ts",
-    "lint": "npx eslint src",
-    "lint:fix": "npx eslint src --fix",
+    "lint": "pnpm exec eslint src",
+    "lint:fix": "pnpm exec eslint src --fix",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:integration": "npm run build && vitest run --config test/integration/vitest.config.mts",
+    "test:integration": "pnpm run build && vitest run --config test/integration/vitest.config.mts",
     "test:integration:only": "vitest run --config test/integration/vitest.config.mts",
-    "test:all": "npm run test && npm run test:integration",
+    "test:all": "pnpm run test && pnpm run test:integration",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "prepare": "husky",
-    "prepublishOnly": "npm run test:all"
+    "prepublishOnly": "pnpm run test:all"
   },
   "repository": {
     "type": "git",
@@ -61,27 +61,50 @@
   "bugs": {
     "url": "https://github.com/thkruz/ootk/issues"
   },
+  "packageManager": "pnpm@10.33.0",
+  "pnpm": {
+    "overrides": {
+      "esbuild": "^0.28.1",
+      "undici@7": "^7.29.1",
+      "undici@6": "^6.28.1",
+      "js-yaml@>=4.0.0 <4.3.2": ">=4.3.2",
+      "nanoid@<3.3.18": ">=3.3.18",
+      "brace-expansion@>=4.0.0 <5.0.12": ">=5.0.12",
+      "source-map-js@<1.2.2": ">=1.2.2",
+      "@vue/server-renderer@<3.5.42": ">=3.5.42"
+    },
+    "ignoredBuiltDependencies": [
+      "esbuild"
+    ],
+    "auditConfig": {
+      "ignoreGhsas": [
+        "GHSA-vfj7-8cjw-p6xm"
+      ]
+    }
+  },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^10.0.1",
     "@types/jest": "^30.0.0",
+    "@types/node": "26.1.1",
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
-    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/coverage-v8": "^4.1.11",
     "astronomy-engine": "^2.1.19",
     "auto-changelog": "^2.5.0",
     "conventional-changelog-conventionalcommits": "^10.2.1",
-    "eslint": "^9.39.1",
+    "eslint": "^10.8.0",
     "husky": "^9.1.7",
     "madge": "^8.0.0",
     "satellite.js": "^7.0.1",
-    "semantic-release": "^25.0.5",
+    "semantic-release": "^25.0.9",
     "ts-node": "^10.9.2",
     "tsup": "^8.5.1",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vitepress": "2.0.0-alpha.17",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.11"
   },
   "homepage": "https://github.com/thkruz/ootk"
 }

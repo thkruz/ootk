@@ -298,10 +298,18 @@ describe('GoodingIOD', () => {
       const orbit = iod.solve([obs1, obs2, obs3, obs4, obs5, obs6, obs7, obs8, obs9, obs10], leoRange1, leoRange3);
       const elements = orbit.toClassicalElements();
 
-      // Should recover LEO orbit
+      // Compare with the truth state at the solution epoch (the middle observation), not with
+      // the TLE's mean semimajor axis (6919.2 km): the osculating SMA there is 6914.3 km, and
+      // an IOD returns an osculating state. The solver fits a two-body orbit to SGP4 data, so
+      // J2 over the 4.5 min arc leaves ~1 km / ~3 m/s of state error (~6 km of SMA).
+      const truth = propagator.propagate(orbit.epoch);
+      const truthElements = truth.toClassicalElements();
+
       expect(elements.eccentricity).toBeLessThan(0.01);
       expect(elements.inclinationDegrees).toBeCloseTo(53.2176, 0);
-      expect(Math.abs(elements.semimajorAxis - 6919.20905)).toBeLessThanOrEqual(20);
+      expect(orbit.position.subtract(truth.position).magnitude()).toBeLessThan(1.5);
+      expect(orbit.velocity.subtract(truth.velocity).magnitude()).toBeLessThan(0.005);
+      expect(Math.abs(elements.semimajorAxis - truthElements.semimajorAxis)).toBeLessThanOrEqual(10);
     });
 
     it('should handle MEO observations', () => {

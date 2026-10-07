@@ -109,21 +109,22 @@ The documentation covers:
 
 ## :desktop_computer: Building
 
-1. Install [Node.js](https://nodejs.org/) and [Node Package Manager](https://www.npmjs.com/);
+1. Install [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/) (`corepack enable pnpm` is enough — the
+   required version is pinned by the `packageManager` field in `package.json`);
 
-2. Install all required packages with NPM by running the following command from repository's root directory:
-
-   ```bash
-   npm install
-   ```
-
-3. Run the following NPM script to build everything:
+2. Install all required packages by running the following command from repository's root directory:
 
    ```bash
-   npm run build
+   pnpm install
    ```
 
-## :gem: NPM Scripts
+3. Run the following script to build everything:
+
+   ```bash
+   pnpm run build
+   ```
+
+## :gem: Scripts
 
 - `build` compiles TypeScript into ES6 Modules and combines them into a single file in the `dist` directory.
 - `lint` lints source code located in `src` directory with [ESLint](http://eslint.org/)
@@ -149,13 +150,13 @@ git checkout -b my-feature
 Make sure that your changes don't break the existing code by running:
 
 ```bash
-npm test
+pnpm test
 ```
 
 Check that your code follows the rules established in eslint.rc:
 
 ```bash
-npm run lint
+pnpm run lint
 ```
 
 ## :man_scientist: Contributors

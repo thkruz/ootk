@@ -248,3 +248,42 @@ describe('KeplerPropagator', () => {
     });
   });
 });
+
+describe('KeplerPropagator maneuver bookkeeping', () => {
+  const epoch = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
+  const makeElements = () => new ClassicalElements({
+    epoch,
+    semimajorAxis: 7000 as Kilometers,
+    eccentricity: 0.001,
+    inclination: 0.9 as Radians,
+    rightAscension: 0.1 as Radians,
+    argPerigee: 0.2 as Radians,
+    trueAnomaly: 0.3 as Radians,
+  });
+
+  it('restore() rewinds the orbit, not just the cached state', () => {
+    const ref = new KeplerPropagator(makeElements());
+    const prop = new KeplerPropagator(makeElements());
+    const cp = prop.checkpoint();
+
+    prop.maneuver(new Thrust(epoch.roll(100 as Seconds), 50 as MetersPerSecond, 0 as MetersPerSecond, 0 as MetersPerSecond));
+    prop.restore(cp);
+    const later = epoch.roll(3000 as Seconds);
+
+    // Before the fix, propagate() still used the post-maneuver elements
+    expect(prop.propagate(later).position.subtract(ref.propagate(later).position).magnitude()).toBeLessThan(1e-6);
+  });
+
+  it('ephemerisManeuver() ignores maneuvers outside [start, finish]', () => {
+    const start = epoch;
+    const finish = epoch.roll(600 as Seconds);
+    const outside = new Thrust(epoch.roll(5000 as Seconds), 50 as MetersPerSecond, 0 as MetersPerSecond, 0 as MetersPerSecond);
+    const withOutside = new KeplerPropagator(makeElements()).ephemerisManeuver(start, finish, [outside], 60);
+    const plain = new KeplerPropagator(makeElements());
+
+    // The `||` filter kept every maneuver: it propagated on to t+5000 s, burned there, and
+    // returned an ephemeris running far past `finish`
+    expect(withOutside.window().end.posix).toBe(finish.posix);
+    expect(withOutside.interpolate(finish)!.position.subtract(plain.propagate(finish).position).magnitude()).toBeLessThan(1e-3);
+  });
+});

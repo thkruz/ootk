@@ -18,7 +18,28 @@
 import { Thrust } from '../force/Thrust';
 import { Earth } from '../body/Earth';
 import { EpochUTC } from '../time/EpochUTC';
-import { MetersPerSecond, Seconds, SecondsPerMeterPerSecond } from '../types/types';
+import { MetersPerSecond, Radians, Seconds, SecondsPerMeterPerSecond } from '../types/types';
+
+// / Which burn of a two-burn transfer carries the plane change.
+export type PlaneChangeAssignment = 'burn1' | 'burn2' | 'none';
+
+// / Result of a Hohmann transfer with an optional combined plane change.
+export interface HohmannTransferWithPlaneChangeResult {
+  /** Circular speed of the initial orbit (km/s). */
+  vInit: number;
+  /** Circular speed of the final orbit (km/s). */
+  vFinal: number;
+  /** Delta-V magnitude of the first burn (km/s). */
+  deltaV1: number;
+  /** Delta-V magnitude of the second burn (km/s). */
+  deltaV2: number;
+  /** Total delta-V for both burns (km/s). */
+  deltaVTotal: number;
+  /** Coast time between the two burns (s). */
+  tTrans: Seconds;
+  /** Which burn carries the plane change. */
+  planeChangeBurn: PlaneChangeAssignment;
+}
 
 // / Container for a two-burn orbit transfer.
 export class TwoBurnOrbitTransfer {
@@ -47,6 +68,61 @@ export class TwoBurnOrbitTransfer {
     const tTrans = Math.PI * Math.sqrt((rInit + rFinal) ** 3 / (8.0 * Earth.mu)) as Seconds;
 
     return new TwoBurnOrbitTransfer(vInit, vFinal, vTransA, vTransB, tTrans);
+  }
+
+  /**
+   * Calculates a Hohmann transfer between two circular orbits with an optional
+   * inclination change folded into one of the two burns as a single combined
+   * impulse.
+   *
+   * The plane change is cheapest where the orbital velocity is lowest. For a
+   * raising transfer that is the second burn (at rFinal); for a lowering
+   * transfer it is the first burn (at rInit). The plane change is auto-assigned
+   * to the cheaper burn and the assignment is reported in the result. A
+   * combined burn costs `sqrt(v1^2 + v2^2 - 2 * v1 * v2 * cos(deltaInc))`
+   * (law of cosines between the pre- and post-burn velocity vectors).
+   * @param rInit The initial orbit radius. (km)
+   * @param rFinal The final orbit radius. (km)
+   * @param deltaIncRad The inclination change. (rad)
+   * @returns Per-burn delta-V magnitudes, total, transfer time, and the plane-change assignment.
+   */
+  static hohmannTransferWithPlaneChange(rInit: number, rFinal: number, deltaIncRad: Radians): HohmannTransferWithPlaneChangeResult {
+    const vInit = Math.sqrt(Earth.mu / rInit);
+    const vFinal = Math.sqrt(Earth.mu / rFinal);
+    // Speeds on the transfer ellipse at the initial and final radii
+    const vTransInit = Math.sqrt(Earth.mu * (2 / rInit - 2 / (rInit + rFinal)));
+    const vTransFinal = Math.sqrt(Earth.mu * (2 / rFinal - 2 / (rInit + rFinal)));
+    const tTrans = Math.PI * Math.sqrt((rInit + rFinal) ** 3 / (8.0 * Earth.mu)) as Seconds;
+
+    const combined = (v1: number, v2: number): number => Math.sqrt(v1 ** 2 + v2 ** 2 - 2 * v1 * v2 * Math.cos(deltaIncRad));
+
+    let planeChangeBurn: PlaneChangeAssignment;
+    let deltaV1: number;
+    let deltaV2: number;
+
+    if (deltaIncRad === 0) {
+      planeChangeBurn = 'none';
+      deltaV1 = Math.abs(vTransInit - vInit);
+      deltaV2 = Math.abs(vFinal - vTransFinal);
+    } else if (rFinal >= rInit) {
+      planeChangeBurn = 'burn2';
+      deltaV1 = Math.abs(vTransInit - vInit);
+      deltaV2 = combined(vTransFinal, vFinal);
+    } else {
+      planeChangeBurn = 'burn1';
+      deltaV1 = combined(vInit, vTransInit);
+      deltaV2 = Math.abs(vFinal - vTransFinal);
+    }
+
+    return {
+      vInit,
+      vFinal,
+      deltaV1,
+      deltaV2,
+      deltaVTotal: deltaV1 + deltaV2,
+      tTrans,
+      planeChangeBurn,
+    };
   }
 
   // / Return the total delta-velocity magnitude for both maneuvers _(km/s)_.

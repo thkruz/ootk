@@ -113,6 +113,14 @@ describe('functions', () => {
     expect(wrapAngle(-5 as Radians)).toMatchSnapshot();
   });
 
+  it('wrapAngle folds angles below -pi into [-pi, pi]', () => {
+    // Independent reference: atan2(sin, cos) is the wrapped angle. JS % kept the sign of a
+    // negative dividend, so wrapAngle(-5) returned -5 and wrapAngle(-3pi/2) returned -3pi/2.
+    for (const theta of [-5, -1.5 * Math.PI, -7, -20, 0.5, 4, 11]) {
+      expect(wrapAngle(theta as Radians)).toBeCloseTo(Math.atan2(Math.sin(theta), Math.cos(theta)), 12);
+    }
+  });
+
   // createVec
   it('should be calculate createVec', () => {
     const vec = createVec(1, 2, 3);
@@ -209,6 +217,17 @@ describe('matchHalfPlane', () => {
 
 // angularDistance
 describe('angularDistance', () => {
+  it('Cosine method returns ~0, not NaN, for identical directions', () => {
+    // acos(sin^2 + cos^2 * 1) rounded just above 1 for ~4% of random directions
+    for (let i = 0; i < 2000; i++) {
+      const lam = -3 + (6 * i) / 2000;
+      const phi = -1.5 + ((i * 7919) % 2000) * (3 / 2000);
+
+      // The cosine formula itself is only good to ~1e-8 rad near zero
+      expect(angularDistance(lam, phi, lam, phi, AngularDistanceMethod.Cosine)).toBeLessThan(1e-7);
+    }
+  });
+
   it('should calculate angular distance using cosine method', () => {
     const result = angularDistance(0, 0, Math.PI / 2, 0, AngularDistanceMethod.Cosine);
 

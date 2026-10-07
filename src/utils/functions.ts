@@ -235,7 +235,9 @@ export function matchHalfPlane(angle: number, match: number): number {
  * @returns The wrapped angle.
  */
 export function wrapAngle(theta: Radians): Radians {
-  const result = ((theta + Math.PI) % (2 * Math.PI)) - Math.PI;
+  // JS % keeps the dividend's sign, so fold negative remainders back into [0, 2pi)
+  const tau = 2 * Math.PI;
+  const result = ((((theta + Math.PI) % tau) + tau) % tau) - Math.PI;
 
   if (result === -Math.PI) {
     return Math.PI as Radians;
@@ -256,7 +258,8 @@ function angularDistanceCosine_(lam1: number, phi1: number, lam2: number, phi2: 
   const a = Math.sin(phi1) * Math.sin(phi2);
   const b = Math.cos(phi1) * Math.cos(phi2) * Math.cos(lam2 - lam1);
 
-  return Math.acos(a + b) as Radians;
+  // Rounding can push a + b just past 1 for (nearly) identical directions; acos would be NaN
+  return Math.acos(Math.min(1, Math.max(-1, a + b))) as Radians;
 }
 
 /**
@@ -607,6 +610,7 @@ const spaceObjTypeStrMap_ = {
   [SpaceObjectType.DWARF_PLANET]: 'Dwarf Planet',
   [SpaceObjectType.MOON]: 'Moon',
   [SpaceObjectType.DYNAMIC_GROUND_OBJECT]: 'Dynamic Ground Object',
+  [SpaceObjectType.ASTEROID]: 'Asteroid',
   [SpaceObjectType.MAX_SPACE_OBJECT_TYPE]: 'Max Space Object Type',
 };
 
@@ -622,9 +626,19 @@ export const spaceObjType2Str = (spaceObjType: SpaceObjectType): string =>
  * Calculates the Doppler factor for a given location, position, and velocity.
  * The Doppler factor is a measure of the change in frequency or wavelength of a wave
  * as observed by an observer moving relative to the source of the wave.
- * @param location - The location vector of the observer.
- * @param position - The position vector of the source.
- * @param velocity - The velocity vector of the source.
+ *
+ * Returns `1 - rangeRate / c`, so observed = transmitted * factor: above 1 while the
+ * source approaches, below 1 while it recedes.
+ *
+ * All three vectors must be in the same inertial frame (TEME, as from `Satellite.eci()`
+ * and `GroundObject.eci()`), despite the `EcefVec3` parameter types: the observer is
+ * treated as Earth-fixed and its rotational velocity (omega x r) is subtracted here.
+ * The observer position must be the WGS84 one that `rae()` uses; a spherical-Earth
+ * observer (`lla2eci()`) sits ~20 km off at mid latitudes and skews the range rate by
+ * up to ~0.2 km/s near closest approach.
+ * @param location - The observer position (inertial frame, km).
+ * @param position - The source position (inertial frame, km).
+ * @param velocity - The source velocity (inertial frame, km/s).
  * @returns The calculated Doppler factor.
  */
 export const dopplerFactor = (

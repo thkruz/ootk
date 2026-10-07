@@ -1,5 +1,7 @@
-import { EpochUTC, Seconds, SecondsPerMeterPerSecond } from '../../main';
+import { EpochUTC, Radians, Seconds, SecondsPerMeterPerSecond } from '../../main';
 import { TwoBurnOrbitTransfer } from '../TwoBurnOrbitTransfer';
+
+const DEG2RAD = Math.PI / 180;
 
 describe('TwoBurnOrbitTransfer', () => {
   describe('constructor', () => {
@@ -36,6 +38,61 @@ describe('TwoBurnOrbitTransfer', () => {
       expect(transfer.vInit).toBeCloseTo(transfer.vFinal, 5);
       expect(transfer.vTransA).toBeCloseTo(0, 5);
       expect(transfer.vTransB).toBeCloseTo(0, 5);
+    });
+  });
+
+  describe('hohmannTransferWithPlaneChange', () => {
+    const rLeo = 6678; // km
+    const rGeo = 42164; // km
+
+    it('matches the coplanar transfer when the inclination change is zero', () => {
+      const coplanar = TwoBurnOrbitTransfer.hohmannTransfer(rLeo, rGeo);
+      const result = TwoBurnOrbitTransfer.hohmannTransferWithPlaneChange(rLeo, rGeo, 0 as Radians);
+
+      expect(result.planeChangeBurn).toBe('none');
+      expect(result.deltaV1).toBeCloseTo(coplanar.vTransA, 9);
+      expect(result.deltaV2).toBeCloseTo(coplanar.vTransB, 9);
+      expect(result.deltaVTotal).toBeCloseTo(coplanar.deltaV, 9);
+      expect(result.tTrans).toBeCloseTo(coplanar.tTrans, 9);
+    });
+
+    it('computes the canonical LEO to GEO transfer with a 28.5 deg plane change on burn 2', () => {
+      const result = TwoBurnOrbitTransfer.hohmannTransferWithPlaneChange(rLeo, rGeo, 28.5 * DEG2RAD as Radians);
+
+      expect(result.planeChangeBurn).toBe('burn2');
+      expect(result.deltaV1).toBeCloseTo(2.426, 2);
+      expect(result.deltaV2).toBeCloseTo(1.83, 2);
+      expect(result.deltaVTotal).toBeCloseTo(result.deltaV1 + result.deltaV2, 9);
+      // Transfer time is a little over 5 hours
+      expect(result.tTrans / 3600).toBeCloseTo(5.26, 1);
+    });
+
+    it('keeps the coplanar burn-2 cost when the plane change is zero', () => {
+      const result = TwoBurnOrbitTransfer.hohmannTransferWithPlaneChange(rLeo, rGeo, 0 as Radians);
+
+      expect(result.deltaV2).toBeCloseTo(1.467, 2);
+    });
+
+    it('assigns the plane change to burn 1 on a lowering transfer', () => {
+      const raising = TwoBurnOrbitTransfer.hohmannTransferWithPlaneChange(rLeo, rGeo, 10 * DEG2RAD as Radians);
+      const lowering = TwoBurnOrbitTransfer.hohmannTransferWithPlaneChange(rGeo, rLeo, 10 * DEG2RAD as Radians);
+
+      expect(lowering.planeChangeBurn).toBe('burn1');
+      // Same geometry either direction, so the totals must match
+      expect(lowering.deltaVTotal).toBeCloseTo(raising.deltaVTotal, 9);
+      expect(lowering.deltaV1).toBeCloseTo(raising.deltaV2, 9);
+      expect(lowering.deltaV2).toBeCloseTo(raising.deltaV1, 9);
+    });
+
+    it('reduces to a pure plane change for equal radii', () => {
+      const radius = 7000;
+      const deltaInc = 30 * DEG2RAD as Radians;
+      const result = TwoBurnOrbitTransfer.hohmannTransferWithPlaneChange(radius, radius, deltaInc);
+      const vCirc = result.vInit;
+
+      // 2 * v * sin(di / 2) is the textbook pure plane-change cost
+      expect(result.deltaV1).toBeCloseTo(0, 9);
+      expect(result.deltaV2).toBeCloseTo(2 * vCirc * Math.sin(deltaInc / 2), 9);
     });
   });
 

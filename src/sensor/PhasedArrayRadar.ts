@@ -20,6 +20,8 @@ import { ValidationError } from '../errors';
 import { Degrees, Kilometers, Radians, RaeVec3, RuvVec3 } from '../types/types';
 import { DEG2RAD, RAD2DEG } from '../utils/constants';
 import { azel2uv, uv2azel } from '../transforms/transforms';
+import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';
+import { angularDistance, wrapAngle } from '../utils/functions';
 import { FieldOfView } from './FieldOfView';
 import { RadarSensor, RadarSensorParams } from './RadarSensor';
 
@@ -137,7 +139,8 @@ export class PhasedArrayRadar extends RadarSensor {
 
     const azRad = (az * DEG2RAD) as Radians;
     const elRad = (el * DEG2RAD) as Radians;
-    const azDiff = (azRad - this.boresightAzRad(face)) as Radians;
+    // Wrap so 355 deg against a 0 deg boresight is -5 deg, not +355 deg
+    const azDiff = wrapAngle((azRad - this.boresightAzRad(face)) as Radians);
     const elDiff = (elRad - this.boresightElRad(face)) as Radians;
 
     return azel2uv(azDiff, elDiff, this.beamwidthRad);
@@ -249,11 +252,7 @@ export class PhasedArrayRadar extends RadarSensor {
     const visibleFaces: number[] = [];
 
     for (let face = 0; face < this.faceCount; face++) {
-      const azDiff = Math.abs(az - this.boresightAz[face]);
-      const elDiff = Math.abs(el - this.boresightEl[face]);
-
-      // Simple angular distance check (could use proper spherical distance)
-      const angularDist = Math.sqrt(azDiff * azDiff + elDiff * elDiff);
+      const angularDist = this.angleFromBoresight_(az, el, face);
 
       if (angularDist <= maxAngle) {
         visibleFaces.push(face);
@@ -274,9 +273,7 @@ export class PhasedArrayRadar extends RadarSensor {
     let minDist = Infinity;
 
     for (let face = 0; face < this.faceCount; face++) {
-      const azDiff = az - this.boresightAz[face];
-      const elDiff = el - this.boresightEl[face];
-      const dist = Math.sqrt(azDiff * azDiff + elDiff * elDiff);
+      const dist = this.angleFromBoresight_(az, el, face);
 
       if (dist < minDist && dist < 90) {
         minDist = dist;
@@ -285,6 +282,25 @@ export class PhasedArrayRadar extends RadarSensor {
     }
 
     return bestFace;
+  }
+
+  /**
+   * Great-circle angle between a look direction and a face's boresight, in degrees.
+   * (The face checks used sqrt(dAz^2 + dEl^2) with no azimuth wrap: 359 deg missed a 0 deg
+   * face, and azimuth differences were not shrunk by cos(elevation).)
+   * @param az - Target azimuth in degrees
+   * @param el - Target elevation in degrees
+   * @param face - Face index
+   * @returns Angle from boresight in degrees
+   */
+  private angleFromBoresight_(az: Degrees, el: Degrees, face: number): number {
+    return angularDistance(
+      az * DEG2RAD,
+      el * DEG2RAD,
+      this.boresightAz[face] * DEG2RAD,
+      this.boresightEl[face] * DEG2RAD,
+      AngularDistanceMethod.Haversine,
+    ) * RAD2DEG;
   }
 
   // ==================== Serialization ====================

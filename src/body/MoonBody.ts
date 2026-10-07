@@ -371,7 +371,7 @@ export class MoonBody extends CelestialBody {
       phase = MoonBody.moonCycles_[0];
     }
 
-    let type = '';
+    let type: string;
 
     if (next === nextNewMoon) {
       type = 'newMoon';

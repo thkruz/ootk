@@ -13,13 +13,13 @@ npx tsx ./examples/iod.ts
 
 ## Setup Observations
 
-Three radar-style range/azimuth/elevation (RAE) measurements taken 10 seconds apart from a fixed ground sensor, plus the sensor's geodetic location (latitude and longitude in radians, altitude in km).
+Three radar-style range/azimuth/elevation (RAE) measurements taken 10 seconds apart from a fixed ground sensor, plus the sensor as a `GroundStation` (geodetic latitude and longitude in degrees, altitude in km). The azimuths are rounded to whole degrees, so at ~1,570 km slant range each fix carries roughly 10-15 km of error.
 
 <<< ../../examples/iod.ts#setup-observations
 
 ## RAE to Position
 
-IOD methods work on inertial positions, so each RAE measurement is converted: `calcGmst` and `lla2eci` produce the sensor's ECI position, and `RAE.fromDegrees(...).toStateVector(site)` turns the measurement into a `J2000` state relative to that site. The site velocity is left at zero here, which is acceptable because only the positions are used downstream.
+IOD methods work on inertial positions, so each RAE measurement is converted: `sensor.toJ2000(time)` gives the site's J2000 state at that measurement time (its WGS84 position rotated with precession, nutation and sidereal time, moving with the Earth), and `RAE.fromDegrees(...).toStateVector(site)` turns the measurement into a `J2000` state relative to that site. Use a fresh site state per measurement: the site moves about 3.5 km in inertial space every 10 s at this latitude. (`lla2eci` is a spherical-Earth drawing helper and puts the site up to ~21 km away from its WGS84 position, so it is not used here.)
 
 <<< ../../examples/iod.ts#rae-to-position
 
@@ -46,11 +46,11 @@ Four estimates are produced: `LambertIOD.estimate` from two positions and their 
 ```txt
 Lambert IOD (two RAE-derived positions, 10 s apart) fitted to a TLE:
   1 00001U 58001A   24007.49608796  .00000000  00000+0  00000+0 0  9995
-  2 00001  40.7526 176.3707 3432410  46.3020   0.6275 08.01238333    01
+  2 00001  39.7846 174.6222 4631813  47.8228   0.3099 05.92361752    02
 
 Herrick-Gibbs IOD (three RAE-derived positions, 10 s spacing) fitted to a TLE:
   1 00001U 58001A   24007.49620370  .00000000  00000+0  00000+0 0  9997
-  2 00001  43.5386 180.7830 0388414 224.2656 180.9250 15.93538194    07
+  2 00001  42.2255 178.7484 0588845  46.9219 359.5543 13.74736092    07
 
 Gibbs IOD (three ECI positions, 10 s spacing) fitted to a TLE:
   1 00001U 58001A   24007.49620370  .00000000  00000+0  00000+0 0  9997

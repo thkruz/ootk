@@ -91,6 +91,18 @@ export class ModifiedGoodingIOD {
     return scoreFn;
   }
 
+  /**
+   * Solves for a J2000 state at the middle observation's epoch: a Gooding three-line-of-sight
+   * estimate refined by a downhill simplex over all observations with a two-body force model.
+   *
+   * `tolerance` ends the simplex once the spread of the summed line-of-sight error (radians)
+   * or of the vertices falls below it.
+   * @param observations - Optical observations, in time order (at least 3)
+   * @param r0 - Range guess for the first observation (km)
+   * @param rN - Range guess for the last observation (km)
+   * @param options - Solver options
+   * @returns The J2000 state at the middle observation's epoch
+   */
   solve(
     observations: ObservationOptical[],
     r0?: Kilometers,
