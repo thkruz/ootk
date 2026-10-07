@@ -28,7 +28,7 @@ import { Earth } from '../body/Earth';
 import { J2000 } from './J2000';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
-import { earthGravityParam, MINUTES_PER_DAY, RAD2DEG, sec2min, TAU } from '../utils/constants';
+import { earthGravityParam, MINUTES_PER_DAY, RAD2DEG, TAU } from '../utils/constants';
 import { clamp, matchHalfPlane, newtonNu } from '../utils/functions';
 import { EquinoctialElements } from './EquinoctialElements';
 import { StateVector } from './StateVector';
@@ -93,7 +93,8 @@ export class ClassicalElements {
     }
     const pos = state.position;
     const vel = state.velocity;
-    const a = state.semimajorAxis;
+    // Vis-viva with the caller's mu (state.semimajorAxis always uses Earth's)
+    const a = (1 / (2 / pos.magnitude() - vel.magnitude() ** 2 / mu)) as Kilometers;
     const eVecA = pos.scale(vel.magnitude() ** 2 - mu / pos.magnitude() as KilometersPerSecond);
     const eVecB = vel.scale(pos.dot(vel));
     const eVec = eVecA.subtract(eVecB).scale(1 / mu);
@@ -239,7 +240,7 @@ export class ClassicalElements {
    */
   getOrbitRegime(): OrbitRegime {
     const n = this.revsPerDay;
-    const p = this.period * sec2min;
+    const p = this.period; // minutes
 
     if (n >= 0.99 && n <= 1.01 && this.eccentricity < 0.01) {
       return OrbitRegime.GEO;
@@ -324,15 +325,18 @@ export class ClassicalElements {
 
     maInit = matchHalfPlane(maInit, eaInit);
     const maFinal = (maInit + n * delta) % TAU;
-    let eaFinal = maFinal;
+    // Newton-Raphson on Kepler's equation. (Fixed-point iteration E = M + e sin E, capped at
+    // 32 steps, stopped hundreds of km short near perigee for e > ~0.7.)
+    const ecc = this.eccentricity;
+    let eaFinal = ecc > 0.8 ? Math.PI * Math.sign(maFinal || 1) : maFinal;
 
-    for (let iter = 0; iter < 32; iter++) {
-      const eaTemp = maFinal + this.eccentricity * Math.sin(eaFinal);
+    for (let iter = 0; iter < 50; iter++) {
+      const step = (eaFinal - ecc * Math.sin(eaFinal) - maFinal) / (1 - ecc * Math.cos(eaFinal));
 
-      if (Math.abs(eaTemp - eaFinal) < 1e-12) {
+      eaFinal -= step;
+      if (Math.abs(step) < 1e-12) {
         break;
       }
-      eaFinal = eaTemp;
     }
     const cosEaFinal = Math.cos(eaFinal);
     let vFinal = Math.acos(clamp((cosEaFinal - this.eccentricity) / (1 - this.eccentricity * cosEaFinal), -1, 1));

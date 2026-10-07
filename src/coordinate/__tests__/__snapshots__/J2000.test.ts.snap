@@ -6,7 +6,7 @@ exports[`J2000 > should calculate the mechanical energy 1`] = `-0.53917376373099
 
 exports[`J2000 > should calculate the period 1`] = `37275.911593878845`;
 
-exports[`J2000 > should convert to classical elements 1`] = `369640.0569843672`;
+exports[`J2000 > should convert to classical elements 1`] = `369640.05698436906`;
 
 exports[`J2000 > should convert to classical elements 2`] = `0.9909435374737835`;
 
