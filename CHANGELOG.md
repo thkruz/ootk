@@ -1,13 +1,54 @@
-## [7.0.3](https://github.com/thkruz/ootk/compare/v7.0.2...v7.0.3) (2026-07-06)
-
-## [7.0.2](https://github.com/thkruz/ootk/compare/v7.0.1...v7.0.2) (2026-07-06)
-
-## [7.0.1](https://github.com/thkruz/ootk/compare/v7.0.0...v7.0.1) (2026-07-06)
-
 ### Changelog
 
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
+
+#### [v7.1.0](https://github.com/thkruz/ootk/compare/v7.0.3...v7.1.0)
+
+- Release 7.1.0: WGS84 ground sites, Doppler/rate fixes, SGP4 WASM seam, new sensors and orbit design tools [`#51`](https://github.com/thkruz/ootk/pull/51)
+- Consolidate changelog management and sync develop with main [`#50`](https://github.com/thkruz/ootk/pull/50)
+- feat(external): :sparkles: add USSF Astro Standards Sgp4Prop wasm wrappers [`f388dc7`](https://github.com/thkruz/ootk/commit/f388dc780250bfe66575fbc11577b25bc2971e1e)
+- chore(changelog): :wrench: consolidate on auto-changelog as single source [`02c6f66`](https://github.com/thkruz/ootk/commit/02c6f66c72943ce28a3594c9460d1bab957652b4)
+- feat(orbit-design): :sparkles: replace OrbitFinder with closed-form groundTrackStateVector [`5ad1208`](https://github.com/thkruz/ootk/commit/5ad1208d5309eb2c0d725aebda176eff79aca35b)
+- feat(sgp4): :sparkles: add wasm backend seam to Sgp4 [`c200b4f`](https://github.com/thkruz/ootk/commit/c200b4f9c0c09ce0348e0f658e03c0156e7f3812)
+- feat(orbit-design): :sparkles: add LaunchWindowFinder for RAAN-matched launch windows [`f23fd72`](https://github.com/thkruz/ootk/commit/f23fd72e3edd8b18d1e1e8aeec2848f3dbe308a2)
+- fix(satellite): :bug: correct toRae() rates, keep zero rates, and fix the lighting checks [`356f8de`](https://github.com/thkruz/ootk/commit/356f8dec1e597f2db7257474df1df0b0a0e92f9d)
+- feat(maneuver): :sparkles: add combined plane-change Hohmann transfer and propellant budget [`4124318`](https://github.com/thkruz/ootk/commit/412431853808cf11f63b89ae5b6eec416925316e)
+- fix(ground-object): :bug: put toJ2000() on WGS84 with the Earth-rotation velocity [`58ac5da`](https://github.com/thkruz/ootk/commit/58ac5da13061b874b19682b44447d17a9a0f9cc8)
+- feat(propagator): :sparkles: add Sgp4WasmPropagator adapter [`12ba26d`](https://github.com/thkruz/ootk/commit/12ba26de69f496b29531305c16ebd92e69274a33)
+- fix(sun): :bug: stop double-correcting light time and pass elevations to SearchAltitude [`2899984`](https://github.com/thkruz/ootk/commit/289998414f830b96f993263782d028e26a58e871)
+- feat(sensor): :sparkles: add FieldOfView.directionAt cone sampling for FOV mesh generation [`9c4113a`](https://github.com/thkruz/ootk/commit/9c4113ad9be1fd72533d0a92393f0ef70cc35735)
+- fix(ground-object): :bug: place the observer on WGS84 in eci() so dopplerFactor matches rae() [`cedcb60`](https://github.com/thkruz/ootk/commit/cedcb609e1cdb1faed42e832cea78281b7f2524b)
+- feat(sensor): :sparkles: add TtcAntenna cooperative tracking sensor type [`9be7374`](https://github.com/thkruz/ootk/commit/9be7374ef5ce24f59071edb57f34284808ce043d)
+- fix(parsers): :bug: parse padded Horizons metadata labels [`cd9289d`](https://github.com/thkruz/ootk/commit/cd9289d463ea51d614c7aa6a8e65271eeef60738)
+- fix(coordinate): :bug: keep formatTleExponential to eight characters [`c307da5`](https://github.com/thkruz/ootk/commit/c307da550d26c095730a8c38b2dc56e442f1c660)
+- fix(phased-array-radar): :bug: wrap azimuth and use the great-circle angle for faces [`7d56080`](https://github.com/thkruz/ootk/commit/7d56080a3af7b1713f1a6d042553dd849cc3294b)
+- chore(ci): :wrench: install with pnpm in every workflow [`a433dab`](https://github.com/thkruz/ootk/commit/a433dabbe81f76de770fec6f512a2749df808664)
+- fix(classical-elements): :bug: use the caller's mu, solve Kepler by Newton, fix the MEO regime [`722faa3`](https://github.com/thkruz/ootk/commit/722faa39daa900a9fb17fd164d709f9e2cf90f73)
+- refactor(epoch): :recycle: optimize epoch comparisons to POSIX [`b9dbc5b`](https://github.com/thkruz/ootk/commit/b9dbc5be70febb96f5506f23c7b6f754c92bd618)
+- chore(pnpm): :wrench: migrate the repo from npm to pnpm [`90eb838`](https://github.com/thkruz/ootk/commit/90eb8388f5f0ed0a505b822e42e2e0972fdbfb67)
+- fix(launch-trajectory): :bug: start the trajectory on the WGS84 pad in J2000 [`ee33d84`](https://github.com/thkruz/ootk/commit/ee33d84e14468ad6f5171946584d57733eadadc1)
+- fix(visualization): :bug: place elliptical FOV boundary points along their own direction [`f2f12dd`](https://github.com/thkruz/ootk/commit/f2f12dd9db3d31b02f3d8fabb6660bd68f8357ad)
+- fix(kepler-propagator): :bug: filter maneuvers by window and restore the elements [`f646223`](https://github.com/thkruz/ootk/commit/f6462232111328151f16f6309427776585e0402b)
+- ci(release): :wrench: back-merge main into develop after release [`0860417`](https://github.com/thkruz/ootk/commit/086041714667e7a852f0ebcc2fcda9ca25a1513e)
+- fix(tle): :bug: count real elapsed time in calcElsetAge [`93fde19`](https://github.com/thkruz/ootk/commit/93fde19824ec79404414e0c5df4e85bbd1b50ce2)
+- fix(transmitter): :bug: compute the link-budget noise floor in the receiver bandwidth [`331f90f`](https://github.com/thkruz/ootk/commit/331f90f5e4acff0c4d0ddfcfc151ab9810fa6c08)
+- fix(horizons): :bug: read vector-table epochs as TDB [`b6fe698`](https://github.com/thkruz/ootk/commit/b6fe698f82e9e8554cf57d7f230161df4667eca6)
+- fix(utils): :bug: fold negative angles in wrapAngle and clamp the cosine distance [`ef99b98`](https://github.com/thkruz/ootk/commit/ef99b989d3faf77d0960c874ce81fa0968049ccc)
+- build(deps): :arrow_up: clear the pnpm audit gate for dev tooling [`f366c2b`](https://github.com/thkruz/ootk/commit/f366c2b4f0362433dcf0ed228fd0b2c8abf40ca7)
+- docs(readme): :memo: switch the contributor instructions to pnpm [`dd0e5bf`](https://github.com/thkruz/ootk/commit/dd0e5bfc30f8973d89639c556bfc25ec0cb6f4b8)
+- chore(eslint): :wrench: upgrade to ESLint 10 [`aa07806`](https://github.com/thkruz/ootk/commit/aa07806970190c808cbd8ad82abb6313a596587a)
+- ci(release): :construction_worker: stop chore/docs/style/test/ci commits from triggering releases [`b7187c4`](https://github.com/thkruz/ootk/commit/b7187c4f19cb0b745b4493bd80633ea866840143)
+- test(integration): :white_check_mark: refresh the public API export snapshot [`a20ce8d`](https://github.com/thkruz/ootk/commit/a20ce8d4e2d07b1d24ace31d293c687022a844ef)
+- refactor(orbit-determination): :recycle: scope the Gauss seed orbit to its branch [`a6b4448`](https://github.com/thkruz/ootk/commit/a6b4448bc3b954a3605edb63efe695d1623ba44a)
+- fix(field-of-view): :bug: keep accepting FOV params without a halfAngle [`2f3b750`](https://github.com/thkruz/ootk/commit/2f3b750178eb951ec82a891d228ab13c95bf996a)
+- refactor(body): :recycle: drop initializers that are always overwritten [`4d77381`](https://github.com/thkruz/ootk/commit/4d77381f644b5397742e988a8f882c6ba918f21e)
+- chore(release): :wrench: drop package-lock.json from the release assets [`b9cb5e1`](https://github.com/thkruz/ootk/commit/b9cb5e10d1f8b8d21f9b35fee87cb5beaea1e544)
+- chore(release): :wrench: sync develop package version to 7.0.3 [`0361ca8`](https://github.com/thkruz/ootk/commit/0361ca8ff430ec28a215dfdf0db50f31782b9e2a)
+- build(deps): :wrench: declare @types/node, which tsconfig's "types" relies on [`577265b`](https://github.com/thkruz/ootk/commit/577265b9cef1c8c3c52b6bcca9a06136255b1d0d)
+- fix(utils): :bug: add ASTEROID to the space object type string map [`0958dc1`](https://github.com/thkruz/ootk/commit/0958dc1129d80f0eec37c2343c32218d6ee0f707)
+- feat(types): :sparkles: add ASTEROID to SpaceObjectType [`b4668f8`](https://github.com/thkruz/ootk/commit/b4668f8167089995f30e4e9bc8e88e3a335d91b7)
+- chore(mailmap): :wrench: add .mailmap for author mapping [`5c5af87`](https://github.com/thkruz/ootk/commit/5c5af87f4d208c0d5ad27dae3a548469c630e082)
 
 #### [v7.0.3](https://github.com/thkruz/ootk/compare/v7.0.2...v7.0.3)
 
