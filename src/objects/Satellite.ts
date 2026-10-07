@@ -585,8 +585,13 @@ export class Satellite extends SpaceObject {
   }
 
   /**
-   * Calculates the RAE (Range, Azimuth, Elevation) values for a given sensor and date. If no date is provided, the
-   * current time is used.
+   * Calculates the RAE (Range, Azimuth, Elevation) values and their rates for a given sensor
+   * and date. If no date is provided, the current time is used.
+   *
+   * The rates are central differences of `rae()` over +/-0.5 s, stored in the units the
+   * {@link RAE} class expects: km/s for range rate and rad/s for the angle rates (read them
+   * in deg/s with `azRate` / `elRate`). The azimuth change is wrapped so a pass through
+   * north does not produce a 360 deg jump.
    * @variation expanded
    * @param observer - The observer's position on the ground.
    * @param date - The date at which to calculate the RAE values. Optional, defaults to the current date.
@@ -599,16 +604,21 @@ export class Satellite extends SpaceObject {
       return null;
     }
 
-    const rae2 = this.rae(observer, new Date(date.getTime() + 1000));
+    const halfStepMs = 500;
+    const raeBefore = this.rae(observer, new Date(date.getTime() - halfStepMs));
+    const raeAfter = this.rae(observer, new Date(date.getTime() + halfStepMs));
 
-    if (!rae2) {
+    if (!raeBefore || !raeAfter) {
       return null;
     }
 
+    const dt = (2 * halfStepMs) / 1000;
+    const rangeRate = (raeAfter.rng - raeBefore.rng) / dt;
+    // Wrap the azimuth change into [-180, 180) before converting
+    const dAz = ((((raeAfter.az - raeBefore.az + 180) % 360) + 360) % 360) - 180;
+    const azimuthRate = (dAz / dt) * DEG2RAD;
+    const elevationRate = ((raeAfter.el - raeBefore.el) / dt) * DEG2RAD;
     const epoch = new EpochUTC((date.getTime() / 1000) as Seconds);
-    const rangeRate = rae2.rng - rae.rng;
-    const azimuthRate = rae2.az - rae.az;
-    const elevationRate = rae2.el - rae.el;
 
     return new RAE(
       epoch,
@@ -1390,11 +1400,12 @@ export class Satellite extends SpaceObject {
   /**
    * Calculates the angle between this satellite, another satellite, and the Sun.
    *
-   * Returns the angle at this satellite between the vector to the other satellite
-   * and the vector to the Sun.
+   * Returns the angle at the OTHER satellite between its vector to the Sun and its vector
+   * to this satellite: the solar phase angle of `other` as seen from this satellite
+   * (0 = fully lit face toward this satellite, pi = backlit).
    *
    * @param other - The other satellite.
-   * @param sunPosition - The Sun's ECI position vector.
+   * @param sunPosition - The Sun's position in TEME (the frame of `eci()`), km.
    * @param date - The date for the calculation.
    * @returns The angle in radians.
    * @throws Error if positions are undefined.
@@ -1446,13 +1457,14 @@ export class Satellite extends SpaceObject {
    * ```
    */
   getSunStatus(date: Date = new Date()): SunStatus {
-    const pv = this.eci(date);
+    // Sun.eci() is J2000, so use the J2000 satellite position, not TEME eci()
+    let satPos: Vector3D<Kilometers>;
 
-    if (!pv) {
+    try {
+      satPos = this.toJ2000(date).position;
+    } catch {
       return SunStatus.UNKNOWN;
     }
-
-    const satPos = new Vector3D<Kilometers>(pv.position.x, pv.position.y, pv.position.z);
 
     const sunPos = Sun.eci(date);
     const ratio = Sun.lightingRatio(satPos, sunPos);

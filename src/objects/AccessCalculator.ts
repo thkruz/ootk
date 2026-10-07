@@ -19,10 +19,13 @@ import { Sun } from '../body/SunBody';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { ecef2rae } from '../transforms/transforms';
-import { Degrees, Kilometers, Meters, RaeVec3 } from '../types/types';
+import { Degrees, Kilometers, RaeVec3 } from '../types/types';
 import { AccessWindow, type AccessConstraints, type AccessState } from './AccessWindow';
 import type { GroundObject } from './GroundObject';
 import type { SpaceObject } from './SpaceObject';
+
+/** Sun elevation (deg, centre, no refraction) below which the observer counts as dark. */
+const CIVIL_TWILIGHT_DEG = -6;
 
 /**
  * Static utility class for calculating access windows between
@@ -262,17 +265,16 @@ export class AccessCalculator {
 
     // 3. Sunlit check (requires target to be illuminated by Sun)
     if (constraints.requireSunlit) {
-      const eci = target.eci(date);
+      // Sun.shadow() compares against the J2000 Sun, so the target must be in J2000 too
+      // (TEME is ~0.3 deg away in 2026, a few seconds of shadow-entry error in LEO).
+      let satPos: Vector3D<Kilometers>;
 
-      if (!eci) {
+      try {
+        satPos = target.toJ2000(date).position;
+      } catch {
         return false;
       }
       const epoch = EpochUTC.fromDateTime(date);
-      const satPos = new Vector3D<Kilometers>(
-        eci.position.x,
-        eci.position.y,
-        eci.position.z,
-      );
 
       if (Sun.shadow(epoch, satPos)) {
         return false;
@@ -281,24 +283,11 @@ export class AccessCalculator {
 
     // 4. Observer darkness check (for optical observations)
     if (constraints.requireObserverDark) {
-      const lla = observer.lla();
-      // Convert altitude from km to meters for getTimes
-      const altMeters = (lla.alt * 1000) as Meters;
-      const sunTimes = Sun.getTimes(date, lla.lat, lla.lon, altMeters);
-
-      // Check if current time is during nighttime (after sunset, before sunrise)
-      // Using civil dusk/dawn as the threshold for darkness
-      const currentTime = date.getTime();
-      const civilDusk = sunTimes.civilDusk?.getTime();
-      const civilDawn = sunTimes.civilDawn?.getTime();
-
-      if (civilDusk && civilDawn) {
-        // During the night, civilDusk < current < civilDawn (next day)
-        // OR civilDawn (same day) < current < civilDusk
-        // Simpler: observer is in light if between dawn and dusk
-        if (currentTime >= civilDawn && currentTime <= civilDusk) {
-          return false; // Observer is in daylight
-        }
+      // Dark = Sun's centre below civil twilight (-6 deg) at the site, at this instant.
+      // (The earlier dawn/dusk lookup via Sun.getTimes moved `date` to local noon, so this
+      // check reported daylight for every pass.)
+      if (Sun.getAzEl(observer, date, false).el >= CIVIL_TWILIGHT_DEG) {
+        return false;
       }
     }
 

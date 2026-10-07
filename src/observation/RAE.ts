@@ -58,8 +58,8 @@ export class RAE {
     azimuthRate?: number,
     elevationRate?: number,
   ): RAE {
-    const azimuthRateRad = azimuthRate ? azimuthRate * DEG2RAD : undefined;
-    const elevationRateRad = elevationRate ? elevationRate * DEG2RAD : undefined;
+    const azimuthRateRad = typeof azimuthRate === 'number' ? azimuthRate * DEG2RAD : undefined;
+    const elevationRateRad = typeof elevationRate === 'number' ? elevationRate * DEG2RAD : undefined;
 
     return new RAE(
       epoch,
@@ -139,7 +139,7 @@ export class RAE {
    * @returns The azimuth rate in degrees per second, or undefined if it is not available.
    */
   get azRate(): number | undefined {
-    return this.azRateRad ? this.azRateRad * RAD2DEG : undefined;
+    return typeof this.azRateRad === 'number' ? this.azRateRad * RAD2DEG : undefined;
   }
 
   /**
@@ -147,7 +147,7 @@ export class RAE {
    * @returns The elevation rate in degrees per second, or undefined if the elevation rate is not set.
    */
   get elRate(): number | undefined {
-    return this.elRateRad ? this.elRateRad * RAD2DEG : undefined;
+    return typeof this.elRateRad === 'number' ? this.elRateRad * RAD2DEG : undefined;
   }
 
   toString(): string {
