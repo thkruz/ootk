@@ -18,7 +18,7 @@
 import { ParseError } from '../errors';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
-import { Kilometers, KilometersPerSecond } from '../types/types';
+import { Kilometers, KilometersPerSecond, Seconds } from '../types/types';
 
 /**
  * Converts a Julian Date to a JavaScript Date.
@@ -31,6 +31,18 @@ function julianDateToDate(jd: number): Date {
   const unixMs = (jd - 2440587.5) * 86400000;
 
   return new Date(unixMs);
+}
+
+/**
+ * Converts a time read on the TDB scale (Horizons vector tables are JDTDB) to UTC.
+ * TT is used for TDB: they differ by under 2 ms.
+ * @param tdb - The TDB time, stored as if it were a UTC Date
+ * @returns The UTC epoch
+ */
+function tdbDateToEpochUtc(tdb: Date): EpochUTC {
+  const j2000Posix = 946728000; // 2000-01-01T12:00:00, the J2000 reference instant
+
+  return EpochUTC.fromJ2000TTSeconds((tdb.getTime() / 1000 - j2000Posix) as Seconds);
 }
 
 /**
@@ -379,7 +391,8 @@ export class HorizonsParser {
             return null;
           }
 
-          const epoch = EpochUTC.fromDateTime(julianDateToDate(jd));
+          // Horizons vector tables give JDTDB, which runs ~69 s ahead of UTC
+          const epoch = tdbDateToEpochUtc(julianDateToDate(jd));
           const x = parseFloat(parts[1]) as Kilometers;
           const y = parseFloat(parts[2]) as Kilometers;
           const z = parseFloat(parts[3]) as Kilometers;
@@ -425,7 +438,9 @@ export class HorizonsParser {
     const month = monthMap[monthStr] ?? 0;
 
     const date = new Date(Date.UTC(year, month, day, hour, minute, Math.floor(second), (second % 1) * 1000));
-    const epoch = EpochUTC.fromDateTime(date);
+    // Vector tables are on TDB (the line ends "TDB"); only a line marked UT is already UTC
+    const isUt = (/\bUTC?\b/u).test(line.slice(dateMatch[0].length));
+    const epoch = isUt ? EpochUTC.fromDateTime(date) : tdbDateToEpochUtc(date);
 
     // Parse position line (next line)
     let nextIndex = currentIndex + 1;

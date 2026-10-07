@@ -40,6 +40,18 @@ $$EOE
       expect(firstEntry.epoch.toDateTime()).toBeInstanceOf(Date);
     });
 
+    it('converts the TDB epochs of a vector table to UTC', () => {
+      // 2024: TDB - UTC = 32.184 s + 37 leap seconds = 69.184 s (was read as UTC directly)
+      const result = HorizonsParser.parseVectors(sampleVectorData);
+
+      expect(Math.abs(result.ephemeris[0].epoch.toDateTime().getTime() - Date.parse('2024-11-30T23:58:50.816Z'))).toBeLessThan(2);
+
+      // A line explicitly marked UT is taken as UTC
+      const ut = HorizonsParser.parseVectors(sampleVectorData.replaceAll(' TDB', ' UT'));
+
+      expect(ut.ephemeris[0].epoch.toDateTime().toISOString()).toBe('2024-12-01T00:00:00.000Z');
+    });
+
     it('should extract position vector', () => {
       const result = HorizonsParser.parseVectors(sampleVectorData);
       const firstEntry = result.ephemeris[0];
