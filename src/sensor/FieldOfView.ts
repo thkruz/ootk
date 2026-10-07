@@ -615,8 +615,8 @@ export class FieldOfView {
    * Validates FOV parameters.
    */
   private validate(params: FieldOfViewParams): void {
-    // Validate half angle
-    if (params.halfAngle <= 0 || params.halfAngle > 90) {
+    // Validate half angle (written so a missing/NaN value fails too: undefined <= 0 is false)
+    if (!(params.halfAngle > 0 && params.halfAngle <= 90)) {
       throw new ValidationError('Half angle must be between 0 and 90 degrees', 'halfAngle', params.halfAngle);
     }
 
