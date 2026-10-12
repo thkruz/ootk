@@ -146,7 +146,7 @@ describe('Sensor and Field of View', () => {
 
     it('should create a phased array radar', () => {
       const radar = new PhasedArrayRadar({
-        id: 'cape-cod-radar',
+        id: 1,
         name: 'Cape Cod Radar',
         sensorType: SensorType.PHASED_ARRAY_RADAR,
         beamwidth: 2 as Degrees,
@@ -155,10 +155,9 @@ describe('Sensor and Field of View', () => {
         fieldOfView: {
           minRange: 100 as Kilometers,
           maxRange: 5556 as Kilometers,
-          minAzimuth: 0 as Degrees,
-          maxAzimuth: 360 as Degrees,
+          // All azimuths above 10 deg: a cone about zenith (the boresightEl default) with an 80 deg half-angle
+          halfAngle: 80 as Degrees,
           minElevation: 10 as Degrees,
-          maxElevation: 85 as Degrees,
         },
       });
 
@@ -178,7 +177,7 @@ describe('Sensor and Field of View', () => {
 
     it('should check if satellite can be observed', () => {
       const radar = new PhasedArrayRadar({
-        id: 'cape-cod-radar',
+        id: 1,
         name: 'Cape Cod Radar',
         sensorType: SensorType.PHASED_ARRAY_RADAR,
         beamwidth: 2 as Degrees,
@@ -187,10 +186,9 @@ describe('Sensor and Field of View', () => {
         fieldOfView: {
           minRange: 100 as Kilometers,
           maxRange: 5556 as Kilometers,
-          minAzimuth: 0 as Degrees,
-          maxAzimuth: 360 as Degrees,
+          // All azimuths above 10 deg: a cone about zenith (the boresightEl default) with an 80 deg half-angle
+          halfAngle: 80 as Degrees,
           minElevation: 10 as Degrees,
-          maxElevation: 85 as Degrees,
         },
       });
 
@@ -205,7 +203,7 @@ describe('Sensor and Field of View', () => {
 
     it('should get RAE from radar', () => {
       const radar = new PhasedArrayRadar({
-        id: 'cape-cod-radar',
+        id: 1,
         name: 'Cape Cod Radar',
         sensorType: SensorType.PHASED_ARRAY_RADAR,
         beamwidth: 2 as Degrees,
@@ -214,10 +212,9 @@ describe('Sensor and Field of View', () => {
         fieldOfView: {
           minRange: 100 as Kilometers,
           maxRange: 5556 as Kilometers,
-          minAzimuth: 0 as Degrees,
-          maxAzimuth: 360 as Degrees,
+          // All azimuths above 10 deg: a cone about zenith (the boresightEl default) with an 80 deg half-angle
+          halfAngle: 80 as Degrees,
           minElevation: 10 as Degrees,
-          maxElevation: 85 as Degrees,
         },
       });
 
