@@ -122,6 +122,49 @@ describe('FieldOfView interpolated elevation mask', () => {
     expect(fov.toString()).toContain('4 interpolated vertices');
   });
 
+  describe('contains() on a masked cone (mask tested after the cone)', () => {
+    /*
+     * Cone: boresight az 90, el 15, half-angle 20; global floor 10; interpolated VERTICES mask,
+     * whose floor at az 90 is the 25 deg vertex. Every point sits on the az 90 (or az 270)
+     * vertical great circle, so its off-boresight angle is simply |el - 15| (or 180 - el - 15
+     * through the zenith for az 270). Inside the cone means off-boresight <= 20.
+     */
+    const coneFov = new FieldOfView({
+      boresightAz: 90 as Degrees,
+      boresightEl: 15 as Degrees,
+      halfAngle: 20 as Degrees,
+      minRange: 0 as Kilometers,
+      maxRange: 50000 as Kilometers,
+      minElevation: 10 as Degrees,
+      elevationMasks: VERTICES,
+      interpolate: true,
+    });
+    const unmasked = new FieldOfView({
+      boresightAz: 90 as Degrees,
+      boresightEl: 15 as Degrees,
+      halfAngle: 20 as Degrees,
+      minRange: 0 as Kilometers,
+      maxRange: 50000 as Kilometers,
+      minElevation: 10 as Degrees,
+    });
+
+    it.each([
+      // [label, rng, az, el, masked, unmasked]
+      ['in cone (15 off), above mask 25', 1000, 90, 30, true, true],
+      ['in cone (10 off), exactly on mask 25', 1000, 90, 25, true, true],
+      ['in cone (5 off), below mask 25', 1000, 90, 20, false, true],
+      ['in cone (10 off), below global floor 10', 1000, 90, 5, false, false],
+      ['outside cone (25 off), above mask 25', 1000, 90, 40, false, false],
+      ['behind (180 - 30 - 15 = 135 off), above mask 25 at az 270', 1000, 270, 30, false, false],
+      ['in cone, above mask, beyond max range', 60000, 90, 30, false, false],
+    ])('%s', (_label, rng, az, el, masked, open) => {
+      const rae = { rng: rng as Kilometers, az: az as Degrees, el: el as Degrees };
+
+      expect(coneFov.contains(rae)).toBe(masked);
+      expect(unmasked.contains(rae)).toBe(open);
+    });
+  });
+
   describe('validation', () => {
     const v = (startAz: number, minEl: number): ElevationMask => ({
       startAz: startAz as Degrees,

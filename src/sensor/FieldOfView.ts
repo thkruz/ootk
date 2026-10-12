@@ -436,10 +436,15 @@ export class FieldOfView {
   /**
    * Checks if the given RAE coordinates are within this field of view.
    *
-   * Performs the following checks in order:
+   * Performs the following checks in order, cheapest first:
    * 1. Range bounds
-   * 2. Elevation masking (global and azimuth-specific)
+   * 2. Global minimum elevation
    * 3. Elliptical cone containment
+   * 4. Azimuth-specific elevation mask, only when masks exist
+   *
+   * All four are conjunctive, so the order changes cost, not the result. The mask can only
+   * raise the floor above `minElevation` (see {@link getMinElevation}), so testing it last
+   * skips the mask lookup for every target the cone already rejects.
    *
    * @param rae - The RAE coordinates to check
    * @returns True if the coordinates are within the FOV
@@ -450,15 +455,18 @@ export class FieldOfView {
       return false;
     }
 
-    // Check elevation against effective minimum at this azimuth
-    const effectiveMinEl = this.getMinElevation(rae.az);
-
-    if (rae.el < effectiveMinEl) {
+    // Global floor, no mask lookup
+    if (rae.el < this.minElevation) {
       return false;
     }
 
     // Check if within cone geometry
-    return this.isWithinCone(rae.az, rae.el);
+    if (!this.isWithinCone(rae.az, rae.el)) {
+      return false;
+    }
+
+    // Horizon mask last: it is the only azimuth-dependent lookup
+    return this.elevationMasks.length === 0 || rae.el >= this.getMinElevation(rae.az);
   }
 
   /**
