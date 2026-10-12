@@ -7,7 +7,7 @@ describe('createCovarianceFromTle', () => {
   const tleLine2 = '2 25544  51.6461 339.8014 0002571  34.5857 120.4689 15.48919393265019';
 
   beforeEach(() => {
-    vi.spyOn(console, 'log').mockImplementation();
+    vi.spyOn(console, 'log').mockImplementation(() => undefined);
   });
 
   afterEach(() => {

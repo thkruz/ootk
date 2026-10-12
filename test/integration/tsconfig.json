@@ -9,8 +9,8 @@
     "declaration": false,
     "noEmit": true,
     "types": [
-      "jest",
-      "node"
+      "node",
+      "vitest/globals"
     ],
     "baseUrl": ".",
     "paths": {

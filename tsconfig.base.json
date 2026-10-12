@@ -20,7 +20,7 @@
     "listFiles": true,
     "newLine": "LF",
     "skipLibCheck": true,
-    "types": ["jest", "node"],
+    "types": ["node", "vitest/globals"],
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
 

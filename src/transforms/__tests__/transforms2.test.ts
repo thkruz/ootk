@@ -180,8 +180,8 @@ describe('Rae2Ecef', () => {
       z: 4000,
     };
     const lla = {
-      lon: 0 as Degrees,
-      lat: 0 as Degrees,
+      lon: 0 as Radians,
+      lat: 0 as Radians,
       alt: 0 as Kilometers,
     };
 
@@ -198,8 +198,8 @@ describe('Rae2Ecef', () => {
       z: 4000,
     };
     const lla = {
-      lon: 0 as Degrees,
-      lat: 0 as Degrees,
+      lon: 0 as Radians,
+      lat: 0 as Radians,
       alt: 0 as Kilometers,
     };
 
@@ -246,8 +246,8 @@ describe('Rae2Ecef', () => {
   it('should convert valid RAE coordinates to ENU', () => {
     const rae = {
       rng: 0 as Kilometers,
-      az: 0 as Degrees,
-      el: 0 as Degrees,
+      az: 0 as Radians,
+      el: 0 as Radians,
     };
     const enuCoordinates = rae2enu(rae);
 

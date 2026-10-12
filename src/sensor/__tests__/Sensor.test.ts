@@ -88,7 +88,7 @@ describe('Sensor parent validation', () => {
     try {
       const _parent = sensor.parent;
 
-      fail('Expected an error to be thrown');
+      expect.fail('Expected an error to be thrown');
     } catch (e) {
       expect((e as ValidationError).message).toContain('Test Sensor');
     }
@@ -99,7 +99,7 @@ describe('Sensor parent validation', () => {
 
     try {
       sensor.getJ2000();
-      fail('Expected an error to be thrown');
+      expect.fail('Expected an error to be thrown');
     } catch (e) {
       expect((e as ValidationError).message).toContain('getJ2000');
       expect((e as ValidationError).message).toContain('Test Sensor');
@@ -112,7 +112,7 @@ describe('Sensor parent validation', () => {
     try {
       const _parent = sensor.parent;
 
-      fail('Expected an error to be thrown');
+      expect.fail('Expected an error to be thrown');
     } catch (e) {
       expect(e).toBeInstanceOf(ValidationError);
       expect((e as ValidationError).field).toBe('parent');

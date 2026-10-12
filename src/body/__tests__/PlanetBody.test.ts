@@ -19,6 +19,7 @@ import {
   Degrees,
   GroundStation,
   Kilometers,
+  KilometersPerSecond,
 } from '../../main';
 
 describe('PlanetBody', () => {
@@ -266,7 +267,7 @@ describe('PlanetBody frames and thresholds', () => {
     const h = 60e3;
     const p1 = Mars.heliocentric(new Date(date.getTime() + h));
     const p0 = Mars.heliocentric(new Date(date.getTime() - h));
-    const fd = p1.subtract(p0).scale(1 / (2 * h / 1000));
+    const fd = p1.subtract(p0).scale(1 / (2 * h / 1000)) as Vector3D<KilometersPerSecond>;
 
     // Was 14 m/s off (barycentric velocity)
     expect(Mars.velocity(date).subtract(fd).magnitude()).toBeLessThan(1e-4);
@@ -283,7 +284,7 @@ describe('PlanetBody frames and thresholds', () => {
 
   it('getAngularDiameter() places the body at the observer time', () => {
     const d = new Date('2020-06-01T00:00:00Z');
-    const halfway = Mars.eci(d).scale(0.5);
+    const halfway = Mars.eci(d).scale(0.5) as Vector3D<Kilometers>;
 
     expect(Mars.getAngularDiameter(halfway, d)).toBeCloseTo(2 * Math.atan(Mars.radius! / Mars.eci(d).magnitude() * 2), 12);
   });
