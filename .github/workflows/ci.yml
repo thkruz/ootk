@@ -144,5 +144,8 @@ jobs:
 
       - run: pnpm install --frozen-lockfile --ignore-scripts
 
+      - name: Type-check integration tests
+        run: pnpm run typecheck:integration
+
       - name: Integration Tests
         run: pnpm run test:integration:only
