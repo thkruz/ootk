@@ -12,12 +12,13 @@ import {
   Tle,
   Vector3D,
 } from '../../dist/main.js';
+import { expectNotNull } from './lib/assert';
 
 describe('Lambert Problem Solutions', () => {
   describe('Basic Lambert Solution', () => {
     it('should solve Lambert problem from two positions', () => {
-      const p1 = new Vector3D<Kilometers>(6778.137, 0.0, 0.0);
-      const p2 = new Vector3D<Kilometers>(-2000.0, 6400.0, 1500.0);
+      const p1 = new Vector3D(6778.137 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+      const p2 = new Vector3D(-2000.0 as Kilometers, 6400.0 as Kilometers, 1500.0 as Kilometers);
 
       const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T12:00:00.000Z'));
       const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T13:30:00.000Z'));
@@ -28,15 +29,15 @@ describe('Lambert Problem Solutions', () => {
         nRev: 0,
       });
 
-      expect(stateVector).toBeDefined();
+      expectNotNull(stateVector);
       expect(stateVector.epoch).toBeDefined();
       expect(stateVector.position).toBeDefined();
       expect(stateVector.velocity).toBeDefined();
     });
 
     it('should return state vector at first observation time', () => {
-      const p1 = new Vector3D<Kilometers>(6778.137, 0.0, 0.0);
-      const p2 = new Vector3D<Kilometers>(-2000.0, 6400.0, 1500.0);
+      const p1 = new Vector3D(6778.137 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+      const p2 = new Vector3D(-2000.0 as Kilometers, 6400.0 as Kilometers, 1500.0 as Kilometers);
 
       const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T12:00:00.000Z'));
       const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T13:30:00.000Z'));
@@ -44,7 +45,7 @@ describe('Lambert Problem Solutions', () => {
       const lambert = new LambertIOD();
       const stateVector = lambert.estimate(p1, p2, t1, t2);
 
-      expect(stateVector).toBeDefined();
+      expectNotNull(stateVector);
       // Position at t1 should match p1
       expect(stateVector.position.x).toBeCloseTo(p1.x, 0);
       expect(stateVector.position.y).toBeCloseTo(p1.y, 0);
@@ -52,14 +53,16 @@ describe('Lambert Problem Solutions', () => {
     });
 
     it('should convert to classical elements', () => {
-      const p1 = new Vector3D<Kilometers>(6778.137, 0.0, 0.0);
-      const p2 = new Vector3D<Kilometers>(-2000.0, 6400.0, 1500.0);
+      const p1 = new Vector3D(6778.137 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+      const p2 = new Vector3D(-2000.0 as Kilometers, 6400.0 as Kilometers, 1500.0 as Kilometers);
 
       const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T12:00:00.000Z'));
       const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T13:30:00.000Z'));
 
       const lambert = new LambertIOD();
       const stateVector = lambert.estimate(p1, p2, t1, t2);
+
+      expectNotNull(stateVector);
       const elements = stateVector.toClassicalElements();
 
       expect(elements).toBeDefined();
@@ -71,8 +74,8 @@ describe('Lambert Problem Solutions', () => {
 
   describe('Lambert with Numerical Propagator', () => {
     it('should use Lambert solution with RK89 propagator', () => {
-      const p1 = new Vector3D<Kilometers>(7000.0, 0.0, 0.0);
-      const p2 = new Vector3D<Kilometers>(0.0, 7000.0, 0.0);
+      const p1 = new Vector3D(7000.0 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+      const p2 = new Vector3D(0.0 as Kilometers, 7000.0 as Kilometers, 0.0 as Kilometers);
 
       const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
       const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T01:30:00.000Z'));
@@ -80,7 +83,7 @@ describe('Lambert Problem Solutions', () => {
       const lambert = new LambertIOD();
       const initialState = lambert.estimate(p1, p2, t1, t2);
 
-      expect(initialState).toBeDefined();
+      expectNotNull(initialState);
 
       const propagator = new RungeKutta89Propagator(initialState);
       const futureEpoch = EpochUTC.fromDateTime(new Date('2024-01-02T00:00:00.000Z'));
@@ -92,14 +95,16 @@ describe('Lambert Problem Solutions', () => {
     });
 
     it('should propagate orbit for multiple revolutions', () => {
-      const p1 = new Vector3D<Kilometers>(7000.0, 0.0, 0.0);
-      const p2 = new Vector3D<Kilometers>(0.0, 7000.0, 0.0);
+      const p1 = new Vector3D(7000.0 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+      const p2 = new Vector3D(0.0 as Kilometers, 7000.0 as Kilometers, 0.0 as Kilometers);
 
       const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
       const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T01:30:00.000Z'));
 
       const lambert = new LambertIOD();
       const initialState = lambert.estimate(p1, p2, t1, t2);
+
+      expectNotNull(initialState);
       const elements = initialState.toClassicalElements();
 
       // Calculate number of revolutions in 1 day
@@ -114,14 +119,16 @@ describe('Lambert Problem Solutions', () => {
 
   describe('Lambert to Satellite Conversion', () => {
     it('should convert Lambert solution to Satellite object via TLE', () => {
-      const p1 = new Vector3D<Kilometers>(6878.137, 0.0, 0.0);
-      const p2 = new Vector3D<Kilometers>(0.0, 6878.137, 0.0);
+      const p1 = new Vector3D(6878.137 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+      const p2 = new Vector3D(0.0 as Kilometers, 6878.137 as Kilometers, 0.0 as Kilometers);
 
       const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
       const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T01:30:00.000Z'));
 
       const lambert = new LambertIOD();
       const j2000State = lambert.estimate(p1, p2, t1, t2);
+
+      expectNotNull(j2000State);
       const elements = j2000State.toClassicalElements();
       const tle = Tle.fromClassicalElements(elements);
 
@@ -136,14 +143,16 @@ describe('Lambert Problem Solutions', () => {
     });
 
     it('should use Satellite methods after Lambert derivation', () => {
-      const p1 = new Vector3D<Kilometers>(6878.137, 0.0, 0.0);
-      const p2 = new Vector3D<Kilometers>(0.0, 6878.137, 0.0);
+      const p1 = new Vector3D(6878.137 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+      const p2 = new Vector3D(0.0 as Kilometers, 6878.137 as Kilometers, 0.0 as Kilometers);
 
       const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
       const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T01:30:00.000Z'));
 
       const lambert = new LambertIOD();
       const j2000State = lambert.estimate(p1, p2, t1, t2);
+
+      expectNotNull(j2000State);
       const elements = j2000State.toClassicalElements();
       const tle = Tle.fromClassicalElements(elements);
 
@@ -155,7 +164,7 @@ describe('Lambert Problem Solutions', () => {
       const futureDate = new Date('2024-01-01T06:00:00.000Z');
       const lla = satellite.lla(futureDate);
 
-      expect(lla).toBeDefined();
+      expectNotNull(lla);
       expect(lla.lat).toBeGreaterThanOrEqual(-90);
       expect(lla.lat).toBeLessThanOrEqual(90);
     });
@@ -163,19 +172,22 @@ describe('Lambert Problem Solutions', () => {
 
   describe('Transfer Orbit Planning', () => {
     it('should calculate transfer orbit delta-V', () => {
-      const r1 = 6778.137; // LEO
-      const r2 = 12000.0; // Target
+      const r1 = 6778.137 as Kilometers; // LEO
+      const r2 = 12000.0 as Kilometers; // Target
 
-      const pos1 = new Vector3D<Kilometers>(r1, 0.0, 0.0);
-      const vel1 = new Vector3D<KilometersPerSecond>(0.0, Math.sqrt(398600.4418 / r1), 0.0);
+      const pos1 = new Vector3D(r1, 0.0 as Kilometers, 0.0 as Kilometers);
+      const vCircular1 = Math.sqrt(398600.4418 / r1) as KilometersPerSecond; // circular speed at r1, km/s
+      const vel1 = new Vector3D(0.0 as KilometersPerSecond, vCircular1, 0.0 as KilometersPerSecond);
 
-      const pos2 = new Vector3D<Kilometers>(0.0, r2, 0.0);
+      const pos2 = new Vector3D(0.0 as Kilometers, r2, 0.0 as Kilometers);
 
       const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
       const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T05:00:00.000Z'));
 
       const lambert = new LambertIOD();
       const transferOrbit = lambert.estimate(pos1, pos2, t1, t2);
+
+      expectNotNull(transferOrbit);
 
       // Calculate delta-V
       const deltaV1 = transferOrbit.velocity.subtract(vel1);
@@ -188,8 +200,8 @@ describe('Lambert Problem Solutions', () => {
 
   describe('Multi-Revolution Transfers', () => {
     it('should compare different revolution options', () => {
-      const p1 = new Vector3D<Kilometers>(7000.0, 0.0, 0.0);
-      const p2 = new Vector3D<Kilometers>(0.0, 8000.0, 0.0);
+      const p1 = new Vector3D(7000.0 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+      const p2 = new Vector3D(0.0 as Kilometers, 8000.0 as Kilometers, 0.0 as Kilometers);
 
       const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
       const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T06:00:00.000Z'));
@@ -223,8 +235,8 @@ describe('Lambert Problem Solutions', () => {
 
   describe('Short Path vs Long Path', () => {
     it('should compare short and long path transfers', () => {
-      const p1 = new Vector3D<Kilometers>(7000.0, 0.0, 0.0);
-      const p2 = new Vector3D<Kilometers>(-7000.0, 1000.0, 0.0);
+      const p1 = new Vector3D(7000.0 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+      const p2 = new Vector3D(-7000.0 as Kilometers, 1000.0 as Kilometers, 0.0 as Kilometers);
 
       const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
       const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T02:00:00.000Z'));
@@ -252,14 +264,16 @@ describe('Lambert Problem Solutions', () => {
 
   describe('Solution Validation', () => {
     it('should validate orbital parameters', () => {
-      const p1 = new Vector3D<Kilometers>(7000.0, 0.0, 0.0);
-      const p2 = new Vector3D<Kilometers>(0.0, 7000.0, 0.0);
+      const p1 = new Vector3D(7000.0 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+      const p2 = new Vector3D(0.0 as Kilometers, 7000.0 as Kilometers, 0.0 as Kilometers);
 
       const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
       const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T01:30:00.000Z'));
 
       const lambert = new LambertIOD();
       const solution = lambert.estimate(p1, p2, t1, t2);
+
+      expectNotNull(solution);
 
       const elements = solution.toClassicalElements();
 
@@ -273,8 +287,8 @@ describe('Lambert Problem Solutions', () => {
     });
 
     it('should handle close positions', () => {
-      const p1 = new Vector3D<Kilometers>(7000.0, 0.0, 0.0);
-      const p2 = new Vector3D<Kilometers>(7000.1, 0.1, 0.0);
+      const p1 = new Vector3D(7000.0 as Kilometers, 0.0 as Kilometers, 0.0 as Kilometers);
+      const p2 = new Vector3D(7000.1 as Kilometers, 0.1 as Kilometers, 0.0 as Kilometers);
 
       const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
       const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T01:30:00.000Z'));
@@ -282,8 +296,9 @@ describe('Lambert Problem Solutions', () => {
       const lambert = new LambertIOD();
       const solution = lambert.estimate(p1, p2, t1, t2);
 
+      expectNotNull(solution);
+
       // Should still return a solution for close positions
-      expect(solution).toBeDefined();
     });
   });
 });

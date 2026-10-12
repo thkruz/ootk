@@ -19,6 +19,7 @@ import {
   calcGmst,
   lla2eci,
 } from '../../dist/main.js';
+import { expectNotNull } from './lib/assert';
 
 describe('Initial Orbit Determination', () => {
   // Test data setup
@@ -70,7 +71,7 @@ describe('Initial Orbit Determination', () => {
       const lambert = new LambertIOD();
       const estimate = lambert.estimate(p1.position, p2.position, p1.epoch, p2.epoch);
 
-      expect(estimate).toBeDefined();
+      expectNotNull(estimate);
       expect(estimate.position).toBeDefined();
       expect(estimate.velocity).toBeDefined();
 
@@ -103,6 +104,9 @@ describe('Initial Orbit Determination', () => {
 
       const lambert = new LambertIOD();
       const estimate = lambert.estimate(p1.position, p2.position, p1.epoch, p2.epoch);
+
+      expectNotNull(estimate);
+
       const tle = Tle.fromClassicalElements(estimate.toClassicalElements());
 
       expect(tle).toBeDefined();

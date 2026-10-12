@@ -11,6 +11,7 @@ import {
   TleLine1,
   TleLine2,
 } from '../../dist/main.js';
+import { expectNotNull } from './lib/assert';
 import { ISS_TLE } from './lib/testData';
 
 describe('Doppler Calculations', () => {
@@ -39,6 +40,9 @@ describe('Doppler Calculations', () => {
 
     it('should apply Doppler to frequency', () => {
       const receivedFreq = iss.applyDoppler(transmitFreq, groundStation, date);
+
+      expectNotNull(receivedFreq);
+
       const freqShift = receivedFreq - transmitFreq;
 
       // Frequency shift should be within reasonable range for LEO satellite
@@ -49,6 +53,8 @@ describe('Doppler Calculations', () => {
     it('should have consistent Doppler factor and applied frequency', () => {
       const doppler = iss.dopplerFactor(groundStation, date);
       const receivedFreq = iss.applyDoppler(transmitFreq, groundStation, date);
+
+      expectNotNull(doppler);
 
       // The applied Doppler should be consistent with the factor
       const expectedReceivedFreq = transmitFreq * doppler;
@@ -65,6 +71,8 @@ describe('Doppler Calculations', () => {
       for (let i = 0; i <= 10; i++) {
         const time = new Date(passStart.getTime() + i * 60 * 1000);
         const doppler = iss.dopplerFactor(groundStation, time);
+
+        expectNotNull(doppler);
 
         dopplerValues.push(doppler);
       }
@@ -89,6 +97,8 @@ describe('Doppler Calculations', () => {
       const shifts = frequencies.map((freq) => {
         const received = iss.applyDoppler(freq, groundStation, date);
 
+        expectNotNull(received);
+
         return Math.abs(received - freq);
       });
 
@@ -109,6 +119,10 @@ describe('Doppler Calculations', () => {
 
       const freq1 = iss.applyDoppler(transmitFreq, groundStation, t1);
       const freq2 = iss.applyDoppler(transmitFreq, groundStation, t2);
+
+      expectNotNull(freq1);
+      expectNotNull(freq2);
+
 
       const freqChange = freq2 - freq1;
       const rateOfChange = freqChange / deltaTime; // Hz per second
