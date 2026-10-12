@@ -35,18 +35,119 @@ const EPS = 1e-10;
  */
 const DEEP_SPACE_THRESHOLD_KM = 6000 as Kilometers;
 
+/** Fewest vertices an interpolated horizon mask may have. */
+export const MIN_INTERPOLATED_MASK_VERTICES = 2;
+/** Most vertices an interpolated horizon mask may have (one every 5 degrees). */
+export const MAX_INTERPOLATED_MASK_VERTICES = 72;
+/** Highest elevation an interpolated mask vertex may have, in degrees. */
+export const MAX_INTERPOLATED_MASK_EL = 89;
+
 /**
  * Azimuth-dependent elevation mask for terrain/obstructions.
  * Used to define regions where the minimum elevation is higher than the global minimum
  * due to buildings, mountains, or other obstructions.
+ *
+ * In step mode (the default) each entry is a sector from `startAz` to `stopAz`. In
+ * interpolated mode (`FieldOfViewParams.interpolate`) each entry is a vertex at
+ * (`startAz`, `minEl`), joined to the next vertex by a straight line that wraps at 360 degrees;
+ * `stopAz` is ignored.
  */
 export interface ElevationMask {
-  /** Start of azimuth range in degrees (inclusive) */
+  /** Start of azimuth range in degrees (inclusive); the vertex azimuth when interpolated */
   startAz: Degrees;
-  /** End of azimuth range in degrees (inclusive), handles wraparound */
+  /** End of azimuth range in degrees (inclusive), handles wraparound; ignored when interpolated */
   stopAz: Degrees;
-  /** Minimum elevation in degrees for this azimuth range */
+  /** Minimum elevation in degrees for this azimuth range, or at this vertex */
   minEl: Degrees;
+}
+
+/**
+ * Returns a copy of the masks sorted by ascending `startAz`, the order
+ * {@link maskMinElevation} requires in interpolated mode. Call once, never per lookup.
+ */
+export function sortElevationMasks(masks: readonly ElevationMask[]): ElevationMask[] {
+  return [...masks].sort((a, b) => a.startAz - b.startAz);
+}
+
+/**
+ * Effective minimum elevation at an azimuth: `max(floorEl, mask(az))`.
+ *
+ * Step mode returns the highest `minEl` of every sector containing `az`. Interpolated mode
+ * finds the vertices either side of `az` (wrapping at 360 degrees) and interpolates linearly
+ * between them. Interpolated mode requires `masks` sorted by `startAz`
+ * (see {@link sortElevationMasks}); it does no sorting or allocation, so it is safe on hot paths.
+ *
+ * @param masks - Mask entries (sorted by startAz when interpolating)
+ * @param az - Azimuth in degrees (normalised to [0, 360) when interpolating)
+ * @param interpolate - True for piecewise-linear vertices, false for step sectors
+ * @param floorEl - Global minimum elevation in degrees
+ * @returns Effective minimum elevation in degrees
+ */
+export function maskMinElevation(
+  masks: readonly ElevationMask[],
+  az: number,
+  interpolate: boolean,
+  floorEl: number,
+): number {
+  const n = masks.length;
+
+  if (n === 0) {
+    return floorEl;
+  }
+
+  if (!interpolate) {
+    let effectiveMinEl = floorEl;
+
+    for (const mask of masks) {
+      const inRange = mask.startAz <= mask.stopAz
+        ? az >= mask.startAz && az <= mask.stopAz
+        : az >= mask.startAz || az <= mask.stopAz;
+
+      // Use the most restrictive (highest) minimum elevation
+      if (inRange && mask.minEl > effectiveMinEl) {
+        effectiveMinEl = mask.minEl;
+      }
+    }
+
+    return effectiveMinEl;
+  }
+
+  let a = az % 360;
+
+  if (a < 0) {
+    a += 360;
+  }
+
+  // Binary search for the first vertex with startAz > a (n when there is none)
+  let lo = 0;
+  let hi = n;
+
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+
+    if (masks[mid].startAz <= a) {
+      lo = mid + 1;
+    } else {
+      hi = mid;
+    }
+  }
+
+  const next = masks[lo % n];
+  const prev = masks[(lo - 1 + n) % n];
+  let span = next.startAz - prev.startAz;
+
+  if (span <= 0) {
+    span += 360;
+  }
+  let offset = a - prev.startAz;
+
+  if (offset < 0) {
+    offset += 360;
+  }
+
+  const el = prev.minEl + ((next.minEl - prev.minEl) * offset) / span;
+
+  return el > floorEl ? el : floorEl;
 }
 
 /**
@@ -74,6 +175,12 @@ export interface FieldOfViewParams {
   minElevation?: Degrees;
   /** Azimuth-specific elevation masks for terrain/buildings */
   elevationMasks?: ElevationMask[];
+  /**
+   * Treat `elevationMasks` as piecewise-linear horizon vertices instead of step sectors
+   * (default: false). Requires 2 to 72 vertices with unique azimuths in [0, 360) and
+   * elevations in [0, 89].
+   */
+  interpolate?: boolean;
 
   /** FOV shape type (default: ELLIPTICAL_CONE) */
   shape?: FovShape;
@@ -232,8 +339,10 @@ export class FieldOfView {
   readonly maxRange: Kilometers;
   /** Global minimum elevation in degrees */
   readonly minElevation: Degrees;
-  /** Azimuth-specific elevation masks */
+  /** Azimuth-specific elevation masks (sorted by startAz when interpolated) */
   readonly elevationMasks: ElevationMask[];
+  /** True when elevationMasks are interpolated horizon vertices */
+  readonly interpolateMask: boolean;
   /** FOV shape type */
   readonly shape: FovShape;
   /** Reference frame for boresight */
@@ -256,7 +365,11 @@ export class FieldOfView {
     this.minRange = params.minRange;
     this.maxRange = params.maxRange;
     this.minElevation = params.minElevation ?? (0 as Degrees);
-    this.elevationMasks = params.elevationMasks ?? [];
+    this.interpolateMask = params.interpolate ?? false;
+    // Sorted once here so getMinElevation never sorts on the hot path
+    this.elevationMasks = this.interpolateMask
+      ? sortElevationMasks(params.elevationMasks ?? [])
+      : (params.elevationMasks ?? []);
     this.shape = params.shape ?? FovShape.ELLIPTICAL_CONE;
     this.frame = params.frame ?? FovFrame.TOPOCENTRIC;
 
@@ -412,24 +525,14 @@ export class FieldOfView {
 
   /**
    * Gets the effective minimum elevation at a given azimuth.
-   * Considers all applicable elevation masks and returns the most restrictive.
+   * Step masks: the most restrictive sector containing `az`. Interpolated masks: the
+   * linear interpolation between the neighbouring vertices. Never below `minElevation`.
    *
    * @param az - Azimuth in degrees
    * @returns Effective minimum elevation in degrees
    */
   getMinElevation(az: Degrees): Degrees {
-    let effectiveMinEl = this.minElevation;
-
-    for (const mask of this.elevationMasks) {
-      if (this.isAzimuthInMaskRange(az, mask)) {
-        // Use the most restrictive (highest) minimum elevation
-        if (mask.minEl > effectiveMinEl) {
-          effectiveMinEl = mask.minEl;
-        }
-      }
-    }
-
-    return effectiveMinEl;
+    return maskMinElevation(this.elevationMasks, az, this.interpolateMask, this.minElevation) as Degrees;
   }
 
   /**
@@ -500,6 +603,7 @@ export class FieldOfView {
       maxRange: this.maxRange,
       minElevation: this.minElevation,
       elevationMasks: this.elevationMasks.length > 0 ? [...this.elevationMasks] : undefined,
+      interpolate: this.interpolateMask ? true : undefined,
       shape: this.shape,
       frame: this.frame,
     };
@@ -524,24 +628,12 @@ export class FieldOfView {
     ];
 
     if (this.elevationMasks.length > 0) {
-      lines.push(`  Elevation Masks: ${this.elevationMasks.length} defined`);
+      const kind = this.interpolateMask ? 'interpolated vertices' : 'defined';
+
+      lines.push(`  Elevation Masks: ${this.elevationMasks.length} ${kind}`);
     }
 
     return lines.join('\n');
-  }
-
-  /**
-   * Checks if an azimuth falls within an elevation mask's range.
-   * Handles wraparound (e.g., 350° to 10°).
-   */
-  private isAzimuthInMaskRange(az: Degrees, mask: ElevationMask): boolean {
-    if (mask.startAz <= mask.stopAz) {
-      // Normal case: startAz <= az <= stopAz
-      return az >= mask.startAz && az <= mask.stopAz;
-    }
-
-    // Wraparound case: az >= startAz OR az <= stopAz
-    return az >= mask.startAz || az <= mask.stopAz;
   }
 
   /**
@@ -681,7 +773,9 @@ export class FieldOfView {
     }
 
     // Validate elevation masks
-    if (params.elevationMasks) {
+    if (params.interpolate) {
+      FieldOfView.validateInterpolatedMask_(params.elevationMasks ?? []);
+    } else if (params.elevationMasks) {
       for (const mask of params.elevationMasks) {
         if (mask.startAz < 0 || mask.startAz >= 360) {
           throw new ValidationError(
@@ -705,6 +799,43 @@ export class FieldOfView {
           );
         }
       }
+    }
+  }
+
+  /**
+   * Validates an interpolated horizon mask: 2 to 72 vertices, unique azimuths in [0, 360),
+   * elevations in [0, 89].
+   */
+  private static validateInterpolatedMask_(masks: readonly ElevationMask[]): void {
+    if (masks.length < MIN_INTERPOLATED_MASK_VERTICES || masks.length > MAX_INTERPOLATED_MASK_VERTICES) {
+      throw new ValidationError(
+        `Interpolated elevation mask needs ${MIN_INTERPOLATED_MASK_VERTICES} to ${MAX_INTERPOLATED_MASK_VERTICES} vertices`,
+        'elevationMasks',
+        masks.length,
+      );
+    }
+
+    const seen = new Set<number>();
+
+    for (const mask of masks) {
+      if (!Number.isFinite(mask.startAz) || mask.startAz < 0 || mask.startAz >= 360) {
+        throw new ValidationError(
+          'Elevation mask vertex azimuth must be at least 0 and less than 360',
+          'elevationMasks.startAz',
+          mask.startAz,
+        );
+      }
+      if (!Number.isFinite(mask.minEl) || mask.minEl < 0 || mask.minEl > MAX_INTERPOLATED_MASK_EL) {
+        throw new ValidationError(
+          `Elevation mask vertex elevation must be between 0 and ${MAX_INTERPOLATED_MASK_EL} degrees`,
+          'elevationMasks.minEl',
+          mask.minEl,
+        );
+      }
+      if (seen.has(mask.startAz)) {
+        throw new ValidationError('Elevation mask vertex azimuths must be unique', 'elevationMasks.startAz', mask.startAz);
+      }
+      seen.add(mask.startAz);
     }
   }
 }

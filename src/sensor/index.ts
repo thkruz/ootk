@@ -59,7 +59,15 @@
  */
 
 // Base classes and types
-export { boresightFrameFromAzElRoll, FieldOfView } from './FieldOfView';
+export {
+  boresightFrameFromAzElRoll,
+  FieldOfView,
+  MAX_INTERPOLATED_MASK_EL,
+  MAX_INTERPOLATED_MASK_VERTICES,
+  MIN_INTERPOLATED_MASK_VERTICES,
+  maskMinElevation,
+  sortElevationMasks,
+} from './FieldOfView';
 export type { BoresightFrame, ElevationMask, FieldOfViewParams } from './FieldOfView';
 export { Sensor } from './Sensor';
 export type { SensorParams, SensorPlatform, SerializedSensor } from './Sensor';
