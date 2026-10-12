@@ -91,3 +91,25 @@ export type { PassiveRFSensorParams } from './PassiveRFSensor';
 // Communication antennas
 export { TtcAntenna } from './TtcAntenna';
 export type { TtcAntennaParams } from './TtcAntenna';
+
+// Ground swath geometry (nadir imager swath / field of regard)
+export {
+  crossTrackEdges,
+  crossTrackEdgesInto,
+  fovFromSwathWidth,
+  geodeticLatitudeRad,
+  horizonHalfAngleRad,
+  localRadiusKm,
+  rayEllipsoidHit,
+  splitRuns,
+  subpointLit,
+  swathFrame,
+  swathWidthFromFov,
+  SWATH_HORIZON_MARGIN_RAD,
+  SWATH_MEAN_EARTH_RADIUS_KM,
+  WGS84_A_KM,
+  WGS84_B_KM,
+  WGS84_E2,
+  WGS84_F,
+} from './SwathGeometry';
+export type { SwathFrame, SwathRun, SwathVec3 } from './SwathGeometry';
