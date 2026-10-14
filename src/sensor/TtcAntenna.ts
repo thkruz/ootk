@@ -49,19 +49,17 @@ export interface TtcAntennaParams extends SensorParams {
  * @example
  * ```typescript
  * const dss14 = new TtcAntenna({
- *   id: 'dss-14',
+ *   id: 14,
  *   name: 'Goldstone 70m',
  *   sensorType: SensorType.TT_C_ANTENNA,
  *   antennaDiameter: 70,
  *   hasRanging: true,
  *   hasUplink: true,
  *   fieldOfView: {
+ *     halfAngle: 90 as Degrees, // zenith-pointing hemisphere
  *     minRange: 0 as Kilometers,
  *     maxRange: 1e9 as Kilometers,
- *     minAzimuth: 0 as Degrees,
- *     maxAzimuth: 360 as Degrees,
  *     minElevation: 6 as Degrees,
- *     maxElevation: 90 as Degrees,
  *   },
  * });
  * ```

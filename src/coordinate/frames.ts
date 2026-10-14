@@ -326,7 +326,14 @@ export class ITRF extends StateVector {
   /**
    * Converts the current ITRF coordinate to Geodetic coordinate. This is a coordinate system for latitude, longitude,
    * and altitude.
-   * @returns The converted Geodetic coordinate.
+   *
+   * Latitude is found by fixed-point iteration of tan(lat) = (z + a e^2 N sin(lat)) / p, with p the distance from the
+   * polar axis and N = a / sqrt(1 - e^2 sin^2 lat) (Vallado, Fundamentals of Astrodynamics and Applications, 4th ed.,
+   * Algorithm 12). Height uses the form h = p cos(lat) + z sin(lat) - a sqrt(1 - e^2 sin^2 lat), which equals
+   * p / cos(lat) - N away from the poles but stays regular on the polar axis: at p = 0 the latitude is exactly
+   * +/-90 deg and h = |z| - b, with b = {@link Earth.radiusPolar}.
+   * @returns The converted Geodetic coordinate: latitude and longitude in radians, altitude in km above the
+   *   ellipsoid defined by {@link Earth.radiusEquator} and {@link Earth.flattening}.
    */
   toGeodetic(): Geodetic {
     const sma = Earth.radiusEquator;
@@ -336,23 +343,16 @@ export class ITRF extends StateVector {
     const z = this.position.z;
     const lon = Math.atan2(y, x);
     const r = Math.sqrt(x * x + y * y);
-    const phi = Math.atan(z / r);
-    let lat = phi;
-    let alt: Kilometers;
-    let c = 0.0;
+    let lat = Math.atan2(z, r);
 
-    if (x === 0 && y === 0) {
-      lat = phi;
-      alt = z > 0 ? ((z - Earth.radiusPolar) as Kilometers) : ((z + Earth.radiusPolar) as Kilometers);
-    } else {
-      for (let i = 0; i < 20; i++) {
-        const slat = Math.sin(lat);
+    for (let i = 0; i < 20; i++) {
+      const slat = Math.sin(lat);
+      const c = 1 / Math.sqrt(1 - esq * slat * slat);
 
-        c = 1 / Math.sqrt(1 - esq * slat * slat);
-        lat = Math.atan((z + sma * c * esq * slat) / r);
-      }
-      alt = (r / Math.cos(lat) - sma * c) as Kilometers;
+      lat = Math.atan2(z + sma * c * esq * slat, r);
     }
+    const sinLat = Math.sin(lat);
+    const alt = (r * Math.cos(lat) + z * sinLat - sma * Math.sqrt(1 - esq * sinLat * sinLat)) as Kilometers;
 
     return new Geodetic(lat as Radians, lon as Radians, alt);
   }

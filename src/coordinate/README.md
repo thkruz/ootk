@@ -81,9 +81,9 @@ The **J2000** coordinate system is the standard inertial reference frame defined
 #### Example
 
 ```typescript
-import { J2000, EpochUTC, Kilometers, KilometersPerSecond, Vector3D } from 'ootk';
+import { EpochUTC, J2000, Kilometers, KilometersPerSecond, Vector3D } from 'ootk';
 
-const epoch = EpochUTC.fromDateTime(new Date());
+const epoch = EpochUTC.fromDateTime(new Date('2024-01-28T13:00:00Z'));
 const position = new Vector3D(6778.137 as Kilometers, 0 as Kilometers, 0 as Kilometers);
 const velocity = new Vector3D(0 as KilometersPerSecond, 7.67 as KilometersPerSecond, 0 as KilometersPerSecond);
 
@@ -122,19 +122,24 @@ TEME accounts for precession and nutation differently than J2000. While both are
 #### Example
 
 ```typescript
-import { Satellite } from 'ootk';
+import { Satellite, TleLine1, TleLine2 } from 'ootk';
 
 // Create satellite from TLE
 const sat = new Satellite({
-  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991',
-  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741'
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
 });
+const date = new Date('2024-01-28T13:00:00Z');
 
-// SGP4 outputs TEME natively
-const teme = sat.propagate(new Date());  // Returns TEME state
+// SGP4 outputs TEME natively: eci() returns { position, velocity } in TEME (km, km/s),
+// or null if SGP4 fails (for example a decayed orbit or a date far from the TLE epoch)
+const temePosVel = sat.eci(date);
 
-// Convert to J2000 for further calculations
-const j2000 = teme.toJ2000();
+// toJ2000() runs SGP4 and rotates TEME to J2000 (precession + nutation)
+const j2000 = sat.toJ2000(date);
+
+// A TEME state object, when you need one
+const teme = j2000.toTEME();
 ```
 
 ---
@@ -166,10 +171,15 @@ The **International Terrestrial Reference Frame (ITRF)** is the standard Earth-f
 #### Example
 
 ```typescript
-import { J2000, ITRF, Geodetic, Degrees, Kilometers } from 'ootk';
+import { Satellite, TleLine1, TleLine2 } from 'ootk';
+
+const sat = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
 
 // Convert J2000 to Earth-fixed
-const j2000State = /* ... */;
+const j2000State = sat.toJ2000(new Date('2024-01-28T13:00:00Z'));
 const itrf = j2000State.toITRF();
 
 // Get latitude/longitude/altitude
@@ -200,19 +210,19 @@ console.log(`Lat: ${geodetic.latDeg}°, Lon: ${geodetic.lonDeg}°, Alt: ${geodet
 #### Example
 
 ```typescript
-import { Geodetic, Degrees, Kilometers } from 'ootk';
+import { Degrees, EpochUTC, Geodetic, Kilometers } from 'ootk';
 
-// Create from degrees (more intuitive)
+// The constructor takes radians; fromDegrees takes degrees
 const groundStation = Geodetic.fromDegrees(
-  41.754785 as Degrees,   // latitude
-  -70.539151 as Degrees,  // longitude
-  0.060966 as Kilometers  // altitude
+  41.754785 as Degrees, // latitude
+  -70.539151 as Degrees, // longitude
+  0.060966 as Kilometers, // altitude above the WGS84 ellipsoid
 );
 
-// Convert to ITRF for calculations
-const itrf = groundStation.toITRF(epoch);
+// Convert to ITRF for calculations (an Earth-fixed state needs an epoch)
+const itrf = groundStation.toITRF(EpochUTC.fromDateTime(new Date('2024-01-28T13:00:00Z')));
 
-// Calculate distance to another point
+// Great-circle surface distance to another point (haversine by default)
 const otherStation = Geodetic.fromDegrees(40.0 as Degrees, -75.0 as Degrees, 0 as Kilometers);
 const distance = groundStation.distance(otherStation);
 ```
@@ -233,6 +243,10 @@ Relative frames describe the position and velocity of one object relative to ano
 - **I (Intrack)**: Along the velocity direction of the reference satellite (positive in direction of motion)
 - **C (Crosstrack)**: Perpendicular to both R and I, completing the right-handed system (positive toward angular momentum)
 
+#### Velocity convention
+
+`RIC.fromJ2000(state, origin)` rotates the inertial position and velocity differences into the origin's RIC axes. No omega x rho term is removed, so the RIC velocity is not the rotating-frame (Hill / Clohessy-Wiltshire) relative velocity: two co-orbiting objects 10 km apart in-track show about 11 m/s of radial velocity. Use `Hill` for rotating-frame relative motion.
+
 #### When to Use
 
 - **Conjunction assessments** and collision avoidance
@@ -244,13 +258,22 @@ Relative frames describe the position and velocity of one object relative to ano
 #### Example
 
 ```typescript
-import { J2000, RIC } from 'ootk';
+import { EpochUTC, J2000, Kilometers, KilometersPerSecond, RIC, Satellite, TleLine1, TleLine2, Vector3D } from 'ootk';
 
-// Two satellites at the same epoch
-const reference = new J2000(epoch, refPosition, refVelocity);
-const target = new J2000(epoch, targetPosition, targetVelocity);
+const sat = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
 
-// Get relative state in RIC
+// Two objects at the same epoch: the ISS and a point about 1.9 km away moving 1 m/s faster
+const reference = sat.toJ2000(new Date('2024-01-28T13:00:00Z'));
+const target = new J2000(
+  reference.epoch,
+  reference.position.add(new Vector3D(1 as Kilometers, 1.5 as Kilometers, 0.5 as Kilometers)),
+  reference.velocity.add(new Vector3D(0 as KilometersPerSecond, 0.001 as KilometersPerSecond, 0 as KilometersPerSecond)),
+);
+
+// Relative state of target in the reference's RIC frame: RIC.fromJ2000(state, origin)
 const ric = RIC.fromJ2000(target, reference);
 
 console.log(`Radial separation: ${ric.position.x} km`);
@@ -295,36 +318,42 @@ Similar to RIC but specifically designed for proximity operations:
 #### Example
 
 ```typescript
-import { J2000, Hill, Kilometers, KilometersPerSecond, Seconds } from 'ootk';
+import { Hill, Kilometers, KilometersPerSecond, Satellite, Seconds, TleLine1, TleLine2, Vector3D, Waypoint } from 'ootk';
 
-// Create Hill state from reference orbit
-const origin = new J2000(epoch, position, velocity);
+const sat = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
 
-// Method 1: From relative state components
+// Reference (origin) orbit: the ISS
+const origin = sat.toJ2000(new Date('2024-01-28T13:00:00Z'));
+
+// Method 1: from relative state components (x radial, y in-track, z cross-track)
 const hill = Hill.fromState(
   origin,
-  0.1 as Kilometers,           // radial offset
-  1.0 as Kilometers,           // intrack offset
-  0.001 as KilometersPerSecond, // cross-track velocity
-  0 as Seconds                 // node offset time
+  0.1 as Kilometers, // radial offset
+  1.0 as Kilometers, // in-track offset
+  0.001 as KilometersPerSecond, // cross-track velocity at the node
+  0 as Seconds, // node offset time
 );
 
-// Method 2: From Natural Motion Coordinates
+// Method 2: from Natural Motion Coordinates (a closed 2:1 relative ellipse)
 const hillNmc = Hill.fromNmc(
   origin,
-  2.0 as Kilometers,           // major axis range
+  2.0 as Kilometers, // major axis range
   0.001 as KilometersPerSecond, // node velocity
-  0 as Seconds                 // node offset time
+  0 as Seconds, // node offset time
 );
 
-// Propagate using analytical equations (fast!)
-const later = hill.propagate(newEpoch);
+// Propagate with the Clohessy-Wiltshire state transition matrix (no numerical integration)
+const later = hill.propagate(origin.epoch.roll(600 as Seconds));
 
-// Plan a maneuver to a waypoint
-const waypoint = new Waypoint(/* ... */);
-const maneuver = hill.solveManeuver(waypoint);
+// Solve the single impulse, applied at the Hill epoch, that reaches a relative position (km) 30 minutes later
+const waypoint = new Waypoint(origin.epoch.roll(1800 as Seconds), new Vector3D(0 as Kilometers, -0.5 as Kilometers, 0 as Kilometers));
+const burn = hill.solveManeuver(waypoint); // Thrust: deltaV in km/s in RIC axes
+console.log(`Delta-V: ${(burn.deltaV.magnitude() * 1000).toFixed(2)} m/s`);
 
-// Convert to J2000 for comparison with other data
+// Convert to J2000 using the origin's state at the Hill epoch
 const j2000State = hill.toJ2000(origin);
 ```
 
@@ -344,10 +373,10 @@ Orbital elements describe the shape and orientation of an orbit rather than inst
 |---------|--------|-------------|-------|
 | Semi-major axis | a | Size of orbit | km |
 | Eccentricity | e | Shape (0=circular, 1=parabolic) | - |
-| Inclination | i | Tilt relative to equator | rad/deg |
-| RAAN | Ω | Longitude of ascending node | rad/deg |
-| Argument of perigee | ω | Orientation within orbital plane | rad/deg |
-| True anomaly | ν | Position along orbit | rad/deg |
+| Inclination | i | Tilt relative to equator | rad (`inclinationDegrees` getter for deg) |
+| RAAN | Ω | Longitude of ascending node (`rightAscension`) | rad (`rightAscensionDegrees`) |
+| Argument of perigee | ω | Orientation within orbital plane (`argPerigee`) | rad (`argPerigeeDegrees`) |
+| True anomaly | ν | Position along orbit | rad (`trueAnomalyDegrees`) |
 
 #### When to Use
 
@@ -362,37 +391,46 @@ Orbital elements describe the shape and orientation of an orbit rather than inst
 Classical elements have **singularities** for:
 
 - Circular orbits (e = 0): Argument of perigee undefined
-- Equatorial orbits (i = 0): RAAN undefined
+- Equatorial orbits (i = 0 or 180 deg): RAAN undefined
+
+`ClassicalElements.fromStateVector` handles these with the Vallado Algorithm 9 conventions (argument of latitude, true longitude of periapsis or true longitude stored in the remaining angles), so a state survives the round trip to elements and back.
+
+`apogee` and `perigee` are altitudes above the WGS84 equatorial radius (6378.137 km); `apogeeRadius` and `perigeeRadius` are the geocentric distances. `getOrbitRegime()` returns an `OrbitRegime` (LEO, MEO, HEO, GEO or OTHER); MEO is e at most 0.25 with perigee and apogee altitudes both between 2,000 and 31,570 km, which covers GPS, GLONASS, BeiDou, Galileo and O3b.
 
 #### Example
 
 ```typescript
-import { ClassicalElements, Degrees, Kilometers, EpochUTC } from 'ootk';
+import { ClassicalElements, DEG2RAD, EpochUTC, Kilometers, Radians, Seconds, Tle } from 'ootk';
 
+// Angles are RADIANS. Convert degrees with DEG2RAD; casting a degree value to Radians is a bug.
 const elements = new ClassicalElements({
-  epoch: EpochUTC.fromDateTime(new Date()),
-  semimajorAxis: 6778.137 as Kilometers,
-  eccentricity: 0.001,
-  inclination: 51.6418 as Degrees,
-  rightAscension: 292.259 as Degrees,
-  argOfPerigee: 167.5319 as Degrees,
-  trueAnomaly: 252.046 as Degrees
+  epoch: EpochUTC.fromDateTime(new Date('2024-01-28T13:00:00Z')),
+  semimajorAxis: 6798.137 as Kilometers,
+  eccentricity: 0.0003,
+  inclination: (51.6418 * DEG2RAD) as Radians,
+  rightAscension: (292.259 * DEG2RAD) as Radians,
+  argPerigee: (167.5319 * DEG2RAD) as Radians,
+  trueAnomaly: (252.046 * DEG2RAD) as Radians,
 });
 
 // Get orbital characteristics
 console.log(`Period: ${elements.period} minutes`);
-console.log(`Apogee: ${elements.apogee} km`);
-console.log(`Perigee: ${elements.perigee} km`);
-console.log(`Regime: ${elements.getOrbitRegime()}`);
+console.log(`Apogee altitude: ${elements.apogee} km`); // above the 6378.137 km equatorial radius
+console.log(`Perigee altitude: ${elements.perigee} km`);
+console.log(`Apogee radius: ${elements.apogeeRadius} km`); // geocentric
+console.log(`Inclination: ${elements.inclinationDegrees} deg`);
+console.log(`Regime: ${elements.getOrbitRegime()}`); // OrbitRegime.LEO, 'Low Earth Orbit'
 
-// Convert to position/velocity
+// Convert to position/velocity (km, km/s, in the inertial frame the elements were defined in)
 const pv = elements.toPositionVelocity();
 
-// Propagate analytically
-const propagated = elements.propagate(newEpoch);
+// Propagate analytically (two-body Kepler)
+const propagated = elements.propagate(elements.epoch.roll(3600 as Seconds));
 
-// Generate TLE
-const tle = elements.toTLE({ intlDes: '98067A', epochYear: 24, epochDay: 28.5 });
+// Generate a TLE (osculating elements written as mean elements; catalog number and designator are placeholders)
+const tle = Tle.fromClassicalElements(elements);
+console.log(tle.line1);
+console.log(tle.line2);
 ```
 
 ---
@@ -424,10 +462,16 @@ const tle = elements.toTLE({ intlDes: '98067A', epochYear: 24, epochDay: 28.5 })
 #### Example
 
 ```typescript
-import { EquinoctialElements, ClassicalElements } from 'ootk';
+import { Satellite, TleLine1, TleLine2 } from 'ootk';
 
-// Create from classical elements
-const classical = new ClassicalElements({ /* ... */ });
+const sat = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
+const date = new Date('2024-01-28T13:00:00Z');
+
+// Classical elements from a J2000 state; equinoctial from classical
+const classical = sat.toJ2000(date).toClassicalElements();
 const equinoctial = classical.toEquinoctialElements();
 
 // Or convert back
@@ -494,32 +538,42 @@ const pv = equinoctial.toPositionVelocity();
 ### Common Conversions
 
 ```typescript
+import { ClassicalElements, EpochUTC, Geodetic, J2000, RIC, Satellite, TleLine1, TleLine2 } from 'ootk';
+
+const sat = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
+const date = new Date('2024-01-28T13:00:00Z');
+const j2000 = sat.toJ2000(date);
+
 // ECI to ECEF
 const itrf = j2000.toITRF();
 
 // ECEF to ECI
-const j2000 = itrf.toJ2000();
+const j2000Again = itrf.toJ2000();
 
-// ECI to Geographic
-const geodetic = j2000.toITRF().toGeodetic();
+// ECI to geographic
+const geodetic: Geodetic = j2000.toITRF().toGeodetic();
 
-// Geographic to ECI
-const j2000 = geodetic.toITRF(epoch).toJ2000();
+// Geographic to ECI (a ground point at rest on the Earth)
+const site = geodetic.toITRF(EpochUTC.fromDateTime(date)).toJ2000();
 
 // State vector to elements
-const elements = j2000.toClassicalElements();
+const elements: ClassicalElements = j2000.toClassicalElements();
 
 // Elements to state vector
-const j2000 = J2000.fromClassicalElements(elements);
+const fromElements = J2000.fromClassicalElements(elements);
 
-// TEME to J2000
-const j2000 = teme.toJ2000();
+// J2000 to TEME and back
+const teme = j2000.toTEME();
+const j2000FromTeme = teme.toJ2000();
 
-// Absolute to relative
-const ric = RIC.fromJ2000(target, reference);
+// Absolute to relative (state, origin)
+const ric = RIC.fromJ2000(fromElements, j2000);
 
 // Relative to absolute
-const target = ric.toJ2000(reference);
+const recovered = ric.toJ2000(j2000);
 ```
 
 ---
@@ -552,7 +606,7 @@ What are you trying to do?
 │
 └─► Store/exchange data?
     ├─► With other systems ─────────► J2000 (most common standard)
-    └─► TLE format ─────────────────► Classical Elements
+    └─► TLE format ─────────────────► Tle.fromClassicalElements()
 ```
 
 ### Summary Table
@@ -577,100 +631,83 @@ What are you trying to do?
 ### Satellite Tracking from TLE
 
 ```typescript
-import { Satellite, Sensor, Degrees, Kilometers } from 'ootk';
+import { Satellite, TleLine1, TleLine2 } from 'ootk';
 
-// 1. Parse TLE (internally stored as TEME-compatible)
-const sat = new Satellite({ tle1: '...', tle2: '...' });
+// 1. Parse the TLE
+const sat = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
+const date = new Date('2024-01-28T13:00:00Z');
 
-// 2. Propagate to current time (SGP4 → TEME)
-const teme = sat.propagate(new Date());
+// 2. Propagate with SGP4 and rotate TEME to J2000
+const j2000 = sat.toJ2000(date);
 
-// 3. Convert to J2000 for standard processing
-const j2000 = teme.toJ2000();
-
-// 4. Convert to ITRF for ground-relative calculations
+// 3. Convert to ITRF for ground-relative calculations
 const itrf = j2000.toITRF();
 
-// 5. Get lat/lon/alt
+// 4. Get lat/lon/alt
 const geodetic = itrf.toGeodetic();
 console.log(`Satellite at: ${geodetic.latDeg}°, ${geodetic.lonDeg}°`);
+
+// Shortcuts on Satellite: toITRF(date), toGeodetic(date), and the GMST-only lla(date)
+const lla = sat.lla(date); // { lat, lon } in degrees, alt in km, or null
 ```
 
 ### Conjunction Assessment
 
 ```typescript
-import { J2000, RIC } from 'ootk';
+import { RIC, Satellite, TleLine1, TleLine2 } from 'ootk';
 
-// Two satellites at time of closest approach
-const primary = new J2000(epoch, pos1, vel1);
-const secondary = new J2000(epoch, pos2, vel2);
+const primary = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
+const secondary = new Satellite({
+  tle1: '1 20580U 90037B   24028.50123227  .00000825  00000-0  39644-4 0  9997' as TleLine1,
+  tle2: '2 20580  28.4696 273.2640 0002975 297.7865 189.2151 15.09696656316758' as TleLine2,
+});
+const tca = new Date('2024-01-28T13:00:00Z'); // use the time of closest approach in practice
 
-// Calculate relative state
-const ric = RIC.fromJ2000(secondary, primary);
+// Relative state of the secondary in the primary's RIC frame
+const ric = RIC.fromJ2000(secondary.toJ2000(tca), primary.toJ2000(tca));
+// Equivalent shortcut: secondary.toRIC(primary, tca)
 
-// Analyze miss distance
 console.log(`Miss distance: ${ric.range} km`);
 console.log(`Radial: ${ric.position.x} km`);
 console.log(`Intrack: ${ric.position.y} km`);
 console.log(`Crosstrack: ${ric.position.z} km`);
-console.log(`Closing velocity: ${ric.rangeRate} km/s`);
+console.log(`Range rate: ${ric.rangeRate} km/s`);
 ```
 
 ### Proximity Operations Planning
 
 ```typescript
-import { J2000, Hill, Kilometers, KilometersPerSecond, Seconds } from 'ootk';
+import { Hill, Kilometers, KilometersPerSecond, Satellite, Seconds, TleLine1, TleLine2, Vector3D, Waypoint } from 'ootk';
+
+const sat = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
 
 // Reference (target) spacecraft
-const target = new J2000(epoch, targetPos, targetVel);
+const target = sat.toJ2000(new Date('2024-01-28T13:00:00Z'));
 
-// Create chaser relative state
+// Chaser on a 1 km natural-motion relative ellipse
 const hill = Hill.fromNmc(
   target,
-  1.0 as Kilometers,            // 1 km relative orbit
-  0.0 as KilometersPerSecond,   // no cross-track velocity
-  0 as Seconds                  // at node
+  1.0 as Kilometers, // major axis range
+  0.0 as KilometersPerSecond, // no cross-track motion
+  0 as Seconds, // at node
 );
 
-// Propagate relative motion (analytical - very fast)
-const hillLater = hill.propagate(laterEpoch);
+// Propagate relative motion one quarter period (analytical, Clohessy-Wiltshire)
+const hillLater = hill.propagate(target.epoch.roll((hill.period / 4) as Seconds));
 
-// Plan maneuver to approach
-const waypoint = /* define approach waypoint */;
-const maneuver = hill.solveManeuver(waypoint);
-console.log(`Delta-V required: ${maneuver.deltaV} m/s`);
-```
-
-### Converting Between All Systems
-
-```typescript
-import {
-  J2000, TEME, ITRF, Geodetic, RIC, Hill,
-  ClassicalElements, EquinoctialElements
-} from 'ootk';
-
-// Start with J2000 state
-const j2000 = new J2000(epoch, position, velocity);
-
-// To other inertial frame
-const teme = j2000.toTEME();
-
-// To Earth-fixed
-const itrf = j2000.toITRF();
-
-// To geographic
-const geodetic = itrf.toGeodetic();
-
-// To orbital elements
-const classical = j2000.toClassicalElements();
-const equinoctial = classical.toEquinoctialElements();
-
-// To relative frame (need reference)
-const reference = new J2000(epoch, refPos, refVel);
-const ric = RIC.fromJ2000(j2000, reference);
-
-// Back to J2000
-const j2000Recovered = ric.toJ2000(reference);
+// Burn now to be 200 m behind the target 20 minutes later
+const approach = new Waypoint(target.epoch.roll(1200 as Seconds), new Vector3D(0 as Kilometers, -0.2 as Kilometers, 0 as Kilometers));
+const maneuver = hill.solveManeuver(approach);
+console.log(`Delta-V required: ${(maneuver.deltaV.magnitude() * 1000).toFixed(2)} m/s`); // deltaV is km/s
 ```
 
 ---
@@ -684,26 +721,34 @@ Understanding which coordinate frame each method returns is critical for correct
 | Method | Returns | Frame | Notes |
 |--------|---------|-------|-------|
 | `eci()` | `PosVel` | **TEME** | Native SGP4 output. Use for visualization, quick calculations |
-| `ecef()` | `EcefVec3` | **pseudo-ECEF** | Simplified GMST rotation only. Use for quick Earth-fixed |
-| `lla()` | `LlaVec3` | **Geodetic** | Via simplified ECEF. Use for ground track display |
+| `ecef()` | `EcefVec3` | **PEF (Earth-fixed)** | TEME rotated by GMST. Use for quick Earth-fixed |
+| `lla()` | `LlaVec3` | **Geodetic** | Via `ecef()`; degrees and km. Use for ground track display |
 | `toJ2000()` | `J2000` | **J2000** | Full transformation. Use for precise calculations |
 | `toITRF()` | `ITRF` | **ITRF** | Full transformation. Use for precise Earth-fixed |
-| `toGeodetic()` | `Geodetic` | **Geodetic** | Via J2000→ITRF. More precise than `lla()` |
+| `toGeodetic()` | `Geodetic` | **Geodetic** | Via J2000→ITRF; radians internally, `latDeg`/`lonDeg` getters |
 | `toClassicalElements()` | `ClassicalElements` | **J2000-based** | Keplerian elements |
 
 ### Important: `eci()` Returns TEME, Not Generic ECI
 
-The `eci()` method returns coordinates in the **TEME (True Equator Mean Equinox)** frame, which is the native output of SGP4/SDP4 propagation. This is an Earth-Centered Inertial frame, but it differs from J2000:
+The `eci()` method returns coordinates in the **TEME (True Equator Mean Equinox)** frame, which is the native output of SGP4/SDP4 propagation. This is an Earth-Centered Inertial frame, but it differs from J2000 by the precession and nutation accumulated since 2000 (about 0.33 deg in 2024), which is tens of kilometres at LEO:
 
 ```typescript
-// eci() returns TEME frame
-const teme = satellite.eci(date);  // TemeVec3 position/velocity
+import { Satellite, TleLine1, TleLine2 } from 'ootk';
 
-// toJ2000() returns J2000 frame
-const j2000 = satellite.toJ2000(date);  // J2000 state vector
+const satellite = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
+const date = new Date('2024-01-28T13:00:00Z');
 
-// The difference matters for precise calculations
-// TEME and J2000 can differ by hundreds of meters
+// eci() returns the TEME frame (or null if SGP4 fails)
+const teme = satellite.eci(date);
+
+// toJ2000() returns the J2000 frame
+const j2000 = satellite.toJ2000(date);
+
+// The two position vectors differ by the precession and nutation since 2000:
+// 29.2 km for the ISS at this date (the angle grows by about 50 arcsec per year)
 ```
 
 ### Simplified vs Precise Earth-Fixed Transformations
@@ -713,28 +758,43 @@ OOTK provides two levels of Earth-fixed coordinate transformations:
 #### Simplified (GMST-only)
 
 ```typescript
-// Quick transformation using GMST rotation only
-const ecef = satellite.ecef(date);    // pseudo-ECEF
-const lla = satellite.lla(date);       // via pseudo-ECEF
+import { Satellite, TleLine1, TleLine2 } from 'ootk';
+
+const satellite = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
+const date = new Date('2024-01-28T13:00:00Z');
+
+// TEME rotated by GMST (the standard SGP4 TEME-to-PEF step)
+const ecef = satellite.ecef(date); // Earth-fixed, km
+const lla = satellite.lla(date); // lat/lon in degrees, alt in km
 ```
 
-- Uses simple rotation by Greenwich Mean Sidereal Time
-- Does NOT account for: precession, nutation, polar motion
-- Accuracy: ~1 km for typical applications
-- Speed: Faster computation
+- Rotates TEME by Greenwich Mean Sidereal Time (IAU 1982). This is the standard TEME to PEF step of Vallado et al., "Revisiting Spacetrack Report #3" (AIAA 2006-6753), not an approximation of the precise path
+- No polar motion, and UTC stands in for UT1
+- Faster: one rotation
 
 #### Precise (Full IAU transformation)
 
 ```typescript
-// Full transformation via J2000 → ITRF
-const itrf = satellite.toITRF(date);           // precise ITRF
-const geodetic = satellite.toGeodetic(date);   // via precise ITRF
+import { Satellite, TleLine1, TleLine2 } from 'ootk';
+
+const satellite = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
+const date = new Date('2024-01-28T13:00:00Z');
+
+// TEME -> J2000 -> ITRF, through the IAU 1976/1980 precession and nutation matrices
+const itrf = satellite.toITRF(date);
+const geodetic = satellite.toGeodetic(date);
 ```
 
-- Full transformation chain: TEME → J2000 → ITRF
-- Accounts for: precession, nutation, Earth rotation (GMST + equation of equinoxes)
-- Accuracy: Sub-meter for most applications
-- Speed: Slower (more matrix operations)
+- Transformation chain: TEME → J2000 → ITRF (IAU 1976 precession, the full 106-term IAU 1980 nutation, GAST)
+- Also no polar motion (so the result is strictly PEF rather than ITRF) and no UT1-UTC correction
+- In practice the two paths agree closely: for the ISS example above, `ecef()` and `toITRF()` differ by 2.4 cm and `lla()` and `toGeodetic()` by under 1 m in altitude. Both are limited by the missing UT1-UTC (up to 0.9 s, about 420 m along the equator) and polar motion (about 10 m), not by the choice of path
+- Use it when you need `J2000`/`ITRF` objects to feed other ootk APIs
 
 ### Low-Level Transform Functions
 
@@ -742,14 +802,14 @@ The `transforms.ts` module provides low-level functions that work with **TEME** 
 
 | Function | Input Frame | Output Frame | Notes |
 |----------|-------------|--------------|-------|
-| `eci2ecef()` | TEME | pseudo-ECEF | GMST rotation only |
-| `ecef2eci()` | pseudo-ECEF | TEME | GMST rotation only |
-| `eci2lla()` | TEME | Geodetic | Via GMST rotation |
-| `lla2eci()` | Geodetic | TEME | Via GMST rotation |
-| `ecef2rae()` | pseudo-ECEF | RAE | Topocentric |
-| `rae2ecef()` | RAE | pseudo-ECEF | Topocentric |
+| `eci2ecef()` | TEME | PEF (Earth-fixed) | GMST rotation |
+| `ecef2eci()` | PEF (Earth-fixed) | TEME | GMST rotation |
+| `eci2lla()` | TEME | Geodetic (degrees) | Via GMST rotation |
+| `lla2eci()` | Geodetic (lat/lon in **radians**) | TEME | Via GMST rotation |
+| `ecef2rae(lla, ecef)` | Earth-fixed | RAE | Topocentric; observer `lla` in degrees |
+| `rae2ecef(rae, lla)` | RAE | Earth-fixed | Topocentric; observer `lla` in degrees |
 
-For precise transformations, use the class methods (`J2000.toITRF()`, `ITRF.toJ2000()`, etc.) instead of these low-level functions.
+For `J2000`/`ITRF` state objects, use the class methods (`J2000.toITRF()`, `ITRF.toJ2000()`, etc.) instead of these low-level functions.
 
 ### Conversion Chain Summary
 
@@ -772,17 +832,17 @@ For precise transformations, use the class methods (`J2000.toITRF()`, `ITRF.toJ2
 │    Geodetic (lat/lon/alt)                                      │
 └────────────────────────────────────────────────────────────────┘
 
-SIMPLIFIED PATH (less accurate but faster):
-  satellite.eci() ──► TEME ──► ecef() ──► pseudo-ECEF ──► lla() ──► Geodetic
-                           (GMST only)              (GMST only)
+GMST PATH (faster, agrees with the path above to centimetres in position):
+  satellite.eci() ──► TEME ──► ecef() ──► PEF ──► lla() ──► Geodetic
+                           (GMST rotation)
 ```
 
 ---
 
 ## Further Reading
 
-- [User Guide](./user-guide.md) - Complete API documentation
-- [Getting Started](./getting-started.md) - Tutorial for beginners
+- [User Guide](../../docs/user-guide.md) - Complete API documentation
+- [Getting Started](../../docs/getting-started.md) - Tutorial for beginners
 - Wikipedia: [Earth-centered inertial](https://en.wikipedia.org/wiki/Earth-centered_inertial)
 - Wikipedia: [ECEF](https://en.wikipedia.org/wiki/Earth-centered,_Earth-fixed_coordinate_system)
 - Wikipedia: [Orbital elements](https://en.wikipedia.org/wiki/Orbital_elements)

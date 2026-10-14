@@ -25,7 +25,7 @@ import { Vector3D } from '../operations/Vector3D';
 import { Thrust } from './../force/Thrust';
 import { Waypoint } from './../maneuver/Waypoint';
 
-// / Hill Modified Equidistant Cyllindrical _(EQCM)_ coordinates.
+// / Hill Modified Equidistant Cylindrical _(EQCM)_ coordinates.
 export class Hill {
   private semimajorAxis_: Kilometers;
   private meanMotion_: RadiansPerSecond;
@@ -266,6 +266,17 @@ export class Hill {
     );
   }
 
+  /**
+   * Builds a maneuver plan: applies the pre-maneuvers, propagates to the pivot, then solves one Clohessy-Wiltshire
+   * targeting burn per waypoint (each burn is executed at the epoch of the state that reaches the previous waypoint,
+   * starting at the pivot).
+   * @param pivot Epoch of the first targeting burn.
+   * @param waypoints Relative-position targets, in order.
+   * @param preManeuvers Burns executed before the pivot. Only those with epoch in [this.epoch, pivot] are applied and
+   *   returned; they are applied in time order.
+   * @param postManeuvers Burns appended to the output unchanged (not applied to the state).
+   * @returns The applied pre-maneuvers in time order, then the waypoint burns, then the post-maneuvers.
+   */
   maneuverSequence(
     pivot: EpochUTC,
     waypoints: Waypoint[],
@@ -281,7 +292,9 @@ export class Hill {
     // Note difference was once compareTo
     output.sort((a, b) => a.center.difference(b.center));
     // Compare raw POSIX seconds; relational operators on Epoch objects coerce via toISOString().
-    output = output.filter((mvr) => mvr.center.posix >= this.epoch.posix && mvr.center.posix >= pivot.posix);
+    // Pre-maneuvers belong to the coast between the epoch and the pivot; anything later would be applied and then
+    // propagated backward to the pivot.
+    output = output.filter((mvr) => mvr.center.posix >= this.epoch.posix && mvr.center.posix <= pivot.posix);
     for (const mvr of output) {
       state = state.maneuver(mvr);
     }

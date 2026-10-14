@@ -18,12 +18,12 @@
 export {
   ConjunctionAssessment, type ConjunctionAssessmentOptions, type ConjunctionSpaceObjectInput,
 } from './ConjunctionAssessment';
-export { ConjunctionEvent } from './ConjunctionEvent';
+export { ConjunctionEvent, type ConjunctionManeuverable, type ConjunctionScreenVolume } from './ConjunctionEvent';
 export { ProbabilityOfCollision } from './ProbabilityOfCollision';
 export {
   CatalogScreener, type CatalogObject, type CatalogScreeningOptions, type ScreeningResult,
 } from './CatalogScreener';
-export { ScreeningFilter, type OrbitalShell } from './ScreeningFilter';
+export { DEFAULT_SHELL_PAD_KM, ScreeningFilter, type OrbitalShell } from './ScreeningFilter';
 export {
   CovarianceRealism,
   type CovarianceRealismResult,

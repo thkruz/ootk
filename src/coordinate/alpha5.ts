@@ -50,6 +50,11 @@ export const ALPHA5 = {
   Z: '33',
 } as const;
 
+/** Inverse of {@link ALPHA5}: two-digit prefix ('10' to '33') to its alpha-5 letter. */
+const ALPHA5_LETTER_BY_PREFIX: Readonly<Record<string, string>> = Object.fromEntries(
+  Object.entries(ALPHA5).map(([letter, prefix]) => [prefix, letter]),
+);
+
 /**
  * Converts a 6-digit numeric SCC number to its 5-character alpha-5 form.
  *
@@ -58,8 +63,9 @@ export const ALPHA5 = {
  * @param sccNum The SCC number to convert.
  * @returns The 5-character alpha-5 representation.
  * @throws {ValidationError} If `sccNum` exceeds the alpha-5 range (numeric value > 339 999,
- *   or length > 6). For such IDs the canonical value should be kept on
- *   `Satellite.sccNum` and the TLE column populated with the last 5 digits.
+ *   length > 6, or a 6-character form with a leading letter such as Z99999). For such IDs the
+ *   canonical value should be kept on `Satellite.sccNum` and the TLE column populated with the
+ *   last 5 digits.
  */
 export function convert6DigitToA5(sccNum: string): string {
   // Pass-through for short / already-alpha5 inputs.
@@ -79,15 +85,25 @@ export function convert6DigitToA5(sccNum: string): string {
     );
   }
 
-  // Already an alpha-5 number (leading letter).
-  if (RegExp(/[A-Z]/iu, 'u').test(sccNum[0])) {
-    return sccNum;
+  /*
+   * A leading letter at length 6 is an alpha-5 form with 5 trailing digits, which would decode
+   * above Z9999 = 339 999 (for example Z99999 = 3 399 999). Alpha-5 forms are exactly 5 chars.
+   */
+  if ((/[A-Z]/iu).test(sccNum[0])) {
+    if ((/^\d+$/u).test(sccNum.slice(1))) {
+      throw new ValidationError(
+        'Alpha-5 SCC number exceeds TLE alpha-5 capacity (max Z9999 = 339999)',
+        'sccNum',
+        sccNum,
+      );
+    }
+    throw new ValidationError('Alpha-5 SCC number must have 4 trailing digits', 'sccNum', sccNum);
   }
 
   // Reject 6-digit values above alpha-5 range (340 000-999 999).
   const numericValue = parseInt(sccNum, 10);
 
-  if (isNaN(numericValue)) {
+  if (!(/^\d{6}$/u).test(sccNum)) {
     throw new ValidationError('SCC number must be numeric', 'sccNum', sccNum);
   }
   if (numericValue > 339999) {
@@ -98,22 +114,26 @@ export function convert6DigitToA5(sccNum: string): string {
     );
   }
 
+  // 6-digit form of a number below 100 000 (leading zero): the TLE column holds the plain 5 digits.
+  if (numericValue < 100000) {
+    return sccNum.slice(1);
+  }
+
   // Extract the trailing 4 digits.
   const rest = sccNum.slice(2, 6);
 
   /*
-   * Convert the first two digit numbers into a Letter. Skip I and O as they
-   * look too similar to 1 and 0. A=10, B=11, C=12, D=13, E=14, F=15, G=16,
-   * H=17, J=18, K=19, L=20, M=21, N=22, P=23, Q=24, R=25, S=26, T=27, U=28,
-   * V=29, W=30, X=31, Y=32, Z=33
+   * Convert the first two digits into a letter with the inverse of the ALPHA5 table. I and O are
+   * skipped as they look too similar to 1 and 0 (Space-Track alpha-5 definition): A=10 ... H=17,
+   * J=18 ... N=22, P=23 ... Z=33. So 230000 encodes as P0000 and 339999 as Z9999.
    */
-  let first = parseInt(`${sccNum[0]}${sccNum[1]}`);
-  const iPlus = first >= 18 ? 1 : 0;
-  const tPlus = first >= 24 ? 1 : 0;
+  const letter = ALPHA5_LETTER_BY_PREFIX[sccNum.slice(0, 2)];
 
-  first = first + iPlus + tPlus;
+  if (!letter) {
+    throw new ValidationError('SCC number must be numeric', 'sccNum', sccNum);
+  }
 
-  return `${String.fromCharCode(first + 55)}${rest}`;
+  return `${letter}${rest}`;
 }
 
 /**
@@ -126,8 +146,9 @@ export function convert6DigitToA5(sccNum: string): string {
  * @param sccNum The SCC number to convert.
  * @returns The 6-digit numeric representation, or the input itself if it
  *   is already a numeric form.
- * @throws {ValidationError} If `sccNum` is malformed: 6-digit numeric whose
- *   value exceeds 339 999, or contains stray letters in a non-leading position.
+ * @throws {ValidationError} If `sccNum` is malformed or out of range: 6-digit numeric whose
+ *   value exceeds 339 999, an alpha-5 form with more than 4 trailing digits (above Z9999 =
+ *   339 999), or stray letters in a non-leading position.
  */
 export function convertA5to6Digit(sccNum: string): string {
   if (sccNum.length < 5) {
@@ -142,8 +163,15 @@ export function convertA5to6Digit(sccNum: string): string {
 
   // Alpha-5 case: leading letter from the ALPHA5 map.
   if (values[0] in ALPHA5) {
-    // Remaining chars must be digits.
-    if (!(/^\d+$/u).test(sccNum.slice(1))) {
+    // Exactly 4 trailing digits. More digits would decode above Z9999 = 339 999.
+    if ((/^\d{5,}$/u).test(sccNum.slice(1))) {
+      throw new ValidationError(
+        'Alpha-5 SCC number exceeds TLE alpha-5 capacity (max Z9999 = 339999)',
+        'sccNum',
+        sccNum,
+      );
+    }
+    if (!(/^\d{4}$/u).test(sccNum.slice(1))) {
       throw new ValidationError(
         'Alpha-5 SCC number must have 4 trailing digits',
         'sccNum',

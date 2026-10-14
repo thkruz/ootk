@@ -26,7 +26,8 @@ describe('OdmExporter.formatOpm', () => {
 
     expect(opm.startsWith('CCSDS_OPM_VERS = 2.0')).toBe(true);
     expect(opm).toContain('ORIGINATOR = KeepTrack');
-    expect(opm).toContain('META_START');
+    // CCSDS 502.0-B-3: META_START/META_STOP exist only in OEM, not in OPM KVN.
+    expect(opm).not.toContain('META_START');
     expect(opm).toContain('REF_FRAME = TEME');
     expect(opm).toContain('TIME_SYSTEM = UTC');
     expect(opm).toMatch(/\nX = -?\d/u);

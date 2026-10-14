@@ -21,7 +21,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import type { Kilometers, KilometersPerSecond, Radians } from '../types/types';
+import type { Kilometers, Radians } from '../types/types';
 import { linearDistance } from '../utils/linearDistance';
 import { Matrix } from './Matrix';
 import { Vector } from './Vector';
@@ -133,7 +133,8 @@ export class Vector3D<T extends number = number> {
     const m = this.magnitude();
 
     if (m === 0) {
-      return Vector3D.origin as Vector3D<T>;
+      // Return a fresh instance: handing out the shared Vector3D.origin would let callers mutate the global.
+      return new Vector3D<T>(0 as T, 0 as T, 0 as T);
     }
 
     return new Vector3D<T>(this.x / m as T, this.y / m as T, this.z / m as T);
@@ -216,11 +217,16 @@ export class Vector3D<T extends number = number> {
     return this.angle(v) * (180 / Math.PI);
   }
 
-  /*
-   * Return `true` if line-of-sight exists between this and another [Vector3D]
-   * with a central body of the given [radius].
+  /**
+   * Return `true` if line-of-sight exists between this position and another
+   * position vector, with a spherical central body of the given radius
+   * centred at the origin (Vallado, Fundamentals of Astrodynamics and
+   * Applications, 4th ed., Algorithm 35 SIGHT).
+   * @param v The other position vector, in kilometers.
+   * @param radius Central body radius, in kilometers.
+   * @returns True if the segment between the two positions clears the body.
    */
-  sight(v: Vector3D<KilometersPerSecond>, radius: Kilometers): boolean {
+  sight(v: Vector3D<Kilometers>, radius: Kilometers): boolean {
     const r1Mag2 = this.magnitude() ** 2;
     const r2Mag2 = v.magnitude() ** 2;
     const rDot = this.dot(v);

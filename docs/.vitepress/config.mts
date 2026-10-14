@@ -24,6 +24,7 @@ export default defineConfig({
             { text: 'User Guide', link: '/user-guide' },
             { text: 'Advanced Features', link: '/advanced-features-guide' },
             { text: 'Lambert & Satellite Integration', link: '/lambert-satellite-integration-guide' },
+            { text: 'Migrating to v8', link: '/migration-v8' },
           ],
         },
         {

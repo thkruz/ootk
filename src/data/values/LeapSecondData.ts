@@ -88,7 +88,11 @@ class LeapSecondData {
     return new LeapSecondData(output);
   }
 
-  // / Return the number of leap seconds for a given Julian date [jd].
+  /**
+   * Return TAI - UTC in seconds for a Julian date [jd] on the UTC time scale.
+   * @param jd Julian date in UTC (posix-style, leap second not representable).
+   * @returns TAI - UTC in seconds.
+   */
   getLeapSeconds(jd: number): number {
     if (jd >= this.jdLast_) {
       return this.offsetLast_;
@@ -106,6 +110,37 @@ class LeapSecondData {
     }
 
     return 0;
+  }
+
+  /**
+   * Return TAI - UTC in seconds for a Julian date [jdTai] on the TAI time scale.
+   *
+   * Each table entry gives the UTC Julian date at which a new offset starts. On the TAI
+   * scale the same instant is `jd + offset / 86400` (TAI = UTC + offset right after the
+   * step), so the lookup boundary is shifted by the new offset. For example the 2017-01-01
+   * step (UTC 2017-01-01T00:00:00, TAI - UTC = 37 s) starts at TAI 2017-01-01T00:00:37.
+   * Looking a TAI (or TT, GPS) instant up in the UTC table instead is off by one second
+   * for up to `offset` seconds after each step.
+   * Reference: IERS Bulletin C / USNO tai-utc.dat.
+   *
+   * During the inserted leap second itself (TAI 00:00:36 to 00:00:37 in the example) the
+   * previous offset is returned, so UTC = TAI - offset lands on posix
+   * 2017-01-01T00:00:00 to 00:00:01; posix time cannot represent 23:59:60.
+   * @param jdTai Julian date on the TAI scale.
+   * @returns TAI - UTC in seconds.
+   */
+  getLeapSecondsFromTai(jdTai: number): number {
+    let offset = this.offsetFirst_;
+
+    for (const leapSecond of this.offsets_) {
+      if (jdTai >= leapSecond.jd + leapSecond.offset / 86400) {
+        offset = leapSecond.offset;
+      } else {
+        break;
+      }
+    }
+
+    return offset;
   }
 }
 

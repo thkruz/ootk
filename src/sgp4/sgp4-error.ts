@@ -10,7 +10,12 @@ export enum Sgp4ErrorCode {
   PERT_ELEMENTS_INVALID = 3, // pert elements, ecc < 0.0 or ecc > 1.0
   SEMI_LATUS_RECTUM_NEGATIVE = 4, // semi-latus rectum < 0.0
   EPOCH_ELEMENTS_SUBORBITAL = 5, // epoch elements are sub-orbital
-  SATELLITE_DECAYED = 6 // satellite has decayed
+  SATELLITE_DECAYED = 6, // satellite has decayed
+  /**
+   * The Astro Standards wasm backend reported a nonzero propagation code. Its codes do not
+   * follow Vallado's numbering; the raw value is on the satrec's `wasmErrCode` field.
+   */
+  WASM_PROPAGATION_FAILED = 7,
 }
 
 // Error class for SGP4 errors
@@ -39,6 +44,8 @@ export class Sgp4Error extends Error {
         return 'Epoch elements are sub-orbital';
       case Sgp4ErrorCode.SATELLITE_DECAYED:
         return 'Satellite has decayed';
+      case Sgp4ErrorCode.WASM_PROPAGATION_FAILED:
+        return 'Astro Standards wasm SGP4 propagation failed';
       default:
         return `Unknown error code: ${code}`;
     }

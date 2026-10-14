@@ -28,6 +28,12 @@ const RAD2DEG = (180 / Math.PI) as Degrees;
 const HALF_PI = (Math.PI / 2) as Radians;
 /** Small epsilon for floating point comparisons */
 const EPS = 1e-10;
+/**
+ * Relative round-off allowance for the cone boundary test, so a direction built at exactly the
+ * half-angle (for example by directionAt(t, 1)) counts as inside. 1e-10 of the half-angle is
+ * below 1e-11 rad for any cone and far below any physical pointing accuracy.
+ */
+const BOUNDARY_TOL = 1e-10;
 
 /**
  * Deep space range threshold in kilometers.
@@ -78,7 +84,7 @@ export function sortElevationMasks(masks: readonly ElevationMask[]): ElevationMa
  * (see {@link sortElevationMasks}); it does no sorting or allocation, so it is safe on hot paths.
  *
  * @param masks - Mask entries (sorted by startAz when interpolating)
- * @param az - Azimuth in degrees (normalised to [0, 360) when interpolating)
+ * @param az - Azimuth in degrees (normalised to [0, 360) in both modes)
  * @param interpolate - True for piecewise-linear vertices, false for step sectors
  * @param floorEl - Global minimum elevation in degrees
  * @returns Effective minimum elevation in degrees
@@ -97,11 +103,17 @@ export function maskMinElevation(
 
   if (!interpolate) {
     let effectiveMinEl = floorEl;
+    // Normalise to [0, 360) so az = 360 or a negative azimuth matches the same sectors as az mod 360
+    let a = az % 360;
+
+    if (a < 0) {
+      a += 360;
+    }
 
     for (const mask of masks) {
       const inRange = mask.startAz <= mask.stopAz
-        ? az >= mask.startAz && az <= mask.stopAz
-        : az >= mask.startAz || az <= mask.stopAz;
+        ? a >= mask.startAz && a <= mask.stopAz
+        : a >= mask.startAz || a <= mask.stopAz;
 
       // Use the most restrictive (highest) minimum elevation
       if (inRange && mask.minEl > effectiveMinEl) {
@@ -209,6 +221,16 @@ export interface BoresightFrame {
  * - Elevation 0° is horizontal, 90° is zenith
  * - Roll 0° means major axis aligns with the projection of "up" onto the
  *   plane perpendicular to boresight
+ * - Positive roll rotates u toward v, where v = (up x b) normalised points to the
+ *   left of the boresight (west for a north-pointing boresight); u x v = -b.
+ *
+ * At the zenith (el = 90°) "up" has no projection, so the frame is the limit of the
+ * general branch as el approaches 90° along the boresight azimuth (ootk v8):
+ * A = (-sin az, -cos az, 0) (the back-azimuth direction), B = (-cos az, sin az, 0),
+ * u = cos(roll) A + sin(roll) B, v = -sin(roll) A + cos(roll) B. Roll at the zenith is
+ * therefore measured from the boresight azimuth line, not from North, and the frame is
+ * continuous through el = 90°. v7 zenith configs measured roll from North; convert them
+ * with {@link FieldOfView.migrateZenithRollFromV7}.
  *
  * @param az - Boresight azimuth in radians
  * @param el - Boresight elevation in radians
@@ -230,12 +252,21 @@ export function boresightFrameFromAzElRoll(az: Radians, el: Radians, roll: Radia
     sinEl, // Up component
   );
 
-  // Handle zenith singularity (elevation = 90°)
+  // Zenith (elevation = 90°): up x b vanishes, so use the limit of the general branch below
   if (Math.abs(el - HALF_PI) < EPS) {
-    // Boresight is straight up - use roll to define frame orientation
-    // At zenith, major axis direction is determined by roll from North
-    const u = new Vector3D(Math.sin(roll), Math.cos(roll), 0);
-    const v = new Vector3D(Math.cos(roll), -Math.sin(roll), 0);
+    /*
+     * As el -> 90° along azimuth az, b -> (0, 0, 1) and the general branch gives
+     * vTemp = (up x b) / |up x b| -> B = (-cos az, sin az, 0) and u = b x vTemp -> A =
+     * (-sin az, -cos az, 0). Applying the same roll rotation keeps the frame continuous.
+     */
+    const cosRoll = Math.cos(roll);
+    const sinRoll = Math.sin(roll);
+    const ax = -sinAz;
+    const ay = -cosAz;
+    const bx = -cosAz;
+    const by = sinAz;
+    const u = new Vector3D(cosRoll * ax + sinRoll * bx, cosRoll * ay + sinRoll * by, 0);
+    const v = new Vector3D(cosRoll * bx - sinRoll * ax, cosRoll * by - sinRoll * ay, 0);
 
     return { b, u, v };
   }
@@ -243,7 +274,7 @@ export function boresightFrameFromAzElRoll(az: Radians, el: Radians, roll: Radia
   // Normal case: construct frame using "up" as reference
   const up = Vector3D.zAxis;
 
-  // v_temp points "right" when looking along boresight (perpendicular to both boresight and up)
+  // v_temp = up x b points "left" when looking along the boresight (west for a north boresight)
   let vTemp = up.cross(b).normalize();
 
   // u points in the "up" direction relative to boresight (perpendicular to both boresight and v_temp)
@@ -366,10 +397,13 @@ export class FieldOfView {
     this.maxRange = params.maxRange;
     this.minElevation = params.minElevation ?? (0 as Degrees);
     this.interpolateMask = params.interpolate ?? false;
-    // Sorted once here so getMinElevation never sorts on the hot path
-    this.elevationMasks = this.interpolateMask
-      ? sortElevationMasks(params.elevationMasks ?? [])
-      : (params.elevationMasks ?? []);
+    /*
+     * Sorted once here so getMinElevation never sorts on the hot path. Both modes store a copy
+     * of the caller's array and entries, so mutating the input after construction has no effect.
+     */
+    const masksCopy = (params.elevationMasks ?? []).map((m) => ({ ...m }));
+
+    this.elevationMasks = this.interpolateMask ? sortElevationMasks(masksCopy) : masksCopy;
     this.shape = params.shape ?? FovShape.ELLIPTICAL_CONE;
     this.frame = params.frame ?? FovFrame.TOPOCENTRIC;
 
@@ -383,6 +417,40 @@ export class FieldOfView {
     // Cache half angles in radians
     this.halfAngleRad_ = (this.halfAngle * DEG2RAD) as Radians;
     this.minorHalfAngleRad_ = (this.minorHalfAngle * DEG2RAD) as Radians;
+  }
+
+  /**
+   * Converts a v7 zenith FOV configuration to the v8 roll convention.
+   *
+   * ootk v7 measured roll at the zenith (boresightEl = 90°) from North; v8 measures it from the
+   * boresight azimuth line (see {@link boresightFrameFromAzElRoll}). The v7 major axis was
+   * (sin roll, cos roll, 0); the v8 axis at roll r' is -(sin(az + r'), cos(az + r'), 0), so
+   * r' = (roll - az - 180) mod 360 reproduces the v7 footprint exactly. Because the ellipse is
+   * symmetric under u -> -u, (roll - az) mod 180 is equivalent.
+   *
+   * Only zenith configs that are not circular are changed: boresightEl missing, or within 1e-10 rad
+   * of 90 deg, the same test {@link boresightFrameFromAzElRoll} uses to pick its zenith branch.
+   * Every other config is returned as an unchanged copy.
+   *
+   * @param params - v7 FOV parameters
+   * @returns A copy with `rollAngle` converted to the v8 convention, in [0, 360) degrees
+   */
+  static migrateZenithRollFromV7(params: FieldOfViewParams): FieldOfViewParams {
+    const el = params.boresightEl ?? 90;
+    const isCircular = params.shape === FovShape.CIRCULAR_CONE ||
+      params.minorHalfAngle === undefined ||
+      Math.abs(params.halfAngle - params.minorHalfAngle) < EPS;
+
+    // Same zenith test as boresightFrameFromAzElRoll: |el - pi/2| < 1e-10 in radians
+    if (!(Math.abs(el * DEG2RAD - HALF_PI) < EPS) || isCircular) {
+      return { ...params };
+    }
+
+    const az = params.boresightAz ?? 0;
+    const oldRoll = params.rollAngle ?? 0;
+    const newRoll = (((oldRoll - az - 180) % 360) + 360) % 360;
+
+    return { ...params, rollAngle: newRoll as Degrees };
   }
 
   /**
@@ -473,13 +541,20 @@ export class FieldOfView {
    * Checks if a direction vector is within the FOV angular bounds.
    * For body-frame sensors receiving body-frame directions.
    *
-   * @param direction - Direction vector to target (will be normalized)
+   * @param direction - Direction vector to target (will be normalized). A zero or non-finite
+   *   vector has no direction and is never contained.
    * @param range - Range to target in kilometers
    * @returns True if within FOV
    */
   containsDirection(direction: Vector3D, range: Kilometers): boolean {
     // Check range bounds
     if (range < this.minRange || range > this.maxRange) {
+      return false;
+    }
+
+    const mag = direction.magnitude();
+
+    if (!(mag > 0) || !Number.isFinite(mag)) {
       return false;
     }
 
@@ -492,7 +567,8 @@ export class FieldOfView {
    * Samples a unit direction on or inside the FOV cone.
    *
    * The cone cross-section is parameterized like a standard 2D ellipse in
-   * angular (gnomonic) space: x = halfAngle * cos(t), y = minorHalfAngle * sin(t),
+   * angular (azimuthal-equidistant) space, where the radial coordinate is the
+   * off-boresight angle itself: x = halfAngle * cos(t), y = minorHalfAngle * sin(t),
    * where x is the off-boresight angle along the major axis (u) and y along the
    * minor axis (v). Uniform steps in t produce well-distributed boundary points
    * even for highly eccentric fans (e.g., an 80° x 1° fence radar), unlike
@@ -574,8 +650,9 @@ export class FieldOfView {
   }
 
   /**
-   * Gets the full angular coverage (2 * halfAngle) in degrees.
-   * For scanning radars, this represents the sweep width.
+   * Gets the full cone width along the major axis (2 * halfAngle) in degrees.
+   * This is an off-boresight cone angle, not an azimuth span: a zenith hemisphere has an
+   * angular coverage of 180 deg but spans 360 deg of azimuth.
    */
   get angularCoverage(): Degrees {
     return (2 * this.halfAngle) as Degrees;
@@ -675,9 +752,9 @@ export class FieldOfView {
       return false;
     }
 
-    // For circular cone, simple angle check
+    // For circular cone, simple angle check (boundary inclusive)
     if (this.isCircular || this.shape === FovShape.CIRCULAR_CONE) {
-      return theta <= this.halfAngleRad_;
+      return theta <= this.halfAngleRad_ * (1 + BOUNDARY_TOL);
     }
 
     // For elliptical cone, project onto u-v plane and check ellipse equation
@@ -708,22 +785,22 @@ export class FieldOfView {
     const normalizedMajor = (theta * cosPhi) / this.halfAngleRad_;
     const normalizedMinor = (theta * sinPhi) / this.minorHalfAngleRad_;
 
-    return (normalizedMajor * normalizedMajor + normalizedMinor * normalizedMinor) <= 1.0;
+    // Boundary inclusive, with a round-off allowance (see BOUNDARY_TOL)
+    return (normalizedMajor * normalizedMajor + normalizedMinor * normalizedMinor) <= 1.0 + 2 * BOUNDARY_TOL;
   }
 
   /**
    * Validates FOV parameters.
    */
   private validate(params: FieldOfViewParams): void {
-    // Validate half angle. A missing halfAngle is allowed: sector-style sensors (min/max
-    // azimuth and elevation, e.g. PhasedArrayRadar) construct their FOV without one.
-    if (params.halfAngle <= 0 || params.halfAngle > 90) {
+    // Validate half angle: required, finite, in (0, 90]
+    if (!Number.isFinite(params.halfAngle) || params.halfAngle <= 0 || params.halfAngle > 90) {
       throw new ValidationError('Half angle must be between 0 and 90 degrees', 'halfAngle', params.halfAngle);
     }
 
     // Validate minor half angle if provided
     if (params.minorHalfAngle !== undefined) {
-      if (params.minorHalfAngle <= 0 || params.minorHalfAngle > 90) {
+      if (!Number.isFinite(params.minorHalfAngle) || params.minorHalfAngle <= 0 || params.minorHalfAngle > 90) {
         throw new ValidationError(
           'Minor half angle must be between 0 and 90 degrees',
           'minorHalfAngle',

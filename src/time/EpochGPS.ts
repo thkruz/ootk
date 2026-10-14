@@ -131,10 +131,17 @@ export class EpochGPS {
     return `${this.week}:${this.seconds.toFixed(3)}`;
   }
 
-  /** Convert this to a UTC epoch. */
+  /**
+   * Convert this to a UTC epoch.
+   *
+   * GPS = TAI - 19 s, so the leap-second count is looked up at the TAI instant
+   * (`gps + 19 s`) on the TAI scale; looking the GPS instant up as if it were UTC is one
+   * second off for 18 s after each leap second.
+   * @returns The UTC epoch.
+   */
   toUTC(): EpochUTC {
     const init = EpochGPS.getReference().roll((this.week * secondsPerWeek + this.seconds) as Seconds);
-    const ls = DataHandler.getInstance().getLeapSeconds(init.toJulianDate());
+    const ls = DataHandler.getInstance().getLeapSecondsFromTai(init.roll(EpochGPS.offset).toJulianDate());
 
     return init.roll(-(ls - EpochGPS.offset) as Seconds);
   }

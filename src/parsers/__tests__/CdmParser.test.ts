@@ -191,7 +191,8 @@ Z_DOT = 0.001
 
       expect(parsed.header.CCSDS_CDM_VERS).toBe('1.0');
       expect(parsed.relativeData.TCA).toBeDefined();
-      expect(parsed.relativeData.MISS_DISTANCE).toBe(1.0);
+      // Untagged MISS_DISTANCE is in the CCSDS 508.0-B-1 unit (m): 1.0 m = 0.001 km
+      expect(parsed.relativeData.MISS_DISTANCE).toBeCloseTo(0.001, 12);
       expect(parsed.object1Metadata.OBJECT_DESIGNATOR).toBe('25544');
       expect(parsed.object2Metadata.OBJECT_DESIGNATOR).toBe('12345');
     });
@@ -296,7 +297,8 @@ OBJECT_DESIGNATOR = 25544
       const event = CdmParser.toConjunctionEvent(parsed);
 
       expect(event).toBeDefined();
-      expect(event.missDistance).toBe(1.0);
+      // Untagged MISS_DISTANCE is in the CCSDS 508.0-B-1 unit (m): 1.0 m = 0.001 km
+      expect(event.missDistance).toBeCloseTo(0.001, 12);
       expect(event.probabilityOfCollision).toBeUndefined();
     });
   });

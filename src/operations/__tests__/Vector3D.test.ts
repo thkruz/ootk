@@ -1,4 +1,4 @@
-import { Kilometers, KilometersPerSecond, Vector, Vector3D } from '../../main';
+import { Kilometers, Vector, Vector3D } from '../../main';
 
 describe('Vector3D', () => {
   // fromVector
@@ -63,7 +63,7 @@ describe('Vector3D', () => {
   // sight
   it('should return the sight of a Vector3D', () => {
     const v = new Vector3D(1, 2, 3);
-    const v2 = new Vector3D(4 as KilometersPerSecond, 5 as KilometersPerSecond, 6 as KilometersPerSecond);
+    const v2 = new Vector3D(4 as Kilometers, 5 as Kilometers, 6 as Kilometers);
 
     expect(v.sight(v2, 20 as Kilometers)).toMatchSnapshot();
   });

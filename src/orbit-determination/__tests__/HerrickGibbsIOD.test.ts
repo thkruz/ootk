@@ -499,3 +499,29 @@ describe('HerrickGibbsIOD', () => {
     });
   });
 });
+
+describe('HerrickGibbsIOD Vallado regression', () => {
+  /*
+   * Vallado, Fundamentals of Astrodynamics and Applications, 4th ed., Chapter 7 Herrick-Gibbs
+   * worked example: three closely spaced positions 76.48 s apart; book answer
+   * v2 = -6.441557 I + 3.777616 J - 1.720189 K km/s. The book rounds intermediate values, so
+   * the comparison tolerance is 1e-3 km/s per component.
+   */
+  it('reproduces the Vallado Herrick-Gibbs example velocity', () => {
+    const vec = (x: number, y: number, z: number) => new Vector3D(x as Kilometers, y as Kilometers, z as Kilometers);
+    const t1 = EpochUTC.fromDateTimeString('2024-01-01T00:00:00.000Z');
+    const state = new HerrickGibbsIOD().solve(
+      vec(3419.85564, 6019.82602, 2784.60022),
+      t1,
+      vec(2935.91195, 6326.18324, 2660.59584),
+      t1.roll(76.48 as Seconds),
+      vec(2434.95202, 6597.38674, 2521.52311),
+      t1.roll(153.04 as Seconds),
+    );
+    const book = [-6.441557, 3.777616, -1.720189];
+
+    state.velocity.toArray().forEach((component, i) => {
+      expect(Math.abs(component - book[i])).toBeLessThan(1e-3);
+    });
+  });
+});

@@ -19,33 +19,52 @@ import { Vector } from './Vector';
 import { Vector3D } from './Vector3D';
 import { BoxMuller } from './BoxMuller';
 
+/** Source of standard normal (mean 0, standard deviation 1) random numbers. */
 export class RandomGaussianSource {
   private readonly boxMuller_: BoxMuller;
 
+  /**
+   * Create a new Gaussian source.
+   * @param seed Random seed for the underlying uniform generator.
+   */
   constructor(seed = 0) {
     this.boxMuller_ = new BoxMuller(0, 1, seed);
   }
 
+  /**
+   * Draw one standard normal number.
+   * @returns A standard normal variate.
+   */
   nextGauss(): number {
     return this.boxMuller_.nextGauss();
   }
 
+  /**
+   * Draw a vector of n independent standard normal numbers.
+   * @param n Vector length; must be at least 1.
+   * @returns A Vector of length n.
+   */
   gaussVector(n: number): Vector {
     if (n < 1) {
       throw new Error('n must be greater than 0');
     }
 
-    const result = new Vector([this.nextGauss()]);
+    const result: number[] = [];
 
     for (let i = 0; i < n; i++) {
-      if (i > 0) {
-        result.add(new Vector([this.nextGauss()]));
-      }
+      result.push(this.nextGauss());
     }
 
-    return result;
+    return new Vector(result);
   }
 
+  /**
+   * Draw a point uniformly distributed on a sphere by normalizing a 3-element
+   * standard normal vector (Muller, 1959, "A note on a method for generating
+   * points uniformly on n-dimensional spheres").
+   * @param radius Sphere radius. Default is 1.
+   * @returns A Vector3D of magnitude radius.
+   */
   gaussSphere(radius = 1.0): Vector3D {
     return this.gaussVector(3).toVector3D(0).normalize().scale(radius);
   }

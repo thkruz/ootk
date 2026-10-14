@@ -58,6 +58,8 @@ const PLANET_DATA: Record<string, PlanetData> = {
     type: CelestialBodyType.TERRESTRIAL_PLANET,
     spaceObjectType: SpaceObjectType.TERRESTRIAL_PLANET,
   },
+  // GM and mean radius for PlanetBody('Earth') only. Geocentric code uses Earth.mu (398600.4415 km^3/s^2,
+  // src/body/Earth.ts) and Earth.radiusEquator; the 3e-4 km^3/s^2 difference is a constant-set choice.
   Earth: {
     body: Body.Earth,
     name: 'Earth',

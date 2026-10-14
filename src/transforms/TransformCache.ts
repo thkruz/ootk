@@ -21,6 +21,12 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * Simple bounded key-value cache (at most 1000 entries, oldest evicted first).
+ *
+ * Unused: it is not exported from the package and no function in transforms.ts consults it, so
+ * every transform recomputes on each call.
+ */
 export class TransformCache {
   private static readonly cache_: Map<string, unknown> = new Map();
 

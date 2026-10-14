@@ -33,20 +33,27 @@ export enum CenterBody {
 
 /**
  * Gravitational parameters (km³/s²) for supported bodies.
+ *
+ * A barycenter uses the GM of the whole system (planet plus moons), which is what attracts a
+ * distant spacecraft orbiting that barycenter. System values from the JPL DE440 ephemeris
+ * (Park et al. 2021, AJ 161:105, table 8): Mars system 42828.375816, Jupiter system
+ * 126712764.1, Saturn system 37940584.8418. Earth is the WGS-84 / EGM96 value used across ootk.
  */
 export const CenterBodyMu: Record<CenterBody, number> = {
   [CenterBody.EARTH]: 398600.4418,
   [CenterBody.MOON]: 4902.8,
   [CenterBody.SUN]: 132712440018,
   [CenterBody.MARS]: 42828.37,
-  [CenterBody.MARS_BARYCENTER]: 42828.37,
-  [CenterBody.JUPITER_BARYCENTER]: 126686534,
-  [CenterBody.SATURN_BARYCENTER]: 37931187,
+  [CenterBody.MARS_BARYCENTER]: 42828.375816,
+  [CenterBody.JUPITER_BARYCENTER]: 126712764.1,
+  [CenterBody.SATURN_BARYCENTER]: 37940584.8418,
 };
 
 /**
  * Maps OEM CENTER_NAME strings to CenterBody enum.
- * Handles various string formats from CCSDS OEM files.
+ * Handles various string formats from CCSDS OEM files. Enum names match first (so "MARS" is the
+ * planet and "MARS BARYCENTER" the system barycenter); "JUPITER" and "SATURN" map to their
+ * barycenters, which are the only Jupiter and Saturn centers supported.
  * @param centerName - The CENTER_NAME value from OEM metadata
  * @returns The corresponding CenterBody enum value, defaults to EARTH
  */
@@ -60,26 +67,20 @@ export function parseCenterBody(centerName: string): CenterBody {
 
   // Common aliases
   switch (normalized) {
-    case 'EARTH':
     case 'GEOCENTRIC':
       return CenterBody.EARTH;
-    case 'MOON':
     case 'LUNAR':
     case 'SELENOCENTRIC':
       return CenterBody.MOON;
-    case 'SUN':
     case 'SOLAR':
     case 'HELIOCENTRIC':
       return CenterBody.SUN;
-    case 'MARS':
-    case 'MARS_BARYCENTER':
     case 'AREOCENTRIC':
-      return CenterBody.MARS_BARYCENTER;
+      // Areocentric means centered on Mars itself, not on the Mars system barycenter
+      return CenterBody.MARS;
     case 'JUPITER':
-    case 'JUPITER_BARYCENTER':
       return CenterBody.JUPITER_BARYCENTER;
     case 'SATURN':
-    case 'SATURN_BARYCENTER':
       return CenterBody.SATURN_BARYCENTER;
     default:
       // Default to Earth for unknown center bodies

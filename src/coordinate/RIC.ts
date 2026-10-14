@@ -50,9 +50,14 @@ export class RIC extends RelativeState {
 
   /**
    * Creates a new RIC (Radial-Intrack-Crosstrack) coordinate from the J2000 state vectors.
+   *
+   * Both position and velocity are the inertial differences rotated into the RIC axes: velocity = Q (v - v0). No
+   * omega x rho term is subtracted, so this is NOT the rotating-frame (Hill / Clohessy-Wiltshire) relative velocity;
+   * two co-orbiting objects separated in-track show a nonzero radial component of about n x separation.
+   * {@link toJ2000Matrix} is the exact inverse of this mapping.
    * @param state - The J2000 state vector.
    * @param origin - The J2000 state vector of the origin.
-   * @param transform - The transformation matrix.
+   * @param transform - The 3x3 ECI-to-RIC rotation Q (rows R, I, C), e.g. from RelativeState.createMatrix.
    * @returns The RIC coordinate.
    */
   static fromJ2000Matrix(state: J2000, origin: J2000, transform: Matrix): RIC {

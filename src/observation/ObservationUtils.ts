@@ -18,6 +18,7 @@
 import { Kilometers, KilometersPerSecond, Radians, RadiansPerSecond } from '../types/types';
 import { Matrix } from '../operations/Matrix';
 import { Vector3D } from '../operations/Vector3D';
+import { TAU } from '../utils/constants';
 
 export const radecToPosition = (ra: Radians, dec: Radians, r: Kilometers): Vector3D<Kilometers> => {
   const ca = Math.cos(ra);
@@ -46,6 +47,25 @@ export const radecToVelocity = (
     rDot * cd * sa - r * sd * sa * decDot + r * cd * ca * raDot as KilometersPerSecond,
     rDot * sd + r * cd * decDot as KilometersPerSecond,
   );
+};
+
+/**
+ * Wraps an angle into [0, 2pi). Angles already in range are returned unchanged (no rounding).
+ * @param angle - Angle in radians.
+ * @returns The equivalent angle in [0, 2pi).
+ */
+export const wrapTwoPi = (angle: number): Radians => {
+  let x = angle % TAU;
+
+  if (x < 0) {
+    x += TAU;
+  }
+  // -tiny + TAU can round to exactly TAU
+  if (x >= TAU) {
+    x = 0;
+  }
+
+  return x as Radians;
 };
 
 export const normalizeAngle = (a: number, b: number): number => {

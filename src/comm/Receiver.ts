@@ -49,7 +49,7 @@ export interface ReceiverParams extends CommunicationDeviceParams {
  * ```typescript
  * // Ground station downlink receiver
  * const downlink = new Receiver({
- *   id: 'gs-downlink',
+ *   id: 101,
  *   name: 'Ground Station Downlink',
  *   frequency: 12e9 as Hertz,    // 12 GHz (Ku-band downlink)
  *   bandwidth: 36e6 as Hertz,    // 36 MHz
@@ -158,14 +158,21 @@ export class Receiver extends CommunicationDevice {
 
   /**
    * Checks if this receiver can receive from a transmitter.
-   * Returns true if the calculated SNR exceeds the minimum required SNR.
+   * Returns true when the transmitter's frequency falls inside this receiver's band
+   * ({@link isFrequencyCompatible}), there is line of sight, and the calculated SNR meets the
+   * minimum required SNR.
    *
    * @param transmitter - The transmitter to check
    * @param date - Time for calculation (defaults to now)
    * @returns True if link closes successfully
    */
   canReceive(transmitter: Transmitter, date: Date = new Date()): boolean {
-    // Check visibility first
+    // A receiver tuned elsewhere hears nothing, whatever the SNR would be
+    if (!this.isFrequencyCompatible(transmitter)) {
+      return false;
+    }
+
+    // Check visibility
     if (!transmitter.isVisible(this, date)) {
       return false;
     }
@@ -192,8 +199,8 @@ export class Receiver extends CommunicationDevice {
   }
 
   /**
-   * Checks if the receiver's frequency is compatible with a transmitter.
-   * Allows for small frequency differences (within bandwidth).
+   * Checks if the receiver's frequency is compatible with a transmitter: the transmitter's
+   * centre frequency must lie within this receiver's passband, |f_rx - f_tx| <= B_rx / 2.
    *
    * @param transmitter - The transmitter to check
    * @returns True if frequencies are compatible

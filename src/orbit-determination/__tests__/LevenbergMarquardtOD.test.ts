@@ -33,6 +33,7 @@ import { GaussIOD } from '@src/orbit-determination/GaussIOD';
 import { KeplerPropagator } from '@src/propagator/KeplerPropagator';
 import { Propagator } from '@src/propagator/Propagator';
 import { EpochUTC } from '@src/time';
+import { SingularMatrixError } from '@src/operations/SingularMatrixError';
 
 /*
  * ============================================================================
@@ -1035,5 +1036,85 @@ describe('LevenbergMarquardtOD', () => {
 
       expect(posDiff).toBeLessThan(1.0); // Within 1 km
     });
+  });
+});
+
+describe('LevenbergMarquardtOD QA 2026-10 regression: convergence on noisy data', () => {
+  /** Deterministic PRNG (mulberry32) and Box-Muller normal deviate. */
+  const mulberry32 = (seed: number) => {
+    let a = seed >>> 0;
+
+    return () => {
+      a = (a + 0x6d2b79f5) >>> 0;
+      let t = a;
+
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  };
+  const startEpoch = EpochUTC.fromDateTimeString('2024-01-01T12:00:00.000Z');
+  const propagator = new KeplerPropagator(createLeoOrbit(startEpoch));
+  const sensor = createSensor('eastCoast');
+  const truth = propagator.propagate(startEpoch);
+
+  const noisyRadar = (seed: number): ObservationRadar[] => {
+    const rand = mulberry32(seed);
+    const gauss = () => Math.sqrt(-2 * Math.log(Math.max(rand(), 1e-12))) * Math.cos(2 * Math.PI * rand());
+
+    return generateRadarObservations(propagator, sensor, generateEpochs(startEpoch, 20, 15)).map((ob) => {
+      const rae = ob.observation;
+      const noisy = new RAE(
+        rae.epoch,
+        (rae.rng + 0.32 * gauss()) as Kilometers,
+        (rae.azRad + 0.015 * DEG2RAD * gauss()) as Radians,
+        (rae.elRad + 0.015 * DEG2RAD * gauss()) as Radians,
+      );
+
+      return new ObservationRadar(ob.site, noisy);
+    });
+  };
+
+  /*
+   * Property: with sigma-consistent noise the solution error must be consistent with the
+   * returned covariance. The Mahalanobis distance squared of the 6-state error follows chi^2(6);
+   * 22.46 is its 99.9% point. Also, the solve must stop in a few accepted steps instead of
+   * running lambda past 1e10 (report 2.5, LevenbergMarquardtOD.ts:230-247).
+   */
+  it.each([1, 2, 3])('converges quickly and the error is consistent with the covariance (seed %i)', (seed) => {
+    const result = new LevenbergMarquardtOD(noisyRadar(seed), perturbState(truth, 2, 0.002)).solve();
+
+    expect(result.converged).toBe(true);
+    expect(result.iterations).toBeLessThan(10);
+
+    const err = [
+      ...result.state.position.subtract(truth.position).toArray(),
+      ...result.state.velocity.subtract(truth.velocity).toArray(),
+    ];
+    const pInv = result.covariance.matrix.inverse();
+    let d2 = 0;
+
+    for (let i = 0; i < 6; i++) {
+      for (let j = 0; j < 6; j++) {
+        d2 += err[i] * pInv.elements[i][j] * err[j];
+      }
+    }
+
+    expect(d2).toBeLessThan(22.46);
+  });
+
+  it('returns an rms that belongs to the returned state', () => {
+    const observations = noisyRadar(7);
+    const result = new LevenbergMarquardtOD(observations, perturbState(truth, 2, 0.002)).solve();
+    const check = new LevenbergMarquardtOD(observations, result.state).solve({ maxIterations: 0 });
+
+    expect(Math.abs(check.rms - result.rms)).toBeLessThan(1e-9);
+  });
+
+  it('throws SingularMatrixError for one radar observation (3 measurements, 6 unknowns)', () => {
+    const observations = generateRadarObservations(propagator, sensor, [startEpoch]);
+
+    expect(() => new LevenbergMarquardtOD(observations, truth).solve()).toThrow(SingularMatrixError);
   });
 });

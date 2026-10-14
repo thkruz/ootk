@@ -40,11 +40,10 @@ describe('createCovarianceFromTle', () => {
     expect(covariance2).toBeInstanceOf(StateCovariance);
   });
 
-  it('should parse TLE and convert to J2000', () => {
+  it('does not write to the console (library code)', () => {
     createCovarianceFromTle(tleLine1, tleLine2);
 
-
-    expect(console.log).toHaveBeenCalled();
+    expect(console.log).not.toHaveBeenCalled();
   });
 });
 

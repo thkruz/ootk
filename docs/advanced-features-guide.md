@@ -1,1029 +1,648 @@
-# OOTK Advanced Features Guide
+# ootk Advanced Features Guide
 
-## Beyond SGP4: Unlocking the Full Power of OOTK
+This guide covers the parts of ootk beyond SGP4 and look angles: numerical propagation and force
+models, interpolation and compression of ephemerides, covariance, conjunction assessment, orbit
+determination, relative motion, maneuvers, the numerical optimizers and CCSDS ephemeris files.
+It assumes you have read [Getting Started](./getting-started.md). Every example is a complete
+TypeScript file that compiles against ootk 8.
 
-While OOTK provides excellent SGP4 propagation capabilities, the library offers a comprehensive suite of advanced orbital mechanics features that go far beyond simple TLE-based propagation. This guide showcases the unique capabilities that make OOTK a complete orbital mechanics toolkit.
-
----
+Upgrading from ootk 7? The [v8 migration guide](./migration-v8.md) lists every breaking change,
+several of which are in the modules described here (Lambert `shortWay`, CDM units, the screening
+covariance helper, `Matrix.inverse`).
 
 ## Table of Contents
 
-1. [High-Fidelity Numerical Propagation](#1-high-fidelity-numerical-propagation)
-2. [Initial Orbit Determination (IOD)](#2-initial-orbit-determination-iod)
-3. [Sensor Operations & Pass Prediction](#3-sensor-operations--pass-prediction)
-4. [Astronomical Calculations](#4-astronomical-calculations)
-5. [Advanced Coordinate Transformations](#5-advanced-coordinate-transformations)
-6. [Force Modeling](#6-force-modeling)
-7. [Maneuver Planning & Optimization](#7-maneuver-planning--optimization)
-8. [Covariance & Uncertainty Analysis](#8-covariance--uncertainty-analysis)
-9. [Multiple Time Systems](#9-multiple-time-systems)
-10. [Relative Motion Analysis](#10-relative-motion-analysis)
+1. [Numerical propagation](#1-numerical-propagation)
+2. [Ephemerides, interpolation and compression](#2-ephemerides-interpolation-and-compression)
+3. [Covariance](#3-covariance)
+4. [Conjunction assessment](#4-conjunction-assessment)
+5. [Orbit determination](#5-orbit-determination)
+6. [Relative motion](#6-relative-motion)
+7. [Maneuver planning](#7-maneuver-planning)
+8. [Optimizers and linear algebra](#8-optimizers-and-linear-algebra)
+9. [CCSDS ephemeris files (OEM)](#9-ccsds-ephemeris-files-oem)
+10. [Performance notes](#10-performance-notes)
 
----
+## 1. Numerical propagation
 
-## 1. High-Fidelity Numerical Propagation
+### Propagators
 
-OOTK includes multiple numerical integrators for high-precision orbit propagation with customizable force models.
+All propagators extend `Propagator` and expose `propagate(epoch: EpochUTC): J2000`.
 
-### Available Propagators
+| Class | Method | Typical use |
+|---|---|---|
+| `Sgp4Propagator` | SGP4 from a `Tle` | Catalog objects, same model as `Satellite` |
+| `KeplerPropagator` | Two-body, from `ClassicalElements` | Quick analytic estimates |
+| `RungeKutta4Propagator` | Fixed-step RK4 (default 15 s) | Simple, predictable cost |
+| `DormandPrince54Propagator` | Adaptive RK 5(4) | General numerical work |
+| `RungeKutta89Propagator` | Adaptive RK 8(9) | High-accuracy work |
 
-- **KeplerPropagator** - Two-body Keplerian motion (fastest, ideal for short arcs)
-- **RungeKutta4Propagator** - 4th order Runge-Kutta (good balance of speed/accuracy)
-- **RungeKutta89Propagator** - 8th/9th order adaptive RK (high precision)
-- **DormandPrince54Propagator** - 5th order adaptive RK with error control
+The numerical propagators take an initial `J2000` state and a `ForceModel`. The adaptive ones also
+take a tolerance (default 1e-9).
 
-### Example: High-Fidelity Propagation
+### Force models
+
+`ForceModel` setters return the model, so they chain:
+
+| Method | Force |
+|---|---|
+| `setGravity(mu?)` | Point-mass central gravity (the default for numerical propagators) |
+| `setEarthGravity(degree, order)` | EGM96 spherical harmonics; degree and order are clamped to 0..36 |
+| `setThirdBodyGravity({ moon, sun })` | Lunar and solar point-mass perturbations |
+| `setSolarRadiationPressure(mass, area, coeff = 1.2)` | Cannonball SRP with conical shadow; mass in kg, area in m² |
+| `setAtmosphericDrag(mass, area, coeff = 2.2, cosine = 4, f107 = 150)` | Harris-Priester drag; mass in kg, area in m² |
+
+Notes on drag:
+
+- `cosine` is the Harris-Priester exponent n in cos^n(psi / 2), not the cosine of an angle.
+  Montenbruck and Gill suggest 2 for low-inclination orbits and 6 for polar orbits.
+- `f107` is the F10.7 solar flux in SFU. The Harris-Priester table describes mean solar activity,
+  so ootk multiplies the whole density by a solar-activity factor that is exactly 1 at 150 SFU
+  (the default reproduces standard Harris-Priester) and does not change the day/night ratio. At
+  400 km the factor is about 0.20 at 70 SFU and about 2.27 at 250 SFU. It is a first-order
+  correction, not a replacement for Jacchia-Roberts or NRLMSISE-00.
+- `setAtmosphericDrag` is marked deprecated in the source as a work in progress.
+
+### Example: SGP4 state into RK89
 
 ```typescript
-import {
-  RungeKutta89Propagator,
-  ForceModel,
-  EpochUTC,
-  Satellite,
-  TleLine1,
-  TleLine2,
-} from 'ootk';
+import { EpochUTC, ForceModel, RungeKutta89Propagator, Satellite, TleLine1, TleLine2 } from 'ootk';
 
-// Create satellite from TLE
-const sat = new Satellite({
+const iss = new Satellite({
   tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
   tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
 });
 
-// Configure force model
-const forceModel = new ForceModel();
+const start = new Date('2024-01-28T12:00:00Z');
+const initial = iss.toJ2000(start);
 
-// High-order Earth gravity (8x8 spherical harmonics)
-forceModel.setEarthGravity(8, 8);
+const forceModel = new ForceModel()
+  .setEarthGravity(8, 8)
+  .setThirdBodyGravity({ moon: true, sun: true })
+  .setSolarRadiationPressure(420000, 2500)
+  .setAtmosphericDrag(420000, 1500, 2.2, 4, 150);
 
-// Third-body perturbations (Sun and Moon)
-forceModel.setThirdBodyGravity({
-  moon: true,
-  sun: true,
-});
+const propagator = new RungeKutta89Propagator(initial, forceModel);
 
-// Solar radiation pressure (mass: 1000 kg, area: 400 m²)
-forceModel.setSolarRadiationPressure(1000, 400);
+// 6 hours later
+const later = EpochUTC.fromDateTime(new Date('2024-01-28T18:00:00Z'));
+const numerical = propagator.propagate(later);
+const sgp4 = iss.toJ2000(later.toDateTime());
 
-// Atmospheric drag (Harris-Priester model)
-forceModel.setAtmosphericDrag(1000, 400);
-
-// Create propagator with initial state
-const start = new Date(2024, 0, 28, 0, 0, 0);
-const propagator = new RungeKutta89Propagator(sat.toJ2000(start), forceModel);
-
-// Propagate to target epoch
-const stop = EpochUTC.fromDateTime(new Date(2024, 0, 29, 0, 0, 0));
-const finalState = propagator.propagate(stop);
-
-console.log('Position:', finalState.position);
-console.log('Velocity:', finalState.velocity);
+console.log(`RK89 radius ${numerical.position.magnitude().toFixed(3)} km`);
+console.log(`RK89 vs SGP4 after 6 h: ${numerical.position.distance(sgp4.position).toFixed(2)} km`);
 ```
 
-### When to Use Numerical Propagation
+The SGP4 state is a mean-element solution, so a numerical propagation started from it drifts away
+from SGP4 by kilometers per day; that difference is model disagreement, not a bug in either.
 
-- **Long propagation arcs** where SGP4 accuracy degrades
-- **High-precision applications** (collision avoidance, mission planning)
-- **Maneuver modeling** with custom thrust profiles
-- **Near-Earth objects** with significant perturbations
-- **Research applications** requiring full force modeling
+### Example: two-body propagation
 
----
+```typescript
+import { ClassicalElements, DEG2RAD, EpochUTC, KeplerPropagator, Kilometers, Radians, Seconds } from 'ootk';
 
-## 2. Initial Orbit Determination (IOD)
+const epoch = EpochUTC.fromDateTimeString('2024-01-28T00:00:00.000Z');
 
-OOTK provides multiple IOD methods to determine orbits from observations - essential for tracking newly detected objects or recovering lost satellites.
+// ClassicalElements angles are radians
+const elements = new ClassicalElements({
+  epoch,
+  semimajorAxis: 7000 as Kilometers,
+  eccentricity: 0.01,
+  inclination: (51.6 * DEG2RAD) as Radians,
+  rightAscension: (30 * DEG2RAD) as Radians,
+  argPerigee: (90 * DEG2RAD) as Radians,
+  trueAnomaly: 0 as Radians,
+});
 
-### Available Methods
+const kepler = new KeplerPropagator(elements);
+const oneOrbitLater = epoch.roll((elements.period * 60) as Seconds); // period is minutes
+const state = kepler.propagate(oneOrbitLater);
 
-#### Lambert's Problem
+console.log(`Period ${elements.period.toFixed(2)} min`);
+console.log(`Back at the start after one period: ${state.position.distance(elements.toJ2000().position).toExponential(2)} km`);
+```
 
-Solves for the orbit between two position vectors at known times.
+### Event searches
+
+`Propagator` can search one orbit ahead for node crossings and apsides:
+
+```typescript
+import { EpochUTC, RungeKutta89Propagator, Satellite, TleLine1, TleLine2 } from 'ootk';
+
+const iss = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
+
+const start = EpochUTC.fromDateTime(new Date('2024-01-28T12:00:00Z'));
+const propagator = new RungeKutta89Propagator(iss.toJ2000(start.toDateTime()));
+
+console.log(`Ascending node: ${propagator.ascendingNodeEpoch(start).toString()}`);
+console.log(`Perigee:        ${propagator.perigeeEpoch(start).toString()}`);
+```
+
+## 2. Ephemerides, interpolation and compression
+
+`Propagator.ephemeris(start, stop, interval = 60)` propagates across a span (interval in seconds)
+and returns a `VerletBlendInterpolator`. Any `StateInterpolator` answers
+`interpolate(epoch): J2000 | null`, returning `null` outside its window. Other interpolators:
+`LagrangeInterpolator.fromEphemeris(states, order = 10)`, `CubicSplineInterpolator`,
+`ChebyshevInterpolator`.
+
+`ChebyshevCompressor` fits Chebyshev polynomials to an interpolator. `compress(cpr = 21,
+segmentDuration?)` takes the coefficients per segment and the segment length in seconds; when the
+segment length is omitted it defaults to the orbital period at the start of the ephemeris (about
+92 minutes for the ISS, so one day becomes about 16 segments).
+
+```typescript
+import { ChebyshevCompressor, EpochUTC, RungeKutta89Propagator, Satellite, Seconds, TleLine1, TleLine2 } from 'ootk';
+
+const iss = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
+
+const start = EpochUTC.fromDateTime(new Date('2024-01-28T12:00:00Z'));
+const stop = start.roll(86400 as Seconds);
+
+const propagator = new RungeKutta89Propagator(iss.toJ2000(start.toDateTime()));
+const ephemeris = propagator.ephemeris(start, stop, 60 as Seconds);
+
+const compressed = new ChebyshevCompressor(ephemeris).compress(21);
+
+const t = start.roll(43210 as Seconds);
+const exact = ephemeris.interpolate(t);
+const approx = compressed.interpolate(t);
+
+if (exact && approx) {
+  console.log(`Verlet ephemeris: ${ephemeris.sizeBytes} bytes, Chebyshev: ${compressed.sizeBytes} bytes`);
+  console.log(`Compression error: ${(exact.position.distance(approx.position) * 1000).toFixed(3)} m`);
+}
+```
+
+## 3. Covariance
+
+`StateCovariance` holds a 6x6 matrix and a `CovarianceFrame` (`ECI` or `RIC`). Units are km, km/s
+and their products; the diagonal holds variances (km², km²/s²). `StateCovariance.fromSigmas`
+builds a diagonal matrix from 1-sigma values, and `sigmas()` returns them back.
+
+TLE-derived covariances:
+
+| Function | Result |
+|---|---|
+| `createCovarianceFromTle(tle1, tle2, frame?)` | Diagonal covariance from fixed nominal sigmas |
+| `createSampleCovarianceFromTle(tle1, tle2, frame?)` | Sigma-point covariance, inflated by TLE quality and age |
+| `cappedScreeningCovarianceFromTle(tle1, tle2, k, caps?)` | Sample covariance scaled by k² with position sigmas capped, for screening |
+
+`CovarianceSample` ages the TLE against the epoch of the state you give it, never the wall clock,
+so results are reproducible.
+
+`cappedScreeningCovarianceFromTle` returns a real covariance in the RIC frame: variances on the
+diagonal in R, I, C, Rdot, Idot, Cdot order. `caps` are 1-sigma limits in km in R, I, C order
+(default `[35, 71, 32]`); a position axis whose k-sigma exceeds its cap is scaled so that its
+variance becomes cap², with correlations preserved. This changed in ootk 8; see the migration guide.
 
 ```typescript
 import {
-  LambertIOD,
-  J2000,
-  Vector3D,
-  EpochUTC,
-  Kilometers,
-  KilometersPerSecond,
-  Tle,
+  cappedScreeningCovarianceFromTle, CovarianceFrame, createCovarianceFromTle, createSampleCovarianceFromTle, TleLine1,
 } from 'ootk';
 
+const tle1 = '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1;
+const tle2 = '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741';
+
+const simple = createCovarianceFromTle(tle1, tle2, CovarianceFrame.RIC);
+const sampled = createSampleCovarianceFromTle(tle1, tle2, CovarianceFrame.RIC);
+const screening = cappedScreeningCovarianceFromTle(tle1, tle2, 3);
+
+const km = (v: number): string => v.toFixed(4);
+
+console.log('Simple 1-sigma R, I, C (km):', Array.from(simple.sigmas().elements).slice(0, 3).map(km));
+console.log('Sampled 1-sigma R, I, C (km):', Array.from(sampled.sigmas().elements).slice(0, 3).map(km));
+console.log('Screening frame:', screening.frame); // 'ric' (CovarianceFrame.RIC)
+console.log('Screening R, I, C variances (km^2):', [0, 1, 2].map((i) => km(screening.matrix.elements[i][i])));
+```
+
+## 4. Conjunction assessment
+
+### One pair
+
+`ConjunctionAssessment` finds the time of closest approach (TCA) between two objects over a window
+and, when both covariances are available, the probability of collision. Pc is the exact 2D
+short-encounter integral of the combined position covariance over the hard-body disc (Foster and
+Estes; Alfano), with the secondary covariance rotated into the primary RIC frame before the two are
+summed. Hard-body radii are in km.
+
+```typescript
+import { ConjunctionAssessment, CovarianceFrame, EpochUTC, Kilometers, StateCovariance, Tle } from 'ootk';
+
+const primaryTle = new Tle(
+  '1 25544U 98067A   25019.50000000  .00016717  00000-0  10270-3 0  9005',
+  '2 25544  51.6400 339.8000 0002571  90.5000 269.6000 15.50000000000000',
+);
+const secondaryTle = new Tle(
+  '1 44691U 19074A   25019.50000000  .00016500  00000-0  10200-3 0  9006',
+  '2 44691  51.6450 339.8050 0002600  90.5050 269.6050 15.50005000000000',
+);
+
+// 1-sigma values, RIC frame: R, I, C (km) then Rdot, Idot, Cdot (km/s)
+const primaryCovariance = StateCovariance.fromSigmas([0.5, 1.5, 0.5, 0.001, 0.003, 0.001], CovarianceFrame.RIC);
+const secondaryCovariance = StateCovariance.fromSigmas([0.3, 1.0, 0.3, 0.0005, 0.002, 0.0005], CovarianceFrame.RIC);
+
+const assessment = new ConjunctionAssessment(
+  { name: 'ISS', tle: primaryTle, covariance: primaryCovariance, radius: 0.05 as Kilometers },
+  { name: 'Secondary', tle: secondaryTle, covariance: secondaryCovariance, radius: 0.01 as Kilometers },
+);
+
+const event = assessment.assess({
+  startTime: EpochUTC.fromDateTimeString('2025-01-19T12:00:00.000Z'),
+  endTime: EpochUTC.fromDateTimeString('2025-01-19T18:00:00.000Z'),
+});
+
+console.log(`TCA: ${event.tca.toString()}`);
+console.log(`Miss distance: ${(event.missDistance * 1000).toFixed(1)} m`);
+console.log(`R / I / C: ${event.radialDistance.toFixed(3)} / ${event.intrackDistance.toFixed(3)} / ${event.crosstrackDistance.toFixed(3)} km`);
+console.log(`Pc: ${event.probabilityOfCollision?.toExponential(3) ?? 'n/a'}`);
+console.log(`High risk (1 km, 1e-4): ${event.isHighRisk()}`);
+```
+
+For higher fidelity, pass `propagator: new RungeKutta89Propagator(state, forceModel)` on each object
+and `propagateCovariance: true` to `assess` (see `examples/conjunction-assessment-example.ts`).
+
+### Screening a catalog
+
+`CatalogScreener.screenOneToMany`, `screenManyToMany` and `screenCatalog` first discard pairs whose
+orbital shells cannot meet, then run a full assessment on the rest. The shell filter rejects a pair
+only when one perigee radius exceeds the other apogee radius by more than `shellPad` (default
+10 km), which absorbs the short-period variation that TLE mean elements leave out.
+
+```typescript
+import { CatalogScreener, EpochUTC, Kilometers, Tle } from 'ootk';
+
+const primary = {
+  name: 'ISS',
+  radius: 0.05 as Kilometers,
+  tle: new Tle(
+    '1 25544U 98067A   25019.50000000  .00016717  00000-0  10270-3 0  9005',
+    '2 25544  51.6400 339.8000 0002571  90.5000 269.6000 15.50000000000000',
+  ),
+};
+
+const catalog = [
+  {
+    tle: new Tle(
+      '1 44691U 19074A   25019.50000000  .00016500  00000-0  10200-3 0  9006',
+      '2 44691  51.6450 339.8050 0002600  90.5050 269.6050 15.50005000000000',
+    ),
+  },
+];
+
+const results = CatalogScreener.screenOneToMany(primary, catalog, {
+  startTime: EpochUTC.fromDateTimeString('2025-01-19T12:00:00.000Z'),
+  endTime: EpochUTC.fromDateTimeString('2025-01-19T18:00:00.000Z'),
+  shellPad: 10 as Kilometers,
+});
+
+for (const r of results) {
+  console.log(`${r.primaryId} vs ${r.secondaryId}: ${r.event.missDistance.toFixed(3)} km, risk ${r.riskScore.toFixed(3)}`);
+}
+```
+
+### CDM files
+
+`CdmParser.parse` reads a CCSDS 508.0 Conjunction Data Message. In the file, `MISS_DISTANCE` and
+`RELATIVE_POSITION_*` are in metres, `RELATIVE_SPEED` and `RELATIVE_VELOCITY_*` in m/s and the
+covariance in m², m²/s and m²/s²; the parser converts them to ootk's km, km/s and km² units.
+`CdmExporter.export(event)` writes metres back out with `[m]` unit tags. Files written by ootk 7
+carry explicit `[km]` tags and still parse correctly.
+
+## 5. Orbit determination
+
+### Initial orbit determination
+
+| Class | Input | Call |
+|---|---|---|
+| `LambertIOD` | Two positions and times | `estimate(p1, p2, t1, t2, { shortWay, nRev })` returns `J2000 \| null` |
+| `GibbsIOD` | Three coplanar positions | `solve(r1, r2, r3, t2, t3)` |
+| `HerrickGibbsIOD` | Three closely spaced positions | `solve(r1, t1, r2, t2, r3, t3)` |
+| `GoodingIOD` | Three optical observations | `estimate(o1, o2, o3, rho1?, rho3?, nRev?, shortWay?)`; seeds the ranges with Gauss IOD (internal, not exported) when none are given |
+
+Lambert's `shortWay` option (named `posigrade` before ootk 8) chooses the transfer angle, not the
+direction of motion: `true` (default) sweeps the angle below 180 degrees, `false` sweeps 360 degrees
+minus that angle. A retrograde transfer is obtained by choosing the sweep that matches the motion;
+`LambertIOD.useShortPath(interceptor, target)` picks it from an interceptor state. The old
+`posigrade` key is not read any more, so a leftover `posigrade: false` silently gives the short way.
+
+```typescript
+import { EpochUTC, J2000, Kilometers, LambertIOD, Seconds, Vector3D } from 'ootk';
+
+const t1 = EpochUTC.fromDateTimeString('2024-01-28T00:00:00.000Z');
+const t2 = t1.roll(1500 as Seconds);
+
+const p1 = new Vector3D(7000 as Kilometers, 0 as Kilometers, 0 as Kilometers);
+const p2 = new Vector3D(0 as Kilometers, 7200 as Kilometers, 500 as Kilometers);
+
 const lambert = new LambertIOD();
+const shortArc = lambert.estimate(p1, p2, t1, t2, { shortWay: true });
+const longArc = lambert.estimate(p1, p2, t1, t2, { shortWay: false });
 
-// Two position observations (ECI coordinates)
-const p1 = new J2000(
-  EpochUTC.fromDateTime(new Date('2024-01-07T12:00:00Z')),
-  new Vector3D(-4901.845 as Kilometers, -3592.528 as Kilometers, 3322.876 as Kilometers),
-  Vector3D.origin as Vector3D<KilometersPerSecond>
-);
+if (shortArc && longArc) {
+  // Departure velocities are in km/s
+  const v = (s: J2000): string => s.velocity.magnitude().toFixed(3);
 
-const p2 = new J2000(
-  EpochUTC.fromDateTime(new Date('2024-01-07T12:00:10Z')),
-  new Vector3D(-4847.902 as Kilometers, -3631.425 as Kilometers, 3359.445 as Kilometers),
-  Vector3D.origin as Vector3D<KilometersPerSecond>
-);
+  console.log(`Short way departure speed: ${v(shortArc)} km/s`);
+  console.log(`Long way departure speed:  ${v(longArc)} km/s`);
 
-// Solve for orbit
-const orbit = lambert.estimate(p1.position, p2.position, p1.epoch, p2.epoch);
+  const elements = shortArc.toClassicalElements();
 
-// Convert to classical orbital elements or TLE
-const classicalElements = orbit.toClassicalElements();
-const tle = Tle.fromClassicalElements(classicalElements);
-
-console.log(tle.line1);
-console.log(tle.line2);
+  console.log(`Short-way orbit: a ${elements.semimajorAxis.toFixed(1)} km, i ${elements.inclinationDegrees.toFixed(2)} deg`);
+}
 ```
 
-#### Gibbs Method
+### Batch least squares
 
-Determines orbit from three coplanar position vectors.
+`BatchLeastSquaresOD(observations, apriori, forceModel?)` refines an a priori `J2000` state from
+`Observation`s (`ObservationRadar` for range/az/el, `ObservationOptical` for RA/Dec). `solve()`
+returns a `BatchLeastSquaresResult` with `state`, `covariance`, `rms` (noise-weighted, about 1 at
+the noise floor) and `converged`, which is false when `maxIter` ran out before the RMS settled.
 
-```typescript
-import { GibbsIOD, J2000, Vector3D, Kilometers, KilometersPerSecond } from 'ootk';
-
-const gibbs = new GibbsIOD();
-
-// Three position observations
-const p1 = new J2000(epoch1, new Vector3D(x1, y1, z1), Vector3D.origin);
-const p2 = new J2000(epoch2, new Vector3D(x2, y2, z2), Vector3D.origin);
-const p3 = new J2000(epoch3, new Vector3D(x3, y3, z3), Vector3D.origin);
-
-const orbit = gibbs.solve(p1.position, p2.position, p3.position, p2.epoch, p3.epoch);
-```
-
-#### Herrick-Gibbs Method
-
-Improved method for closely-spaced observations.
+If the observations do not determine all six state components, the normal matrix is singular and
+`solve()` throws `SingularMatrixError` (the same applies to `LevenbergMarquardtOD`).
 
 ```typescript
-import { HerrickGibbsIOD } from 'ootk';
+import {
+  BatchLeastSquaresOD, Degrees, EpochUTC, GroundStation, J2000, Kilometers, KilometersPerSecond, ObservationRadar,
+  RAE, Satellite, Seconds, SingularMatrixError, TleLine1, TleLine2, Vector3D,
+} from 'ootk';
 
-const hgibbs = new HerrickGibbsIOD();
-
-const orbit = hgibbs.solve(
-  p1.position, p1.epoch,
-  p2.position, p2.epoch,
-  p3.position, p3.epoch
-);
-```
-
-#### Gooding's Angles-Only IOD
-
-Determines orbit from optical angle observations (right ascension/declination).
-
-```typescript
-import { GoodingIOD, ModifiedGoodingIOD } from 'ootk';
-
-// For optical observations where only angles are known
-const gooding = new ModifiedGoodingIOD();
-// Implementation for angle-only observations
-```
-
-### Converting Radar Observations to ECI
-
-```typescript
-import { RAE, J2000, Vector3D, Degrees, Kilometers, lla2eci, calcGmst } from 'ootk';
-
-// Radar observation: Range, Azimuth, Elevation
-const observation = {
-  t: EpochUTC.fromDateTime(new Date('2024-01-07T12:00:00Z')),
-  rng: 1599.89 as Kilometers,
-  az: 174 as Degrees,
-  el: 13.6 as Degrees,
-};
-
-// Sensor location
-const sensor = {
-  lat: (41.754785 * DEG2RAD) as Radians,
-  lon: (-70.539151 * DEG2RAD) as Radians,
-  alt: 0.085 as Kilometers,
-};
-
-// Convert sensor position to ECI
-const gmst = calcGmst(observation.t.toDateTime());
-const sensorEci = lla2eci(sensor, gmst.gmst);
-
-// Convert RAE observation to ECI state vector
-const rae = RAE.fromDegrees(observation.t, observation.rng, observation.az, observation.el);
-const eciState = rae.toStateVector(
-  new J2000(
-    observation.t,
-    new Vector3D(sensorEci.x, sensorEci.y, sensorEci.z),
-    Vector3D.origin as Vector3D<KilometersPerSecond>
-  )
-);
-```
-
----
-
-## 3. Sensor Operations & Pass Prediction
-
-OOTK includes comprehensive sensor modeling for ground-based tracking stations, radars, and telescopes.
-
-### Creating a Sensor
-
-```typescript
-import { Sensor, SensorParams, SpaceObjectType, Degrees, Kilometers } from 'ootk';
-
-const radar = new Sensor({
-  name: 'Cape Cod Radar',
+const station = new GroundStation({
   lat: 41.754785 as Degrees,
   lon: -70.539151 as Degrees,
   alt: 0.060966 as Kilometers,
-  // Field of view constraints
-  minAz: 347 as Degrees,
-  maxAz: 227 as Degrees,  // Wraps around (347° to 227° covers north)
-  minEl: 3 as Degrees,
-  maxEl: 85 as Degrees,
-  minRng: 0 as Kilometers,
-  maxRng: 5556 as Kilometers,
-  type: SpaceObjectType.PHASED_ARRAY_RADAR,
 });
 
-// Simple sensor without FOV constraints
-const opticalSensor = new Sensor({
-  lat: 41 as Degrees,
-  lon: -71 as Degrees,
-  alt: 1 as Kilometers,
-} as SensorParams);
-```
-
-### Calculating Satellite Position from Sensor
-
-```typescript
-import { Satellite, TleLine1, TleLine2 } from 'ootk';
-
-const sat = new Satellite({
+const iss = new Satellite({
   tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
   tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
 });
 
-const date = new Date('2024-01-28T12:00:00Z');
+// Synthetic radar observations every 20 s during a pass (2024-01-29 00:08 to 00:14 UTC)
+const passStart = EpochUTC.fromDateTimeString('2024-01-29T00:08:00.000Z');
+const observations: ObservationRadar[] = [];
 
-// Get range, azimuth, elevation from sensor to satellite
-const rae = sat.rae(radar, date);
+for (let i = 0; i < 18; i++) {
+  const epoch = passStart.roll((i * 20) as Seconds);
+  const date = epoch.toDateTime();
+  const site = station.toJ2000(date);
 
-console.log(`Range: ${rae.rng} km`);
-console.log(`Azimuth: ${rae.az}°`);
-console.log(`Elevation: ${rae.el}°`);
-```
+  observations.push(new ObservationRadar(site, RAE.fromStateVector(iss.toJ2000(date), site)));
+}
 
-### Checking Field of View
+// A priori: the true state with a 2 km, 2 m/s error
+const truth = iss.toJ2000(passStart.toDateTime());
+const apriori = new J2000(
+  truth.epoch,
+  truth.position.add(new Vector3D(2 as Kilometers, 0 as Kilometers, 0 as Kilometers)),
+  truth.velocity.add(new Vector3D(0 as KilometersPerSecond, 0.002 as KilometersPerSecond, 0 as KilometersPerSecond)),
+);
 
-```typescript
-// Check if satellite is within sensor's field of view
-const isVisible = radar.isSatInFov(sat, date);
+try {
+  const result = new BatchLeastSquaresOD(observations, apriori).solve();
 
-if (isVisible) {
-  console.log('Satellite is visible from sensor');
+  console.log(`Converged: ${result.converged}, weighted RMS ${result.rms.toExponential(2)}`);
+  console.log(`Position error after fit: ${(result.state.position.distance(truth.position) * 1000).toFixed(1)} m`);
+} catch (e) {
+  if (e instanceof SingularMatrixError) {
+    console.log('Observations do not determine the orbit');
+  } else {
+    throw e;
+  }
 }
 ```
 
-### Pass Prediction
+The fit above uses two-body dynamics (the default force model) against SGP4-generated
+observations, so the residual position error is the model difference over the six-minute arc.
+
+## 6. Relative motion
+
+`RIC.fromJ2000(state, origin)` expresses `state` relative to `origin` in the origin's radial,
+in-track and cross-track axes. The first argument is the object you are describing, the second is
+the reference. The velocity is the inertial velocity difference rotated into RIC; it does not
+subtract the rotating-frame term, so two co-orbiting objects separated in-track show a radial rate
+of about n times their separation. `Satellite.toRIC(reference, date)` is the shortcut for two
+satellites.
 
 ```typescript
-// Calculate all passes over a time period
-const startDate = new Date('2024-01-28T00:00:00Z');
-const endDate = new Date('2024-01-29T00:00:00Z');
+import { RIC, Radians, Satellite, TleLine1, TleLine2 } from 'ootk';
 
-const passes = radar.calculatePasses(sat, startDate, endDate, 60); // 60 second interval
-
-passes.forEach(pass => {
-  console.log(`Pass Start: ${pass.start}`);
-  console.log(`Pass End: ${pass.end}`);
-  console.log(`Max Elevation: ${pass.maxEl}°`);
-  console.log(`AOS Azimuth: ${pass.azimuthStart}°`);
-  console.log(`LOS Azimuth: ${pass.azimuthEnd}°`);
-});
-```
-
-### Doppler Shift Calculations
-
-```typescript
-// Calculate Doppler shift for RF tracking
-const doppler = sat.applyDoppler(radar, date, 2200); // 2200 MHz frequency
-
-console.log(`Doppler shifted frequency: ${doppler.frequency} MHz`);
-console.log(`Doppler shift: ${doppler.shift} MHz`);
-```
-
----
-
-## 4. Astronomical Calculations
-
-OOTK provides comprehensive astronomical calculations for the Sun, Moon, and Earth.
-
-### Sun Calculations
-
-```typescript
-import { Sun, Degrees, Meters } from 'ootk';
-
-const date = new Date('2024-06-21T12:00:00Z');
-const latitude = 41 as Degrees;
-const longitude = -71 as Degrees;
-const altitude = 0 as Meters;
-
-// Get all sun times for the day
-const sunTimes = Sun.getTimes(date, latitude, longitude, altitude);
-
-console.log('Sunrise:', sunTimes.sunrise);
-console.log('Sunset:', sunTimes.sunset);
-console.log('Solar Noon:', sunTimes.solarNoon);
-console.log('Golden Hour (morning):', sunTimes.goldenHour);
-console.log('Golden Hour End (evening):', sunTimes.goldenHourEnd);
-console.log('Blue Hour (dawn):', sunTimes.blueHourDawn);
-console.log('Blue Hour (dusk):', sunTimes.blueHourDusk);
-console.log('Civil Dawn:', sunTimes.civilDawn);
-console.log('Civil Dusk:', sunTimes.civilDusk);
-console.log('Nautical Dawn:', sunTimes.nauticalDawn);
-console.log('Nautical Dusk:', sunTimes.nauticalDusk);
-console.log('Astronomical Dawn:', sunTimes.astronomicalDawn);
-console.log('Astronomical Dusk:', sunTimes.astronomicalDusk);
-```
-
-#### Sun Position
-
-```typescript
-// Get Sun's position in ECI coordinates
-const sunEci = Sun.eci(EpochUTC.fromDateTime(date));
-
-console.log('Sun ECI Position:', sunEci.position);
-
-// Get Sun's azimuth and elevation from observer
-const sunPosition = Sun.azEl(date, latitude, longitude);
-
-console.log(`Sun Azimuth: ${sunPosition.az}°`);
-console.log(`Sun Elevation: ${sunPosition.el}°`);
-```
-
-#### Solar Illumination
-
-```typescript
-// Calculate satellite illumination
-const illumination = Sun.getIllumination(sat, date);
-
-console.log('Satellite in sunlight:', illumination.lit);
-console.log('Illumination factor:', illumination.factor); // 0 = shadow, 1 = full sun
-```
-
-### Moon Calculations
-
-```typescript
-import { Moon } from 'ootk';
-
-// Get Moon's position in ECI coordinates
-const moonEci = Moon.eci(EpochUTC.fromDateTime(date));
-
-// Moon phase information
-const moonPhase = Moon.getPhase(date);
-
-console.log('Moon Phase:', moonPhase.phase); // 'new', 'waxing_crescent', 'first_quarter', etc.
-console.log('Illumination:', moonPhase.illumination); // 0 to 1
-
-// Moon rise and set times
-const moonTimes = Moon.getTimes(date, latitude, longitude);
-
-console.log('Moonrise:', moonTimes.rise);
-console.log('Moonset:', moonTimes.set);
-```
-
-### Eclipse Predictions
-
-```typescript
-// Check if satellite is in Earth's shadow
-const inEclipse = sat.isInEclipse(date);
-
-if (inEclipse) {
-  console.log('Satellite is in Earth shadow');
-}
-```
-
----
-
-## 5. Advanced Coordinate Transformations
-
-OOTK supports 15+ coordinate systems with seamless transformations.
-
-### Coordinate Systems Overview
-
-| System | Description | Use Case |
-|--------|-------------|----------|
-| **J2000** | ECI at J2000 epoch | Standard inertial reference |
-| **TEME** | True Equator Mean Equinox | TLE propagation (SGP4) |
-| **ITRF** | Earth-fixed coordinates | Ground station positions |
-| **Geodetic** | Lat/Lon/Alt | Geographic locations |
-| **RIC** | Radial-Intrack-Crosstrack | Relative orbital motion |
-| **RAE** | Range-Azimuth-Elevation | Sensor observations |
-| **ENU** | East-North-Up | Local tangent plane |
-| **SEZ** | South-East-Zenith | Local coordinates |
-
-### Common Transformations
-
-```typescript
-import {
-  Satellite,
-  eci2lla,
-  lla2eci,
-  ecf2eci,
-  eci2ecf,
-  rae2eci,
-  eci2rae,
-  calcGmst,
-  Degrees,
-  Kilometers,
-  Radians,
-} from 'ootk';
-
-const date = new Date('2024-01-28T12:00:00Z');
-const sat = new Satellite({ tle1, tle2 });
-
-// Satellite position in various frames
-const j2000 = sat.toJ2000(date);        // ECI (J2000)
-const itrf = sat.toITRF(date);          // Earth-fixed
-const geodetic = sat.toGeodetic(date);  // Lat/Lon/Alt
-const classical = sat.toClassicalElements(date); // Orbital elements
-
-console.log('Latitude:', geodetic.lat);
-console.log('Longitude:', geodetic.lon);
-console.log('Altitude:', geodetic.alt);
-
-// Manual transformations
-const { gmst } = calcGmst(date);
-
-// ECI to Lat/Lon/Alt
-const lla = eci2lla(j2000.position, gmst);
-
-// Lat/Lon/Alt to ECI
-const eciPos = lla2eci(
-  {
-    lat: 41.754785 as Radians,
-    lon: -70.539151 as Radians,
-    alt: 0.085 as Kilometers,
-  },
-  gmst
-);
-
-// ECI to Earth-fixed (ECF/ITRF)
-const ecf = eci2ecf(j2000.position, gmst);
-
-// Earth-fixed to ECI
-const eci = ecf2eci(ecf, gmst);
-```
-
-### Sensor-Centric Transformations
-
-```typescript
-import { Sensor, ecf2rae, rae2ecf, eci2rae } from 'ootk';
-
-const sensor = new Sensor({
-  lat: 41 as Degrees,
-  lon: -71 as Degrees,
-  alt: 1 as Kilometers,
-});
-
-// Convert satellite position to Range-Azimuth-Elevation
-const rae = eci2rae(date, sat.eci(date), sensor);
-
-console.log(`Range: ${rae.rng} km`);
-console.log(`Azimuth: ${rae.az}°`);
-console.log(`Elevation: ${rae.el}°`);
-
-// Convert RAE back to ECF coordinates
-const ecf = rae2ecf(sensor.lla(), rae);
-```
-
-### Relative Motion Coordinates
-
-```typescript
-// RIC (Radial-Intrack-Crosstrack) frame
-const sat1 = new Satellite({ tle1: tle1a, tle2: tle2a });
-const sat2 = new Satellite({ tle1: tle1b, tle2: tle2b });
-
-// Get sat2's position relative to sat1 in RIC frame
-const ricState = sat2.toRIC(sat1, date);
-
-console.log('Radial offset:', ricState.position.x);      // Along radius vector
-console.log('In-track offset:', ricState.position.y);    // Along velocity vector
-console.log('Cross-track offset:', ricState.position.z); // Normal to orbit plane
-```
-
----
-
-## 6. Force Modeling
-
-OOTK includes high-fidelity force models for precise orbit propagation.
-
-### Available Force Models
-
-```typescript
-import { ForceModel } from 'ootk';
-
-const forces = new ForceModel();
-
-// 1. Earth Gravity (Spherical Harmonics)
-// Parameters: degree, order (up to 8x8 with EGM96 coefficients)
-forces.setEarthGravity(8, 8); // High precision
-forces.setEarthGravity(4, 4); // Medium precision
-forces.setEarthGravity(2, 0); // J2 only (fastest)
-
-// 2. Third-Body Gravity
-forces.setThirdBodyGravity({
-  sun: true,   // Solar perturbations
-  moon: true,  // Lunar perturbations
-});
-
-// 3. Solar Radiation Pressure
-// Parameters: mass (kg), area (m²)
-forces.setSolarRadiationPressure(
-  1000,  // Satellite mass
-  400    // Cross-sectional area
-);
-
-// 4. Atmospheric Drag (Harris-Priester model)
-// Parameters: mass (kg), area (m²), Cd (drag coefficient)
-forces.setAtmosphericDrag(
-  1000,  // Satellite mass
-  400,   // Cross-sectional area
-  2.2    // Drag coefficient (optional, default: 2.2)
-);
-
-// 5. Custom Thrust Forces
-import { Thrust, Vector3D } from 'ootk';
-
-const thrust = new Thrust(
-  new Vector3D(0.001, 0, 0), // Thrust vector in km/s²
-  startEpoch,
-  endEpoch
-);
-
-forces.addThrust(thrust);
-```
-
-### Force Model Usage
-
-```typescript
-import { RungeKutta89Propagator, ForceModel, Satellite } from 'ootk';
-
-const sat = new Satellite({ tle1, tle2 });
-
-// High-fidelity force model
-const hiFiForces = new ForceModel();
-hiFiForces.setEarthGravity(8, 8);
-hiFiForces.setThirdBodyGravity({ sun: true, moon: true });
-hiFiForces.setSolarRadiationPressure(1000, 400);
-hiFiForces.setAtmosphericDrag(1000, 400);
-
-const propagator = new RungeKutta89Propagator(
-  sat.toJ2000(startDate),
-  hiFiForces
-);
-
-// Propagate with full force model
-const finalState = propagator.propagate(EpochUTC.fromDateTime(endDate));
-```
-
-### When to Use Each Force
-
-| Force | Orbit Regime | Impact | Computational Cost |
-|-------|--------------|--------|-------------------|
-| **Earth Gravity (J2)** | All | High | Low |
-| **Earth Gravity (8x8)** | All | Very High | Medium |
-| **Third-Body (Moon)** | MEO/GEO | Medium | Medium |
-| **Third-Body (Sun)** | GEO | Medium | Medium |
-| **Atmospheric Drag** | LEO (<600 km) | Very High | Medium |
-| **Solar Radiation** | GEO | Medium | Low |
-
----
-
-## 7. Maneuver Planning & Optimization
-
-OOTK provides tools for orbit maneuver design and trajectory optimization.
-
-### Two-Burn Orbit Transfers
-
-```typescript
-import { TwoBurnOrbitTransfer, ClassicalElements, Kilometers } from 'ootk';
-
-// Initial orbit (LEO)
-const initialOrbit = new ClassicalElements({
-  a: 6778 as Kilometers,  // Semi-major axis
-  e: 0.001,               // Eccentricity
-  i: 51.6 as Radians,     // Inclination
-  // ... other elements
-});
-
-// Target orbit (GEO)
-const targetOrbit = new ClassicalElements({
-  a: 42164 as Kilometers,
-  e: 0.0001,
-  i: 0 as Radians,
-  // ... other elements
-});
-
-const transfer = new TwoBurnOrbitTransfer(initialOrbit, targetOrbit);
-
-// Calculate Hohmann transfer
-const hohmann = transfer.calculateHohmann();
-
-console.log('First burn ΔV:', hohmann.deltaV1);
-console.log('Second burn ΔV:', hohmann.deltaV2);
-console.log('Total ΔV:', hohmann.deltaVTotal);
-console.log('Transfer time:', hohmann.transferTime);
-
-// Calculate bi-elliptic transfer (more efficient for large ratio changes)
-const biElliptic = transfer.calculateBiElliptic();
-```
-
-### Waypoint Targeting with Optimization
-
-```typescript
-import { Waypoint, Vector3D, Kilometers } from 'ootk';
-
-// Define relative target position in RIC frame
-const targetPosition = new Vector3D(
-  0 as Kilometers,    // Radial
-  100 as Kilometers,  // In-track
-  0 as Kilometers     // Cross-track
-);
-
-const waypoint = new Waypoint(
-  targetPosition,
-  targetEpoch,
-  currentState
-);
-
-// Optimize maneuver to reach waypoint
-const maneuver = waypoint.optimize();
-
-console.log('Optimal ΔV:', maneuver.deltaV);
-console.log('Burn time:', maneuver.burnTime);
-console.log('Burn direction:', maneuver.direction);
-```
-
-### Numerical Optimization Tools
-
-```typescript
-import { DownhillSimplex, GoldenSection } from 'ootk';
-
-// Nelder-Mead simplex optimization
-const simplex = new DownhillSimplex(
-  objectiveFunction,
-  initialGuess,
-  tolerance
-);
-
-const optimum = simplex.optimize();
-
-// Golden section search (1D optimization)
-const golden = new GoldenSection(
-  objectiveFunction,
-  lowerBound,
-  upperBound,
-  tolerance
-);
-
-const minimum = golden.search();
-```
-
----
-
-## 8. Covariance & Uncertainty Analysis
-
-OOTK supports covariance matrices for uncertainty quantification and propagation.
-
-### Creating Covariance from TLE
-
-```typescript
-import { StateCovariance, Satellite, TleLine1, TleLine2 } from 'ootk';
-
-const sat = new Satellite({
-  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
-  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
-});
-
-const date = new Date('2024-01-28T12:00:00Z');
-
-// Create covariance from TLE age and mean motion derivative
-const covariance = StateCovariance.fromTle(sat, date);
-
-console.log('Position uncertainty (1-sigma):', covariance.positionSigma);
-console.log('Velocity uncertainty (1-sigma):', covariance.velocitySigma);
-
-// Get full 6x6 covariance matrix
-const covMatrix = covariance.matrix;
-```
-
-### Sample-Based Covariance
-
-```typescript
-import { CovarianceSample, Vector3D, Kilometers, KilometersPerSecond } from 'ootk';
-
-// Create sample generator
-const sampler = new CovarianceSample(
-  nominalPosition,
-  nominalVelocity,
-  positionSigma,  // 1-sigma uncertainty in position
-  velocitySigma   // 1-sigma uncertainty in velocity
-);
-
-// Generate Monte Carlo samples
-const samples = sampler.generate(1000); // 1000 samples
-
-samples.forEach(sample => {
-  // Propagate each sample to quantify uncertainty
-  const propagated = propagator.propagate(sample, targetEpoch);
-});
-```
-
-### Covariance in RIC Frame
-
-```typescript
-// Convert covariance to Radial-Intrack-Crosstrack frame
-const ricCovariance = covariance.toRIC(referenceOrbit);
-
-console.log('Radial uncertainty:', ricCovariance.radialSigma);
-console.log('In-track uncertainty:', ricCovariance.intrackSigma);
-console.log('Cross-track uncertainty:', ricCovariance.crosstrackSigma);
-```
-
----
-
-## 9. Multiple Time Systems
-
-OOTK provides comprehensive support for different time standards used in astrodynamics.
-
-### Available Time Systems
-
-```typescript
-import {
-  EpochUTC,  // Coordinated Universal Time
-  EpochGPS,  // GPS Time
-  EpochTAI,  // International Atomic Time
-  EpochTDB,  // Barycentric Dynamical Time
-  EpochTT,   // Terrestrial Time
-} from 'ootk';
-
-const date = new Date('2024-01-28T12:00:00Z');
-
-// Create epochs in different time systems
-const utc = EpochUTC.fromDateTime(date);
-const gps = EpochGPS.fromDateTime(date);
-const tai = EpochTAI.fromDateTime(date);
-const tdb = EpochTDB.fromDateTime(date);
-const tt = EpochTT.fromDateTime(date);
-
-// Convert between time systems
-const utcFromGPS = gps.toUTC();
-const taiFromUTC = utc.toTAI();
-const ttFromUTC = utc.toTT();
-```
-
-### Leap Seconds
-
-```typescript
-// OOTK includes historical leap second data
-const leapSeconds = utc.getLeapSeconds();
-
-console.log('Leap seconds at epoch:', leapSeconds);
-
-// Time system offsets
-console.log('TAI - UTC:', tai.toUTC().offset); // ~37 seconds (as of 2024)
-console.log('GPS - UTC:', gps.toUTC().offset); // ~18 seconds
-```
-
-### Time Windows
-
-```typescript
-import { EpochWindow, EpochUTC } from 'ootk';
-
-const start = EpochUTC.fromDateTime(new Date('2024-01-28T00:00:00Z'));
-const end = EpochUTC.fromDateTime(new Date('2024-01-29T00:00:00Z'));
-
-const window = new EpochWindow(start, end);
-
-console.log('Window duration:', window.duration); // in seconds
-
-// Check if epoch is within window
-const testEpoch = EpochUTC.fromDateTime(new Date('2024-01-28T12:00:00Z'));
-const isInWindow = window.contains(testEpoch);
-```
-
----
-
-## 10. Relative Motion Analysis
-
-Analyze relative motion between satellites using specialized coordinate frames.
-
-### RIC (Radial-Intrack-Crosstrack) Frame
-
-```typescript
-import { Satellite, TleLine1, TleLine2 } from 'ootk';
-
-// Chief satellite
 const chief = new Satellite({
   tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
   tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
 });
 
-// Deputy satellite
-const deputy = new Satellite({
-  tle1: '1 25545U 98067B   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
-  tle2: '2 25545  51.6500 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
-});
-
 const date = new Date('2024-01-28T12:00:00Z');
+const chiefState = chief.toJ2000(date);
 
-// Get deputy's state in chief's RIC frame
-const ricState = deputy.toRIC(chief, date);
+// A deputy 0.001 rad (about 6.8 km) ahead in true anomaly
+const deputyElements = chiefState.toClassicalElements();
 
-console.log('Radial separation:', ricState.position.x, 'km');
-console.log('In-track separation:', ricState.position.y, 'km');
-console.log('Cross-track separation:', ricState.position.z, 'km');
+deputyElements.trueAnomaly = (deputyElements.trueAnomaly + 0.001) as Radians;
+const deputyState = deputyElements.toJ2000();
 
-console.log('Radial velocity:', ricState.velocity.x, 'km/s');
-console.log('In-track velocity:', ricState.velocity.y, 'km/s');
-console.log('Cross-track velocity:', ricState.velocity.z, 'km/s');
+const ric = RIC.fromJ2000(deputyState, chiefState);
+
+console.log(`Radial ${ric.position.x.toFixed(3)} km, in-track ${ric.position.y.toFixed(3)} km, cross-track ${ric.position.z.toFixed(3)} km`);
 ```
 
-### Hill Frame
+`Hill` models relative motion with the Clohessy-Wiltshire equations; `Hill.fromState`,
+`Hill.fromNmc` (natural motion circumnavigation) and `Hill.fromPerch` build common geometries, and
+`propagate`, `ephemeris` and `solveManeuver(waypoint)` operate on them.
+
+## 7. Maneuver planning
+
+### Impulsive burns
+
+`Thrust(center, radial, intrack, crosstrack, durationRate = 0)` is a burn centered at the `EpochUTC`
+`center`, with components in m/s in the RIC frame of the state it is applied to. A zero
+`durationRate` (s per m/s) makes it impulsive.
 
 ```typescript
-import { RIC } from 'ootk';
+import { EpochUTC, Kilometers, KilometersPerSecond, MetersPerSecond, Thrust, J2000, Vector3D } from 'ootk';
 
-// Convert between RIC and Hill frames for relative motion analysis
-const hillState = ricState.toHill();
+const epoch = EpochUTC.fromDateTimeString('2024-01-28T00:00:00.000Z');
+const state = new J2000(
+  epoch,
+  new Vector3D(6778 as Kilometers, 0 as Kilometers, 0 as Kilometers),
+  new Vector3D(0 as KilometersPerSecond, 7.6686 as KilometersPerSecond, 0 as KilometersPerSecond),
+);
+
+// 10 m/s prograde
+const burn = new Thrust(epoch, 0 as MetersPerSecond, 10 as MetersPerSecond, 0 as MetersPerSecond);
+const after = burn.apply(state);
+
+console.log(`Burn magnitude ${burn.magnitude} m/s, impulsive: ${burn.isImpulsive}`);
+console.log(`Semimajor axis ${state.semimajorAxis.toFixed(2)} -> ${after.semimajorAxis.toFixed(2)} km`);
 ```
 
-### Relative Range and Range Rate
+### Transfers, plane changes and propellant
+
+- `TwoBurnOrbitTransfer.hohmannTransfer(rInit, rFinal)` takes radii in km. `vTransA`, `vTransB` and
+  `deltaV` are in km/s, `tTrans` in seconds; `toManeuvers(epoch)` returns the two `Thrust` objects.
+- `TwoBurnOrbitTransfer.hohmannTransferWithPlaneChange(rInit, rFinal, deltaIncRad)` folds an
+  inclination change into one burn.
+- `PlaneChangeBurn.computeDeltaV(v, deltaIncRad, flightPathAngleRad = 0)` uses
+  2 v cos(gamma) sin(|di| / 2); `PlaneChangeBurn.compute(elements, targetIncRad)` also finds the
+  node and returns the burn epoch and post-burn elements.
+- `PropellantBudget` applies the rocket equation with mass in kg, delta-v in m/s and Isp in s.
 
 ```typescript
-// Calculate range between satellites
-const range = deputy.range(chief, date);
+import { DEG2RAD, EpochUTC, PlaneChangeBurn, PropellantBudget, TwoBurnOrbitTransfer } from 'ootk';
 
-console.log('Separation distance:', range, 'km');
+const leo = 6778; // km
+const geo = 42164; // km
 
-// Calculate range rate (closing velocity)
-const rangeRate = deputy.rangeRate(chief, date);
+const hohmann = TwoBurnOrbitTransfer.hohmannTransfer(leo, geo);
 
-console.log('Closing velocity:', rangeRate, 'km/s');
+console.log(`Burn 1 ${hohmann.vTransA.toFixed(4)} km/s, burn 2 ${hohmann.vTransB.toFixed(4)} km/s`);
+console.log(`Total ${hohmann.deltaV.toFixed(4)} km/s, transfer time ${(hohmann.tTrans / 3600).toFixed(2)} h`);
+
+const [burnA, burnB] = hohmann.toManeuvers(EpochUTC.fromDateTimeString('2024-01-28T00:00:00.000Z'));
+
+console.log(`Second burn at ${burnB.center.toString()}, ${burnA.magnitude.toFixed(1)} m/s first`);
+
+// A 28.5 deg plane change at GEO speed (circular, flight-path angle 0)
+const planeChange = PlaneChangeBurn.computeDeltaV(hohmann.vFinal, 28.5 * DEG2RAD);
+
+console.log(`Plane change at GEO: ${planeChange.toFixed(4)} km/s`);
+
+// Propellant for the whole mission on a 2000 kg spacecraft with Isp 320 s
+const totalMs = (hohmann.deltaV + planeChange) * 1000;
+
+console.log(`Propellant: ${PropellantBudget.propellantUsed(2000, totalMs, 320).toFixed(0)} kg`);
 ```
 
----
+`Waypoint` and `Waypoint.toManeuvers(...)` plan multi-burn rendezvous sequences against a target
+`StateInterpolator`; see `src/maneuver` for the full signature.
 
-## Complete Example: Multi-Feature Integration
+## 8. Optimizers and linear algebra
 
-Here's a comprehensive example that combines multiple advanced features:
+### Downhill simplex (Nelder-Mead)
+
+`DownhillSimplex.solveSimplex(f, simplex, options)` minimises `f(x: Float64Array): number`.
+`generateSimplex(x0, step)` builds the starting simplex. The search stops when both the simplex
+size (`xTolerance`) and the spread of function values (`fTolerance`) fall below their limits, or
+after `maxIter` iterations.
 
 ```typescript
-import {
-  Satellite,
-  Sensor,
-  Sun,
-  RungeKutta89Propagator,
-  ForceModel,
-  StateCovariance,
-  EpochUTC,
-  SpaceObjectType,
-  Degrees,
-  Kilometers,
-  TleLine1,
-  TleLine2,
-} from 'ootk';
+import { DownhillSimplex } from 'ootk';
 
-// 1. Create satellite from TLE
-const sat = new Satellite({
+// Rosenbrock function, minimum at (1, 1)
+const rosenbrock = (x: Float64Array): number => (1 - x[0]) ** 2 + 100 * (x[1] - x[0] ** 2) ** 2;
+
+const start = DownhillSimplex.generateSimplex(Float64Array.from([-1.2, 1.0]), 0.1);
+const best = DownhillSimplex.solveSimplex(rosenbrock, start, { xTolerance: 1e-10, fTolerance: 1e-12, maxIter: 5000 });
+
+console.log(best[0].toFixed(6), best[1].toFixed(6)); // close to 1, 1
+```
+
+### Golden section search
+
+`GoldenSection.search(f, lower, upper, { tolerance, solveMax })` finds the extremum of a unimodal
+function on an interval; `searchMin` and `searchMax` are shortcuts.
+
+```typescript
+import { GoldenSection } from 'ootk';
+
+const xMin = GoldenSection.search((x) => (x - 3) ** 2, 0, 10, { tolerance: 1e-8 });
+const xMax = GoldenSection.searchMax((x) => Math.sin(x), 0, Math.PI);
+
+console.log(xMin.toFixed(6), xMax.toFixed(6)); // 3.000000 1.570796
+```
+
+### Regression
+
+```typescript
+import { PolynomialRegression, SimpleLinearRegression } from 'ootk';
+
+const xs = [0, 1, 2, 3, 4, 5];
+const ys = [1.1, 2.9, 5.2, 7.1, 8.8, 11.2];
+
+const line = new SimpleLinearRegression(xs, ys);
+
+console.log(`y = ${line.slope.toFixed(3)} x + ${line.intercept.toFixed(3)}`);
+console.log(`y(6) = ${line.evaluate(6).toFixed(3)}`);
+
+const quad = PolynomialRegression.solve(Float64Array.from(xs), Float64Array.from(ys.map((y, i) => y + 0.1 * xs[i] ** 2)), 2);
+
+console.log('Quadratic coefficients (highest order first):', Array.from(quad.coefficients).map((c) => c.toFixed(3)));
+```
+
+### Matrix inverse
+
+`Matrix.inverse()` uses Gauss-Jordan elimination with partial pivoting and equilibration. A matrix
+that is singular to working precision makes it throw `SingularMatrixError`; `tryInverse()` returns
+`null` instead.
+
+```typescript
+import { Matrix, SingularMatrixError } from 'ootk';
+
+const a = new Matrix([[4, 7], [2, 6]]);
+
+console.log(a.inverse().elements); // [[0.6, -0.7], [-0.2, 0.4]]
+
+const singular = new Matrix([[1, 2], [2, 4]]);
+
+console.log(singular.tryInverse()); // null
+
+try {
+  singular.inverse();
+} catch (e) {
+  console.log(e instanceof SingularMatrixError); // true
+}
+```
+
+## 9. CCSDS ephemeris files (OEM)
+
+`OemParser.parse(text)` reads a CCSDS 502.0 Orbit Ephemeris Message in KVN form. Data lines follow
+the `META_STOP` of each segment as the standard specifies; the non-standard `DATA_START` /
+`DATA_STOP` markers some tools write are also accepted. `EphemerisSatellite.fromParsedOem(oem)`
+builds an object you can query like a `Satellite`. EME2000, J2000, ICRF and GCRF segments are used
+as J2000, TEME is kept as TEME, Earth-fixed frames (ITRF variants, ECEF) are rotated to J2000, and
+any other `REF_FRAME` is rejected with an error.
+
+```typescript
+import { EphemerisSatellite, OdmExporter, OemParser, Satellite, TleLine1, TleLine2 } from 'ootk';
+
+const iss = new Satellite({
+  name: 'ISS',
   tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
   tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
 });
 
-// 2. Create sensor
-const radar = new Sensor({
-  name: 'Tracking Station',
-  lat: 41.754785 as Degrees,
-  lon: -70.539151 as Degrees,
-  alt: 0.060966 as Kilometers,
-  minAz: 0 as Degrees,
-  maxAz: 360 as Degrees,
-  minEl: 5 as Degrees,
-  maxEl: 90 as Degrees,
-  minRng: 0 as Kilometers,
-  maxRng: 5000 as Kilometers,
-  type: SpaceObjectType.PHASED_ARRAY_RADAR,
-});
+// Write two hours of ephemeris at 60 s steps, then read it back
+const text = OdmExporter.formatOem(iss, new Date('2024-01-28T12:00:00Z'), 2, 60);
+const oem = OemParser.parse(text);
 
-// 3. Calculate passes over next 24 hours
-const startDate = new Date('2024-01-28T00:00:00Z');
-const endDate = new Date('2024-01-29T00:00:00Z');
-const passes = radar.calculatePasses(sat, startDate, endDate, 60);
+console.log(`Segments: ${oem.dataBlocks.length}, states: ${oem.dataBlocks[0].ephemeris.length}`);
+console.log(`Frame: ${oem.dataBlocks[0].metadata.REF_FRAME}`);
 
-console.log(`Found ${passes.length} passes in next 24 hours`);
+const ephemerisSat = EphemerisSatellite.fromParsedOem(oem);
+const eci = ephemerisSat.eci(new Date('2024-01-28T12:30:30Z'));
 
-passes.forEach((pass, i) => {
-  console.log(`\nPass ${i + 1}:`);
-  console.log(`  Start: ${pass.start}`);
-  console.log(`  End: ${pass.end}`);
-  console.log(`  Max Elevation: ${pass.maxEl}°`);
-
-  // 4. Check if pass occurs during daylight
-  const sunTimes = Sun.getTimes(pass.start, radar.lat, radar.lon, radar.alt);
-  const isDaylight = pass.start > sunTimes.sunrise && pass.start < sunTimes.sunset;
-  console.log(`  Daylight pass: ${isDaylight}`);
-
-  // 5. Get satellite position at max elevation
-  const midPassDate = new Date((pass.start.getTime() + pass.end.getTime()) / 2);
-  const rae = sat.rae(radar, midPassDate);
-  console.log(`  Range at max elevation: ${rae.rng.toFixed(1)} km`);
-
-  // 6. Calculate Doppler shift
-  const doppler = sat.applyDoppler(radar, midPassDate, 2200);
-  console.log(`  Doppler shift: ${doppler.shift.toFixed(3)} MHz`);
-});
-
-// 7. High-fidelity propagation for next orbit
-const forceModel = new ForceModel();
-forceModel.setEarthGravity(8, 8);
-forceModel.setThirdBodyGravity({ sun: true, moon: true });
-forceModel.setAtmosphericDrag(419725, 916); // ISS approximate mass and area
-
-const propagator = new RungeKutta89Propagator(
-  sat.toJ2000(startDate),
-  forceModel
-);
-
-const oneOrbitLater = EpochUTC.fromDateTime(
-  new Date(startDate.getTime() + 92 * 60 * 1000) // ~92 minutes
-);
-
-const propagatedState = propagator.propagate(oneOrbitLater);
-
-console.log('\nPropagated position (high-fidelity):');
-console.log(`  X: ${propagatedState.position.x.toFixed(3)} km`);
-console.log(`  Y: ${propagatedState.position.y.toFixed(3)} km`);
-console.log(`  Z: ${propagatedState.position.z.toFixed(3)} km`);
-
-// 8. Compare with SGP4
-const sgp4State = sat.eci(oneOrbitLater.toDateTime());
-
-console.log('\nSGP4 position:');
-console.log(`  X: ${sgp4State.x.toFixed(3)} km`);
-console.log(`  Y: ${sgp4State.y.toFixed(3)} km`);
-console.log(`  Z: ${sgp4State.z.toFixed(3)} km`);
-
-// 9. Uncertainty analysis
-const covariance = StateCovariance.fromTle(sat, startDate);
-
-console.log('\nPosition uncertainty (1-sigma):');
-console.log(`  ${covariance.positionSigma.toFixed(3)} km`);
+console.log(eci ? eci.position : 'outside the ephemeris span');
 ```
 
----
+## 10. Performance notes
 
-## Performance Considerations
-
-### When to Use Each Propagator
-
-| Propagator | Speed | Accuracy | Best For |
-|------------|-------|----------|----------|
-| **SGP4** | Fastest | Good (< 7 days) | Real-time tracking, short arcs |
-| **Kepler** | Very Fast | Basic | Quick estimates, two-body motion |
-| **RK4** | Fast | Good | Balance of speed/accuracy |
-| **RK89** | Slow | Excellent | High-precision, long arcs |
-| **DP54** | Medium | Very Good | Adaptive step, general purpose |
-
-### Optimization Tips
-
-1. **Use appropriate force models** - Don't include drag for GEO satellites
-2. **Limit gravity field order** - 4x4 is often sufficient, 8x8 for high precision
-3. **Choose propagator wisely** - SGP4 for < 7 days, numerical for longer
-4. **Batch calculations** - Calculate multiple epochs in one propagation
-5. **Coordinate frame** - Minimize transformations between frames
-
----
-
-## Additional Resources
-
-- **Examples Directory**: `/examples/` contains working code for all major features
-- **Type Safety**: OOTK uses TypeScript unit types (Kilometers, Radians, etc.) to prevent errors
-- **API Documentation**: Full API docs available in the repository
-- **Test Suite**: `/test/` directory shows comprehensive usage examples
-
----
-
-## Conclusion
-
-OOTK is far more than an SGP4 library. It's a complete orbital mechanics toolkit offering:
-
-- **Professional-grade propagation** with multiple numerical integrators
-- **Initial orbit determination** from various observation types
-- **Sensor modeling** with pass prediction and FOV checking
-- **Astronomical calculations** for Sun, Moon, and celestial mechanics
-- **Comprehensive coordinate systems** with seamless transformations
-- **High-fidelity force modeling** including gravity harmonics, drag, and SRP
-- **Maneuver planning** and trajectory optimization
-- **Uncertainty quantification** with covariance analysis
-- **Multiple time systems** with leap second support
-
-Whether you're building a satellite tracking application, conducting orbital analysis, planning missions, or developing space situational awareness systems, OOTK provides the tools you need for professional-grade orbital mechanics computations.
+- SGP4 (`Satellite`, `Sgp4Propagator`) is by far the cheapest way to get a position and is the
+  right model for catalog TLEs. Numerical propagation is for when you need force-model control or
+  a state that did not come from a TLE.
+- `RungeKutta89Propagator` takes larger steps than `DormandPrince54Propagator` at tight tolerances;
+  the fixed-step `RungeKutta4Propagator` has predictable cost but needs a small step for accuracy.
+- Spherical-harmonic gravity cost grows with degree squared; 8x8 or 12x12 is enough for most LEO
+  work, and degree and order above 36 are clamped.
+- Generate an ephemeris once with `Propagator.ephemeris` and interpolate it instead of propagating
+  repeatedly to nearby epochs; compress long ephemerides with `ChebyshevCompressor`.
+- For pass prediction over long spans, `AccessCalculator` (coarse step plus edge bisection) is much
+  cheaper than `Sensor.calculatePasses` (one propagation per second).
+- `CatalogScreener` runs the cheap shell filter first; keep `skipCoarseFilter` false for large
+  catalogs.

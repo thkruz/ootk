@@ -121,12 +121,16 @@ export class ChebyshevCompressor {
    *
    * @param cpr Coefficients per revolution. Default is 21, which provides
    *            a good balance between accuracy and compression.
+   * @param segmentDuration Optional segment length in seconds. Defaults to one
+   *            orbital period of the state at the window start
+   *            (`StateVector.period` is in minutes and is converted to seconds).
    * @returns A new ChebyshevInterpolator that can reconstruct positions
    *          from the polynomial coefficients.
    */
   compress(cpr = 21, segmentDuration?: Seconds): ChebyshevInterpolator {
     const { start, end } = this.interpolator_.window();
-    const period = segmentDuration ?? this.interpolator_.interpolate(start)!.period;
+    // StateVector.period is in minutes; the segment step below is in seconds.
+    const period = segmentDuration ?? this.interpolator_.interpolate(start)!.period * 60;
     const coefficients: ChebyshevCoefficients[] = [];
     let current = start;
 

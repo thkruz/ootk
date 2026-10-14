@@ -64,6 +64,9 @@ export class AccessCalculator {
   /** Milliseconds per day */
   private static readonly MS_PER_DAY_ = 86400000;
 
+  /** Resolution (ms) to which rise and set edges are bisected after the coarse step brackets them. */
+  static readonly EDGE_RESOLUTION_MS = 1;
+
   /** Prevent instantiation */
   private constructor() {
     // Static utility class
@@ -73,12 +76,24 @@ export class AccessCalculator {
    * Calculates all access windows between a ground observer and a space object
    * within a specified time interval.
    *
-   * @param observer - The ground-based observer
+   * The interval is sampled every `stepMs` (the coarse step). Whenever two consecutive samples
+   * differ in accessibility, the rise or set instant between them is located by bisection to
+   * {@link EDGE_RESOLUTION_MS} (1 ms), so window edges are not late by up to a step. A pass
+   * shorter than `stepMs` that falls entirely between two samples can still be missed; reduce
+   * `stepMs` to catch it.
+   *
+   * Window `start` is the first accessible millisecond (or `start` itself when the target is
+   * already accessible at `start`) and `end` is the first millisecond at which it is no longer
+   * accessible (or `end` itself when the pass is still in progress at `end`), so `duration` is
+   * end - start in ms. `maxElevation` / `maxElevationTime` are the highest coarse sample (or edge)
+   * inside the window, so they always lie within [start, end].
+   *
+   * @param observer - The ground-based observer; a moving observer is evaluated at each instant via `llaAt`
    * @param target - The space object to track
    * @param start - Start of the search interval
    * @param end - End of the search interval
    * @param constraints - Optional visibility constraints
-   * @param stepMs - Time step in milliseconds (default: 10000)
+   * @param stepMs - Coarse sampling step in milliseconds (default: 10000); edges are then refined to 1 ms
    * @returns Array of access windows found within the interval
    */
   static calculateAccess(
@@ -93,7 +108,10 @@ export class AccessCalculator {
     const startTime = start.getTime();
     const endTime = end.getTime();
 
-    // Initialize state
+    if (!(stepMs > 0) || endTime < startTime) {
+      return windows;
+    }
+
     const state: AccessState = {
       isInAccess: false,
       windowStart: null,
@@ -102,53 +120,37 @@ export class AccessCalculator {
       rangeAtMaxEl: 0 as Kilometers,
     };
 
-    // Check visibility 1 step before start for initial state detection
-    const preStartTime = new Date(startTime - stepMs);
-    const preStartRae = AccessCalculator.getRae_(target, observer, preStartTime);
+    let prevTimeMs = startTime;
 
-    if (preStartRae && AccessCalculator.isAccessible_(preStartRae, target, observer, preStartTime, constraints)) {
-      state.isInAccess = true;
-      state.windowStart = start; // Window started before our interval
-      state.maxEl = preStartRae.el;
-      state.maxElTime = preStartTime;
-      state.rangeAtMaxEl = preStartRae.rng;
-    }
-
-    // Main loop through time interval
-    for (let timeMs = startTime; timeMs <= endTime; timeMs += stepMs) {
+    for (let timeMs = startTime; ; timeMs = Math.min(timeMs + stepMs, endTime)) {
       const curTime = new Date(timeMs);
       const rae = AccessCalculator.getRae_(target, observer, curTime);
-
-      if (!rae) {
-        // Propagation failed - treat as not accessible
-        if (state.isInAccess) {
-          // End current window
-          windows.push(AccessCalculator.createWindow_(state, curTime, observer, target));
-          AccessCalculator.resetState_(state);
-        }
-        continue;
-      }
-
-      const isAccessible = AccessCalculator.isAccessible_(rae, target, observer, curTime, constraints);
+      const isAccessible = rae !== null && AccessCalculator.isAccessible_(rae, target, observer, curTime, constraints);
 
       if (!state.isInAccess && isAccessible) {
-        // Entering access window
-        state.isInAccess = true;
-        state.windowStart = curTime;
+        // Rise: the first sample of the interval opens the window at `start`; otherwise bisect
+        // between the last inaccessible sample and this one.
+        const riseMs = timeMs === startTime
+          ? startTime
+          : AccessCalculator.findEdge_(observer, target, constraints, prevTimeMs, timeMs, false);
+
+        AccessCalculator.openWindow_(state, observer, target, riseMs, rae, curTime);
+      } else if (state.isInAccess && !isAccessible) {
+        // Set: bisect between the last accessible sample and this one.
+        const setMs = AccessCalculator.findEdge_(observer, target, constraints, prevTimeMs, timeMs, true);
+
+        windows.push(AccessCalculator.createWindow_(state, new Date(setMs), observer, target));
+        AccessCalculator.resetState_(state);
+      } else if (state.isInAccess && rae && rae.el > state.maxEl) {
         state.maxEl = rae.el;
         state.maxElTime = curTime;
         state.rangeAtMaxEl = rae.rng;
-      } else if (state.isInAccess && !isAccessible) {
-        // Exiting access window
-        windows.push(AccessCalculator.createWindow_(state, curTime, observer, target));
-        AccessCalculator.resetState_(state);
-      } else if (state.isInAccess) {
-        // Still in access - track max elevation
-        if (rae.el > state.maxEl) {
-          state.maxEl = rae.el;
-          state.maxElTime = curTime;
-          state.rangeAtMaxEl = rae.rng;
-        }
+      }
+
+      prevTimeMs = timeMs;
+
+      if (timeMs >= endTime) {
+        break;
       }
     }
 
@@ -161,11 +163,14 @@ export class AccessCalculator {
   }
 
   /**
-   * Finds the next access window after a specified time.
+   * Finds the next access window that begins at or after a specified time.
+   *
+   * A pass that rises exactly at `after` is returned. A pass already in progress at `after`
+   * (the target is accessible 1 ms before `after`) is skipped, and the next one is returned.
    *
    * @param observer - The ground-based observer
    * @param target - The space object to track
-   * @param after - Search for windows starting after this time
+   * @param after - Search for windows starting at or after this time
    * @param constraints - Optional visibility constraints
    * @param maxSearchDays - Maximum number of days to search (default: 7)
    * @returns The next access window, or null if none found within search period
@@ -177,13 +182,20 @@ export class AccessCalculator {
     constraints: AccessConstraints = {},
     maxSearchDays: number = AccessCalculator.DEFAULT_MAX_SEARCH_DAYS_,
   ): AccessWindow | null {
-    const endTime = new Date(after.getTime() + maxSearchDays * AccessCalculator.MS_PER_DAY_);
+    const afterMs = after.getTime();
+    const endTime = new Date(afterMs + maxSearchDays * AccessCalculator.MS_PER_DAY_);
     const windows = AccessCalculator.calculateAccess(observer, target, after, endTime, constraints);
 
-    // Return first window that starts after the specified time
-    // (handles case where we're in the middle of a pass)
     for (const window of windows) {
-      if (window.start.getTime() > after.getTime()) {
+      const windowStartMs = window.start.getTime();
+
+      if (windowStartMs > afterMs) {
+        return window;
+      }
+
+      // A window clipped to `after`: it rises exactly at `after` only if the target was not
+      // accessible one edge resolution earlier; otherwise the pass is already in progress.
+      if (windowStartMs === afterMs && !AccessCalculator.isAccessibleAt_(observer, target, constraints, afterMs - AccessCalculator.EDGE_RESOLUTION_MS)) {
         return window;
       }
     }
@@ -229,12 +241,90 @@ export class AccessCalculator {
     date: Date,
   ): RaeVec3<Kilometers, Degrees> | null {
     const ecef = target.ecef(date);
+    const observerLla = observer.llaAt(date);
 
-    if (!ecef) {
+    if (!ecef || !observerLla) {
       return null;
     }
 
-    return ecef2rae(observer.lla(), ecef);
+    return ecef2rae(observerLla, ecef);
+  }
+
+  /**
+   * True if the target is accessible at `timeMs` (propagation failure counts as not accessible).
+   * @internal
+   */
+  private static isAccessibleAt_(
+    observer: GroundObject,
+    target: SpaceObject,
+    constraints: AccessConstraints,
+    timeMs: number,
+  ): boolean {
+    const date = new Date(timeMs);
+    const rae = AccessCalculator.getRae_(target, observer, date);
+
+    return rae !== null && AccessCalculator.isAccessible_(rae, target, observer, date, constraints);
+  }
+
+  /**
+   * Bisects the accessibility transition between two samples to {@link EDGE_RESOLUTION_MS}.
+   *
+   * `loMs` has accessibility `wasAccessible` and `hiMs` the opposite. The bracket is halved on
+   * whole milliseconds until hiMs - loMs <= 1 ms, and the first millisecond with the new state
+   * (`hiMs`) is returned: the rise time for a rise, the first inaccessible instant for a set.
+   * @internal
+   */
+  private static findEdge_(
+    observer: GroundObject,
+    target: SpaceObject,
+    constraints: AccessConstraints,
+    loMs: number,
+    hiMs: number,
+    wasAccessible: boolean,
+  ): number {
+    let lo = loMs;
+    let hi = hiMs;
+
+    while (hi - lo > AccessCalculator.EDGE_RESOLUTION_MS) {
+      const mid = Math.floor((lo + hi) / 2);
+
+      if (AccessCalculator.isAccessibleAt_(observer, target, constraints, mid) === wasAccessible) {
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+
+    return hi;
+  }
+
+  /**
+   * Opens a window at `riseMs`. The maximum elevation starts from the rise instant when it can
+   * be evaluated, and from the triggering sample otherwise.
+   * @internal
+   */
+  private static openWindow_(
+    state: AccessState,
+    observer: GroundObject,
+    target: SpaceObject,
+    riseMs: number,
+    sampleRae: RaeVec3<Kilometers, Degrees> | null,
+    sampleTime: Date,
+  ): void {
+    state.isInAccess = true;
+    state.windowStart = new Date(riseMs);
+
+    const riseRae = riseMs === sampleTime.getTime() ? sampleRae : AccessCalculator.getRae_(target, observer, new Date(riseMs));
+
+    if (riseRae && sampleRae && riseRae.el > sampleRae.el) {
+      state.maxEl = riseRae.el;
+      state.maxElTime = new Date(riseMs);
+      state.rangeAtMaxEl = riseRae.rng;
+    } else if (sampleRae) {
+      state.maxEl = sampleRae.el;
+      state.maxElTime = sampleTime;
+      state.rangeAtMaxEl = sampleRae.rng;
+    }
   }
 
   /**

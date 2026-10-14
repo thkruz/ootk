@@ -285,11 +285,11 @@ describe('LambertIOD', () => {
    * ==========================================================================
    */
 
-  describe('Prograde vs Retrograde', () => {
+  describe('Short way vs long way (shortWay, formerly posigrade)', () => {
     const startEpoch = EpochUTC.fromDateTimeString('2024-01-01T12:00:00.000Z');
     const propagator = new KeplerPropagator(createLeoOrbit(startEpoch));
 
-    it('should use prograde by default', () => {
+    it('should use the short way by default', () => {
       const { p1, p2, t1, t2, truthState } = generateTwoPositions(propagator, startEpoch, 300);
 
       const iod = new LambertIOD();
@@ -297,16 +297,16 @@ describe('LambertIOD', () => {
 
       expect(result).not.toBeNull();
       if (result) {
-        // For a prograde orbit, velocity should be in the same general direction
+        // A 300 s arc of a LEO orbit sweeps well under 180 deg, so the short way is the truth
         validateStateAccuracy(result, truthState, 0.1, 0.001);
       }
     });
 
-    it('should accept prograde=true explicitly', () => {
+    it('should accept shortWay=true explicitly', () => {
       const { p1, p2, t1, t2, truthState } = generateTwoPositions(propagator, startEpoch, 300);
 
       const iod = new LambertIOD();
-      const result = iod.estimate(p1, p2, t1, t2, { posigrade: true });
+      const result = iod.estimate(p1, p2, t1, t2, { shortWay: true });
 
       expect(result).not.toBeNull();
       if (result) {
@@ -314,12 +314,12 @@ describe('LambertIOD', () => {
       }
     });
 
-    it('should produce different result with prograde=false', () => {
+    it('should produce different result with shortWay=false', () => {
       const { p1, p2, t1, t2 } = generateTwoPositions(propagator, startEpoch, 300);
 
       const iod = new LambertIOD();
-      const resultPrograde = iod.estimate(p1, p2, t1, t2, { posigrade: true });
-      const resultRetrograde = iod.estimate(p1, p2, t1, t2, { posigrade: false });
+      const resultPrograde = iod.estimate(p1, p2, t1, t2, { shortWay: true });
+      const resultRetrograde = iod.estimate(p1, p2, t1, t2, { shortWay: false });
 
       // Both should return results (may or may not be null depending on geometry)
       if (resultPrograde && resultRetrograde) {
@@ -637,5 +637,51 @@ describe('LambertIOD', () => {
         expect(Math.abs(recoveredElements.inclinationDegrees - originalElements.inclinationDegrees)).toBeLessThan(0.5);
       }
     });
+  });
+});
+
+describe('LambertIOD QA 2026-10 regression', () => {
+  const vec = (x: number, y: number, z: number) => new Vector3D(x as Kilometers, y as Kilometers, z as Kilometers);
+  const t1 = EpochUTC.fromDateTimeString('2024-01-01T00:00:00.000Z');
+  const reaches = (state: J2000, target: Vector3D<Kilometers>, t: EpochUTC) =>
+    new KeplerPropagator(state.toClassicalElements()).propagate(t).position.distance(target);
+
+  /*
+   * Vallado, Fundamentals of Astrodynamics and Applications, 4th ed., Chapter 7 Lambert worked
+   * example: r1 = 15945.34 I km, r2 = 12214.83899 I + 10249.46731 J km, dt = 76 min; short-way
+   * departure velocity v1 = 2.058913 I + 2.915965 J km/s.
+   */
+  const r1 = vec(15945.34, 0, 0);
+  const r2 = vec(12214.83899, 10249.46731, 0);
+  const t2 = t1.roll((76 * 60) as Seconds);
+
+  it('reproduces the Vallado short-way departure velocity', () => {
+    const state = new LambertIOD().estimate(r1, r2, t1, t2, { shortWay: true });
+
+    expect(state).not.toBeNull();
+    expect(state!.velocity.x).toBeCloseTo(2.058913, 4);
+    expect(state!.velocity.y).toBeCloseTo(2.915965, 4);
+    expect(Math.abs(state!.velocity.z)).toBeLessThan(1e-9);
+  });
+
+  it('long way reaches r2 at t2 with retrograde angular momentum relative to r1 x r2', () => {
+    const state = new LambertIOD().estimate(r1, r2, t1, t2, { shortWay: false });
+
+    expect(state).not.toBeNull();
+    expect(reaches(state!, r2, t2)).toBeLessThan(1e-3);
+    // The long way sweeps 360 deg - 40 deg, so h is opposite to r1 x r2.
+    expect(state!.position.cross(state!.velocity).dot(r1.cross(r2))).toBeLessThan(0);
+  });
+
+  it('selects the two one-revolution solutions with the sign of nRev; both reach r2', () => {
+    const t2Long = t1.roll((10 * 3600) as Seconds);
+    const plus = new LambertIOD().estimate(r1, r2, t1, t2Long, { nRev: 1 });
+    const minus = new LambertIOD().estimate(r1, r2, t1, t2Long, { nRev: -1 });
+
+    expect(plus).not.toBeNull();
+    expect(minus).not.toBeNull();
+    expect(reaches(plus!, r2, t2Long)).toBeLessThan(1e-3);
+    expect(reaches(minus!, r2, t2Long)).toBeLessThan(1e-3);
+    expect(plus!.velocity.distance(minus!.velocity)).toBeGreaterThan(0.01);
   });
 });

@@ -59,14 +59,24 @@ export class EulerAngles {
   }
 
   /**
-   * Create a new EulerAngles object from 3-2-1 ordered direction cosine matrix c.
+   * Create a new EulerAngles object from a 3-2-1 ordered direction cosine
+   * matrix c, as produced by {@link EulerAngles.dcm321}.
+   *
+   * From c = R1(roll) R2(pitch) R3(yaw):
+   * c[1][2] = sin(roll) cos(pitch), c[2][2] = cos(roll) cos(pitch),
+   * c[0][1] = cos(pitch) sin(yaw), c[0][0] = cos(pitch) cos(yaw),
+   * c[0][2] = -sin(pitch). Using atan2 on the numerator/denominator pairs keeps
+   * the quadrant, so roll and yaw are recovered over (-pi, pi] and pitch over
+   * [-pi/2, pi/2] (Schaub and Junkins, Analytical Mechanics of Space Systems,
+   * 4th ed., section 3.3, 3-2-1 Euler angle set). At pitch = +/-90 deg
+   * the set is singular (gimbal lock) and roll and yaw are not unique.
    * @param c 3-2-1 ordered direction cosine matrix.
-   * @returns EulerAngles object.
+   * @returns EulerAngles object, angles in radians.
    */
   static fromDcm321(c: Matrix): EulerAngles {
-    const roll = Math.atan(c.elements[1][2] / c.elements[2][2]) as Radians;
-    const pitch = -Math.asin(c.elements[0][2]) as Radians;
-    const yaw = Math.atan(c.elements[0][1] / c.elements[0][0]) as Radians;
+    const roll = Math.atan2(c.elements[1][2], c.elements[2][2]) as Radians;
+    const pitch = -Math.asin(Math.max(-1, Math.min(1, c.elements[0][2]))) as Radians;
+    const yaw = Math.atan2(c.elements[0][1], c.elements[0][0]) as Radians;
 
     return new EulerAngles(roll, pitch, yaw);
   }

@@ -7,12 +7,13 @@ This module provides precise time handling for orbital mechanics calculations. D
 For most use cases, start with `EpochUTC`:
 
 ```typescript
-import { EpochUTC } from 'ootk';
+import { EpochUTC, Seconds } from 'ootk';
 
 // Create from various sources
 const now = EpochUTC.now();
 const fromDate = EpochUTC.fromDate({ year: 2024, month: 6, day: 15, hour: 12 });
 const fromString = EpochUTC.fromDateTimeString('2024-06-15T12:00:00Z');
+const fromJsDate = EpochUTC.fromDateTime(new Date('2024-06-15T12:00:00Z'));
 
 // Time arithmetic
 const oneHourLater = now.roll(3600 as Seconds);
@@ -71,16 +72,16 @@ UTC ──(+leap seconds)──► TAI ──(+32.184s)──► TT ──(+rela
 - As an intermediate for UTC ↔ TT conversions
 
 ### Use EpochTT when
-
+- Calculating Earth precession and nutation (ootk does not model polar motion)
 - Calculating Earth precession, nutation, or polar motion
-- Using IERS Earth Orientation Parameters
+- Evaluating precession and nutation series (IERS Earth Orientation Parameters themselves are tabulated by UTC MJD, not TT)
 - Working with astronomical almanacs
 - Satellite force modeling that references Earth orientation
 
 ### Use EpochTDB when
 
 - Querying JPL planetary ephemerides (DE430, DE440, etc.)
-- Calculating Sun, Moon, or planet positions
+- Calculating Sun, Moon, or planet positions with your own ephemeris code (ootk's `Sun`, `Moon` and `SolarSystem` bodies take a JavaScript `Date` as UTC and convert internally)
 - Interplanetary mission planning
 - Working in barycentric coordinate systems (ICRF/BCRS)
 
@@ -127,32 +128,44 @@ GPS Time was synchronized with UTC in 1980 when there were 19 leap seconds. GPS 
 
 ## Common Patterns
 
-### Propagation with Force Models
+### Earth Orientation
 
 ```typescript
-const utc = EpochUTC.fromDateTimeString('2024-06-15T12:00:00Z');
-const tt = utc.toTT();
+import { Earth, EpochUTC } from 'ootk';
 
-// Use TT for Earth orientation calculations
-const precessionMatrix = calculatePrecession(tt.toJulianCenturies());
+const utc = EpochUTC.fromDateTimeString('2024-06-15T12:00:00Z');
+
+// Earth orientation helpers take the UTC epoch and convert to TT internally
+const precession = Earth.precession(utc); // IAU 1976 zeta, theta, zed (rad)
+const nutation = Earth.nutation(utc); // IAU 1980, 106 terms: dPsi, dEps, eps, gast (rad)
+
+// TT Julian centuries, if you evaluate your own series
+const t = utc.toTT().toJulianCenturies();
 ```
 
-### Planetary Positions
+### Sun, Moon and Planetary Positions
 
 ```typescript
-const utc = EpochUTC.now();
-const tdb = utc.toTDB();
+import { EpochUTC, Moon, Sun } from 'ootk';
 
-// Use TDB for JPL ephemeris queries
-const sunPosition = ephemeris.getSunPosition(tdb);
-const moonPosition = ephemeris.getMoonPosition(tdb);
+const date = new Date('2024-06-15T12:00:00Z');
+
+// ootk's body APIs take a JavaScript Date interpreted as UTC (not an EpochTDB);
+// the time-scale conversions happen inside.
+const sunPosition = Sun.eci(date); // J2000, km
+const moonPosition = Moon.eci(date); // J2000, km
+
+// TDB seconds past J2000, for example as the argument to your own JPL ephemeris reader
+const tdbSeconds = EpochUTC.fromDateTime(date).toTDB().posix - 946728000;
 ```
 
 ### GPS Data Processing
 
 ```typescript
+import { EpochGPS, EpochUTC } from 'ootk';
+
 // Convert GPS week/seconds to UTC
-const gps = new EpochGPS(week, seconds);
+const gps = new EpochGPS(2318, 302400);
 const utc = gps.toUTC();
 
 // Or convert UTC to GPS format
@@ -168,6 +181,8 @@ const reference = EpochGPS.getReference();
 All Epoch classes provide Julian Date conversions:
 
 ```typescript
+import { EpochUTC } from 'ootk';
+
 const epoch = EpochUTC.now();
 
 // Julian Date (days since 4713 BCE)
@@ -185,12 +200,14 @@ const mjdGsfc = epoch.toMjdGsfc();
 
 ## Sidereal Time
 
-EpochUTC provides Greenwich Mean Sidereal Time (GMST), essential for converting between Earth-fixed and inertial reference frames:
+EpochUTC provides Greenwich Mean Sidereal Time (GMST, IAU 1982), essential for converting between Earth-fixed and inertial reference frames. UTC stands in for UT1 (no DUT1 correction, so up to 0.9 s or about 420 m of rotation at the equator):
 
 ```typescript
+import { EpochUTC } from 'ootk';
+
 const epoch = EpochUTC.now();
 
-// GMST in radians (0 to 2π)
+// GMST in radians (0 to 2 pi)
 const gmstRad = epoch.gmstAngle();
 
 // GMST in degrees (0 to 360)

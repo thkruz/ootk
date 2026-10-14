@@ -18,10 +18,14 @@
 /**
  * Ground swath geometry for a nadir-pointing imager.
  *
- * Every function is pure and works in any Earth-centred frame that differs from
- * ECEF only by a rotation about the z axis (ECEF itself, or TEME/ECI for the
- * instantaneous geometry), because the WGS84 ellipsoid is symmetric about z.
- * Distances are km, angles radians.
+ * Every function is pure. Positions may be given in any Earth-centred frame that
+ * differs from ECEF only by a rotation about the z axis (ECEF itself, or TEME/ECI
+ * for the instantaneous geometry), because the WGS84 ellipsoid is symmetric about z.
+ * Velocities are NOT interchangeable: an inertial velocity differs from the
+ * Earth-fixed one by omega x r, which tilts the along-track direction (about
+ * 3.5 deg of heading for a 98 deg LEO at the equator, roughly 30 km of along-track
+ * shift at the edge of a 1000 km swath). Pass an Earth-fixed (ECEF) velocity when
+ * the swath must follow the ground track. Distances are km, angles radians.
  */
 
 import { Radians } from '../types/types';
@@ -137,6 +141,8 @@ const frameInto_ = (rx: number, ry: number, rz: number, vx: number, vy: number, 
 /**
  * Local frame of a sample: `up` is the WGS84 geodetic normal under the satellite,
  * `along` the velocity projected onto the local horizontal, `right = along x up`.
+ * `vEcefKm` must be the Earth-fixed velocity for a ground-track-aligned frame; an inertial
+ * velocity rotates `along` by the omega x r term (see the module note).
  * @throws {Error} when the velocity has no horizontal component.
  */
 export function swathFrame(rEcefKm: SwathVec3, vEcefKm: SwathVec3): SwathFrame {
@@ -174,10 +180,25 @@ export function horizonHalfAngleRad(rEcefKm: SwathVec3): number {
 /**
  * Full sensor FOV (rad) that images a ground swath `widthKm` wide from `altKm`,
  * on a sphere of radius {@link SWATH_MEAN_EARTH_RADIUS_KM}.
+ *
+ * With R the sphere radius, h the altitude and lambda = width / (2R) the Earth central
+ * half-angle of the swath, the look half-angle is atan2(sin lambda, (R + h)/R - cos lambda).
+ * The widest swath visible from altitude h ends at the geometric horizon,
+ * lambda_max = acos(R / (R + h)); wider requests have no line of sight and return NaN, as do
+ * negative widths and non-positive altitudes. Callers that want the horizon-limited FOV
+ * instead should clamp `widthKm` to 2 R acos(R / (R + h)) first.
+ *
+ * @param widthKm - Ground swath width (km)
+ * @param altKm - Altitude above the sphere (km)
+ * @returns Full FOV in radians, or NaN when the swath extends past the horizon
  */
 export function fovFromSwathWidth(widthKm: number, altKm: number): Radians {
   const r = SWATH_MEAN_EARTH_RADIUS_KM;
   const lam = widthKm / (2 * r);
+
+  if (!(widthKm >= 0) || !(altKm > 0) || lam > Math.acos(r / (r + altKm))) {
+    return Number.NaN as Radians;
+  }
 
   return (2 * Math.atan2(Math.sin(lam), (r + altKm) / r - Math.cos(lam))) as Radians;
 }

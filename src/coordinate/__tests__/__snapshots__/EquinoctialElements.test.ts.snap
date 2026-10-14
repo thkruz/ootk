@@ -2,45 +2,45 @@
 
 exports[`ClassicalElements > should return the ClassicalElements object 1`] = `
 ClassicalElements {
-  "argPerigee": 1.7497725502749217,
+  "argPerigee": 1.7497725502749226,
   "eccentricity": 0.0006908917666211547,
   "epoch": EpochUTC {
     "posix": 1705243179.914,
   },
   "inclination": 0.7503068041317155,
   "mu": 398600.4415,
-  "rightAscension": 0.17555503341584255,
+  "rightAscension": 0.17555503341584267,
   "semimajorAxis": 6935.754028093152,
-  "trueAnomaly": -0.5334142966624242,
+  "trueAnomaly": 5.749771010517162,
 }
 `;
 
 exports[`ClassicalElements > should return the ClassicalElements object 2`] = `
 ClassicalElements {
-  "argPerigee": 1.5622345094945798,
+  "argPerigee": 1.56223450949458,
   "eccentricity": 0.0008533645148705458,
   "epoch": EpochUTC {
     "posix": 1705243179.914,
   },
   "inclination": 2.4961547762752434,
   "mu": 398600.4415,
-  "rightAscension": 0.296230054374017,
+  "rightAscension": 0.29623005437401684,
   "semimajorAxis": 6937.389795521736,
-  "trueAnomaly": -0.32533674963545683,
+  "trueAnomaly": 5.957848557544129,
 }
 `;
 
 exports[`ClassicalElements > should return the PositionVelocity object 1`] = `
 {
   "position": Vector3D {
-    "x": 1538.2233358428962,
-    "y": 5102.261204021967,
-    "z": 4432.634965003576,
+    "x": 1538.2233358428896,
+    "y": 5102.261204021968,
+    "z": 4432.634965003578,
   },
   "velocity": Vector3D {
-    "x": -7.3415189093793,
-    "y": 0.6516718453998642,
-    "z": 1.7933882499862026,
+    "x": -7.341518909379302,
+    "y": 0.6516718453998587,
+    "z": 1.7933882499861984,
   },
 }
 `;
@@ -49,13 +49,13 @@ exports[`ClassicalElements > should return the PositionVelocity object 2`] = `
 {
   "position": Vector3D {
     "x": 3699.9682301219336,
-    "y": -4340.514588573352,
-    "z": 3939.5098844969084,
+    "y": -4340.514588573353,
+    "z": 3939.5098844969075,
   },
   "velocity": Vector3D {
-    "x": -6.276352257339577,
-    "y": -3.9904909019658032,
-    "z": 1.4943961405848338,
+    "x": -6.2763522573395765,
+    "y": -3.9904909019658024,
+    "z": 1.494396140584834,
   },
 }
 `;

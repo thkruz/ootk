@@ -38,7 +38,7 @@ function example1BasicLambert(): void {
   // Solve Lambert's problem
   const lambert = new LambertIOD();
   const stateVector = lambert.estimate(p1, p2, t1, t2, {
-    posigrade: true,
+    shortWay: true,
     nRev: 0,
   });
 
@@ -288,7 +288,7 @@ function example5MultiRevolution(): void {
   // Try 0, 1, and 2 complete revolutions
   for (let nRev = 0; nRev <= 2; nRev++) {
     const solution = lambert.estimate(p1, p2, t1, t2, {
-      posigrade: true,
+      shortWay: true,
       nRev,
     });
 
@@ -325,11 +325,11 @@ function example6PathComparison(): void {
 
   const lambert = new LambertIOD();
 
-  // Short path (posigrade = true)
-  const shortPath = lambert.estimate(p1, p2, t1, t2, { posigrade: true });
+  // Short path (shortWay = true)
+  const shortPath = lambert.estimate(p1, p2, t1, t2, { shortWay: true });
 
-  // Long path (posigrade = false)
-  const longPath = lambert.estimate(p1, p2, t1, t2, { posigrade: false });
+  // Long path (shortWay = false)
+  const longPath = lambert.estimate(p1, p2, t1, t2, { shortWay: false });
 
   console.log('Transfer between nearly opposite points:\n');
 

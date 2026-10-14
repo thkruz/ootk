@@ -1,5 +1,5 @@
 import { ValidationError } from '../errors';
-import { DEG2RAD, MILLISECONDS_TO_DAYS, PI, RAD2DEG, TAU } from '../utils/constants';
+import { DEG2RAD, PI, RAD2DEG, TAU } from '../utils/constants';
 import { Degrees, EcefVec3, EnuVec3, GreenwichMeanSiderealTime, Kilometers, LlaVec3, Radians, RaeVec3, RfVec3, RuvVec3, SezVec3, TemeVec3 } from '../types/types';
 import { Earth } from '../body/Earth';
 import { Sgp4 } from '../sgp4/sgp4';
@@ -85,9 +85,12 @@ export function eci2ecef<T extends number>(eci: TemeVec3<T>, gmst: number): Ecef
  * **Coordinate Frame Transformation: TEME → Geodetic (WGS84)**
  *
  * Internally converts TEME to ECEF via GMST rotation, then iteratively solves
- * for geodetic latitude on the WGS84 ellipsoid.
+ * for geodetic latitude on the WGS84 ellipsoid. Altitude uses the form that is regular on
+ * the polar axis, h = p cos(lat) + z sin(lat) - a sqrt(1 - e^2 sin^2(lat))
+ * (Vallado, Fundamentals of Astrodynamics and Applications, 4th ed., Algorithm 12 discussion;
+ * equivalent to p / cos(lat) - N away from the poles). On the polar axis (p = 0) this gives
+ * lat = +/-90 deg and h = |z| - b exactly.
  *
- * @variation cached - results are cached
  * @param eci - TEME coordinates (inertial, from SGP4)
  * @param gmst - Greenwich Mean Sidereal Time in radians
  * @returns Geodetic coordinates (lat/lon in degrees, alt in km on WGS84)
@@ -112,14 +115,16 @@ export function eci2lla(eci: TemeVec3, gmst: number): LlaVec3<Degrees, Kilometer
   const kmax = 20;
   let k = 0;
   let lat = Math.atan2(eci.z, Math.sqrt(eci.x * eci.x + eci.y * eci.y));
-  let C = 0;
 
   while (k < kmax) {
-    C = 1 / Math.sqrt(1 - e2 * (Math.sin(lat) * Math.sin(lat)));
+    const C = 1 / Math.sqrt(1 - e2 * (Math.sin(lat) * Math.sin(lat)));
+
     lat = Math.atan2(eci.z + a * C * e2 * Math.sin(lat), R);
     k += 1;
   }
-  const alt = R / Math.cos(lat) - a * C;
+  // h = p cos(lat) + z sin(lat) - a^2 / N, with N = a / sqrt(1 - e2 sin^2 lat). Regular at p = 0, unlike p / cos(lat) - N.
+  const sinLat = Math.sin(lat);
+  const alt = R * Math.cos(lat) + eci.z * sinLat - a * Math.sqrt(1 - e2 * sinLat * sinLat);
 
   lon = (lon * RAD2DEG) as Degrees;
   lat = (lat * RAD2DEG) as Degrees;
@@ -129,8 +134,8 @@ export function eci2lla(eci: TemeVec3, gmst: number): LlaVec3<Degrees, Kilometer
 
 /**
  * Converts geodetic coordinates (longitude, latitude, altitude) to Earth-Centered Earth-Fixed (ECEF) coordinates.
- * @param lla The geodetic coordinates in radians and meters.
- * @returns The ECEF coordinates in meters.
+ * @param lla The geodetic coordinates: lat/lon in radians, altitude in km above the WGS84 ellipsoid.
+ * @returns The ECEF coordinates in km.
  */
 export function llaRad2ecef<AltitudeUnits extends number>(lla: LlaVec3<Radians, AltitudeUnits>): EcefVec3<AltitudeUnits> {
   const { lon, lat, alt } = lla;
@@ -153,8 +158,8 @@ export function llaRad2ecef<AltitudeUnits extends number>(lla: LlaVec3<Radians, 
 
 /**
  * Converts geodetic coordinates (longitude, latitude, altitude) to Earth-Centered Earth-Fixed (ECEF) coordinates.
- * @param lla The geodetic coordinates in degrees and meters.
- * @returns The ECEF coordinates in meters.
+ * @param lla The geodetic coordinates: lat/lon in degrees, altitude in km above the WGS84 ellipsoid.
+ * @returns The ECEF coordinates in km.
  */
 export function lla2ecef<AltitudeUnits extends number>(lla: LlaVec3<Degrees, AltitudeUnits>): EcefVec3<AltitudeUnits> {
   const { lon, lat, alt } = lla;
@@ -183,7 +188,6 @@ export function lla2ecef<AltitudeUnits extends number>(lla: LlaVec3<Degrees, Alt
  * `ecef2eci(llaRad2ecef(lla), gmst)` (WGS84, TEME), `GroundObject.eci()`, or
  * `GroundObject.toJ2000()` for J2000.
  *
- * @variation cached - results are cached
  * @param lla - Latitude/longitude in radians and altitude above the sphere in km
  * @param gmst - Greenwich Mean Sidereal Time in radians
  * @returns TEME coordinates (inertial)
@@ -238,7 +242,7 @@ export function lla2sez<D extends number>(lla: LlaVec3<Radians, D>, ecef: EcefVe
 }
 
 /**
- * Converts a vector in Right Ascension, Elevation, and Range (RAE) coordinate system
+ * Converts a vector in Range, Azimuth, and Elevation (RAE) coordinate system
  * to a vector in South, East, and Zenith (SEZ) coordinate system.
  * @param rae The vector in RAE coordinate system.
  * @returns The vector in SEZ coordinate system.
@@ -256,7 +260,7 @@ export function rae2sez<D extends number>(rae: RaeVec3<D, Radians>): SezVec3<D> 
 }
 
 /**
- * Converts a vector in Right Ascension, Elevation, and Range (RAE) coordinate system
+ * Converts a vector in Range, Azimuth, and Elevation (RAE) coordinate system
  * to Earth-Centered Earth-Fixed (ECEF) coordinate system.
  * @template D - The dimension of the RAE vector.
  * @template A - The dimension of the LLA vector.
@@ -294,7 +298,6 @@ export function rae2ecef<D extends number>(rae: RaeVec3<D, Degrees>, lla: LlaVec
 
 /**
  * Converts a vector from RAE (Range, Azimuth, Elevation) coordinates to ECI (Earth-Centered Inertial) coordinates.
- * @variation cached - results are cached
  * @param rae The vector in RAE coordinates.
  * @param lla The vector in LLA (Latitude, Longitude, Altitude) coordinates.
  * @param gmst The Greenwich Mean Sidereal Time.
@@ -325,7 +328,7 @@ export function rae2enu(rae: RaeVec3<Kilometers, Radians>): EnuVec3<Kilometers> 
 }
 
 /**
- * Converts South, East, and Zenith (SEZ) coordinates to Right Ascension, Elevation, and Range (RAE) coordinates.
+ * Converts South, East, and Zenith (SEZ) coordinates to Range, Azimuth, and Elevation (RAE) coordinates.
  * @param sez The SEZ coordinates.
  * @returns Rng, Az, El array
  */
@@ -338,11 +341,11 @@ export function sez2rae<D extends number>(sez: SezVec3<D>): RaeVec3<D, Radians> 
 }
 
 /**
- * Converts Earth-Centered Earth-Fixed (ECEF) coordinates to Right Ascension (RA),
- * Elevation (E), and Azimuth (A) coordinates.
+ * Converts Earth-Centered Earth-Fixed (ECEF) coordinates to Range (R), Azimuth (A),
+ * and Elevation (E) coordinates.
  * @param lla The Latitude, Longitude, and Altitude (LLA) coordinates.
  * @param ecef The Earth-Centered Earth-Fixed (ECEF) coordinates.
- * @returns The Right Ascension (RA), Elevation (E), and Azimuth (A) coordinates.
+ * @returns The Range (km), Azimuth and Elevation (degrees) coordinates.
  */
 export function ecefRad2rae<D extends number>(lla: LlaVec3<Radians, D>, ecef: EcefVec3<D>): RaeVec3<D, Degrees> {
   const sezCoords = lla2sez(lla, ecef);
@@ -352,12 +355,11 @@ export function ecefRad2rae<D extends number>(lla: LlaVec3<Radians, D>, ecef: Ec
 }
 
 /**
- * Converts Earth-Centered Earth-Fixed (ECEF) coordinates to Right Ascension (RA),
- * Elevation (E), and Azimuth (A) coordinates.
- * @variation cached - results are cached
+ * Converts Earth-Centered Earth-Fixed (ECEF) coordinates to Range (R), Azimuth (A),
+ * and Elevation (E) coordinates.
  * @param lla The Latitude, Longitude, and Altitude (LLA) coordinates.
  * @param ecef The Earth-Centered Earth-Fixed (ECEF) coordinates.
- * @returns The Right Ascension (RA), Elevation (E), and Azimuth (A) coordinates.
+ * @returns The Range (km), Azimuth and Elevation (degrees) coordinates.
  */
 export function ecef2rae<D extends number>(lla: LlaVec3<Degrees, D>, ecef: EcefVec3<D>): RaeVec3<D, Degrees> {
   const { lat, lon } = lla;
@@ -368,13 +370,22 @@ export function ecef2rae<D extends number>(lla: LlaVec3<Degrees, D>, ecef: EcefV
   return rae;
 }
 
+/**
+ * Julian date of a UTC calendar date and time (Vallado, Algorithm 14; valid 1900 to 2100).
+ *
+ * With no arguments, returns the Julian date of the current instant,
+ * `Date.now() / 86400000 + 2440587.5` (the Unix epoch is JD 2440587.5).
+ * @param year - Four-digit year (UTC). Omit all arguments for "now".
+ * @param mon - Month, 1 to 12.
+ * @param day - Day of month, 1 to 31.
+ * @param hr - Hour, 0 to 23.
+ * @param minute - Minute, 0 to 59.
+ * @param sec - Second, may be fractional.
+ * @returns Julian date (days).
+ */
 export const jday = (year?: number, mon?: number, day?: number, hr?: number, minute?: number, sec?: number) => {
   if (typeof year === 'undefined') {
-    const now = new Date();
-    const jDayStart = new Date(now.getUTCFullYear(), 0, 0);
-    const jDayDiff = now.getDate() - jDayStart.getDate();
-
-    return Math.floor(jDayDiff / MILLISECONDS_TO_DAYS);
+    return Date.now() / 86400000 + 2440587.5;
   }
 
   if (
@@ -412,7 +423,7 @@ export function calcGmst(date: Date): { gmst: GreenwichMeanSiderealTime; j: numb
       date.getUTCMinutes(),
       date.getUTCSeconds(),
     ) +
-    date.getUTCMilliseconds() * MILLISECONDS_TO_DAYS;
+    date.getUTCMilliseconds() / 86400000;
 
   const gmst = Sgp4.gstime(j);
 
@@ -420,8 +431,7 @@ export function calcGmst(date: Date): { gmst: GreenwichMeanSiderealTime; j: numb
 }
 
 /**
- * Converts ECI coordinates to RAE (Right Ascension, Azimuth, Elevation) coordinates.
- * @variation cached - results are cached
+ * Converts ECI coordinates to RAE (Range, Azimuth, Elevation) coordinates.
  * @param now - Current date and time.
  * @param eci - ECI coordinates of the satellite.
  * @param observer - Ground object or LLA coordinates of the observer.
@@ -448,15 +458,22 @@ export function eci2rae(
 }
 
 /**
- * Calculates the inertial azimuth of a satellite given its latitude and inclination.
- * @param lat - The latitude of the satellite in degrees.
- * @param inc - The inclination of the satellite in degrees.
- * @returns The inertial azimuth of the satellite in degrees.
+ * Calculates the inertial launch azimuth for a given site latitude and target inclination,
+ * from sin(az) = cos(inc) / cos(lat) (Vallado, Eq. 6-19 discussion).
+ *
+ * An orbit of inclination inc only passes over latitudes with |lat| <= inc (prograde) and
+ * |lat| <= 180 - inc (retrograde), so the input must satisfy |lat| <= inc <= 180 - |lat|.
+ * @param lat - The latitude of the launch site in degrees.
+ * @param inc - The inclination of the orbit in degrees, 0 to 180.
+ * @returns The inertial azimuth in degrees (the northbound solution, -90 to 90).
+ * @throws {ValidationError} When the inclination cannot be reached from the latitude.
  */
 export function calcInertAz(lat: Degrees, inc: Degrees): Degrees {
-  if (inc < lat) {
+  const absLat = Math.abs(lat);
+
+  if (inc < absLat || inc > 180 - absLat) {
     throw new ValidationError(
-      'Inclination must be greater than or equal to latitude',
+      'Inclination must satisfy |latitude| <= inclination <= 180 - |latitude|',
       'inclination',
       { inclination: inc, latitude: lat },
     );
@@ -465,7 +482,8 @@ export function calcInertAz(lat: Degrees, inc: Degrees): Degrees {
   const phi = lat * DEG2RAD;
   const i = inc * DEG2RAD;
 
-  const az = Math.asin(Math.cos(i) / Math.cos(phi));
+  // Clamp: at the reachability limits the ratio is 1 up to round-off.
+  const az = Math.asin(Math.max(-1, Math.min(1, Math.cos(i) / Math.cos(phi))));
 
   return <Degrees>(az * RAD2DEG);
 }
@@ -491,33 +509,56 @@ export function calcIncFromAz(lat: number, az: number): number {
 
 
 /**
- * Converts Azimuth and Elevation to U and V.
- * Azimuth is the angle off of boresight in the horizontal plane.
- * Elevation is the angle off of boresight in the vertical plane.
- * Cone half angle is the angle of the cone of the radar max field of view.
- * @param az - Azimuth in radians
- * @param el - Elevation in radians
- * @param coneHalfAngle - Cone half angle in radians
- * @returns U and V in radians
+ * Converts azimuth and elevation offsets from boresight to direction cosines (u, v).
+ *
+ * The target line of sight is built as an ENU unit vector at azimuth `az` (relative to the
+ * boresight azimuth) and absolute elevation `boresightEl + el`, then projected onto the face
+ * frame: b is the boresight, right = (b x up) / |b x up| (East for a North boresight) and
+ * up_face = right x b. Then u = d . right, v = d . up_face, w = d . b, and the angle off
+ * boresight is acos(w) (Mailloux, Phased Array Antenna Handbook, section 1.2, sine space).
+ * With the boresight at azimuth 0 and elevation beta:
+ *
+ * - u = cos(e) sin(az)
+ * - v = cos(beta) sin(e) - sin(beta) cos(e) cos(az)
+ * - w = sin(beta) sin(e) + cos(beta) cos(e) cos(az)
+ *
+ * where e = beta + el. With the default `boresightEl` of 0 this reduces to u = cos(el) sin(az),
+ * v = sin(el). Treating az/el differences as if the boresight were horizontal is only exact
+ * for beta = 0, so pass the face's boresight elevation for a tilted face.
+ *
+ * The result does not depend on the sensor's field of view; `coneHalfAngle` only bounds the
+ * angle off boresight and defaults to 90 deg (the physical limit of sine space).
+ * @param az - Azimuth offset from the boresight azimuth in radians (positive clockwise, to the right)
+ * @param el - Elevation offset from the boresight elevation in radians (target el minus boresight el)
+ * @param coneHalfAngle - Maximum angle off boresight in radians, default pi/2
+ * @param boresightEl - Boresight elevation above the local horizon in radians, default 0
+ * @returns u and v direction cosines, each in [-1, 1]
+ * @throws {ValidationError} When the angle off boresight exceeds `coneHalfAngle`.
  */
-export function azel2uv(az: Radians, el: Radians, coneHalfAngle: Radians): { u: number; v: number } {
-  if (az > coneHalfAngle && az < coneHalfAngle) {
-    throw new ValidationError('Azimuth is out of bounds', 'azimuth', az);
+export function azel2uv(
+  az: Radians,
+  el: Radians,
+  coneHalfAngle: Radians = (Math.PI / 2) as Radians,
+  boresightEl: Radians = 0 as Radians,
+): { u: number; v: number } {
+  const e = boresightEl + el;
+  const cosE = Math.cos(e);
+  const sinE = Math.sin(e);
+  const cosB = Math.cos(boresightEl);
+  const sinB = Math.sin(boresightEl);
+  const cosAz = Math.cos(az);
+
+  const u = cosE * Math.sin(az);
+  const v = cosB * sinE - sinB * cosE * cosAz;
+  const w = sinB * sinE + cosB * cosE * cosAz;
+  const offBoresight = Math.acos(Math.max(-1, Math.min(1, w)));
+
+  // 1e-12 rad of slack so a direction built exactly at the cone edge survives acos round-off
+  if (!(offBoresight <= coneHalfAngle + 1e-12)) {
+    throw new ValidationError('Direction is outside the cone half angle', 'azimuth', az);
   }
 
-  if (el > coneHalfAngle && el < coneHalfAngle) {
-    throw new ValidationError('Elevation is out of bounds', 'elevation', el);
-  }
-
-  const alpha = (az / (coneHalfAngle * RAD2DEG)) * 90;
-  const beta = (el / (coneHalfAngle * RAD2DEG)) * 90;
-
-  const u = Math.sin(alpha) as Radians;
-  let v = -Math.sin(beta) as Radians;
-
-  v = Object.is(v, -0) ? (0 as Radians) : v;
-
-  return { u, v };
+  return { u: Object.is(u, -0) ? 0 : u, v: Object.is(v, -0) ? 0 : v };
 }
 
 /**
@@ -548,6 +589,9 @@ export function rae2raeOffBoresight(
 
 /**
  * Converts Range Az El to Range U V.
+ *
+ * u and v are the direction cosines of the line of sight in the face frame (see
+ * {@link azel2uv}); the face's boresight elevation is taken into account.
  * @param rae Range, Azimuth, Elevation
  * @param sensor Phased array radar sensor object
  * @param face Face number of the sensor
@@ -556,34 +600,63 @@ export function rae2raeOffBoresight(
  */
 export function rae2ruv(rae: RaeVec3, sensor: PhasedArrayRadar, face: number, maxSensorAz: Degrees): RuvVec3 {
   const { az, el } = rae2raeOffBoresight(rae, sensor, face, maxSensorAz);
-  const { u, v } = azel2uv(az, el, sensor.beamwidthRad);
+  // The bound is the face's field-of-view half-angle; the beamwidth plays no part in sine space.
+  const { u, v } = azel2uv(
+    az,
+    el,
+    (sensor.faceFovs[face].halfAngle * DEG2RAD) as Radians,
+    (sensor.boresightEl[face] * DEG2RAD) as Radians,
+  );
 
   return { rng: rae.rng, u, v };
 }
 
 /**
- * Converts U and V to Azimuth and Elevation off of boresight.
- * @param u The U coordinate.
- * @param v The V coordinate.
- * @param coneHalfAngle The cone half angle of the radar.
- * @returns Azimuth and Elevation off of boresight.
+ * Converts direction cosines (u, v) back to azimuth and elevation offsets from boresight.
+ *
+ * Exact inverse of {@link azel2uv}: w = sqrt(1 - u^2 - v^2), the line of sight is rebuilt as
+ * d = u right + v up_face + w b and converted back to azimuth/elevation. With the boresight at
+ * azimuth 0 and elevation beta: East = u, North = w cos(beta) - v sin(beta),
+ * Up = w sin(beta) + v cos(beta), so az = atan2(East, North) and el = asin(Up) - beta.
+ * With the default `boresightEl` of 0 this is el = asin(v), az = atan2(u, w).
+ * The point must lie inside the unit circle (u^2 + v^2 <= 1) to be a real direction.
+ * @param u - u direction cosine (along the face's right axis)
+ * @param v - v direction cosine (along the face's up axis)
+ * @param coneHalfAngle - Maximum angle off boresight in radians, default pi/2
+ * @param boresightEl - Boresight elevation above the local horizon in radians, default 0
+ * @returns Azimuth offset from the boresight azimuth and elevation offset from the boresight
+ *   elevation, in radians
+ * @throws {ValidationError} When u^2 + v^2 > 1 or the direction exceeds `coneHalfAngle`.
  */
-export function uv2azel(u: number, v: number, coneHalfAngle: Radians): { az: Radians; el: Radians } {
-  if (u > 1 || u < -1) {
-    throw new ValidationError('u must be between -1 and 1', 'u', u);
+export function uv2azel(
+  u: number,
+  v: number,
+  coneHalfAngle: Radians = (Math.PI / 2) as Radians,
+  boresightEl: Radians = 0 as Radians,
+): { az: Radians; el: Radians } {
+  const w2 = 1 - u * u - v * v;
+
+  if (w2 < -1e-12) {
+    throw new ValidationError('u^2 + v^2 must not exceed 1', 'u', u);
   }
 
-  if (v > 1 || v < -1) {
-    throw new ValidationError('v must be between -1 and 1', 'v', v);
+  const w = Math.sqrt(Math.max(0, w2));
+  const offBoresight = Math.acos(Math.max(-1, Math.min(1, w)));
+
+  if (!(offBoresight <= coneHalfAngle + 1e-12)) {
+    throw new ValidationError('Direction is outside the cone half angle', 'u', u);
   }
 
-  const alpha = Math.asin(u) as Radians;
-  // azel2uv stores v = -sin(beta), so undo the sign here (the round trip mirrored elevation)
-  const beta = Math.asin(0 - v) as Radians; // 0 - v, not -v: keeps +0 for v = 0
-  const az = ((alpha / 90) * (coneHalfAngle * RAD2DEG)) as Radians;
-  const el = ((beta / 90) * (coneHalfAngle * RAD2DEG)) as Radians;
+  const cosB = Math.cos(boresightEl);
+  const sinB = Math.sin(boresightEl);
+  const east = u;
+  const north = w * cosB - v * sinB;
+  const up = w * sinB + v * cosB;
 
-  return { az, el };
+  const el = (Math.asin(Math.max(-1, Math.min(1, up))) - boresightEl) as Radians;
+  const az = Math.atan2(east, north) as Radians;
+
+  return { az: Object.is(az, -0) ? (0 as Radians) : az, el: Object.is(el, -0) ? (0 as Radians) : el };
 }
 
 /**

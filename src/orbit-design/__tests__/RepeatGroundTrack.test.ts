@@ -476,7 +476,8 @@ describe('RepeatGroundTrack', () => {
     it('should produce consistent results between calculate and findNearest', () => {
       // Calculate specific orbit
       const elements = RepeatGroundTrack.calculate(233, 16, 98.2 as Degrees, { epoch: testEpoch });
-      const altitude = elements.semimajorAxis - Earth.radiusMean;
+      // findNearest altitudes are above the WGS-84 equatorial radius 6378.137 km (ootk v8)
+      const altitude = elements.semimajorAxis - 6378.137;
 
       // Search for orbits near that altitude
       const results = RepeatGroundTrack.findNearest(altitude as Kilometers, 10 as Kilometers, {
@@ -521,6 +522,56 @@ describe('RepeatGroundTrack', () => {
       expect(altitude).toBeLessThan(800);
       expect(inclination).toBeGreaterThan(96);
       expect(inclination).toBeLessThan(100);
+    });
+  });
+
+  describe('QA 2026-10 regression: repeat condition with apsidal rotation', () => {
+    /*
+     * Sentinel-2 (ESA Sentinel-2 User Handbook): 143 revolutions in 10 days, i = 98.62 deg,
+     * mean altitude 786 km above the equatorial radius. Independent of the Landsat-8 qa value.
+     */
+    it('puts Sentinel-2 143/10 at 786 km above 6378.137 km within 1 km', () => {
+      const el = RepeatGroundTrack.calculate(143, 10, 98.62 as Degrees, { epoch: testEpoch });
+
+      expect(Math.abs(el.semimajorAxis - 6378.137 - 786)).toBeLessThan(1);
+    });
+
+    /*
+     * Property (Vallado, 4th ed., Algorithm 71): with secular J2 rates Mdot, omegadot, Omegadot
+     * computed independently from the returned elements, R nodal periods must equal D nodal days.
+     */
+    it.each([
+      [233, 16, 98.2],
+      [14, 1, 0],
+      [46, 3, 51.6],
+      [369, 26, 98.7],
+      [43, 3, 120],
+    ])('closes the repeat condition for %i/%i at %f deg', (revs, days, incDeg) => {
+      const el = RepeatGroundTrack.calculate(revs, days, incDeg as Degrees, { epoch: testEpoch, tolerance: 1e-9 as Kilometers });
+      const a = el.semimajorAxis;
+      const e = el.eccentricity;
+      const p = a * (1 - e * e);
+      const n = Math.sqrt(Earth.mu / a ** 3);
+      const c = Math.cos(el.inclination);
+      const k = Earth.j2 * (Earth.radiusEquator / p) ** 2;
+      const mDot = 0.75 * n * k * Math.sqrt(1 - e * e) * (3 * c * c - 1);
+      const wDot = 0.75 * n * k * (5 * c * c - 1);
+      const raanDot = -1.5 * n * k * c;
+      const omegaEarth = (2 * Math.PI) / 86164.0905;
+      const nodalPeriod = (2 * Math.PI) / (n + mDot + wDot);
+      const nodalDay = (2 * Math.PI) / (omegaEarth - raanDot);
+
+      expect(Math.abs(revs * nodalPeriod - days * nodalDay)).toBeLessThan(1e-3);
+    });
+
+    it('flags only eastward +0.9856 deg/day precession as sun-synchronous', () => {
+      const sso = RepeatGroundTrack.findNearest(700 as Kilometers, 50 as Kilometers, { sunSynchronous: true, epoch: testEpoch });
+
+      expect(sso.length).toBeGreaterThan(0);
+      for (const r of sso) {
+        expect(r.nodalPrecessionRate).toBeGreaterThan(0.88);
+        expect(r.isSunSynchronous).toBe(true);
+      }
     });
   });
 });

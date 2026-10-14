@@ -30,6 +30,22 @@ describe('TwoBurnOrbitTransfer', () => {
       expect(transfer.tTrans).toBeGreaterThan(0);
     });
 
+    /*
+     * Closed form (Vallado, 4th ed., Algorithm 36): circular LEO at 300 km above 6378.137 km to
+     * GEO at 42164.17 km. dv_a = sqrt(mu (2/r1 - 1/at)) - sqrt(mu/r1) = 2.4258 km/s,
+     * dv_b = sqrt(mu/r2) - sqrt(mu (2/r2 - 1/at)) = 1.4668 km/s (mu = 398600.4415), tof = pi sqrt(at^3 / mu).
+     */
+    it('matches the closed-form LEO 300 km to GEO Hohmann delta-v', () => {
+      const r1 = 6378.137 + 300;
+      const r2 = 42164.17;
+      const at = (r1 + r2) / 2;
+      const transfer = TwoBurnOrbitTransfer.hohmannTransfer(r1, r2);
+
+      expect(transfer.vTransA).toBeCloseTo(2.4258, 3);
+      expect(transfer.vTransB).toBeCloseTo(1.4668, 3);
+      expect(transfer.tTrans).toBeCloseTo(Math.PI * Math.sqrt(at ** 3 / 398600.4415), 0);
+    });
+
     it('should calculate Hohmann transfer for equal radii', () => {
       const radius = 7000;
 

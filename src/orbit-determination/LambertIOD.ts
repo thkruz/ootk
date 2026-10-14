@@ -68,19 +68,26 @@ export class LambertIOD {
   }
 
   /**
-   * Attempt to solve output velocity [v1] _(km/s)_ given radii [r1] and
-   * [r2] _(canonical)_, sweep angle [dth] _(rad)_, time of flight [tau]
-   * _(canonical)_, and number of revolutions _(mRev)_.
-   * @param r1 Radius 1
-   * @param r2 Radius 2
-   * @param dth Sweep angle
-   * @param tau Time of flight
-   * @param mRev Number of revolutions
-   * @param v1 Output velocity
+   * Attempt to solve the departure velocity [v1] given radii [r1] and [r2], sweep angle
+   * [dth] _(rad)_, time of flight [tau] and number of complete revolutions [mRev]. All
+   * inputs and outputs are canonical: lengths in units of the larger radius r, time in
+   * units of r / sqrt(mu / r), velocity in units of sqrt(mu / r).
+   *
+   * A transfer with |mRev| >= 1 complete revolutions has two solutions for the same time of
+   * flight (the two branches of the Lancaster-Blanchard x variable). The sign of [mRev]
+   * selects the branch: a positive value gives the branch this solver has always returned
+   * (x > 0 for a short-way sweep, x < 0 for a long-way sweep), a negative value gives the
+   * other branch. mRev = 0 has a single solution and the sign is irrelevant.
+   * @param r1 Radius 1 (canonical)
+   * @param r2 Radius 2 (canonical)
+   * @param dth Sweep angle in radians, in (0, 2 pi); above pi is the long way
+   * @param tau Time of flight (canonical)
+   * @param mRev Number of complete revolutions; its sign selects the multi-revolution branch
+   * @param v1 Output departure velocity [radial, transverse] (canonical)
    * @returns True if successful, false otherwise.
    */
   static solve(r1: number, r2: number, dth: number, tau: number, mRev: number, v1: Float64Array): boolean {
-    const leftBranch = dth < Math.PI;
+    const leftBranch = mRev >= 0 ? dth < Math.PI : dth >= Math.PI;
     let longway = 1;
 
     if (dth > Math.PI) {
@@ -211,23 +218,30 @@ export class LambertIOD {
   }
 
   /**
-   * Estimate a state vector for inertial position [p1] _(km)_ given the
-   * two epoch and positions.
-   * @param p1 Position vector 1
-   * @param p2 Position vector 2
+   * Estimate the J2000 state at [t1] of an orbit that passes through [p1] _(km)_ at [t1]
+   * and [p2] _(km)_ at [t2] (two-body Lambert problem).
+   *
+   * `shortWay` selects the transfer angle, not the sense of motion: `true` sweeps the angle
+   * between p1 and p2 that is below 180 deg, `false` sweeps 360 deg minus that angle. The
+   * orbit normal is p1 x p2 for the short way and its opposite for the long way, so a
+   * retrograde transfer is obtained by choosing the sweep that matches the desired motion
+   * (see {@link LambertIOD.useShortPath}). This option was named `posigrade` before ootk 8.
+   * @param p1 Position vector 1 (km)
+   * @param p2 Position vector 2 (km)
    * @param t1 Epoch 1
    * @param t2 Epoch 2
    * @param root0 Optional parameters
-   * @param root0.posigrade If true, use the positive root (default: true)
-   * @param root0.nRev Number of revolutions (default: 0)
-   * @returns A [J2000] object with the estimated state vector.
+   * @param root0.shortWay True for the transfer angle below 180 deg, false for the long way (default: true)
+   * @param root0.nRev Number of complete revolutions (default: 0). For nRev != 0 the sign selects
+   *   one of the two multi-revolution solutions; see {@link LambertIOD.solve}.
+   * @returns A [J2000] state at t1 with the departure velocity (km/s), or null if the solver fails.
    */
   estimate(
     p1: Vector3D<Kilometers>,
     p2: Vector3D<Kilometers>,
     t1: EpochUTC,
     t2: EpochUTC,
-    { posigrade = true, nRev = 0 }: { posigrade?: boolean; nRev?: number } = {},
+    { shortWay = true, nRev = 0 }: { shortWay?: boolean; nRev?: number } = {},
   ): J2000 | null {
     const r1 = p1.magnitude();
     const r2 = p2.magnitude();
@@ -239,7 +253,7 @@ export class LambertIOD {
 
     let dth = p1.angle(p2);
 
-    if (!posigrade) {
+    if (!shortWay) {
       dth = 2 * Math.PI - dth as Radians;
     }
 
@@ -251,7 +265,7 @@ export class LambertIOD {
       const pt = pn.cross(p1);
       let rt = pt.magnitude();
 
-      if (!posigrade) {
+      if (!shortWay) {
         rt = -rt as Kilometers;
       }
       const vel1 = p1.scale((v * vDep[0]) / r1).add(pt.scale((v * vDep[1]) / rt)) as Vector3D<KilometersPerSecond>;

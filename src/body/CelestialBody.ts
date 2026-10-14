@@ -18,6 +18,7 @@
 import {
   Body,
   Equator,
+  EquatorFromVector,
   GeoVector,
   HelioVector,
   Horizon,
@@ -25,6 +26,7 @@ import {
   MakeTime,
   Observer,
   SearchAltitude,
+  SearchHourAngle,
   SearchRiseSet,
 } from 'astronomy-engine';
 import { BaseObject, BaseObjectParams } from '../objects/BaseObject';
@@ -119,35 +121,36 @@ export abstract class CelestialBody extends BaseObject {
   // ==================== Concrete Methods ====================
 
   /**
-   * Gets the right ascension of the body as seen from Earth.
-   * @param date - The date/time for the calculation
-   * @returns Right ascension in radians
+   * Gets the geocentric right ascension of the body in the J2000 equatorial frame
+   * (astrometric J2000 with aberration, the same vector as `eci()`).
+   *
+   * v8: this was topocentric (an observer on the surface at 0N 0E, up to about 1 deg off
+   * for the Moon) and in the true equator and equinox of date. It is now geocentric and in
+   * J2000, which also moves the result by the precession since 2000 (about 0.36 deg in 2026).
+   * @param date - The date/time (UTC) for the calculation
+   * @returns Right ascension in radians, 0 to 2pi
    */
   getRightAscension(date: Date = new Date()): Radians {
     if (!this.astronomyBody_) {
       throw new Error(`${this.name} does not have astronomy-engine support for RA calculation`);
     }
-    const time = MakeTime(date);
-    // Use geocentric observer (center of Earth)
-    const observer = new Observer(0, 0, 0);
-    const equatorial = Equator(this.astronomyBody_, time, observer, false, true);
+    const equatorial = EquatorFromVector(GeoVector(this.astronomyBody_, MakeTime(date), true));
 
     // Convert from sidereal hours to radians
     return ((equatorial.ra * 15) * DEG2RAD) as Radians;
   }
 
   /**
-   * Gets the declination of the body as seen from Earth.
-   * @param date - The date/time for the calculation
+   * Gets the geocentric declination of the body in the J2000 equatorial frame (same vector
+   * as `eci()`). See `getRightAscension` for the v8 frame change.
+   * @param date - The date/time (UTC) for the calculation
    * @returns Declination in radians
    */
   getDeclination(date: Date = new Date()): Radians {
     if (!this.astronomyBody_) {
       throw new Error(`${this.name} does not have astronomy-engine support for Dec calculation`);
     }
-    const time = MakeTime(date);
-    const observer = new Observer(0, 0, 0);
-    const equatorial = Equator(this.astronomyBody_, time, observer, false, true);
+    const equatorial = EquatorFromVector(GeoVector(this.astronomyBody_, MakeTime(date), true));
 
     return (equatorial.dec * DEG2RAD) as Radians;
   }
@@ -208,7 +211,10 @@ export abstract class CelestialBody extends BaseObject {
    * @param minElevation - Elevation threshold in degrees (default 0). At 0 the times are the
    * usual rise/set (upper limb on the horizon, with refraction); otherwise they are when the
    * body's centre crosses that geometric elevation.
-   * @returns Rise, transit, and set times (null if body doesn't rise/set)
+   * @returns Rise, transit, and set times (null if body doesn't rise/set). `transit` is the
+   * upper culmination (local hour angle 0) of the pass that is in progress at `date` or, if the
+   * body is below the threshold, of the next pass. It is null when no rise or no set is found
+   * within a day.
    */
   getRiseSetTimes(
     observer: GroundObject,
@@ -232,20 +238,21 @@ export abstract class CelestialBody extends BaseObject {
     const riseTime = search(+1);
     const setTime = search(-1);
 
-    // For transit, search for the next rise, then find when elevation peaks
-    // This is a simplified approach - astronomy-engine doesn't have a direct transit search
+    // Transit = upper culmination, hour angle 0 (SearchHourAngle).
     let transitTime: Date | null = null;
 
     if (riseTime && setTime) {
-      // Transit is approximately halfway between rise and set
-      const riseMs = riseTime.date.getTime();
       const setMs = setTime.date.getTime();
 
-      if (setMs > riseMs) {
-        transitTime = new Date((riseMs + setMs) / 2);
+      if (setMs > riseTime.date.getTime()) {
+        // Body is down: the culmination of the next pass follows the rise.
+        transitTime = SearchHourAngle(body, obs, 0, riseTime, +1).time.date;
       } else {
-        // Set is before rise (body is currently up)
-        transitTime = new Date(date.getTime());
+        // Body is up: the culmination of this pass is the next one before the set, or else
+        // the one that already happened.
+        const next = SearchHourAngle(body, obs, 0, time, +1).time.date;
+
+        transitTime = next.getTime() <= setMs ? next : SearchHourAngle(body, obs, 0, time, -1).time.date;
       }
     }
 

@@ -23,6 +23,7 @@ import { Thrust } from '../force/Thrust';
 import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator';
 import { EpochUTC } from '../time/EpochUTC';
 import { J2000 } from '../coordinate/J2000';
+import { acquireWasmSatKey, releaseWasmSatKey } from '../sgp4/sgp4-wasm-backend';
 import { Propagator } from './Propagator';
 
 /**
@@ -33,14 +34,18 @@ import { Propagator } from './Propagator';
  * SGP4.
  *
  * The wasm instance must already be loaded (`await wasm.load()`); the
- * constructor registers and initializes the TLE synchronously. Call
- * {@link dispose} to remove the satellite from the wasm instance's registry
- * when done.
+ * constructor registers and initializes the TLE synchronously. The satKey is
+ * shared through the per-instance registry with the global `Sgp4` wasm
+ * backend and with other propagators for the same TLE on the same instance,
+ * so building one for a TLE that is already attached does not fail on a
+ * duplicate add. Call {@link dispose} when done; the satellite is removed
+ * from the instance only when no other holder uses it.
  */
 export class Sgp4WasmPropagator extends Propagator {
   private readonly satKey_: SatKey;
   private cacheState_: J2000;
   private checkpoints_: J2000[] = [];
+  private disposed_ = false;
 
   constructor(private readonly wasm_: Sgp4WasmBase, private readonly tle_: Tle) {
     super();
@@ -49,8 +54,7 @@ export class Sgp4WasmPropagator extends Propagator {
       throw new Sgp4WasmError('Sgp4WasmPropagator requires a loaded Sgp4Wasm instance. Call load() first.');
     }
 
-    this.satKey_ = wasm_.addSat(tle_.line1, tle_.line2);
-    wasm_.initSats([this.satKey_]);
+    this.satKey_ = acquireWasmSatKey(wasm_, tle_.line1, tle_.line2);
     this.cacheState_ = this.propagate(tle_.epoch);
   }
 
@@ -140,11 +144,19 @@ export class Sgp4WasmPropagator extends Propagator {
   }
 
   /**
-   * Removes the satellite from the backing wasm instance's SGP4 and TLE
-   * registries.
+   * Releases this propagator's hold on the satKey. The satellite is removed
+   * from the backing wasm instance's SGP4 and TLE registries only when no
+   * other propagator holds it and the global `Sgp4` wasm backend never
+   * attached it. Calling dispose more than once has no further effect.
    */
   dispose(): void {
-    this.wasm_.uninitSats([this.satKey_]);
-    this.wasm_.removeSats([this.satKey_]);
+    if (this.disposed_) {
+      return;
+    }
+    this.disposed_ = true;
+    if (releaseWasmSatKey(this.wasm_, this.tle_.line1, this.tle_.line2)) {
+      this.wasm_.uninitSats([this.satKey_]);
+      this.wasm_.removeSats([this.satKey_]);
+    }
   }
 }

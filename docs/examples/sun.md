@@ -25,7 +25,7 @@ Ground locations are represented by `GroundStation`, which takes latitude and lo
 
 ## Sunrise and sunset via astronomy-engine
 
-`Sun.getSunriseSunset` runs a higher-precision horizon-crossing search using astronomy-engine, scanning forward one day from the given date. Either value is `null` when the Sun never crosses the horizon (polar day or night). Pass `0 as Degrees` for the elevation argument; negative values are rejected by the underlying search.
+`Sun.getSunriseSunset` runs a higher-precision horizon-crossing search using astronomy-engine, scanning forward one day from the given date. The times are when the Sun's centre crosses the `minElevation` geometric altitude, and either value is `null` when that crossing does not happen (polar day or night). The default, -0.833 deg, is the standard sunrise definition (refraction plus the solar semidiameter), the same event `Sun.getTimes` approximates with its lower-precision series (they agree to a minute or two); -6, -12 and -18 give civil, nautical and astronomical twilight. The script passes `0 as Degrees`, the instant the centre is on the geometric horizon, so its sunrise is about 5 minutes later and its sunset about 5 minutes earlier than with the default.
 
 <<< ../../examples/sun.ts#sunrise-sunset
 
@@ -37,7 +37,7 @@ Ground locations are represented by `GroundStation`, which takes latitude and lo
 
 ## Azimuth and elevation
 
-`Sun.getAzEl` computes topocentric look angles for a ground observer, applying atmospheric refraction by default. `getRightAscension` and `getDeclination` return geocentric equatorial coordinates in radians.
+`Sun.getAzEl` computes topocentric look angles for a ground observer, applying atmospheric refraction by default. `getRightAscension` and `getDeclination` return geocentric right ascension and declination in radians in the J2000 equatorial frame (the same vector as `Sun.eci`). Before ootk 8 they were topocentric for an observer at 0 N 0 E and referred to the true equator and equinox of date.
 
 <<< ../../examples/sun.ts#sun-azimuth-elevation
 
@@ -62,8 +62,8 @@ Golden hour (PM):  2024-01-28T21:15:16.619Z
 
 === Sunrise/Sunset via astronomy-engine ===
 
-Sunrise: 2024-01-28T11:58:37.250Z
-Sunset:  2024-01-28T21:55:31.421Z
+Sunrise: 2024-01-28T12:03:28.812Z
+Sunset:  2024-01-28T21:50:39.851Z
 
 === Sun Position (ECI) ===
 
@@ -80,5 +80,5 @@ Azimuth:   113.9559 deg
 Elevation: -0.0210 deg
 
 Right Ascension: 20.6746 hours
-Declination:     -18.3407 deg
+Declination:     -18.3399 deg
 ```

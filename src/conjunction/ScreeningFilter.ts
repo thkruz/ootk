@@ -16,9 +16,19 @@
  */
 
 import type { Tle } from '../coordinate/Tle';
-import { DEG2RAD } from '../utils/constants';
 import type { Kilometers, Radians } from '../types/types';
 import type { ConjunctionEvent } from './ConjunctionEvent';
+
+/**
+ * Default pad (km) for the apogee/perigee filter. Mean-element perigee and apogee from a TLE
+ * differ from the osculating radius by the J2 short-period terms (several km in LEO, of order
+ * J2 R^2 / a), and the orbit evolves over the screening window, so two shells whose mean bounds
+ * are a few km apart can still meet. The pad follows the apogee/perigee filter of Hoots,
+ * Crawford and Roehrich (1984), "An analytic method to determine future close approaches between
+ * satellites", Celestial Mechanics 33, which rejects a pair only when
+ * max(q1, q2) - min(Q1, Q2) > D for a pad D.
+ */
+export const DEFAULT_SHELL_PAD_KM = 10 as Kilometers;
 
 /**
  * Orbital shell bounds for coarse filtering in catalog screening.
@@ -50,71 +60,34 @@ export class ScreeningFilter {
    * The shell represents the radial bounds of the orbit.
    * @param tle - Two-Line Element set
    * @param id - Optional identifier for the object
-   * @returns Orbital shell with perigee, apogee, and inclination
+   * @returns Orbital shell with perigee and apogee as geocentric radii (km, from
+   *   `Tle.perigeeRadius` / `Tle.apogeeRadius`) and inclination in radians (`Tle.inclination` is
+   *   already radians)
    */
   static getOrbitalShell(tle: Tle, id?: string): OrbitalShell {
     return {
-      perigee: tle.perigee as Kilometers,
-      apogee: tle.apogee as Kilometers,
-      inclination: (tle.inclination * DEG2RAD) as Radians,
+      perigee: tle.perigeeRadius,
+      apogee: tle.apogeeRadius,
+      inclination: tle.inclination as Radians,
       id,
     };
   }
 
   /**
-   * Check if two orbital shells could possibly intersect.
-   * Uses simple apogee/perigee overlap test.
+   * Check if two orbital shells could possibly intersect (apogee/perigee filter).
    *
-   * Two orbits can only conjunct if their radial extents overlap:
-   * - Primary's perigee must be <= Secondary's apogee, AND
-   * - Primary's apogee must be >= Secondary's perigee
-   *
-   * @param shell1 - First orbital shell
-   * @param shell2 - Second orbital shell
-   * @returns True if shells could overlap, false if no conjunction possible
-   */
-  static shellsOverlap(shell1: OrbitalShell, shell2: OrbitalShell): boolean {
-    // Check radial overlap
-    if (shell1.perigee > shell2.apogee || shell1.apogee < shell2.perigee) {
-      return false;
-    }
-
-    return true;
-  }
-
-  /**
-   * Enhanced overlap check including inclination discrimination.
-   * Polar orbits (inc > 60°) can intersect any other orbit.
-   * Near-equatorial orbits (inc < 30°) rarely intersect high-inclination orbits.
+   * Two orbits can only conjunct if their radial extents, widened by `pad`, overlap. The pair is
+   * rejected only when one shell lies entirely above the other by more than the pad:
+   * perigee1 - pad > apogee2, or perigee2 - pad > apogee1.
    *
    * @param shell1 - First orbital shell
    * @param shell2 - Second orbital shell
-   * @param incThreshold - Inclination threshold for discrimination (default: 30°)
-   * @returns True if shells could overlap, false if no conjunction possible
+   * @param pad - Radial pad in km (default {@link DEFAULT_SHELL_PAD_KM}); add the screening
+   *   distance threshold to it when screening against a miss-distance threshold
+   * @returns True if shells could overlap, false if no conjunction is possible
    */
-  static shellsOverlapWithInclination(
-    shell1: OrbitalShell,
-    shell2: OrbitalShell,
-    incThreshold: Radians = (30 * DEG2RAD) as Radians,
-  ): boolean {
-    // First check radial overlap
-    if (!ScreeningFilter.shellsOverlap(shell1, shell2)) {
-      return false;
-    }
-
-    // Both low inclination but very different planes - unlikely to intersect
-    // However, this is a weak filter and may produce false negatives
-    // Only apply if both orbits are near-equatorial and differ significantly
-    const inc1 = shell1.inclination;
-    const inc2 = shell2.inclination;
-
-    if (inc1 < incThreshold && inc2 < incThreshold) {
-      // Both near-equatorial - could intersect at nodes
-      return true;
-    }
-
-    // High inclination orbits can intersect anything
-    return true;
+  static shellsOverlap(shell1: OrbitalShell, shell2: OrbitalShell, pad: Kilometers = DEFAULT_SHELL_PAD_KM): boolean {
+    return !(shell1.perigee - pad > shell2.apogee || shell2.perigee - pad > shell1.apogee);
   }
 
   /**
@@ -123,13 +96,13 @@ export class ScreeningFilter {
    *
    * @param primary - Primary object TLE
    * @param secondaries - Array of secondary TLEs to filter
-   * @param useInclinationFilter - Apply inclination-based filtering (default: false)
+   * @param pad - Radial pad in km for the apogee/perigee filter (default {@link DEFAULT_SHELL_PAD_KM})
    * @returns Array of indices into secondaries that could conjunct with primary
    */
   static filterCandidates(
     primary: Tle,
     secondaries: Tle[],
-    useInclinationFilter = false,
+    pad: Kilometers = DEFAULT_SHELL_PAD_KM,
   ): number[] {
     const primaryShell = ScreeningFilter.getOrbitalShell(primary);
     const candidates: number[] = [];
@@ -137,11 +110,7 @@ export class ScreeningFilter {
     for (let i = 0; i < secondaries.length; i++) {
       const secondaryShell = ScreeningFilter.getOrbitalShell(secondaries[i]);
 
-      const overlaps = useInclinationFilter
-        ? ScreeningFilter.shellsOverlapWithInclination(primaryShell, secondaryShell)
-        : ScreeningFilter.shellsOverlap(primaryShell, secondaryShell);
-
-      if (overlaps) {
+      if (ScreeningFilter.shellsOverlap(primaryShell, secondaryShell, pad)) {
         candidates.push(i);
       }
     }

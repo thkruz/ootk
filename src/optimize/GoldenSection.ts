@@ -43,7 +43,8 @@ import { DifferentiableFunction } from '../types/types';
  *
  * The interval shrinks by a factor of φ⁻¹ ≈ 0.618 each iteration.
  * For an initial interval of width W and tolerance ε, the number of
- * iterations required is approximately: log(W/ε) / log(φ) ≈ 2.078 × log₁₀(W/ε)
+ * iterations required is approximately: ln(W/ε) / ln(φ) ≈ 2.078 × ln(W/ε)
+ * ≈ 4.785 × log₁₀(W/ε). For W/ε = 1e9 that is about 43 iterations.
  *
  * ## Requirements
  *
@@ -137,7 +138,7 @@ export class GoldenSection {
    *            exactly one local extremum) on the interval [lower, upper].
    * @param lower - Lower bound of the search interval
    * @param upper - Upper bound of the search interval (must be > lower)
-   * @param options - Configuration options for the search
+   * @param options - Configuration options for the search (optional)
    * @param options.tolerance - Convergence threshold for interval width.
    *                            Smaller values yield more precise results but
    *                            require more iterations. Default: 1e-5
@@ -168,7 +169,7 @@ export class GoldenSection {
     }: {
       tolerance?: number;
       solveMax?: boolean;
-    },
+    } = {},
   ): number {
     let a = lower;
     let b = upper;

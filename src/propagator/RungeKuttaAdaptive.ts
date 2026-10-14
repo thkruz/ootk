@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { ValidationError } from '../errors';
+import { PropagationError, ValidationError } from '../errors';
 import { EpochUTC } from '../time/EpochUTC';
 import { ForceModel } from '../force/ForceModel';
 import { J2000 } from '../coordinate/J2000';
@@ -59,6 +59,28 @@ export abstract class RungeKuttaAdaptive extends Propagator {
   // / Minimum allowable local error tolerance.
   private static readonly _minTolerance: number = 1e-15;
 
+  /**
+   * Multiple of machine epsilon times the state-vector norm below which the embedded error
+   * estimate is pure floating-point roundoff (|y1 - y2| cannot resolve differences smaller than
+   * a few ulps of the state). The floor is 16 eps |y|: about 2.4e-11 km for a LEO state
+   * (|y| about 6700, 16 x 2.22e-16 x 6700 = 2.4e-11).
+   */
+  private static readonly _roundoffFactor: number = 16;
+
+  /**
+   * Tolerance actually enforced for a step from [state]: the requested tolerance, floored at
+   * the roundoff level of the state vector. A tolerance below that floor cannot be met by any
+   * step size, so without the floor the controller would shrink the step to its minimum and
+   * reject forever (for example 1e-12 km requested for a 6700 km position vector).
+   * @param state State the step starts from.
+   * @returns Effective absolute tolerance (same units as the state vector, km and km/s).
+   */
+  private effectiveTolerance_(state: J2000): number {
+    const yNorm = Math.sqrt(state.position.magnitude() ** 2 + state.velocity.magnitude() ** 2);
+
+    return Math.max(this.tolerance_, RungeKuttaAdaptive._roundoffFactor * Number.EPSILON * yNorm);
+  }
+
   // / Butcher tableau `A` values.
   protected abstract get a(): Float64Array;
 
@@ -71,7 +93,10 @@ export abstract class RungeKuttaAdaptive extends Propagator {
   // / Butcher tableau `C` values
   protected abstract get c(): Float64Array;
 
-  // / Integrator order.
+  /**
+   * Order of the local error estimate (lower order of the embedded pair plus one); the step
+   * controller scales the step by (tolerance / error)^(1 / order).
+   */
   protected abstract get order(): number;
 
   get state(): J2000 {
@@ -147,7 +172,7 @@ export abstract class RungeKuttaAdaptive extends Propagator {
     }
 
     const hOld = Math.abs(step);
-    let hNew = 0.9 * hOld * (this.tolerance_ / teVal) ** (1.0 / this.order);
+    let hNew = 0.9 * hOld * (this.effectiveTolerance_(state) / teVal) ** (1.0 / this.order);
 
     hNew = Math.max(0.2 * hOld, Math.min(5.0 * hOld, hNew));
     hNew = Math.max(1e-5, Math.min(1000.0, hNew));
@@ -174,6 +199,15 @@ export abstract class RungeKuttaAdaptive extends Propagator {
     );
   }
 
+  /**
+   * Integrate from the cached state to [epoch] with adaptive step-size control. A step is
+   * accepted when its embedded error estimate is within the tolerance (floored at the
+   * roundoff level of the state, see effectiveTolerance_).
+   * @param epoch Target epoch.
+   * @returns State at exactly [epoch].
+   * @throws PropagationError after 1000 consecutive rejected steps (the step size is at its
+   * floor and the error still exceeds the tolerance, for example a discontinuous force).
+   */
   propagate(epoch: EpochUTC): J2000 {
     let delta = epoch.difference(this._cacheState.epoch);
     let consecutiveFailures = 0;
@@ -185,10 +219,22 @@ export abstract class RungeKuttaAdaptive extends Propagator {
       const result = this.integrate_(this._cacheState, dt);
 
       this._stepSize = result.newStep;
-      if (result.error > this.tolerance_) {
+      const tolerance = this.effectiveTolerance_(this._cacheState);
+
+      if (result.error > tolerance) {
         consecutiveFailures++;
         if (consecutiveFailures >= maxConsecutiveFailures) {
-          return this._cacheState;
+          /*
+           * The step size is already clamped at its floor and the local error estimate still
+           * exceeds the tolerance, so the integrator cannot advance. Returning the cached state
+           * here would hand back a state at the wrong epoch with no signal, so fail loudly.
+           */
+          throw new PropagationError(
+            `Adaptive step rejected ${maxConsecutiveFailures} consecutive times at ` +
+            `${this._cacheState.epoch.toString()} while propagating to ${epoch.toString()}; ` +
+            `local error ${result.error} exceeds tolerance ${tolerance}`,
+            this._cacheState.epoch.toDateTime(),
+          );
         }
         continue;
       }
@@ -236,17 +282,33 @@ export abstract class RungeKuttaAdaptive extends Propagator {
     return ephemeris;
   }
 
+  /**
+   * Generate ephemeris over [start, finish] integrating through every maneuver that overlaps the
+   * window (mvr.start <= finish and mvr.stop >= start), applied in chronological order. An empty
+   * list gives plain ephemeris.
+   * @param start Ephemeris start epoch.
+   * @param finish Ephemeris stop epoch.
+   * @param maneuvers Maneuvers to consider (any order).
+   * @param interval Maximum sample spacing in seconds (default 60).
+   * @returns Interpolator over the generated states.
+   */
   ephemerisManeuver(
     start: EpochUTC,
     finish: EpochUTC,
     maneuvers: Thrust[],
     interval = 60.0 as Seconds,
   ): VerletBlendInterpolator {
-    // Compare raw POSIX seconds; relational operators on Epoch objects coerce via toISOString().
-    const tMvr = maneuvers.filter((mvr) => mvr.start.posix >= start.posix || mvr.stop.posix <= finish.posix);
+    /*
+     * Keep only maneuvers that overlap the [start, finish] window (interval overlap test:
+     * mvr.start <= finish && mvr.stop >= start), in chronological order. Compare raw POSIX
+     * seconds; relational operators on Epoch objects coerce via toISOString().
+     */
+    const tMvr = maneuvers
+      .filter((mvr) => mvr.start.posix <= finish.posix && mvr.stop.posix >= start.posix)
+      .sort((a, b) => a.start.posix - b.start.posix);
     const ephemeris: J2000[] = [];
 
-    if (tMvr[0].start.posix > start.posix) {
+    if (tMvr.length === 0 || tMvr[0].start.posix > start.posix) {
       ephemeris.push(this.propagate(start));
     }
     for (const mvr of tMvr) {

@@ -32,18 +32,17 @@
  *
  * // Create a phased array radar
  * const radar = new PhasedArrayRadar({
- *   id: 'radar-1',
+ *   id: 1,
  *   name: 'Tracking Radar',
+ *   sensorType: SensorType.PHASED_ARRAY_RADAR,
  *   beamwidth: 2 as Degrees,
  *   boresightAz: [0 as Degrees],
  *   boresightEl: [45 as Degrees],
  *   fieldOfView: {
+ *     halfAngle: 60 as Degrees, // cone half-angle around each face boresight (required)
  *     minRange: 100 as Kilometers,
  *     maxRange: 40000 as Kilometers,
- *     minAzimuth: 0 as Degrees,
- *     maxAzimuth: 120 as Degrees,
  *     minElevation: 5 as Degrees,
- *     maxElevation: 85 as Degrees,
  *   },
  * });
  *

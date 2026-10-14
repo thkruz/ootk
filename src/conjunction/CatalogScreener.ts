@@ -56,8 +56,8 @@ export interface CatalogScreeningOptions {
   forceModel?: ForceModel;
   /** Skip coarse orbital shell filtering (default: false) */
   skipCoarseFilter?: boolean;
-  /** Use inclination-based filtering in addition to radial (default: false) */
-  useInclinationFilter?: boolean;
+  /** Radial pad in km for the apogee/perigee coarse filter (default: DEFAULT_SHELL_PAD_KM, 10 km) */
+  shellPad?: Kilometers;
   /** Maximum number of results to return (default: unlimited) */
   maxResults?: number;
   /** Distance scale factor for risk scoring in km (default: 1.0 km) */
@@ -140,7 +140,7 @@ export class CatalogScreener {
       candidateIndices = ScreeningFilter.filterCandidates(
         primary.tle,
         secondaries.map((s) => s.tle),
-        options.useInclinationFilter,
+        options.shellPad,
       );
     }
 
@@ -231,7 +231,7 @@ export class CatalogScreener {
         candidateIndices = ScreeningFilter.filterCandidates(
           primary.tle,
           secondaries.map((s) => s.tle),
-          options.useInclinationFilter,
+          options.shellPad,
         );
       }
 

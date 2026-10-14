@@ -65,7 +65,7 @@ export interface TransmitterParams extends CommunicationDeviceParams {
  * ```typescript
  * // Ground station uplink transmitter
  * const uplink = new Transmitter({
- *   id: 'gs-uplink',
+ *   id: 201,
  *   name: 'Ground Station Uplink',
  *   frequency: 14e9 as Hertz,   // 14 GHz (Ku-band uplink)
  *   power: 1000 as Watts,       // 1 kW
@@ -211,7 +211,9 @@ export class Transmitter extends CommunicationDevice {
 
   /**
    * Checks if this transmitter has line of sight to a receiver.
-   * Checks for Earth obstruction between ground-space and space-space links.
+   * Ground-to-ground: each station must be above the other's horizon. Ground-to-space: the
+   * space end must be above the ground station's horizon. Space-to-space: the segment must not
+   * pass through Earth (mean-radius sphere).
    *
    * @param receiver - The target receiver
    * @param date - Time for calculation (defaults to now)
@@ -225,6 +227,11 @@ export class Transmitter extends CommunicationDevice {
 
     const txParent = this.parent;
     const rxParent = receiver.parent;
+
+    // Ground-to-Ground: each station must see the other above its horizon
+    if (txParent instanceof GroundObject && rxParent instanceof GroundObject) {
+      return ecef2rae(txParent.lla(), rxParent.ecef()).el > 0 && ecef2rae(rxParent.lla(), txParent.ecef()).el > 0;
+    }
 
     // Ground-to-Space or Space-to-Ground: check elevation above horizon
     if (txParent instanceof GroundObject || rxParent instanceof GroundObject) {

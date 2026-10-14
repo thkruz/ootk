@@ -1,6 +1,6 @@
 {
   "name": "ootk",
-  "version": "7.1.0",
+  "version": "8.0.0",
   "type": "module",
   "description": "Orbital Object Toolkit including Multiple Propagators, Initial Orbit Determination, and Maneuver Calculations.",
   "exports": {

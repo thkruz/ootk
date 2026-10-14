@@ -23,6 +23,8 @@ import { EpochUTC } from '../time/EpochUTC';
 import { DEG2RAD, RAD2DEG } from '../utils/constants';
 import { BaseObjectParams } from './BaseObject';
 import { GroundObject } from './GroundObject';
+import { CommunicationDevice } from '../comm/CommunicationDevice';
+import { Sensor } from '../sensor/Sensor';
 import { History, HistoryConfig } from './History';
 import { HistoricalState } from './ObjectTypes';
 
@@ -105,6 +107,10 @@ export class DynamicGroundObject extends GroundObject {
       throw new Error('DynamicGroundObject requires at least one waypoint');
     }
 
+    for (const wp of params.waypoints) {
+      GroundObject.validateLla(wp.lat, wp.lon, wp.alt);
+    }
+
     // Sort waypoints by time
     const sortedWaypoints = [...params.waypoints].sort((a, b) => a.time.getTime() - b.time.getTime());
 
@@ -152,11 +158,32 @@ export class DynamicGroundObject extends GroundObject {
   }
 
   /**
-   * Throws an error - use getEci(time) for DynamicGroundObject.
-   * @throws Error always
+   * TEME position at `date` (same model as {@link getEci}, without recording to history).
+   * @param date - The time of interest. Required: a moving object has no time-independent position.
+   * @returns TEME position in km.
+   * @throws Error if `date` is omitted or outside the waypoint time range.
    */
-  override eci(): TemeVec3<Kilometers> {
-    throw new Error('DynamicGroundObject position is time-dependent. Use getEci(time) instead.');
+  override eci(date?: Date): TemeVec3<Kilometers> {
+    if (!date) {
+      throw new Error('DynamicGroundObject position is time-dependent. Use getEci(time) instead.');
+    }
+    const eci = this.eciAt(date);
+
+    if (!eci) {
+      throw new Error(`DynamicGroundObject has no position at ${date.toISOString()} (outside the waypoint range)`);
+    }
+
+    return eci;
+  }
+
+  /**
+   * Interpolated position at `date`, without recording to history. Used by observer
+   * calculations such as `Satellite.rae()` and `AccessCalculator`.
+   * @param date - The time of interest.
+   * @returns Latitude and longitude in degrees and altitude in km, or null outside the waypoint range.
+   */
+  override llaAt(date: Date): LlaVec3<Degrees, Kilometers> | null {
+    return this.computeLla_(date);
   }
 
   // ==================== Time-Dependent Position Methods ====================
@@ -168,6 +195,21 @@ export class DynamicGroundObject extends GroundObject {
    * @returns Position as lat/lon/alt, or null if time is outside waypoint range
    */
   getLLA(time: Date): LlaVec3<Degrees, Kilometers> | null {
+    const result = this.computeLla_(time);
+
+    if (result) {
+      this.recordPosition_(time, result);
+    }
+
+    return result;
+  }
+
+  /**
+   * Interpolated position at `time` without recording to history.
+   * @param time - The time of interest.
+   * @returns Position, or null if `time` is outside the waypoint range.
+   */
+  private computeLla_(time: Date): LlaVec3<Degrees, Kilometers> | null {
     const bracket = this.findBracketingWaypoints_(time);
 
     if (!bracket) {
@@ -178,27 +220,14 @@ export class DynamicGroundObject extends GroundObject {
 
     // If exactly at a waypoint or only one waypoint exists
     if (!after || before.time.getTime() === time.getTime()) {
-      const result = { lat: before.lat, lon: before.lon, alt: before.alt };
-
-      this.recordPosition_(time, result);
-
-      return result;
+      return { lat: before.lat, lon: before.lon, alt: before.alt };
     }
 
-    if (!before || after.time.getTime() === time.getTime()) {
-      const result = { lat: after.lat, lon: after.lon, alt: after.alt };
-
-      this.recordPosition_(time, result);
-
-      return result;
+    if (after.time.getTime() === time.getTime()) {
+      return { lat: after.lat, lon: after.lon, alt: after.alt };
     }
 
-    // Interpolate between waypoints
-    const result = this.interpolate_(before, after, time);
-
-    this.recordPosition_(time, result);
-
-    return result;
+    return this.interpolate_(before, after, time);
   }
 
   /**
@@ -298,16 +327,8 @@ export class DynamicGroundObject extends GroundObject {
    * @param waypoint - The waypoint to add
    */
   addWaypoint(waypoint: WaypointData): void {
-    // Validate waypoint
-    if (waypoint.lat < -90 || waypoint.lat > 90) {
-      throw new RangeError('Invalid latitude - must be between -90 and 90');
-    }
-    if (waypoint.lon < -180 || waypoint.lon > 180) {
-      throw new RangeError('Invalid longitude - must be between -180 and 180');
-    }
-    if (waypoint.alt < 0) {
-      throw new RangeError('Invalid altitude - must be greater than or equal to 0');
-    }
+    // Finite lat/lon in range and a finite (possibly negative) altitude
+    GroundObject.validateLla(waypoint.lat, waypoint.lon, waypoint.alt);
 
     this.waypoints_.push(waypoint);
     this.waypoints_.sort((a, b) => a.time.getTime() - b.time.getTime());
@@ -422,23 +443,20 @@ export class DynamicGroundObject extends GroundObject {
   }
 
   /**
-   * Alias for positionHistory for API consistency with Satellite.
-   * Returns the position history (LLA), or null if not enabled.
-   *
-   * Note: Unlike Satellite.history which stores ECI state (position + velocity),
-   * DynamicGroundObject stores LLA positions since it moves along Earth's surface.
+   * The inherited TEME state history (`History<HistoricalState>`), which a DynamicGroundObject
+   * does not record: always null. The LLA trail is in {@link positionHistory}.
    *
    * @remarks
-   * This shadows the base class `history` property because the types are different.
-   * DynamicGroundObject tracks LLA coordinates while Satellite tracks ECI state.
+   * Before v8 this getter returned the LLA history under the base-class name with an
+   * incompatible type, which made a DynamicGroundObject unassignable to GroundObject (so it
+   * could not be passed as an observer to `Satellite.rae()`).
    */
-  // @ts-expect-error - Intentionally shadows base class with different type
-  get history(): History<LlaVec3<Degrees, Kilometers>> | null {
-    return this.positionHistory_;
+  override get history(): History<HistoricalState> | null {
+    return null;
   }
 
   /**
-   * Returns true if position history tracking is enabled.
+   * Returns true if position (LLA) history tracking is enabled ({@link positionHistory}).
    */
   override get isHistoryEnabled(): boolean {
     return this.positionHistory_ !== null;
@@ -545,9 +563,21 @@ export class DynamicGroundObject extends GroundObject {
       historyConfig: this.isHistoryEnabled ? this.positionHistory_!.config : undefined,
     });
 
-    // Copy sensors and comm devices references
-    cloned.sensors = [...this.sensors];
-    cloned.commDevices = [...this.commDevices];
+    // Deep clone sensors and comm devices so their parent is the clone, not this object
+    cloned.sensors = this.sensors.map((sensor) => {
+      const clonedSensor = (sensor as Sensor).clone();
+
+      clonedSensor.setParent(cloned);
+
+      return clonedSensor;
+    });
+    cloned.commDevices = this.commDevices.map((device) => {
+      const clonedDevice = (device as CommunicationDevice).clone();
+
+      clonedDevice.setParent(cloned);
+
+      return clonedDevice;
+    });
 
     // Clone history data if requested
     if (options?.cloneHistory && this.positionHistory_) {
@@ -687,8 +717,15 @@ export class DynamicGroundObject extends GroundObject {
       };
     }
 
-    // Spherical linear interpolation (SLERP)
+    // Antipodal (or nearly antipodal) points: every great circle through them is equally short,
+    // so SLERP is undefined (sin d = 0 gives NaN). Fall back to linear lat/lon interpolation.
     const sinD = Math.sin(d);
+
+    if (sinD < 1e-9) {
+      return this.linearInterpolate_(before, after, time);
+    }
+
+    // Spherical linear interpolation (SLERP)
     const a = Math.sin((1 - fraction) * d) / sinD;
     const b = Math.sin(fraction * d) / sinD;
 
@@ -751,14 +788,13 @@ export class DynamicGroundObject extends GroundObject {
 
     const t0 = this.waypoints_[segIdx].time.getTime();
     const t1 = this.waypoints_[segIdx + 1].time.getTime();
-    const dt = t1 - t0;
 
-    if (dt === 0) {
+    if (t1 === t0) {
       return { lat: this.waypoints_[segIdx].lat, lon: this.waypoints_[segIdx].lon, alt: this.waypoints_[segIdx].alt };
     }
 
-    // Normalized parameter [0, 1] within segment
-    const u = (t - t0) / dt;
+    // Seconds since the start of the segment (the spline is built on the real knot times)
+    const u = (t - t0) / 1000;
 
     // Evaluate spline for each coordinate
     const lat = this.evalCubic_(this.splineCoeffs_.latCoeffs[segIdx], u);
@@ -774,7 +810,7 @@ export class DynamicGroundObject extends GroundObject {
 
   /**
    * Computes cubic spline coefficients for all segments.
-   * Uses natural cubic spline (second derivative = 0 at endpoints).
+   * Uses natural cubic spline (second derivative = 0 at endpoints) on the real waypoint times.
    */
   private computeSplineCoefficients_(): void {
     const n = this.waypoints_.length;
@@ -787,57 +823,59 @@ export class DynamicGroundObject extends GroundObject {
 
     // For longitude, we need to handle wrapping
     const unwrappedLons = this.unwrapLongitudes_();
+    // Knot times in seconds
+    const knots = this.waypoints_.map((wp) => wp.time.getTime() / 1000);
 
     this.splineCoeffs_ = {
-      latCoeffs: this.computeNaturalCubicSpline_(this.waypoints_.map((wp) => wp.lat)),
-      lonCoeffs: this.computeNaturalCubicSpline_(unwrappedLons),
-      altCoeffs: this.computeNaturalCubicSpline_(this.waypoints_.map((wp) => wp.alt)),
+      latCoeffs: this.computeNaturalCubicSpline_(knots, this.waypoints_.map((wp) => wp.lat)),
+      lonCoeffs: this.computeNaturalCubicSpline_(knots, unwrappedLons),
+      altCoeffs: this.computeNaturalCubicSpline_(knots, this.waypoints_.map((wp) => wp.alt)),
     };
   }
 
   /**
-   * Computes natural cubic spline coefficients for a series of values.
-   * Returns coefficients for each segment in the form [a, b, c, d] where
-   * f(u) = a + b*u + c*u^2 + d*u^3, u in [0, 1]
+   * Natural cubic spline through (x_i, y_i) with unequal knot spacing (Burden and Faires,
+   * Numerical Analysis, Algorithm 3.4). Returns per-segment coefficients [a, b, c, d] with
+   * S_i(dx) = a + b dx + c dx^2 + d dx^3 and dx = x - x_i in the units of x (seconds here).
+   * With two points, or when two waypoints share a time, the result is piecewise linear.
+   * @param x - Non-decreasing knot abscissae.
+   * @param y - Values at the knots.
+   * @returns Coefficients for each of the x.length - 1 segments.
    */
-  private computeNaturalCubicSpline_(values: number[]): number[][] {
-    const n = values.length;
+  private computeNaturalCubicSpline_(x: number[], y: number[]): number[][] {
+    const n = y.length;
 
     if (n < 2) {
       return [];
     }
-    if (n === 2) {
-      // Simple linear interpolation
-      return [[values[0], values[1] - values[0], 0, 0]];
-    }
 
-    // Compute second derivatives using tridiagonal system
-    // For natural spline: second derivative at endpoints = 0
-    const h: number[] = []; // Segment widths (normalized to 1)
+    const h: number[] = [];
 
     for (let i = 0; i < n - 1; i++) {
-      h.push(1); // All segments normalized
+      h.push(x[i + 1] - x[i]);
     }
 
-    // Setup tridiagonal system for second derivatives
+    if (n === 2 || h.some((hi) => hi <= 0)) {
+      return h.map((hi, i) => [y[i], hi > 0 ? (y[i + 1] - y[i]) / hi : 0, 0, 0]);
+    }
+
     const alpha: number[] = new Array(n).fill(0);
 
     for (let i = 1; i < n - 1; i++) {
-      alpha[i] = (3 / h[i]) * (values[i + 1] - values[i]) - (3 / h[i - 1]) * (values[i] - values[i - 1]);
+      alpha[i] = (3 / h[i]) * (y[i + 1] - y[i]) - (3 / h[i - 1]) * (y[i] - y[i - 1]);
     }
 
-    // Solve tridiagonal system using Thomas algorithm
+    // Thomas algorithm for the tridiagonal system in the second-derivative terms c_i
     const l: number[] = new Array(n).fill(1);
     const mu: number[] = new Array(n).fill(0);
     const z: number[] = new Array(n).fill(0);
 
     for (let i = 1; i < n - 1; i++) {
-      l[i] = 2 * (h[i - 1] + h[i]) - h[i - 1] * mu[i - 1];
+      l[i] = 2 * (x[i + 1] - x[i - 1]) - h[i - 1] * mu[i - 1];
       mu[i] = h[i] / l[i];
       z[i] = (alpha[i] - h[i - 1] * z[i - 1]) / l[i];
     }
 
-    // Second derivatives
     const c: number[] = new Array(n).fill(0);
     // c[n-1] = 0 (natural spline)
 
@@ -845,22 +883,20 @@ export class DynamicGroundObject extends GroundObject {
       c[j] = z[j] - mu[j] * c[j + 1];
     }
 
-    // Compute coefficients for each segment
     const coeffs: number[][] = [];
 
     for (let i = 0; i < n - 1; i++) {
-      const a = values[i];
-      const b = values[i + 1] - values[i] - (c[i + 1] + 2 * c[i]) / 3;
-      const d = (c[i + 1] - c[i]) / 3;
+      const b = (y[i + 1] - y[i]) / h[i] - (h[i] * (c[i + 1] + 2 * c[i])) / 3;
+      const d = (c[i + 1] - c[i]) / (3 * h[i]);
 
-      coeffs.push([a, b, c[i], d]);
+      coeffs.push([y[i], b, c[i], d]);
     }
 
     return coeffs;
   }
 
   /**
-   * Evaluates a cubic polynomial.
+   * Evaluates a cubic polynomial at u (seconds from the segment start).
    */
   private evalCubic_(coeffs: number[], u: number): number {
     // f(u) = a + b*u + c*u^2 + d*u^3

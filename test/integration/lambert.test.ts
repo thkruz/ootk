@@ -25,7 +25,7 @@ describe('Lambert Problem Solutions', () => {
 
       const lambert = new LambertIOD();
       const stateVector = lambert.estimate(p1, p2, t1, t2, {
-        posigrade: true,
+        shortWay: true,
         nRev: 0,
       });
 
@@ -212,7 +212,7 @@ describe('Lambert Problem Solutions', () => {
 
       for (let nRev = 0; nRev <= 2; nRev++) {
         const solution = lambert.estimate(p1, p2, t1, t2, {
-          posigrade: true,
+          shortWay: true,
           nRev,
         });
 
@@ -243,8 +243,8 @@ describe('Lambert Problem Solutions', () => {
 
       const lambert = new LambertIOD();
 
-      const shortPath = lambert.estimate(p1, p2, t1, t2, { posigrade: true });
-      const longPath = lambert.estimate(p1, p2, t1, t2, { posigrade: false });
+      const shortPath = lambert.estimate(p1, p2, t1, t2, { shortWay: true });
+      const longPath = lambert.estimate(p1, p2, t1, t2, { shortWay: false });
 
       if (shortPath && longPath) {
         // Both paths should have valid velocities

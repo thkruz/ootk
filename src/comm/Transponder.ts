@@ -50,7 +50,11 @@ export interface TransponderParams extends CommunicationDeviceParams {
   noiseFigure?: Decibels;
   /** Processing delay in seconds (default 0) */
   delay?: number;
-  /** Transponder gain (output power / input power) in dB */
+  /**
+   * Transponder gain (output power / input power) in dB. Informational only: the relay budget
+   * models a bent pipe operating at its rated output `power`, so this value does not enter
+   * {@link Transponder.calculateRelayLink}.
+   */
   transponderGain?: Decibels;
 }
 
@@ -65,7 +69,7 @@ export interface TransponderParams extends CommunicationDeviceParams {
  * ```typescript
  * // Create a Ku-band transponder
  * const xponder = new Transponder({
- *   id: 'sat-xponder-1',
+ *   id: 301,
  *   name: 'Ku-band Transponder',
  *   uplinkFrequency: 14e9 as Hertz,     // 14 GHz uplink
  *   downlinkFrequency: 12e9 as Hertz,   // 12 GHz downlink
@@ -93,7 +97,7 @@ export class Transponder extends CommunicationDevice {
   readonly transmitter: Transmitter;
   /** Processing delay in seconds */
   delay: number;
-  /** Transponder gain in dB */
+  /** Transponder gain in dB (informational; not used in the link budget, see TransponderParams) */
   transponderGain: Decibels;
 
   constructor(params: TransponderParams) {
@@ -216,7 +220,9 @@ export class Transponder extends CommunicationDevice {
 
   /**
    * Checks if this transponder can relay between an uplink transmitter
-   * and a downlink receiver.
+   * and a downlink receiver. Both hops must be frequency compatible (the uplink inside the
+   * transponder's receive band, the transponder's downlink inside the ground receiver's band),
+   * visible, and meet their receivers' minimum SNR.
    *
    * @param uplink - The ground station uplink transmitter
    * @param downlink - The ground station downlink receiver

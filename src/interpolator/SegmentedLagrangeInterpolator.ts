@@ -36,7 +36,7 @@ interface Segment {
  *
  * Each segment uses data exclusively from its own physics model.
  * There may be a small gap between segments where interpolation
- * returns null — this is intentional to avoid cross-model artifacts.
+ * returns null; this is intentional to avoid cross-model artifacts.
  */
 export class SegmentedLagrangeInterpolator extends StateInterpolator {
   private readonly segments_: Segment[];
@@ -50,7 +50,7 @@ export class SegmentedLagrangeInterpolator extends StateInterpolator {
    * Create a segmented interpolator from phased ephemeris data.
    *
    * Each phase gets its own LagrangeInterpolator built from only its
-   * own data — no cross-phase overlap. This ensures the polynomial
+   * own data, no cross-phase overlap. This ensures the polynomial
    * only fits data from a single physics model.
    *
    * @param states All J2000 state vectors in chronological order.

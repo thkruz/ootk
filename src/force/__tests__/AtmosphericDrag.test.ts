@@ -90,26 +90,24 @@ describe('AtmosphericDrag', () => {
       expect(magMean).toBeLessThan(magMax);
     });
 
-    it('should clamp F10.7 values below minimum', () => {
+    /*
+     * QA 2026-10 (report 2.3, AtmosphericDrag.ts:73-78): F10.7 is now a continuous multiplicative
+     * factor on the whole HP density (US76 diffusive-equilibrium ratio, Jacchia 1971 Tinf), not a
+     * linear 70-250 SFU ramp on the diurnal term, so there is no clamp at 70 or 250. These tests
+     * replace the old clamp tests: drag keeps decreasing below 70 and increasing above 250.
+     */
+    it('keeps decreasing for F10.7 values below 70 instead of clamping', () => {
       const dragBelow = new AtmosphericDrag(mass, area, dragCoeff, cosine, 50);
       const dragMin = new AtmosphericDrag(mass, area, dragCoeff, cosine, 70);
 
-      const accBelow = dragBelow.acceleration(state);
-      const accMin = dragMin.acceleration(state);
-
-      // Values below 70 should be clamped, giving same result as 70
-      expect(accBelow.magnitude()).toBeCloseTo(accMin.magnitude(), 10);
+      expect(dragBelow.acceleration(state).magnitude()).toBeLessThan(dragMin.acceleration(state).magnitude());
     });
 
-    it('should clamp F10.7 values above maximum', () => {
+    it('keeps increasing for F10.7 values above 250 instead of clamping', () => {
       const dragAbove = new AtmosphericDrag(mass, area, dragCoeff, cosine, 300);
       const dragMax = new AtmosphericDrag(mass, area, dragCoeff, cosine, 250);
 
-      const accAbove = dragAbove.acceleration(state);
-      const accMax = dragMax.acceleration(state);
-
-      // Values above 250 should be clamped, giving same result as 250
-      expect(accAbove.magnitude()).toBeCloseTo(accMax.magnitude(), 10);
+      expect(dragAbove.acceleration(state).magnitude()).toBeGreaterThan(dragMax.acceleration(state).magnitude());
     });
 
     it('should return zero acceleration above atmosphere', () => {

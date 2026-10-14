@@ -156,7 +156,8 @@ export class EquinoctialElements {
 
   /**
    * Converts the equinoctial elements to classical elements.
-   * @returns The classical elements.
+   * @returns The classical elements, with right ascension, argument of perigee and true anomaly in radians wrapped
+   *   to [0, 2pi) (atan2 alone returns (-pi, pi], which `Tle.fromClassicalElements` rejects).
    */
   toClassicalElements(): ClassicalElements {
     const a = this.semimajorAxis;
@@ -166,15 +167,16 @@ export class EquinoctialElements {
     const w = Math.atan2(this.h, this.k) - this.I * Math.atan2(this.p, this.q);
     const m = this.lambda - this.I * o - w;
     const v = newtonM(e, m).nu;
+    const wrap = (angle: number): Radians => (((angle % TAU) + TAU) % TAU) as Radians;
 
     return new ClassicalElements({
       epoch: this.epoch,
       semimajorAxis: a,
       eccentricity: e,
       inclination: i as Radians,
-      rightAscension: o as Radians,
-      argPerigee: w as Radians,
-      trueAnomaly: v as Radians,
+      rightAscension: wrap(o),
+      argPerigee: wrap(w),
+      trueAnomaly: wrap(v),
       mu: this.mu,
     });
   }

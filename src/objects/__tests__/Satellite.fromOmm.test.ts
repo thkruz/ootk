@@ -26,7 +26,8 @@ describe('Satellite.fromOmm', () => {
 
     expect(sat.sccNum).toBe('25544');
     expect(sat.sccNum5).toBe('25544');
-    expect(sat.sccNum6).toBe('25544');
+    // v8: sccNum6 is the fixed-width 6-digit form
+    expect(sat.sccNum6).toBe('025544');
   });
 
   it('populates sccNum5/sccNum6 for an alpha-5-range 6-digit ID', () => {

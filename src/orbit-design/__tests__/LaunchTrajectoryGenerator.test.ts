@@ -884,3 +884,66 @@ describe('LaunchTrajectoryGenerator', () => {
     });
   });
 });
+
+describe('LaunchTrajectoryGenerator QA 2026-10 regression', () => {
+  const launchTime = new Date('2024-01-01T12:00:00.000Z');
+
+  /*
+   * Report 2.5 (LaunchTrajectoryGenerator.ts:118, 400-490): the rotating-Earth ascent used to
+   * leave KSC to 51.6 deg at 50.75 deg and Vandenberg to 98.2 deg at 94.9 deg. The insertion
+   * inclination is computed here independently from h = r x v of the insertion state.
+   */
+  it.each([
+    ['KSC', 28.5729, -80.649, 51.6, 'N'],
+    ['Vandenberg', 34.742, -120.5724, 98.2, 'S'],
+    ['Baikonur', 45.965, 63.305, 51.6, 'N'],
+    ['Kourou', 5.239, -52.768, 6, 'N'],
+  ] as const)('inserts from %s at the requested %f deg inclination', (_name, lat, lon, inc, direction) => {
+    const result = LaunchTrajectoryGenerator.generateWithBoundary({
+      launchLatDeg: lat,
+      launchLonDeg: lon,
+      perigeeAltKm: 500,
+      apogeeAltKm: 500,
+      inclinationDeg: inc,
+      direction,
+      launchTime,
+      orbitDurationHours: 1,
+    });
+    const insertion = result.states[result.insertionIndex];
+    const h = insertion.position.cross(insertion.velocity);
+    const incDeg = (Math.acos(h.z / h.magnitude()) * 180) / Math.PI;
+
+    expect(Math.abs(incDeg - inc)).toBeLessThan(0.01);
+  });
+
+  /*
+   * Report 2.5 (LaunchTrajectoryGenerator.ts:111-114): a 300 x 1500 km LEO-direct request used
+   * to insert circular at 900 km. Property: the insertion point is the perigee (horizontal
+   * velocity), and the apogee radius equals 6378.137 + 1500 km (vis-viva, independent of e).
+   */
+  it('inserts a 300 x 1500 km request at perigee with the requested apogee radius', () => {
+    const result = LaunchTrajectoryGenerator.generateWithBoundary({
+      launchLatDeg: 28.5729,
+      launchLonDeg: -80.649,
+      perigeeAltKm: 300,
+      apogeeAltKm: 1500,
+      inclinationDeg: 51.6,
+      direction: 'N',
+      launchTime,
+      orbitDurationHours: 2,
+    });
+    const insertion = result.states[result.insertionIndex];
+    const r = insertion.position.magnitude();
+    const v = insertion.velocity.magnitude();
+    const a = 1 / (2 / r - (v * v) / Earth.mu);
+    const flightPathSin = insertion.position.dot(insertion.velocity) / (r * v);
+
+    expect(Math.abs(flightPathSin)).toBeLessThan(1e-9);
+    expect(Math.abs(2 * a - r - (6378.137 + 1500))).toBeLessThan(1e-6);
+
+    // The coast after insertion reaches that apogee about half an orbit later.
+    const maxR = Math.max(...result.states.slice(result.insertionIndex + 1).map((s) => s.position.magnitude()));
+
+    expect(Math.abs(maxR - (6378.137 + 1500))).toBeLessThan(5);
+  });
+});

@@ -16,9 +16,9 @@
  */
 
 import type { ClassicalElements } from '../coordinate/ClassicalElements';
-import type { ITRF } from '../coordinate/ITRF';
+import { ITRF } from '../coordinate/ITRF';
 import { J2000 } from '../coordinate/J2000';
-import type { TEME } from '../coordinate/TEME';
+import { TEME } from '../coordinate/TEME';
 import { CubicSplineInterpolator } from '../interpolator/CubicSplineInterpolator';
 import { LagrangeInterpolator } from '../interpolator/LagrangeInterpolator';
 import type { StateInterpolator } from '../interpolator/StateInterpolator';
@@ -46,7 +46,10 @@ import { SpaceObject, SpaceObjectParams } from './SpaceObject';
  * Parameters for constructing an EphemerisSatellite.
  */
 export interface EphemerisSatelliteParams extends Omit<SpaceObjectParams, 'position' | 'velocity' | 'type'> {
-  /** Array of J2000 state vectors forming the ephemeris */
+  /**
+   * State vectors forming the ephemeris, as `J2000` objects. When `referenceFrame` is 'TEME'
+   * the numbers in each object are TEME coordinates (the class is only a container).
+   */
   ephemeris: J2000[];
   /** Center body for the ephemeris (defaults to EARTH) */
   centerBody?: CenterBody;
@@ -84,6 +87,7 @@ export class EphemerisSatellite extends SpaceObject {
   private readonly ephemeris_: J2000[];
   private readonly centerBody_: CenterBody;
   private readonly referenceFrame_: 'J2000' | 'TEME';
+  private readonly interpolatorOrder_: number;
 
   constructor(params: EphemerisSatelliteParams) {
     if (!params.ephemeris || params.ephemeris.length === 0) {
@@ -91,7 +95,7 @@ export class EphemerisSatellite extends SpaceObject {
     }
 
     const lastState = params.ephemeris[params.ephemeris.length - 1];
-    const teme = lastState.toTEME();
+    const teme = params.referenceFrame === 'TEME' ? lastState : lastState.toTEME();
 
     super({
       ...params,
@@ -113,20 +117,25 @@ export class EphemerisSatellite extends SpaceObject {
     this.referenceFrame_ = params.referenceFrame ?? 'J2000';
     this.metadata = params.metadata;
     this.interpolatorType_ = params.interpolatorType ?? DEFAULT_INTERPOLATOR;
+    this.interpolatorOrder_ = params.interpolatorOrder ?? DEFAULT_LAGRANGE_ORDER;
 
-    this.interpolator_ = this.createInterpolator_(
-      this.interpolatorType_,
-      params.interpolatorOrder ?? DEFAULT_LAGRANGE_ORDER,
-    );
+    this.interpolator_ = this.createInterpolator_(this.interpolatorType_, this.interpolatorOrder_);
   }
 
   // ==================== Factory Methods ====================
 
   /**
    * Create from parsed OEM data.
+   *
+   * Supported REF_FRAME values: EME2000, J2000, ICRF and GCRF are treated as J2000 (ICRF/GCRF
+   * differ from EME2000 by the ~23 mas frame bias, about 1 m at GEO); TEME is kept as TEME;
+   * Earth-fixed frames (ITRF, ITRF-93, ITRF97, ITRF2000, ITRF2008, ITRF2014, ITRF2020, ITRF1993,
+   * ECEF) are rotated into J2000 state by state with {@link ITRF.toJ2000}. Any other frame
+   * (for example TOD, MOD, RTN or a non-Earth body frame) is rejected.
    * @param oem - Parsed OEM structure
    * @param options - Optional configuration
    * @returns New EphemerisSatellite instance
+   * @throws Error if a data block uses an unsupported REF_FRAME
    */
   static fromParsedOem(
     oem: ParsedOem,
@@ -141,8 +150,14 @@ export class EphemerisSatellite extends SpaceObject {
       throw new Error('OEM contains no ephemeris data');
     }
 
+    // Frame of the stored states: TEME only if every block is TEME; otherwise convert to J2000.
+    const frames = oem.dataBlocks.map((block) => EphemerisSatellite.classifyOemFrame_(block.metadata.REF_FRAME));
+    const allTeme = frames.every((f) => f === 'TEME');
+
     // Combine all ephemeris from all data blocks
-    const allEphemeris = oem.dataBlocks.flatMap((block) => block.ephemeris);
+    const allEphemeris = oem.dataBlocks.flatMap((block, i) =>
+      block.ephemeris.map((state) => EphemerisSatellite.toStoredFrame_(state, frames[i], allTeme)),
+    );
 
     // Determine interpolator from OEM metadata or use provided
     const interpolatorType =
@@ -154,7 +169,7 @@ export class EphemerisSatellite extends SpaceObject {
       name: firstBlock.metadata.OBJECT_NAME ?? 'Unnamed',
       ephemeris: allEphemeris,
       centerBody: parseCenterBody(firstBlock.metadata.CENTER_NAME),
-      referenceFrame: firstBlock.metadata.REF_FRAME === 'TEME' ? 'TEME' : 'J2000',
+      referenceFrame: allTeme ? 'TEME' : 'J2000',
       interpolatorType,
       interpolatorOrder: order,
       metadata: {
@@ -163,6 +178,47 @@ export class EphemerisSatellite extends SpaceObject {
         objectId: firstBlock.metadata.OBJECT_ID,
       },
     });
+  }
+
+  /**
+   * Classifies an OEM REF_FRAME as J2000-like, TEME or Earth-fixed.
+   * @param refFrame - The REF_FRAME metadata value.
+   * @returns The frame class.
+   * @throws Error for an unsupported frame.
+   */
+  private static classifyOemFrame_(refFrame: string | undefined): 'J2000' | 'TEME' | 'ITRF' {
+    const frame = (refFrame ?? 'EME2000').toUpperCase().trim();
+
+    if (frame === 'EME2000' || frame === 'J2000' || frame === 'ICRF' || frame === 'GCRF') {
+      return 'J2000';
+    }
+    if (frame === 'TEME') {
+      return 'TEME';
+    }
+    if (frame === 'ECEF' || frame.startsWith('ITRF')) {
+      return 'ITRF';
+    }
+
+    throw new Error(`EphemerisSatellite: unsupported OEM REF_FRAME "${refFrame}"`);
+  }
+
+  /**
+   * Re-expresses an OEM state in the frame the satellite will store: TEME numbers unchanged when
+   * every block is TEME, otherwise J2000 (TEME and ITRF states are rotated into J2000).
+   * @param state - State as parsed (numbers in `frame`, wrapped in a J2000 object).
+   * @param frame - The block's frame class.
+   * @param storeTeme - True when the satellite stores TEME.
+   * @returns The state to store.
+   */
+  private static toStoredFrame_(state: J2000, frame: 'J2000' | 'TEME' | 'ITRF', storeTeme: boolean): J2000 {
+    if (storeTeme || frame === 'J2000') {
+      return state;
+    }
+    if (frame === 'TEME') {
+      return new TEME(state.epoch, state.position, state.velocity).toJ2000();
+    }
+
+    return new ITRF(state.epoch, state.position, state.velocity).toJ2000();
   }
 
   /**
@@ -205,7 +261,8 @@ export class EphemerisSatellite extends SpaceObject {
       return null;
     }
 
-    const teme = this.referenceFrame_ === 'J2000' ? state.toTEME() : (state as unknown as TEME);
+    // Stored as TEME: the interpolated numbers already are TEME coordinates.
+    const teme = this.referenceFrame_ === 'J2000' ? state.toTEME() : state;
 
     // Update cached position/velocity
     this.position = {
@@ -226,15 +283,17 @@ export class EphemerisSatellite extends SpaceObject {
   }
 
   /**
-   * Returns the ECEF position at the given time.
+   * Returns the ECEF (ITRF) position at the given time.
    * @param date - The time to calculate position for (defaults to now)
+   * @returns ITRF position in km, or null when the center body is not the Earth (an Earth-fixed
+   * position is meaningless for a Moon- or Sun-centered ephemeris)
+   * @throws Error if the date is outside the coverage window
    */
   override ecef(date?: Date): EcefVec3<Kilometers> | null {
-    const j2000 = this.toJ2000(date);
-
-    if (!j2000) {
+    if (this.centerBody_ !== CenterBody.EARTH) {
       return null;
     }
+    const j2000 = this.toJ2000(date);
 
     const itrf = j2000.toITRF();
 
@@ -248,13 +307,14 @@ export class EphemerisSatellite extends SpaceObject {
   /**
    * Returns the geodetic position (lat/lon/alt) at the given time.
    * @param date - The time to calculate position for (defaults to now)
+   * @returns WGS-84 geodetic position, or null when the center body is not the Earth
+   * @throws Error if the date is outside the coverage window
    */
   override lla(date?: Date): LlaVec3<Degrees, Kilometers> | null {
-    const j2000 = this.toJ2000(date);
-
-    if (!j2000) {
+    if (this.centerBody_ !== CenterBody.EARTH) {
       return null;
     }
+    const j2000 = this.toJ2000(date);
 
     const itrf = j2000.toITRF();
     const lla = itrf.toGeodetic();
@@ -278,9 +338,9 @@ export class EphemerisSatellite extends SpaceObject {
       return null;
     }
 
-    // If stored as TEME, convert to J2000
+    // If stored as TEME, the interpolated numbers are TEME coordinates: rewrap and rotate to J2000
     if (this.referenceFrame_ === 'TEME') {
-      return (state as unknown as TEME).toJ2000();
+      return new TEME(state.epoch, state.position, state.velocity).toJ2000();
     }
 
     return state;
@@ -302,7 +362,7 @@ export class EphemerisSatellite extends SpaceObject {
       return state.toTEME();
     }
 
-    return state as unknown as TEME;
+    return new TEME(state.epoch, state.position, state.velocity);
   }
 
   // ==================== Coordinate Conversions ====================
@@ -326,9 +386,12 @@ export class EphemerisSatellite extends SpaceObject {
   /**
    * Returns ITRF coordinates at the given time.
    * @param date - The time to calculate for (defaults to now)
-   * @throws Error if the date is outside the coverage window
+   * @throws Error if the date is outside the coverage window or the center body is not the Earth
    */
   override toITRF(date?: Date): ITRF {
+    if (this.centerBody_ !== CenterBody.EARTH) {
+      throw new Error(`ITRF is undefined for an ephemeris centered on ${this.centerBody_}`);
+    }
     const j2000 = this.toJ2000(date);
 
     return j2000.toITRF();
@@ -441,7 +504,8 @@ export class EphemerisSatellite extends SpaceObject {
    * For analysis, use getJ2000() which uses the configured StateInterpolator.
    *
    * @param epoch - The epoch to interpolate at
-   * @returns Position, velocity, and state vector index, or null if outside coverage
+   * @returns Position, velocity, and state vector index, or null if outside coverage. At exactly
+   * the last ephemeris epoch the last point is returned unchanged; after it, null.
    */
   getLinearInterpolatedState(epoch: EpochUTC): {
     position: { x: Kilometers; y: Kilometers; z: Kilometers };
@@ -458,21 +522,27 @@ export class EphemerisSatellite extends SpaceObject {
     }
 
     const current = this.ephemeris_[idx];
-    const next = this.ephemeris_[idx + 1] ?? current;
-
-    const t0 = current.epoch.posix;
-    const t1 = next.epoch.posix;
+    const next = this.ephemeris_[idx + 1];
 
     // Convert to TEME for output
     const currentTeme = this.referenceFrame_ === 'J2000' ? current.toTEME() : current;
-    const nextTeme = this.referenceFrame_ === 'J2000' ? next.toTEME() : next;
+    let position: { x: Kilometers; y: Kilometers; z: Kilometers };
 
-    // Linear interpolation using ootk utility
-    const position = {
-      x: linearInterpolate(posix, t0, currentTeme.position.x, t1, nextTeme.position.x) as Kilometers,
-      y: linearInterpolate(posix, t0, currentTeme.position.y, t1, nextTeme.position.y) as Kilometers,
-      z: linearInterpolate(posix, t0, currentTeme.position.z, t1, nextTeme.position.z) as Kilometers,
-    };
+    if (!next || next.epoch.posix === current.epoch.posix) {
+      // At the last point (or a duplicate epoch) there is no interval to interpolate over
+      position = { x: currentTeme.position.x, y: currentTeme.position.y, z: currentTeme.position.z };
+    } else {
+      const t0 = current.epoch.posix;
+      const t1 = next.epoch.posix;
+      const nextTeme = this.referenceFrame_ === 'J2000' ? next.toTEME() : next;
+
+      // Linear interpolation using ootk utility
+      position = {
+        x: linearInterpolate(posix, t0, currentTeme.position.x, t1, nextTeme.position.x) as Kilometers,
+        y: linearInterpolate(posix, t0, currentTeme.position.y, t1, nextTeme.position.y) as Kilometers,
+        z: linearInterpolate(posix, t0, currentTeme.position.z, t1, nextTeme.position.z) as Kilometers,
+      };
+    }
 
     // Velocity from current point (no interpolation needed for animation)
     const velocity = {
@@ -493,7 +563,10 @@ export class EphemerisSatellite extends SpaceObject {
     if (posix < this.ephemeris_[0].epoch.posix) {
       return null;
     }
-    if (posix >= this.ephemeris_[n - 1].epoch.posix) {
+    if (posix > this.ephemeris_[n - 1].epoch.posix) {
+      return null;
+    }
+    if (posix === this.ephemeris_[n - 1].epoch.posix) {
       return n - 1;
     }
 
@@ -559,7 +632,8 @@ export class EphemerisSatellite extends SpaceObject {
   // ==================== Cloning ====================
 
   /**
-   * Creates a deep copy of this satellite.
+   * Creates a copy of this satellite with the same ephemeris (the immutable state objects are
+   * shared), center body, reference frame, interpolator type and interpolator order.
    * @param _options - Unused, provided for compatibility with base class
    */
   override clone(_options?: Record<string, unknown>): EphemerisSatellite {
@@ -569,6 +643,8 @@ export class EphemerisSatellite extends SpaceObject {
       ephemeris: [...this.ephemeris_],
       centerBody: this.centerBody_,
       referenceFrame: this.referenceFrame_,
+      interpolatorType: this.interpolatorType_,
+      interpolatorOrder: this.interpolatorOrder_,
       metadata: this.metadata ? { ...this.metadata } : undefined,
     });
   }

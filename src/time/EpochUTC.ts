@@ -127,15 +127,33 @@ export class EpochUTC extends Epoch {
     return new EpochUTC(dt.getTime() / 1000 as Seconds);
   }
 
+  /**
+   * Parse an ISO 8601 date-time string. A string without a zone designator is read as
+   * UTC; a string that ends in `Z` or carries an explicit offset (`+02:00`, `-0500`) keeps
+   * that offset.
+   * @param dateTimeString ISO 8601 date-time string.
+   * @returns The UTC epoch.
+   */
   static fromDateTimeString(dateTimeString: string): EpochUTC {
-    const dts = dateTimeString.trim().toUpperCase().endsWith('Z') ? dateTimeString : `${dateTimeString}Z`;
+    const trimmed = dateTimeString.trim();
+    // Zone designator after the time part: Z, +hh, +hhmm or +hh:mm (or minus).
+    const hasZone = (/(?:[zZ]|[+-]\d{2}(?::?\d{2})?)$/u).test(trimmed) && trimmed.includes('T');
+    const dts = hasZone ? trimmed : `${trimmed}Z`;
 
     return new EpochUTC(new Date(dts).getTime() / 1000 as Seconds);
   }
 
+  /**
+   * Create a UTC epoch from seconds past J2000 (2000-01-01T12:00:00) on the TT scale.
+   *
+   * UTC = TT - 32.184 s - (TAI - UTC), with TAI - UTC looked up at the TAI instant on the
+   * TAI scale (see `DataHandler.getLeapSecondsFromTai`).
+   * @param seconds TT seconds past J2000.
+   * @returns The UTC epoch.
+   */
   static fromJ2000TTSeconds(seconds: Seconds): EpochUTC {
     const tInit = new EpochUTC(seconds + 946728000 as Seconds);
-    const ls = DataHandler.getInstance().getLeapSeconds(tInit.toJulianDate());
+    const ls = DataHandler.getInstance().getLeapSecondsFromTai(tInit.roll(-32.184 as Seconds).toJulianDate());
 
     return tInit.roll(-32.184 - ls as Seconds);
   }

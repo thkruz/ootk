@@ -421,3 +421,56 @@ describe('GibbsIOD', () => {
     });
   });
 });
+
+describe('GibbsIOD QA 2026-10 regression', () => {
+  const t2 = EpochUTC.fromDateTimeString('2024-01-01T00:00:00.000Z');
+  const t3 = t2.roll(600 as Seconds);
+  const vec = (x: number, y: number, z: number) => new Vector3D(x as Kilometers, y as Kilometers, z as Kilometers);
+
+  /*
+   * Vallado, Fundamentals of Astrodynamics and Applications, 4th ed., Chapter 7 Gibbs worked
+   * example: r1 = 6378.137 K, r2 = -4464.696 J - 5102.509 K, r3 = 5740.323 J + 3189.068 K.
+   * Independent property: the conic built from (r2, v2) must pass through r1 and r3, i.e.
+   * |ri| = p / (1 + e . ri_hat) with p = h^2 / mu and e the eccentricity vector.
+   */
+  it('returns a conic that passes through all three Vallado positions', () => {
+    const r1 = vec(0, 0, 6378.137);
+    const r2 = vec(0, -4464.696, -5102.509);
+    const r3 = vec(0, 5740.323, 3189.068);
+    const state = new GibbsIOD().solve(r1, r2, r3, t2, t3);
+    const r = state.position;
+    const v = state.velocity;
+    const h = r.cross(v);
+    const p = h.dot(h) / Earth.mu;
+    const eVec = r.scale(v.dot(v) - Earth.mu / r.magnitude()).subtract(v.scale(r.dot(v))).scale(1 / Earth.mu);
+
+    for (const ri of [r1, r2, r3]) {
+      const conicRadius = p / (1 + eVec.dot(ri.normalize()));
+
+      expect(Math.abs(conicRadius - ri.magnitude())).toBeLessThan(1e-6);
+    }
+    // Motion is r1 -> r2 -> r3, so the angular momentum is along r1 x r2.
+    expect(h.dot(r1.cross(r2))).toBeGreaterThan(0);
+  });
+
+  /*
+   * Coplanarity gate (Vallado Algorithm 54) must measure the true out-of-plane angle of r1,
+   * independent of the angle between r2 and r3. With theta23 = 120 deg the unnormalised
+   * product was already close to the true angle, so 4 deg passes and 6 deg fails both before
+   * and after; with theta23 = 10 deg only the normalised form rejects 6 deg.
+   */
+  it.each([10, 120])('rejects 6 deg and accepts 4 deg out of plane for theta23 = %i deg', (t23Deg) => {
+    const mag = 7000;
+    const t23 = t23Deg * DEG2RAD;
+    const r2 = vec(mag, 0, 0);
+    const r3 = vec(mag * Math.cos(t23), mag * Math.sin(t23), 0);
+    const outOfPlane = (deg: number) => {
+      const a = deg * DEG2RAD;
+
+      return vec(mag * Math.cos(a) * Math.cos(-t23), mag * Math.cos(a) * Math.sin(-t23), mag * Math.sin(a));
+    };
+
+    expect(() => new GibbsIOD().solve(outOfPlane(6), r2, r3, t2, t3)).toThrow(/coplanar/u);
+    expect(() => new GibbsIOD().solve(outOfPlane(4), r2, r3, t2, t3)).not.toThrow();
+  });
+});

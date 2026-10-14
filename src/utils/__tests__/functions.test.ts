@@ -187,9 +187,10 @@ describe('functions', () => {
     expect(factorial(10)).toBe(3628800);
   });
 
-  it('should calculate factorial of negative numbers using absolute value', () => {
-    expect(factorial(-5)).toBe(120);
-    expect(factorial(-1)).toBe(1);
+  it('returns NaN for negative or non-integer arguments (n! is undefined there)', () => {
+    expect(factorial(-5)).toBeNaN();
+    expect(factorial(-1)).toBeNaN();
+    expect(factorial(2.5)).toBeNaN();
   });
 
 });
@@ -457,9 +458,9 @@ describe('wrapAngle edge cases', () => {
       expect(factorial(10)).toBe(3628800);
     });
 
-    it('should calculate factorial of negative numbers using absolute value', () => {
-      expect(factorial(-5)).toBe(120);
-      expect(factorial(-1)).toBe(1);
+    it('returns NaN for negative integers', () => {
+      expect(factorial(-5)).toBeNaN();
+      expect(factorial(-1)).toBeNaN();
     });
 
     it('should handle large numbers', () => {

@@ -122,21 +122,27 @@ describe('Ensure bstar and ndot account for leading zeros', () => {
     const line2 = '2 00005  34.2682 348.7242 1859667 331.7664  19.3264 10.82419157413667';
     const satrec = Sgp4.createSatrec(line1, line2, Sgp4GravConstants.wgs72, Sgp4OpsMode.IMPROVED);
 
-    expect(satrec.nddot).toEqual(0.00023);
+    // nddot is stored in rad/min^3 like python-sgp4: TLE field (rev/day^3) / (xpdotp * 1440^2).
+    expect(satrec.nddot).toBeCloseTo(0.00023 / ((1440 / (2 * Math.PI)) * 1440 * 1440), 20);
+    expect(satrec.nddot * (1440 / (2 * Math.PI)) * 1440 * 1440).toBeCloseTo(0.00023, 15);
   });
   test('if ndot reads in leading zero and applies exponents', () => {
     const line1 = '1 00005U 58002B   00179.78495062  .10000000  00023-4  12398-0 0  4753';
     const line2 = '2 00005  34.2682 348.7242 1859667 331.7664  19.3264 10.82419157413667';
     const satrec = Sgp4.createSatrec(line1, line2, Sgp4GravConstants.wgs72, Sgp4OpsMode.IMPROVED);
 
-    expect(satrec.nddot).toEqual(0.000000023);
+    // nddot is stored in rad/min^3 like python-sgp4: TLE field (rev/day^3) / (xpdotp * 1440^2).
+    expect(satrec.nddot).toBeCloseTo(0.000000023 / ((1440 / (2 * Math.PI)) * 1440 * 1440), 20);
+    expect(satrec.nddot * (1440 / (2 * Math.PI)) * 1440 * 1440).toBeCloseTo(0.000000023, 15);
   });
   test('if ndot reads in negative value with leading zeroes', () => {
     const line1 = '1 00005U 58002B   00179.78495062 -.10000000 -00023-0  12398-5 0  4753';
     const line2 = '2 00005  34.2682 348.7242 1859667 331.7664  19.3264 10.82419157413667';
     const satrec = Sgp4.createSatrec(line1, line2, Sgp4GravConstants.wgs72, Sgp4OpsMode.IMPROVED);
 
-    expect(satrec.nddot).toEqual(-0.00023);
+    // nddot is stored in rad/min^3 like python-sgp4: TLE field (rev/day^3) / (xpdotp * 1440^2).
+    expect(satrec.nddot).toBeCloseTo(-0.00023 / ((1440 / (2 * Math.PI)) * 1440 * 1440), 20);
+    expect(satrec.nddot * (1440 / (2 * Math.PI)) * 1440 * 1440).toBeCloseTo(-0.00023, 15);
   });
 
   test('rv2coe', () => {

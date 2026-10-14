@@ -172,21 +172,28 @@ export class Geodetic {
   }
 
   /**
-   * Calculates the field of view based on the altitude of the Geodetic object.
-   * @returns The field of view in radians.
+   * Earth-central half-angle to this point's horizon on a spherical Earth of radius {@link Earth.radiusMean}:
+   * acos(R / (R + alt)). A ground point is visible from here when its central angle from this point is at most this.
+   * @returns The horizon central angle in radians.
    */
   fieldOfView(): Radians {
     return Math.acos(Earth.radiusMean / (Earth.radiusMean + this.alt)) as Radians;
   }
 
   /**
-   * Determines if the current geodetic coordinate can see another geodetic coordinate.
+   * Determines if the current geodetic coordinate can see another geodetic coordinate over a spherical Earth of
+   * radius {@link Earth.radiusMean}.
+   *
+   * The line of sight between two points at radii r1 and r2 just grazes the sphere when the central angle between
+   * them equals acos(R / r1) + acos(R / r2): each term is the angle from that point to the tangent point. So the
+   * mutual visibility limit is the SUM of the two {@link fieldOfView} angles, not the larger one (for a ground point,
+   * alt = 0, the sum reduces to the other point's horizon angle).
    * @param g The geodetic coordinate to check for visibility.
    * @param method The method to use for calculating the angular distance (optional, default is Haversine).
    * @returns A boolean indicating if the current coordinate can see the other coordinate.
    */
   isInView(g: Geodetic, method: AngularDistanceMethod = AngularDistanceMethod.Haversine): boolean {
-    const fov = Math.max(this.fieldOfView(), g.fieldOfView());
+    const fov = this.fieldOfView() + g.fieldOfView();
 
     return this.angle(g, method) <= fov;
   }

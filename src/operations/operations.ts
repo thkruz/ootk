@@ -22,6 +22,7 @@
  */
 
 export { Matrix } from './Matrix';
+export { SingularMatrixError } from './SingularMatrixError';
 export { Random } from './Random';
 export { Vector } from './Vector';
 export { Vector3D } from './Vector3D';

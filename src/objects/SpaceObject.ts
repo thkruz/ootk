@@ -149,18 +149,21 @@ export abstract class SpaceObject extends BaseObject {
 
   /**
    * Returns the Range, Azimuth, and Elevation from a ground observer.
-   * @param observer - The ground observer's position
+   * @param observer - The ground observer (its position at `date` is used, via `llaAt`)
    * @param date - The time to calculate for (defaults to now)
    * @returns RAE coordinates (range in km, az/el in degrees), or null if position cannot be calculated
    */
   rae(observer: GroundObject, date?: Date): RaeVec3<Kilometers, Degrees> | null {
+    date ??= new Date();
     const ecef = this.ecef(date);
+    // Observer position at `date`, so a moving observer (DynamicGroundObject) is evaluated where it is
+    const observerLla = observer.llaAt(date);
 
-    if (!ecef) {
+    if (!ecef || !observerLla) {
       return null;
     }
 
-    return ecef2rae(observer.lla(), ecef);
+    return ecef2rae(observerLla, ecef);
   }
 
   /**

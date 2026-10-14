@@ -13,13 +13,13 @@ npx tsx ./examples/orbital-elements.ts
 
 ## TLE to Elements
 
-Propagate a `Satellite` (built from a TLE) to a specific date with `toJ2000()`, then call `toClassicalElements()` on the resulting state. Angle members on `ClassicalElements` are stored in radians, so the script converts to degrees for display. Derived quantities like `period` are available directly, and apogee/perigee altitudes fall out of the semi-major axis and eccentricity.
+Propagate a `Satellite` (built from a TLE) to a specific date with `toJ2000()`, then call `toClassicalElements()` on the resulting state. Angle members on `ClassicalElements` are stored in radians, so the script converts to degrees for display. Derived quantities like `period` are available directly, and apogee/perigee altitudes fall out of the semi-major axis and eccentricity. `ClassicalElements.apogee` and `perigee` are altitudes above the WGS-84 equatorial radius (6378.137 km); `apogeeRadius` and `perigeeRadius` are the geocentric distances.
 
 <<< ../../examples/orbital-elements.ts#tle-to-elements
 
 ## Elements to State Vector
 
-`ClassicalElements` can also be constructed directly. The constructor accepts angles in degrees (they are converted internally), and `toJ2000()` produces the equivalent inertial position and velocity at the element epoch.
+`ClassicalElements` can also be constructed directly, and `toJ2000()` produces the equivalent inertial position and velocity at the element epoch. The constructor takes `inclination`, `rightAscension`, `argPerigee` and `trueAnomaly` in **radians** and does no conversion; the script converts degrees with `DEG2RAD` (for example `(45 * DEG2RAD) as Radians`).
 
 <<< ../../examples/orbital-elements.ts#elements-to-state-vector
 
@@ -31,7 +31,7 @@ The reverse direction: build a `J2000` state from raw position (km) and velocity
 
 ## Elements to TLE
 
-`Tle.fromClassicalElements()` fits a TLE to a set of elements. Note that TLEs encode SGP4 mean elements, not osculating elements, so reading the TLE back through SGP4 gives values close to (but not exactly) the input; the verification block shows the round trip lands within about 1 km of the GEO semi-major axis.
+`Tle.fromClassicalElements()` fits a TLE to a set of elements. Note that TLEs encode SGP4 mean elements, not osculating elements, so reading the TLE back through SGP4 gives values close to (but not exactly) the input; the verification block shows the round trip comes back within about 1 km of the GEO semi-major axis.
 
 <<< ../../examples/orbital-elements.ts#elements-to-tle
 
@@ -68,8 +68,8 @@ Custom Orbit:
   Period: 118.68 minutes
 
 State Vector:
-  Position: [2843.28, 2667.36, -6053.18] km
-  Velocity: [-4.020084, 6.609623, 1.024256] km/s
+  Position: [-2545.58, 6235.38, 2545.58] km
+  Velocity: [-4.778753, -3.901836, 4.778753] km/s
 
 === Example 3: Create State Vector and Convert to Classical Elements ===
 
@@ -85,7 +85,7 @@ Derived Orbital Elements:
 
 Generated TLE for GEO satellite:
 1 00001U 58001A   24028.54545661  .00000000  00000+0  00000+0 0  9995
-2 00001   5.7296   0.0000 0001000   0.0000   0.0000 01.00274396    05
+2 00001   0.1000   0.0000 0001000   0.0000   0.0000 01.00274396    07
 
 Verification - Semi-major axis: 42165.10 km
 Verification - Period: 1436.12 minutes (should be ~1436 min for GEO)

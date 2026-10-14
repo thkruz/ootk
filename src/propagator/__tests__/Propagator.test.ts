@@ -130,7 +130,7 @@ describe('Propagator', () => {
     });
 
     describe('ascendingNodeEpoch', () => {
-      it('should find ascending node epoch', () => {
+      it('throws when the fixed mock state never crosses the equator (ascending)', () => {
         const mockStateWithZCrossing = {
           position: { x: 7000, y: 0, z: -100, magnitude: () => 7000 },
           velocity: { x: 0, y: 7.5, z: 1.0 },
@@ -139,14 +139,17 @@ describe('Propagator', () => {
         } as J2000;
 
         propagator.setState(mockStateWithZCrossing);
-        const result = propagator.ascendingNodeEpoch(startEpoch);
 
-        expect(result).toBeInstanceOf(EpochUTC);
+        /*
+         * The mock propagator returns this fixed state at every epoch, so z never changes sign and
+         * there is no node. v7 returned an arbitrary epoch here; v8 throws (verifier fix M.11).
+         */
+        expect(() => propagator.ascendingNodeEpoch(startEpoch)).toThrow(/No ascending node/u);
       });
     });
 
     describe('descendingNodeEpoch', () => {
-      it('should find descending node epoch', () => {
+      it('throws when the fixed mock state never crosses the equator (descending)', () => {
         const mockStateWithZCrossing = {
           position: { x: 7000, y: 0, z: 100, magnitude: () => 7000 },
           velocity: { x: 0, y: 7.5, z: -1.0 },
@@ -155,9 +158,12 @@ describe('Propagator', () => {
         } as J2000;
 
         propagator.setState(mockStateWithZCrossing);
-        const result = propagator.descendingNodeEpoch(startEpoch);
 
-        expect(result).toBeInstanceOf(EpochUTC);
+        /*
+         * The mock propagator returns this fixed state at every epoch, so z never changes sign and
+         * there is no node. v7 returned an arbitrary epoch here; v8 throws (verifier fix M.11).
+         */
+        expect(() => propagator.descendingNodeEpoch(startEpoch)).toThrow(/No descending node/u);
       });
     });
 

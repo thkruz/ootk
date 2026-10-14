@@ -18,12 +18,9 @@ export function createCovarianceFromTle(
   sigmaScale: number = 1.0,
 ): StateCovariance {
   // Parse the TLE and get the state vector
-  const tle = new Tle(tleLine1, tleLine2);
-  const temeState = tle.state;
-  const j2000State = temeState.toJ2000();
-
-  // eslint-disable-next-line no-console
-  console.log('J2000 State:', j2000State);
+  // Parse the TLE so an invalid element set throws here, as before
+  // eslint-disable-next-line no-new
+  new Tle(tleLine1, tleLine2);
 
   /*
    * Determine appropriate sigma values based on TLE
@@ -77,28 +74,49 @@ export function createSampleCovarianceFromTle(
   return frame === CovarianceFrame.RIC ? sample.desampleRIC() : sample.desampleJ2000();
 }
 
-/** Default RIC position-sigma caps (km) for debris screening: [radial, cross-track, in-track]. */
-const DEFAULT_SCREENING_SIGMA_CAPS: readonly [number, number, number] = [1200, 1000, 5000];
+/**
+ * Default RIC position-sigma caps (km) for debris screening, in R, I, C order:
+ * [radial, in-track, cross-track] = [35, 71, 32] km.
+ *
+ * These preserve the effective v7 behaviour. v7's default caps were 1200, 5000 and 1000 for
+ * R, I, C, but v7 stored sigmas on the diagonal and every consumer read the diagonal as a
+ * variance, so the caps that actually bound were sqrt(1200) = 34.6 km, sqrt(5000) = 70.7 km and
+ * sqrt(1000) = 31.6 km of 1-sigma. v8 squares the caps correctly, so keeping 1200/5000/1000 would
+ * have made them 1200 km sigmas that never bind; the values are rounded up to whole km.
+ */
+const DEFAULT_SCREENING_SIGMA_CAPS: readonly [number, number, number] = [35, 71, 32];
 
 /**
- * Build a position covariance for conjunction screening from a TLE.
+ * Velocity-to-position sigma ratio (1/s) for the fallback covariance: sigma_v = sigma_p / 1000 s.
+ * This is the ratio {@link createSampleCovarianceFromTle} uses for its own RIC seed sigmas
+ * (0.12 km / 0.00012 km/s, 1.0 km / 0.001 km/s, 0.1 km / 0.0001 km/s).
+ */
+const FALLBACK_VELOCITY_PER_POSITION_SIGMA = 1e-3;
+
+/**
+ * Build a 6x6 covariance for conjunction screening from a TLE.
  *
- * Starts from {@link createSampleCovarianceFromTle}, converts the radial,
- * in-track and cross-track *variances* on the diagonal into 1-sigma values
- * scaled by `confidenceLevel`, and caps each so a single bad TLE cannot produce
- * an enormous covariance bubble. The capped sigmas are written to the [0][0]
- * (radial), [1][1] (cross-track) and [2][2] (in-track) diagonal slots; all
- * other matrix terms are preserved.
+ * Starts from {@link createSampleCovarianceFromTle} (RIC frame, R, I, C, Rdot, Idot, Cdot order),
+ * scales it to the requested confidence level and caps each position sigma so a single bad TLE
+ * cannot produce an enormous covariance bubble:
  *
- * Note the cross-track / in-track slots are intentionally swapped relative to
- * the source RIC ordering. The original sigmas are cached before any write so
- * the swap reads source values, not values it just overwrote.
+ * - Confidence: C = k^2 S, so each 1-sigma becomes k sigma (k = `confidenceLevel`).
+ * - Caps: with sigma_i = sqrt(C_ii) for the R, I, C position axes and d_i = min(1, cap_i / sigma_i)
+ *   (d = 1 for the velocity axes), the result is D C D with D = diag(d). Each capped position
+ *   variance becomes exactly cap_i^2 (km^2), correlation coefficients are unchanged, and the
+ *   matrix stays symmetric positive semidefinite.
+ *
+ * The diagonal therefore holds VARIANCES: km^2 for R, I, C and km^2/s^2 for Rdot, Idot, Cdot, and
+ * the frame is RIC (the primary object's radial, in-track, cross-track axes). `caps` are 1-sigma
+ * caps in km; they are squared internally. The defaults, [35, 71, 32] km, reproduce the caps v7
+ * applied in practice (see DEFAULT_SCREENING_SIGMA_CAPS).
  * @param tleLine1 First line of the TLE
  * @param tleLine2 Second line of the TLE
- * @param confidenceLevel Sigma multiplier (e.g. settingsManager.covarianceConfidenceLevel)
- * @param caps Optional [radial, crossTrack, inTrack] sigma caps in km
- * @returns A StateCovariance in the ECI frame, or a safe fallback if the
- * TLE-based computation fails or yields a degenerate diagonal.
+ * @param confidenceLevel Sigma multiplier k (e.g. settingsManager.covarianceConfidenceLevel)
+ * @param caps 1-sigma caps in km, [radial, in-track, cross-track] (R, I, C order), default [35, 71, 32]
+ * @returns A StateCovariance in the RIC frame, or a non-singular diagonal fallback (position variances
+ * cap^2 km^2, velocity variances (cap / 1000 s)^2 km^2/s^2) when the TLE-based computation fails or
+ * yields a degenerate diagonal.
  */
 export function cappedScreeningCovarianceFromTle(
   tleLine1: string,
@@ -106,43 +124,49 @@ export function cappedScreeningCovarianceFromTle(
   confidenceLevel: number,
   caps: readonly [number, number, number] = DEFAULT_SCREENING_SIGMA_CAPS,
 ): StateCovariance {
-  let elements: number[][];
+  let source: number[][];
 
   try {
-    elements = createSampleCovarianceFromTle(tleLine1, tleLine2).matrix.elements;
+    source = createSampleCovarianceFromTle(tleLine1, tleLine2, CovarianceFrame.RIC).matrix.elements;
   } catch {
     return buildFallbackScreeningCovariance_(caps);
   }
 
-  // Cache originals BEFORE writing: the cross/in-track slots are swapped, so
-  // reading after a write would otherwise corrupt the in-track sigma.
-  const radialVar = elements[0][0];
-  const intrackVar = elements[1][1];
-  const crosstrackVar = elements[2][2];
+  const k2 = confidenceLevel * confidenceLevel;
+  const d = [1, 1, 1, 1, 1, 1];
 
-  elements[0][0] = Math.min(Math.sqrt(radialVar) * confidenceLevel, caps[0]); // Radial
-  elements[1][1] = Math.min(Math.sqrt(crosstrackVar) * confidenceLevel, caps[1]); // Cross-track
-  elements[2][2] = Math.min(Math.sqrt(intrackVar) * confidenceLevel, caps[2]); // In-track
+  for (let i = 0; i < 3; i++) {
+    const sigma = Math.sqrt(source[i][i] * k2);
 
-  if (!elements[0][0] || !elements[1][1] || !elements[2][2]) {
-    return buildFallbackScreeningCovariance_(caps);
+    if (!(sigma > 0) || !Number.isFinite(sigma)) {
+      return buildFallbackScreeningCovariance_(caps);
+    }
+    d[i] = Math.min(1, caps[i] / sigma);
   }
 
-  return new StateCovariance(new Matrix(elements), CovarianceFrame.ECI);
+  const elements = source.map((row, i) => row.map((v, j) => v * k2 * d[i] * d[j]));
+
+  return new StateCovariance(new Matrix(elements), CovarianceFrame.RIC);
 }
 
 /**
- * Builds a fallback 6x6 covariance with the supplied position-sigma caps on the
- * diagonal, used when TLE-based covariance computation fails or degenerates.
- * @param caps [radial, crossTrack, inTrack] sigma caps in km
- * @returns A StateCovariance in the ECI frame
+ * Builds a fallback 6x6 RIC covariance, used when TLE-based covariance computation fails or
+ * degenerates. The diagonal holds variances: cap_i^2 (km^2) for R, I, C and
+ * (cap_i * 1e-3 /s)^2 (km^2/s^2) for Rdot, Idot, Cdot, the same velocity-to-position sigma ratio
+ * as the seed sigmas of {@link createSampleCovarianceFromTle}. Every diagonal entry is positive,
+ * so the matrix is non-singular (v7 and early v8 left the velocity block zero).
+ * @param caps 1-sigma caps in km, [radial, in-track, cross-track]
+ * @returns A StateCovariance in the RIC frame
  */
 function buildFallbackScreeningCovariance_(caps: readonly [number, number, number]): StateCovariance {
   const fallback = Array.from({ length: 6 }, () => new Array<number>(6).fill(0));
 
-  fallback[0][0] = caps[0];
-  fallback[1][1] = caps[1];
-  fallback[2][2] = caps[2];
+  for (let i = 0; i < 3; i++) {
+    const sigmaV = caps[i] * FALLBACK_VELOCITY_PER_POSITION_SIGMA;
 
-  return new StateCovariance(new Matrix(fallback), CovarianceFrame.ECI);
+    fallback[i][i] = caps[i] * caps[i];
+    fallback[i + 3][i + 3] = sigmaV * sigmaV;
+  }
+
+  return new StateCovariance(new Matrix(fallback), CovarianceFrame.RIC);
 }

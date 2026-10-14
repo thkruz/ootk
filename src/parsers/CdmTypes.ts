@@ -38,6 +38,10 @@ export interface CdmHeader {
 
 /**
  * CDM Relative metadata and state data.
+ *
+ * Values are in ootk's km-based units. The CDM itself carries MISS_DISTANCE and
+ * RELATIVE_POSITION_* in m and RELATIVE_SPEED / RELATIVE_VELOCITY_* in m/s; CdmParser divides by
+ * 1000 on parse and CdmExporter multiplies by 1000 on export.
  * @see CCSDS 508.0-B-1 Section 3.3
  */
 export interface CdmRelativeData {
@@ -67,6 +71,16 @@ export interface CdmRelativeData {
   START_SCREEN_PERIOD?: string;
   /** End of screening period */
   STOP_SCREEN_PERIOD?: string;
+  /** Screening volume frame (RTN or TVN) */
+  SCREEN_VOLUME_FRAME?: 'RTN' | 'TVN';
+  /** Screening volume shape (ELLIPSOID or BOX) */
+  SCREEN_VOLUME_SHAPE?: 'ELLIPSOID' | 'BOX';
+  /** Screening volume X extent (km) */
+  SCREEN_VOLUME_X?: Kilometers;
+  /** Screening volume Y extent (km) */
+  SCREEN_VOLUME_Y?: Kilometers;
+  /** Screening volume Z extent (km) */
+  SCREEN_VOLUME_Z?: Kilometers;
   /** Screening entry time */
   SCREEN_ENTRY_TIME?: string;
   /** Screening exit time */
@@ -90,7 +104,7 @@ export type CdmManeuverableStatus = 'YES' | 'NO' | 'N/A';
 export interface CdmObjectMetadata {
   /** Object identifier (OBJECT1 or OBJECT2) */
   OBJECT: 'OBJECT1' | 'OBJECT2';
-  /** Satellite catalog designator (e.g., NORAD ID) */
+  /** Satellite catalog designator: the catalog number in the CATALOG_NAME catalog (e.g. 25544 in SATCAT) */
   OBJECT_DESIGNATOR: string;
   /** Catalog name (e.g., "SATCAT") */
   CATALOG_NAME?: string;
@@ -141,8 +155,9 @@ export interface CdmObjectData {
   /** Optional comment */
   COMMENT?: string;
 
-  /** Time tag for state vector */
+  /** Start of the time interval containing the last accepted observation (UTC) */
   TIME_LASTOB_START?: string;
+  /** End of the time interval containing the last accepted observation (UTC) */
   TIME_LASTOB_END?: string;
 
   // State vector components
@@ -162,16 +177,21 @@ export interface CdmObjectData {
   // Optional physical parameters
   /** Object mass (kg) */
   MASS?: number;
-  /** Solar radiation pressure coefficient */
+  /** Ballistic coefficient term C_D A / m (m^2/kg), used by the drag model */
   CD_AREA_OVER_MASS?: number;
-  /** Atmospheric drag coefficient */
+  /** Solar radiation pressure term C_R A / m (m^2/kg) */
   CR_AREA_OVER_MASS?: number;
   /** Thrust acceleration (m/s^2) */
   THRUST_ACCELERATION?: number;
-  /** Solar radiation pressure area (m^2) */
+  /** Specific energy dissipation rate, the energy lost to drag per unit mass (W/kg) */
   SEDR?: number;
 
-  // Position covariance (RTN/RIC frame, lower triangular)
+  /*
+   * Covariance, lower triangular, in this object's own RTN frame. Values are in km^2, km^2/s and
+   * km^2/s^2; the CDM carries m**2, m**2/s and m**2/s**2 (CCSDS 508.0-B-1 Table 3-4) and
+   * CdmParser / CdmExporter convert by 1e-6 / 1e6.
+   */
+  // Position covariance
   /** Radial-Radial covariance (km^2) */
   CR_R?: number;
   /** Transverse-Radial covariance (km^2) */
@@ -246,9 +266,17 @@ export interface CdmExportOptions {
   messageId?: string;
   /** Intended recipient */
   messageFor?: string;
-  /** Include full 6x6 covariance (default: position-only 3x3) */
+  /**
+   * Write the full 21-term 6x6 covariance (default true, as CDM 1.0 requires); false writes only
+   * the six position terms.
+   */
   includeFullCovariance?: boolean;
-  /** Include velocity covariance even if not full 6x6 */
+  /**
+   * COLLISION_PROBABILITY_METHOD value (SANA registry). Default 'FOSTER-1992', which is the
+   * exact 2D encounter-plane integral that ootk's ProbabilityOfCollision computes.
+   */
+  collisionProbabilityMethod?: string;
+  /** Not used: the 15 velocity terms are written whenever `includeFullCovariance` is true and the matrix is 6x6. */
   includeVelocityCovariance?: boolean;
   /** Optional comments to include in header */
   comments?: string[];

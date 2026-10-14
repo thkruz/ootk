@@ -57,6 +57,11 @@ export class Iau1980Data {
   getCoeffs(row: number): Iau1980Entry {
     return this.coeffs_[row];
   }
+
+  // / Number of rows (terms) in the series.
+  get count(): number {
+    return this.coeffs_.length;
+  }
 }
 
 // / IAU-1980 data container.

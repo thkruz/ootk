@@ -181,15 +181,15 @@ describe('CovarianceRealism', () => {
       }
     });
 
-    it('should classify small ratio as optimistic', () => {
-      // Very small miss distance relative to covariance
+    it('should classify a ratio below 0.5 as pessimistic (covariance too large)', () => {
+      // Very small miss distance relative to covariance: the covariance overstates the uncertainty
       const event = createMockEvent(0.01 as Kilometers, wellConditionedCovariance);
 
       const result = CovarianceRealism.computeConsistencyRatio(event);
 
-      if (result && result.ratio < 0.5) {
-        expect(result.assessment).toBe('optimistic');
-      }
+      expect(result).not.toBeNull();
+      expect(result!.ratio).toBeLessThan(0.5);
+      expect(result!.assessment).toBe('pessimistic');
     });
   });
 

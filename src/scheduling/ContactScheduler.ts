@@ -34,7 +34,11 @@ export enum ContactSelectionStrategy {
   PRIORITY = 'priority',
   /** Prefer earlier contacts (first come, first served) */
   EARLIEST = 'earliest',
-  /** Optimize for maximum total contact time */
+  /**
+   * Maximize total scheduled contact time: the LONGEST_DURATION greedy pass followed by a
+   * remove-one, greedy-refill exchange search that keeps any change that strictly increases total
+   * time without using lower-priority contacts. A heuristic, not a proven optimum.
+   */
   MAX_TOTAL_TIME = 'maxTotalTime',
 }
 
@@ -60,10 +64,17 @@ export interface ScheduleOptions {
   /** Required gap between contacts at same station in ms (default: 0) */
   stationHandoverTime?: Milliseconds;
 
-  /** User-defined priority function for satellites (higher = more important) */
+  /**
+   * User-defined priority function for satellites (higher = more important). Priority always
+   * dominates: a higher-priority contact is chosen before any lower-priority one, whatever the
+   * strategy's quality measure.
+   */
   satellitePriority?: (satellite: Satellite) => number;
 
-  /** User-defined priority function for stations (tie-breaker only) */
+  /**
+   * User-defined priority function for stations (higher = preferred). Tie-breaker only: used when
+   * satellite priority and the strategy's quality measure are equal.
+   */
   stationPriority?: (station: GroundStation) => number;
 
   /** Maximum concurrent contacts per station - global default (default: 1) */
@@ -72,8 +83,20 @@ export interface ScheduleOptions {
   /** Per-station override for concurrency limit based on sensor capabilities */
   stationConcurrencyLimit?: (station: GroundStation) => number;
 
-  /** Allow satellite handover between stations (default: false) */
+  /**
+   * Allow satellite handover between stations (default: false). When true, overlapping access
+   * windows of one satellite at different stations are split at the midpoint of each overlap so
+   * the pass can continue at the next station.
+   */
   allowHandover?: boolean;
+
+  /**
+   * A satellite may be in at most one contact at any instant (default: true). Prevents one
+   * satellite being scheduled at two stations over the same interval, which would double-count
+   * coverage. Set false to allow simultaneous multi-station contacts (for example multistatic
+   * tracking). Independent of `allowHandover`.
+   */
+  oneContactPerSatellite?: boolean;
 
   /** Minimum duration at each station during handover in ms (default: 60000) */
   minHandoverDuration?: Milliseconds;
@@ -179,9 +202,6 @@ export class ContactScheduler {
   /** Default priority for satellites without user-defined priority */
   private static readonly DEFAULT_PRIORITY_ = 1;
 
-  /** Multiplier for priority in composite score calculation */
-  private static readonly PRIORITY_MULTIPLIER_ = 1000;
-
   /** Prevent instantiation */
   private constructor() {
     // Static utility class
@@ -190,12 +210,14 @@ export class ContactScheduler {
   /**
    * Creates an optimized contact schedule for multiple stations and satellites.
    *
-   * The scheduling algorithm uses a greedy approach with priority-based scoring:
+   * The scheduling algorithm uses a greedy approach with priority-based ordering:
    * 1. Generate all access windows
    * 2. Apply handover splitting if enabled
-   * 3. Score each candidate (priority * 1000 + quality)
-   * 4. Sort by score descending
-   * 5. Greedily select non-conflicting contacts
+   * 3. Order candidates lexicographically by satellite priority, then the strategy's quality
+   *    measure, then station priority (all descending)
+   * 4. Greedily select contacts that respect the station concurrency limit (peak simultaneous
+   *    contacts), the per-satellite exclusivity (`oneContactPerSatellite`) and the count limits
+   * 5. For MAX_TOTAL_TIME, improve the result with an exchange local search
    *
    * @param stations - Ground stations available for contacts
    * @param satellites - Satellites to schedule contacts with
@@ -468,8 +490,11 @@ export class ContactScheduler {
 
   /**
    * Applies handover splitting to overlapping access windows.
-   * When the same satellite is visible from multiple stations,
-   * splits the windows at the handover point.
+   * When the same satellite is visible from multiple stations, walks that satellite's windows in
+   * start order and splits each overlap between consecutive stations at its midpoint, so a chain
+   * A -> B -> C hands over twice. A window entirely inside the current one is left whole as a
+   * competing candidate (the scheduler's satellite exclusivity then picks one).
+   * Trimmed pieces shorter than `minHandoverDuration` are dropped.
    * @internal
    */
   private static applyHandoverSplitting_(
@@ -491,84 +516,61 @@ export class ContactScheduler {
       bySatellite.get(satId)!.push(w);
     }
 
-    // Process each satellite's windows
+    const emit = (w: AccessWindow, startMs: number, endMs: number): void => {
+      if (startMs === w.start.getTime() && endMs === w.end.getTime()) {
+        result.push(w);
+      } else if (endMs - startMs >= minHandoverDuration) {
+        result.push(ContactScheduler.createTrimmedWindow_(w, new Date(startMs), new Date(endMs)));
+      }
+    };
+
     for (const [, satWindows] of bySatellite) {
-      // Sort by start time
       satWindows.sort((a, b) => a.start.getTime() - b.start.getTime());
 
-      // Find overlapping pairs from different stations and split
-      const processed = new Set<number>();
+      let cur = satWindows[0];
+      let curStart = cur.start.getTime();
+      const curEnd = (): number => cur.end.getTime();
 
-      for (let i = 0; i < satWindows.length; i++) {
-        if (processed.has(i)) {
+      for (let i = 1; i < satWindows.length; i++) {
+        const next = satWindows[i];
+        const nextStart = next.start.getTime();
+        const nextEnd = next.end.getTime();
+
+        if (next.observer.id === cur.observer.id || nextStart >= curEnd()) {
+          // No handover: close the current window and move on
+          emit(cur, curStart, curEnd());
+          cur = next;
+          curStart = nextStart;
           continue;
         }
 
-        const w1 = satWindows[i];
-        let foundOverlap = false;
-
-        for (let j = i + 1; j < satWindows.length; j++) {
-          if (processed.has(j)) {
-            continue;
-          }
-
-          const w2 = satWindows[j];
-
-          // Different stations and overlapping?
-          if (w1.observer.id !== w2.observer.id && ContactScheduler.windowsOverlap_(w1, w2)) {
-            // Calculate handover point (midpoint of overlap for simplicity)
-            const overlapStart = Math.max(w1.start.getTime(), w2.start.getTime());
-            const overlapEnd = Math.min(w1.end.getTime(), w2.end.getTime());
-            const handoverPoint = new Date((overlapStart + overlapEnd) / 2);
-
-            // Split w1: keep [w1.start, handoverPoint] if long enough
-            const w1Duration = handoverPoint.getTime() - w1.start.getTime();
-
-            if (w1Duration >= minHandoverDuration) {
-              result.push(ContactScheduler.createTrimmedWindow_(w1, w1.start, handoverPoint));
-            }
-
-            // Split w2: keep [handoverPoint, w2.end] if long enough
-            const w2Duration = w2.end.getTime() - handoverPoint.getTime();
-
-            if (w2Duration >= minHandoverDuration) {
-              result.push(ContactScheduler.createTrimmedWindow_(w2, handoverPoint, w2.end));
-            }
-
-            processed.add(i);
-            processed.add(j);
-            foundOverlap = true;
-            break;
-          }
+        if (nextEnd <= curEnd()) {
+          // Contained in the current window: keep it whole as a competing candidate
+          result.push(next);
+          continue;
         }
 
-        if (!foundOverlap) {
-          result.push(w1);
-          processed.add(i);
-        }
+        // Hand over at the midpoint of the overlap [nextStart, curEnd]
+        const handoverMs = (nextStart + curEnd()) / 2;
+
+        emit(cur, curStart, handoverMs);
+        cur = next;
+        curStart = handoverMs;
       }
-
-      // Add any remaining windows not processed
-      for (let i = 0; i < satWindows.length; i++) {
-        if (!processed.has(i)) {
-          result.push(satWindows[i]);
-        }
-      }
+      emit(cur, curStart, curEnd());
     }
 
     return result;
   }
 
   /**
-   * Checks if two access windows overlap in time.
-   * @internal
-   */
-  private static windowsOverlap_(w1: AccessWindow, w2: AccessWindow): boolean {
-    return !(w1.end.getTime() <= w2.start.getTime() || w1.start.getTime() >= w2.end.getTime());
-  }
-
-  /**
    * Creates a trimmed copy of an access window with new start/end times.
+   *
+   * If the original peak (`maxElevationTime`) lies inside the trimmed interval the peak is kept.
+   * Otherwise elevation within a pass rises to the peak and then falls, so the highest point of
+   * the trimmed piece is its end nearest the original peak; that edge is evaluated with
+   * `observer.rae(target, date)`. When the observer cannot evaluate it (no `rae` method or a null
+   * result), the original peak values are kept as an upper bound.
    * @internal
    */
   private static createTrimmedWindow_(
@@ -576,17 +578,35 @@ export class ContactScheduler {
     newStart: Date,
     newEnd: Date,
   ): AccessWindow {
-    // We need to create a new AccessWindow - import it properly
-    // Since AccessWindow is a class, we need to construct it
-    // For now, we'll work around this by returning the original
-    // and letting ScheduledContact handle the trimming
+    let maxElevation = original.maxElevation;
+    let maxElevationTime = original.maxElevationTime;
+    let rangeAtMaxEl = original.rangeAtMaxEl;
+    const peakMs = original.maxElevationTime.getTime();
+
+    if (peakMs < newStart.getTime() || peakMs > newEnd.getTime()) {
+      const edge = peakMs < newStart.getTime() ? newStart : newEnd;
+      const observer = original.observer as unknown as {
+        rae?: (sat: Satellite, date: Date) => { rng: number; el: number } | null;
+      };
+
+      if (typeof observer.rae === 'function') {
+        const rae = observer.rae(original.target as Satellite, edge);
+
+        if (rae) {
+          maxElevation = rae.el as typeof maxElevation;
+          maxElevationTime = edge;
+          rangeAtMaxEl = rae.rng as typeof rangeAtMaxEl;
+        }
+      }
+    }
+
     return {
       start: newStart,
       end: newEnd,
       duration: newEnd.getTime() - newStart.getTime(),
-      maxElevation: original.maxElevation,
-      maxElevationTime: original.maxElevationTime,
-      rangeAtMaxEl: original.rangeAtMaxEl,
+      maxElevation,
+      maxElevationTime,
+      rangeAtMaxEl,
       observer: original.observer,
       target: original.target,
     } as AccessWindow;
@@ -616,7 +636,9 @@ export class ContactScheduler {
   }
 
   /**
-   * Greedy scheduling algorithm: sorts by composite score and selects non-conflicting contacts.
+   * Greedy scheduling algorithm: orders candidates by priority, quality and station priority and
+   * selects every contact that passes {@link ContactScheduler.canSchedule_}. MAX_TOTAL_TIME then
+   * runs {@link ContactScheduler.improveTotalTime_}.
    * @internal
    */
   private static greedySchedule_(
@@ -624,107 +646,139 @@ export class ContactScheduler {
     options: ScheduleOptions,
   ): ScheduledContact[] {
     const strategy = options.selectionStrategy ?? ContactSelectionStrategy.MAX_ELEVATION;
-    const handoverTime = (options.stationHandoverTime ?? 0) as number;
-    const defaultConcurrency = options.maxConcurrentPerStation ?? 1;
-    const getConcurrencyLimit = options.stationConcurrencyLimit ?? (() => defaultConcurrency);
     const getStationPriority = options.stationPriority ?? (() => 0);
-    const maxPerSatellite = options.maxContactsPerSatellite;
-    const maxPerStation = options.maxContactsPerStation;
 
-    // Calculate composite scores
-    const scored = candidates.map((contact) => ({
+    // Lexicographic order: satellite priority, then quality, then station priority (descending)
+    const ranked = candidates.map((contact) => ({
       contact,
-      score: ContactScheduler.calculateScore_(contact, strategy, getStationPriority),
+      priority: contact.priority,
+      quality: ContactScheduler.qualityScore_(contact, strategy),
+      stationPriority: getStationPriority(contact.station),
     }));
 
-    // Sort by score descending
-    scored.sort((a, b) => b.score - a.score);
+    ranked.sort((a, b) => (b.priority - a.priority) || (b.quality - a.quality) || (b.stationPriority - a.stationPriority));
 
     const scheduled: ScheduledContact[] = [];
-    const satContactCounts = new Map<number, number>();
-    const stationContactCounts = new Map<number, number>();
 
-    for (const { contact } of scored) {
-      const satId = contact.satellite.id;
-      const stationId = contact.station.id;
-
-      // Check per-satellite limit
-      if (maxPerSatellite !== undefined) {
-        const satCount = satContactCounts.get(satId) ?? 0;
-
-        if (satCount >= maxPerSatellite) {
-          continue;
-        }
+    for (const { contact } of ranked) {
+      if (ContactScheduler.canSchedule_(contact, scheduled, options)) {
+        scheduled.push(contact);
       }
+    }
 
-      // Check per-station limit
-      if (maxPerStation !== undefined) {
-        const stationCount = stationContactCounts.get(stationId) ?? 0;
-
-        if (stationCount >= maxPerStation) {
-          continue;
-        }
-      }
-
-      // Check concurrency limit at this station
-      const concurrencyLimit = getConcurrencyLimit(contact.station);
-
-      if (!ContactScheduler.canAddToStation_(contact, scheduled, concurrencyLimit, handoverTime)) {
-        continue;
-      }
-
-      // Add to schedule
-      scheduled.push(contact);
-      satContactCounts.set(satId, (satContactCounts.get(satId) ?? 0) + 1);
-      stationContactCounts.set(stationId, (stationContactCounts.get(stationId) ?? 0) + 1);
+    if (strategy === ContactSelectionStrategy.MAX_TOTAL_TIME) {
+      return ContactScheduler.improveTotalTime_(ranked.map((r) => r.contact), scheduled, options);
     }
 
     return scheduled;
   }
 
   /**
-   * Calculates composite score for a contact based on priority and quality.
+   * Exchange local search for MAX_TOTAL_TIME (remove one, greedily refill): for each scheduled
+   * contact, remove it and greedily add the longest unscheduled candidates that now fit; keep the
+   * change when the added time exceeds the removed time. Candidates with lower satellite priority
+   * than the removed contact are never used, so priority still dominates. Each accepted move
+   * strictly increases total scheduled time, so the search terminates (also capped at 50 moves).
    * @internal
    */
-  private static calculateScore_(
-    contact: ScheduledContact,
-    strategy: ContactSelectionStrategy,
-    getStationPriority: (station: GroundStation) => number,
-  ): number {
-    // Priority component (satellite priority * 1000 + station priority)
-    const satPriority = contact.priority;
-    const stationPriority = getStationPriority(contact.station);
-    const priorityScore = satPriority * ContactScheduler.PRIORITY_MULTIPLIER_ + stationPriority;
+  private static improveTotalTime_(
+    candidates: ScheduledContact[],
+    initial: ScheduledContact[],
+    options: ScheduleOptions,
+  ): ScheduledContact[] {
+    let scheduled = [...initial];
+    const byDuration = [...candidates].sort((a, b) => b.scheduledDuration - a.scheduledDuration);
 
-    // Quality component based on strategy
-    let qualityScore: number;
+    for (let moves = 0; moves < 50; moves++) {
+      let improved = false;
 
-    switch (strategy) {
-      case ContactSelectionStrategy.MAX_ELEVATION:
-        qualityScore = contact.maxElevation; // 0-90
+      for (const removed of scheduled) {
+        const base = scheduled.filter((e) => e !== removed);
+        const added: ScheduledContact[] = [];
+
+        for (const c of byDuration) {
+          if (c === removed || c.priority < removed.priority || scheduled.includes(c)) {
+            continue;
+          }
+          if (ContactScheduler.canSchedule_(c, [...base, ...added], options)) {
+            added.push(c);
+          }
+        }
+
+        const gain = added.reduce((sum, c) => sum + c.scheduledDuration, 0) - removed.scheduledDuration;
+
+        if (gain > 0) {
+          scheduled = [...base, ...added];
+          improved = true;
+          break;
+        }
+      }
+
+      if (!improved) {
         break;
-      case ContactSelectionStrategy.LONGEST_DURATION:
-        qualityScore = contact.scheduledDuration / 1000; // Normalize to seconds
-        break;
-      case ContactSelectionStrategy.PRIORITY:
-        qualityScore = 0; // Priority-only, no quality component
-        break;
-      case ContactSelectionStrategy.EARLIEST:
-        // Negative so earlier times sort higher
-        qualityScore = -contact.scheduledStart.getTime() / 1e12; // Normalize
-        break;
-      case ContactSelectionStrategy.MAX_TOTAL_TIME:
-        qualityScore = contact.scheduledDuration / 1000;
-        break;
-      default:
-        qualityScore = contact.maxElevation;
+      }
     }
 
-    return priorityScore + qualityScore;
+    return scheduled;
   }
 
   /**
-   * Checks if a contact can be added to a station without exceeding concurrency limits.
+   * Whether `contact` can be added to `scheduled`: per-satellite and per-station count limits,
+   * satellite exclusivity (`oneContactPerSatellite`) and the station concurrency limit.
+   * @internal
+   */
+  private static canSchedule_(contact: ScheduledContact, scheduled: ScheduledContact[], options: ScheduleOptions): boolean {
+    const handoverMs = (options.stationHandoverTime ?? 0) as number;
+    const defaultConcurrency = options.maxConcurrentPerStation ?? 1;
+    const concurrencyLimit = (options.stationConcurrencyLimit ?? (() => defaultConcurrency))(contact.station);
+    const satId = contact.satellite.id;
+    const stationId = contact.station.id;
+
+    if (options.maxContactsPerSatellite !== undefined &&
+      scheduled.filter((e) => e.satellite.id === satId).length >= options.maxContactsPerSatellite) {
+      return false;
+    }
+
+    if (options.maxContactsPerStation !== undefined &&
+      scheduled.filter((e) => e.station.id === stationId).length >= options.maxContactsPerStation) {
+      return false;
+    }
+
+    // One satellite, one contact at a time (no handover buffer: back-to-back handovers are fine)
+    if ((options.oneContactPerSatellite ?? true) &&
+      scheduled.some((e) => e.satellite.id === satId && ContactScheduler.timeOverlaps_(contact, e, 0))) {
+      return false;
+    }
+
+    return ContactScheduler.canAddToStation_(contact, scheduled, concurrencyLimit, handoverMs);
+  }
+
+  /**
+   * Quality measure of a contact for a strategy (higher is better). Compared only between
+   * contacts of equal satellite priority.
+   * @internal
+   */
+  private static qualityScore_(contact: ScheduledContact, strategy: ContactSelectionStrategy): number {
+    switch (strategy) {
+      case ContactSelectionStrategy.MAX_ELEVATION:
+        return contact.maxElevation;
+      case ContactSelectionStrategy.LONGEST_DURATION:
+      case ContactSelectionStrategy.MAX_TOTAL_TIME:
+        return contact.scheduledDuration;
+      case ContactSelectionStrategy.PRIORITY:
+        return 0;
+      case ContactSelectionStrategy.EARLIEST:
+        // Negative so earlier times rank higher
+        return -contact.scheduledStart.getTime();
+      default:
+        return contact.maxElevation;
+    }
+  }
+
+  /**
+   * Checks if a contact can be added to a station without exceeding its concurrency limit: the
+   * peak number of simultaneous contacts at the station during the new contact (each interval
+   * extended by the handover buffer), plus the new one, must not exceed the limit.
    * @internal
    */
   private static canAddToStation_(
@@ -733,14 +787,33 @@ export class ContactScheduler {
     concurrencyLimit: number,
     handoverMs: number,
   ): boolean {
-    // Count overlapping contacts at this station
     const overlapping = schedule.filter(
       (existing) =>
         existing.station.id === contact.station.id &&
         ContactScheduler.timeOverlaps_(contact, existing, handoverMs),
     );
 
-    return overlapping.length < concurrencyLimit;
+    if (overlapping.length < concurrencyLimit) {
+      return true;
+    }
+
+    // Sweep the overlapping intervals for the peak simultaneous count (ends sort before starts)
+    const events: [number, number][] = [];
+
+    for (const e of overlapping) {
+      events.push([e.scheduledStart.getTime(), 1], [e.scheduledEnd.getTime() + handoverMs, -1]);
+    }
+    events.sort((a, b) => (a[0] - b[0]) || (a[1] - b[1]));
+
+    let active = 0;
+    let peak = 0;
+
+    for (const [, delta] of events) {
+      active += delta;
+      peak = Math.max(peak, active);
+    }
+
+    return peak + 1 <= concurrencyLimit;
   }
 
   /**

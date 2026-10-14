@@ -96,12 +96,12 @@ describe('ForceModel', () => {
   describe('setAtmosphericDrag', () => {
     it('should set atmospheric drag with default coefficients', () => {
       forceModel.setAtmosphericDrag(1000, 10);
-      expect(AtmosphericDrag).toHaveBeenCalledWith(1000, 10, 2.2, 4);
+      expect(AtmosphericDrag).toHaveBeenCalledWith(1000, 10, 2.2, 4, 150);
     });
 
     it('should set atmospheric drag with custom coefficients', () => {
       forceModel.setAtmosphericDrag(1000, 10, 2.5, 5);
-      expect(AtmosphericDrag).toHaveBeenCalledWith(1000, 10, 2.5, 5);
+      expect(AtmosphericDrag).toHaveBeenCalledWith(1000, 10, 2.5, 5, 150);
     });
   });
 

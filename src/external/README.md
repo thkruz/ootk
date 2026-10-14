@@ -1,4 +1,4 @@
-# Sgp4Wasm / Sgp4XpWasm — USSF Astro Standards SGP4 WebAssembly wrappers
+# Sgp4Wasm / Sgp4XpWasm: USSF Astro Standards SGP4 WebAssembly wrappers
 
 `Sgp4Wasm` (classic SGP4) and `Sgp4XpWasm` (SGP4-XP) wrap the official USSF
 Astro Standards **"C Sgp4Prop WebAssembly"** distribution (v9.1.1.0), exposing
@@ -30,20 +30,28 @@ Everything in this folder degrades gracefully when the artifacts are absent:
 
 ### Node (artifacts in this directory)
 
-```ts
+```typescript
 import { Sgp4Wasm } from 'ootk';
+
+const line1 = '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991';
+const line2 = '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741';
 
 const sgp4 = await new Sgp4Wasm().load();
 const satKey = sgp4.addSat(line1, line2); // bigint satKey
 sgp4.initSats([satKey]);                  // required before propagation
 
 const state = sgp4.propagateOne(satKey, 60); // 60 minutes past TLE epoch
-// state.position/velocity are TEME km / km/s; state.llh is geodetic
+// state.position/velocity are TEME km / km/s; state.llh is geodetic (deg, deg, km)
+console.log(state.err, state.position.x, state.llh.lat);
 ```
 
 ### Browser (artifacts served as static assets)
 
-```ts
+```typescript
+import { Sgp4Wasm } from 'ootk';
+
+const baseUrl = '/'; // wherever the artifacts are served from
+
 const sgp4 = await new Sgp4Wasm().load({
   glue: `${baseUrl}wasm/sgp4prop/Sgp4Prop.js`,
   wasm: `${baseUrl}wasm/sgp4prop/Sgp4Prop.wasm`,
@@ -60,9 +68,20 @@ Content-Security-Policy is in place.
 same `Propagator` interface as `Sgp4Propagator`, so consumers can switch
 between the TypeScript and Astro Standards implementations:
 
-```ts
+```typescript
+import { EpochUTC, Sgp4Wasm, Sgp4WasmPropagator, Tle } from 'ootk';
+
+const sgp4 = await new Sgp4Wasm().load();
+const tle = new Tle(
+  '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991',
+  '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741',
+);
+
 const propagator = new Sgp4WasmPropagator(sgp4, tle);
-const j2000 = propagator.propagate(EpochUTC.fromDateTime(date));
+const j2000 = propagator.propagate(EpochUTC.fromDateTime(new Date('2024-01-28T14:00:00Z')));
+
+console.log(j2000.position.magnitude());
+propagator.dispose(); // releases the satKey once no other holder uses it
 ```
 
 ## API mapping
@@ -89,7 +108,11 @@ const j2000 = propagator.propagate(EpochUTC.fromDateTime(date));
 | `Sgp4PropDs50UtcDynArrPosVel_wasm` | `propagateDs50UtcDynArrPosVel(...)` |
 | `SetLogLevel_wasm` | `setLogLevel(level)` |
 
-Raw escape hatches: `instance.module` (Emscripten Module — `_malloc`,
+Convenience wrappers (no single wasm export): `propagateOne(satKey, minutesSinceEpoch)`,
+`propagateEpoch(satKey, epochUtc)` and the allocation-free
+`propagateOnePosVelFast(satKey, minutesSinceEpoch)`.
+
+Raw escape hatches: `instance.module` (Emscripten Module: `_malloc`,
 `ccall`/`cwrap`, heap views) and `instance.fs` (virtual filesystem).
 
 ## Notes

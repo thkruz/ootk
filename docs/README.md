@@ -1,98 +1,59 @@
-# OOTK Documentation
+# ootk Documentation
 
-Welcome to the OOTK (Orbital Object Toolkit) documentation!
+This folder is the source of the ootk documentation site (VitePress). Run `pnpm run docs:dev` from the repository
+root to browse it locally. `index.md` is the site home page; this README is only for browsing the folder on GitHub.
 
-## Documentation Structure
+## Guides
 
-### For New Users
+- **[Getting Started](./getting-started.md)**: installation, your first satellite, positions, ground stations and
+  sensors, look angles and passes.
+- **[User Guide](./user-guide.md)**: reference for the main features: satellites, ground stations and sensors,
+  passes, coordinate frames, propagation and force models, orbit determination, time, covariance, celestial
+  bodies, maneuvers, conjunction assessment and CCSDS message files.
+- **[Advanced Features](./advanced-features-guide.md)**: force models and numerical propagators, interpolation,
+  covariance, conjunction assessment, orbit determination, relative motion, maneuvers, optimizers and OEM files.
+- **[Lambert and Satellite Integration](./lambert-satellite-integration-guide.md)**: solving Lambert's problem and
+  turning the solution into a propagated state, a TLE or a `Satellite`.
+- **[Migrating to v8](./migration-v8.md)**: every breaking change in ootk 8.0.0 with before/after code and a
+  checklist. Read this before upgrading from 7.x.
 
-**[Getting Started Guide](./getting-started.md)** - Start here if you're new to OOTK!
+## Examples
 
-This guide covers:
+**[Examples](./examples/index.md)** walks through the runnable scripts in [`../examples`](../examples). The code on
+those pages is pulled directly from the scripts, so it always matches what runs.
 
-- Installation and setup
-- Your first satellite tracking program
-- Understanding coordinate systems
-- Working with ground sensors
-- Common use cases with complete examples
-- Troubleshooting tips
+## Module notes
 
-Perfect for: Beginners, developers new to orbital mechanics, quick start tutorials
+Some modules carry their own README with design notes:
 
-### For All Users
+- [Coordinate systems](../src/coordinate/README.md): frames (J2000, TEME, ITRF, Geodetic, RIC, Hill), element sets
+  and when to use each.
+- [Time](../src/time/README.md): epochs and time scales.
+- [Force models](../src/force/README.md) and [propagators](../src/propagator/README.md).
+- [Orbit determination](../src/orbit-determination/README.md).
+- [Optimizers](../src/optimize/README.md).
+- [Field of view design](../src/sensor/v2-docs/field-of-view-design-document.md): the sensor cone model, the
+  boresight frame and the v8 zenith roll convention.
 
-**[User Guide](./user-guide.md)** - Comprehensive reference for all OOTK features
+## What is ootk?
 
-This guide covers:
+ootk is a TypeScript library for orbital mechanics:
 
-- All modules and their functionality
-- Detailed API documentation
-- Advanced features
-- Code examples for every feature
-- Performance optimization tips
-- Complete reference material
+- **Satellite tracking**: SGP4 (pure TypeScript, with an optional wasm backend), Kepler, Runge-Kutta 4,
+  Runge-Kutta 8(9) and Dormand-Prince 5(4) propagators with configurable force models.
+- **Sensors**: ground stations with attached radars, optical sensors and antennas, field-of-view cones with
+  elevation masks, look angles and pass prediction.
+- **Coordinate frames**: J2000, TEME, ITRF, geodetic, RIC, Hill, RAE and classical and equinoctial elements, with
+  branded unit types (`Degrees`, `Radians`, `Kilometers`, ...) that catch unit mix-ups at compile time.
+- **Orbit determination**: Lambert, Gibbs, Herrick-Gibbs and Gooding initial orbit determination, batch least
+  squares and Levenberg-Marquardt refinement.
+- **Mission planning**: Hohmann and two-burn transfers, plane changes, constellation and repeat-ground-track
+  design.
+- **Uncertainty**: covariance generation and propagation, conjunction screening and probability of collision.
+- **Data formats**: CCSDS CDM, OEM and OMM parsing and export, JPL Horizons parsing.
 
-Perfect for: Intermediate to advanced users, comprehensive feature documentation
-
-### Deep Dives
-
-**[Coordinate Systems Guide](../src/coordinate/README.md)** - In-depth guide to coordinate systems
-
-This guide covers:
-
-- All coordinate systems (J2000, TEME, ITRF, Geodetic, RIC, Hill)
-- Orbital element representations (Classical, Equinoctial)
-- When to use each system
-- Coordinate transformations
-- Common workflows and decision guides
-
-Perfect for: Understanding the differences between coordinate systems and choosing the right one
-
-## Quick Links
-
-### Getting Started
-
-- [Installation](./getting-started.md#installation)
-- [Your First Satellite](./getting-started.md#your-first-satellite)
-- [Understanding Coordinates](./getting-started.md#understanding-coordinates)
-- [Working with Sensors](./getting-started.md#working-with-sensors)
-- [Common Use Cases](./getting-started.md#common-use-cases)
-
-### Core Features
-
-- [Satellite Operations](./user-guide.md#satellite-operations)
-- [Sensor Operations](./user-guide.md#sensor-operations)
-- [Coordinate Systems](./coordinate-systems.md) - Comprehensive guide
-- [Orbit Propagation](./user-guide.md#orbit-propagation)
-- [Time Systems](./user-guide.md#time-systems)
-
-### Advanced Features
-
-- [Force Models](./user-guide.md#force-models)
-- [Initial Orbit Determination](./user-guide.md#initial-orbit-determination)
-- [Interpolation](./user-guide.md#interpolation)
-- [Maneuvers](./user-guide.md#maneuvers)
-- [Covariance](./user-guide.md#covariance)
-
-## What is OOTK?
-
-OOTK is a comprehensive TypeScript/JavaScript library for orbital mechanics calculations. It provides:
-
-- **Satellite Tracking**: Propagate satellite positions using SGP4 and numerical integrators
-- **Sensor Operations**: Calculate visibility and predict satellite passes
-- **Coordinate Transformations**: Convert between ECI, ECF, geodetic, and other systems
-- **Orbit Determination**: Determine orbits from observations
-- **Mission Planning**: Calculate maneuvers and delta-v requirements
-- **High-Precision Propagation**: Model perturbations including gravity harmonics, drag, SRP
-
-## Key Features
-
-- **Type-Safe**: Written in TypeScript with comprehensive type definitions
-- **Unit Types**: Prevents mixing incompatible units (degrees/radians, km/meters)
-- **Browser & Node.js**: Works in both environments
-- **Multiple Propagators**: SGP4, Kepler, Runge-Kutta (multiple orders), Dormand-Prince
-- **Extensive Coordinate Systems**: J2000, TEME, ITRF, Geodetic, RIC, Hill, and more
-- **Battle-Tested**: Originally developed for [KeepTrack](https://github.com/thkruz/keeptrack.space)
+Originally developed for [KeepTrack](https://github.com/thkruz/keeptrack.space). It runs in Node.js 20 or later
+and in the browser.
 
 ## Installation
 
@@ -100,52 +61,13 @@ OOTK is a comprehensive TypeScript/JavaScript library for orbital mechanics calc
 npm install ootk
 ```
 
-## Quick Example
-
-```typescript
-import { Satellite, Sensor, Degrees, Kilometers } from 'ootk';
-
-// Create satellite from TLE
-const satellite = new Satellite({
-  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991',
-  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741'
-});
-
-// Get current position
-const lla = satellite.lla();
-console.log(`Lat: ${lla.lat}°, Lon: ${lla.lon}°, Alt: ${lla.alt} km`);
-
-// Create ground sensor
-const sensor = new Sensor({
-  lat: 41.754785 as Degrees,
-  lon: -70.539151 as Degrees,
-  alt: 0.060966 as Kilometers,
-  minEl: 5 as Degrees,
-  maxEl: 85 as Degrees
-});
-
-// Check if satellite is visible
-if (sensor.isSatInFov(satellite)) {
-  const rae = sensor.rae(satellite);
-  console.log(`Visible! Az: ${rae.az}°, El: ${rae.el}°, Range: ${rae.rng} km`);
-}
-
-// Predict passes
-const passes = sensor.calculatePasses(30, satellite);
-console.log(`Found ${passes.length} passes`);
-```
-
 ## Support
 
-- **GitHub Repository**: <https://github.com/thkruz/ootk>
+- **GitHub repository**: <https://github.com/thkruz/ootk>
 - **Issues**: <https://github.com/thkruz/ootk/issues>
-- **NPM Package**: <https://www.npmjs.com/package/ootk>
-- **Examples**: Check the `/examples` directory
+- **npm package**: <https://www.npmjs.com/package/ootk>
+- **Changelog**: [CHANGELOG.md](../CHANGELOG.md)
 
 ## License
 
-AGPL-3.0
-
-## Version
-
-5.1.1
+AGPL-3.0-or-later. See [LICENSE.MD](../LICENSE.MD).

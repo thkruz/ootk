@@ -39,8 +39,9 @@ import { Sun, SunBody } from './SunBody';
  * // Register a custom body
  * SolarSystem.register(ceres);
  *
- * // Get all planets
- * const planets = SolarSystem.getByType(CelestialBodyType.TERRESTRIAL_PLANET);
+ * // Get the registered terrestrial planets (Mercury, Venus, Mars). Earth is not registered,
+ * // and gas and ice giants have their own CelestialBodyType values.
+ * const terrestrial = SolarSystem.getByType(CelestialBodyType.TERRESTRIAL_PLANET);
  * ```
  */
 export class SolarSystem {

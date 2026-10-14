@@ -28,15 +28,20 @@ const altitudes = [408.2, 407.9, 407.5, 407.2, 406.8, 406.5, 406.1, 405.8];
 const regression = new SimpleLinearRegression(daysSinceEpoch, altitudes);
 
 console.log(`Decay rate: ${regression.slope.toFixed(3)} km/day`);
-// => Decay rate: -0.343 km/day
+// => Decay rate: -0.348 km/day
 
 // Predict when altitude drops below 400 km
 const daysUntil400km = (400 - regression.intercept) / regression.slope;
 console.log(`Days until 400 km: ${daysUntil400km.toFixed(1)}`);
-// => Days until 400 km: 24.0
+// => Days until 400 km: 23.6
 
-// Remove noisy measurements
+// Predicted altitude on day 10
+console.log(`Day 10: ${regression.evaluate(10).toFixed(2)} km`);
+// => Day 10: 404.74 km
+
+// Drop points whose residual exceeds 2x the standard error (returns a new regression)
 const cleaned = regression.filterOutliers(2.0);
+console.log(cleaned.length); // => 8
 ```
 
 **Outcomes:**
@@ -57,47 +62,40 @@ Finds the minimum or maximum of a single-variable function using golden ratio su
 - Locating maximum elevation during a satellite pass
 - Determining optimal maneuver timing within a window
 
-**Example: Finding Closest Approach Time**
+**Example: Peak Elevation and Closest Approach During a Pass**
 
-During a conjunction event, you need the exact time two satellites are closest.
-
-```typescript
-import { GoldenSection } from 'ootk';
-
-// Distance function (km) as a function of minutes from epoch
-const distanceBetweenSats = (minutesFromEpoch: number): number => {
-  const pos1 = satellite1.propagate(epoch.addMinutes(minutesFromEpoch));
-  const pos2 = satellite2.propagate(epoch.addMinutes(minutesFromEpoch));
-  return pos1.position.distance(pos2.position);
-};
-
-// Search within a 10-minute window around predicted TCA
-const tca = GoldenSection.search(distanceBetweenSats, 0, 10, {
-  tolerance: 0.0001,  // 0.006 seconds precision
-  solveMax: false,    // minimize distance
-});
-
-console.log(`Closest approach at T+${tca.toFixed(4)} minutes`);
-// => Closest approach at T+4.2731 minutes
-```
-
-**Example: Maximum Elevation During Pass**
-
-Ground stations need to know when a satellite reaches peak elevation for optimal communication.
+Golden-section search needs a bracket in which the function is unimodal, so find the pass with a coarse scan first, then refine. `search(f, lower, upper, { tolerance, solveMax })` returns the argument (here minutes), not the function value.
 
 ```typescript
-const elevation = (minutes: number): number => {
-  const look = groundStation.lookAngles(satellite.propagate(epoch.addMinutes(minutes)));
-  return look.elevation;
-};
+import { Degrees, GoldenSection, GroundStation, Kilometers, Satellite, TleLine1, TleLine2 } from 'ootk';
 
-// Pass starts at T+5 min and ends at T+15 min
-const peakTime = GoldenSection.search(elevation, 5, 15, {
-  tolerance: 1e-6,
-  solveMax: true,  // maximize elevation
+const iss = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
+const station = new GroundStation({
+  name: 'Cape Cod',
+  lat: 41.754785 as Degrees,
+  lon: -70.539151 as Degrees,
+  alt: 0.060966 as Kilometers,
 });
 
-console.log(`Peak elevation at T+${peakTime.toFixed(4)} minutes`);
+// Minutes from this epoch; a coarse 1-minute scan found a pass between T+53 and T+66 min
+const epochMs = Date.parse('2024-01-28T00:00:00Z');
+const at = (minutes: number): Date => new Date(epochMs + minutes * 60_000);
+
+const elevation = (minutes: number): number => iss.rae(station, at(minutes))?.el ?? -90;
+const range = (minutes: number): number => iss.rae(station, at(minutes))?.rng ?? Infinity;
+
+// Maximize elevation; tolerance is the final interval width in minutes (1e-4 min = 6 ms)
+const peak = GoldenSection.search(elevation, 53, 66, { tolerance: 1e-4, solveMax: true });
+console.log(`Peak elevation ${elevation(peak).toFixed(2)} deg at T+${peak.toFixed(4)} min`);
+// => Peak elevation 84.56 deg at T+58.6609 min
+
+// searchMin / searchMax are shorthands for the solveMax flag
+const closest = GoldenSection.searchMin(range, 53, 66, 1e-4);
+console.log(`Closest approach ${range(closest).toFixed(1)} km at T+${closest.toFixed(4)} min`);
+// => Closest approach 423.0 km at T+58.6622 min
 ```
 
 **Outcomes:**
@@ -119,64 +117,58 @@ Multi-dimensional derivative-free optimizer using the Nelder-Mead algorithm.
 - Solving orbit determination problems
 - Minimizing any cost function without needing derivatives
 
-**Example: Fitting TLE Parameters to Observations**
+**Example: Fitting a Ground-Track Model to Observed Latitudes**
 
-Given radar observations, find the orbital elements that best match the data.
+Given sub-satellite latitudes, find the inclination, angular rate and phase that best reproduce them. The cost function receives a `Float64Array` of parameters and returns a scalar; `solveSimplex` returns the best parameter vector.
 
 ```typescript
-import { DownhillSimplex } from 'ootk';
+import { DownhillSimplex, Satellite, TleLine1, TleLine2 } from 'ootk';
 
-// Cost function: sum of squared residuals between predicted and observed positions
-const fitOrbit = (params: Float64Array): number => {
-  const [semiMajorAxis, eccentricity, inclination, raan, argPerigee, meanAnomaly] = params;
+const iss = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
 
-  let totalError = 0;
-  for (const obs of observations) {
-    const predicted = propagateWithElements(params, obs.epoch);
-    const residual = obs.position.distance(predicted.position);
-    totalError += residual * residual;
-  }
-  return totalError;
-};
+// Observed sub-satellite latitude (deg) every 2 minutes for 90 minutes
+const epochMs = Date.parse('2024-01-28T12:00:00Z');
+const samples = Array.from({ length: 46 }, (_, i) => {
+  const minutes = 2 * i;
 
-// Initial guess from preliminary orbit determination
-const initialGuess = new Float64Array([7000, 0.001, 0.9, 3.14, 0, 0]);
+  return { minutes, lat: iss.lla(new Date(epochMs + minutes * 60_000))!.lat };
+});
+
+/*
+ * Model: lat(t) = asin(sin(i) sin(n t + u0)) for a circular orbit on a spherical Earth,
+ * with i the inclination, n the angular rate (rad/min) and u0 the argument of latitude at t = 0.
+ * Cost: sum of squared latitude residuals (deg^2).
+ */
+const DEG = Math.PI / 180;
+const cost = ([incDeg, n, u0]: Float64Array): number =>
+  samples.reduce((sse, s) => {
+    const model = Math.asin(Math.sin(incDeg * DEG) * Math.sin(n * s.minutes + u0)) / DEG;
+
+    return sse + (model - s.lat) ** 2;
+  }, 0);
+
+// Initial guess: 45 deg, a 90-minute orbit, u0 = 0
+const initialGuess = new Float64Array([45, (2 * Math.PI) / 90, 0]);
 const simplex = DownhillSimplex.generateSimplex(initialGuess, 0.01);
 
-const optimalElements = DownhillSimplex.solveSimplex(fitOrbit, simplex, {
+const [incDeg, n, u0] = DownhillSimplex.solveSimplex(cost, simplex, {
   xTolerance: 1e-10,
   fTolerance: 1e-10,
   maxIter: 5000,
   adaptive: true,
 });
 
-console.log('Fitted elements:', optimalElements);
-```
-
-**Example: Two-Burn Transfer Optimization**
-
-Find the optimal impulse magnitudes and timing for a Hohmann-like transfer.
-
-```typescript
-const transferCost = (params: Float64Array): number => {
-  const [deltaV1, deltaV2, burnTime] = params;
-  // Propagate with burns and measure final orbit error
-  return computeOrbitError(deltaV1, deltaV2, burnTime);
-};
-
-const initialGuess = new Float64Array([0.5, 0.3, 45.0]); // km/s, km/s, minutes
-const simplex = DownhillSimplex.generateSimplex(initialGuess, 0.05);
-
-const optimalBurns = DownhillSimplex.solveSimplex(transferCost, simplex, {
-  maxIter: 2000,
-  printIter: true,  // watch convergence
-});
+console.log(`Inclination ${incDeg.toFixed(2)} deg, period ${((2 * Math.PI) / n).toFixed(2)} min`);
+// => Inclination 51.84 deg, period 92.94 min
+// (TLE: 51.64 deg and 92.94 min; the fit sees geodetic, not geocentric, latitude)
 ```
 
 **Outcomes:**
 
 - Fitted orbital elements matching observation data
-- Optimal maneuver parameters (delta-V, timing)
 - Solutions to any multi-dimensional minimization problem
 
 ---
@@ -192,36 +184,40 @@ Fits polynomial curves to data using Downhill Simplex optimization.
 - Interpolating between sparse observation points
 - Fitting non-linear trends in orbital parameters
 
-**Example: Smoothing Noisy Position Data**
-
-Sensor measurements often have noise. Fit a smooth polynomial to recover the true trajectory.
+**Example: Fitting a Quadratic**
 
 ```typescript
 import { PolynomialRegression, evalPoly } from 'ootk';
 
-// Noisy altitude measurements (km) over 5 minutes
-const times = new Float64Array([0, 60, 120, 180, 240, 300]); // seconds
+// Altitude samples (km), one per minute
+const times = new Float64Array([0, 1, 2, 3, 4, 5]); // minutes
 const altitudes = new Float64Array([400.1, 400.8, 402.3, 404.6, 407.7, 411.6]);
 
-// Fit a quadratic (captures acceleration due to gravity)
+// Fit a quadratic
 const result = PolynomialRegression.solve(times, altitudes, 2);
 
 console.log('Coefficients:', result.coefficients);
-// [a, b, c] for y = at² + bt + c
+// => [0.4, 0.3, 400.1] (descending powers: y = a t^2 + b t + c)
 
-console.log('Fit error (RSS):', result.rss.toFixed(4), 'km');
+console.log('Fit error (root sum of squares):', result.rss.toFixed(4), 'km');
 
-// Interpolate at t=150 seconds
-const smoothedAlt = evalPoly(150, result.coefficients);
-console.log(`Altitude at t=150s: ${smoothedAlt.toFixed(2)} km`);
+// Interpolate at t = 2.5 minutes
+const smoothedAlt = evalPoly(2.5, result.coefficients);
+console.log(`Altitude at t=2.5 min: ${smoothedAlt.toFixed(2)} km`);
+// => Altitude at t=2.5 min: 403.35 km
 ```
 
 **Example: Automatic Polynomial Order Selection**
 
-Let the algorithm determine the optimal polynomial degree using Bayesian Information Criterion.
+Let the algorithm determine the polynomial degree using the Bayesian Information Criterion.
 
 ```typescript
-// Fit polynomials from linear (order 1) to quartic (order 4)
+import { PolynomialRegression } from 'ootk';
+
+const times = new Float64Array([0, 1, 2, 3, 4, 5, 6, 7]); // minutes
+const positions = new Float64Array([0.0, 1.2, 4.1, 9.3, 15.8, 25.4, 35.9, 49.1]); // km
+
+// Fit polynomials from linear (order 1) to quartic (order 4); the lowest BIC wins
 const result = PolynomialRegression.solveOrder(times, positions, 1, 4);
 
 const selectedOrder = result.coefficients.length - 1;
@@ -248,34 +244,44 @@ Compresses ephemeris data into Chebyshev polynomial coefficients.
 - Converting high-fidelity propagator output to compact format
 - Mission planning software requiring quick position lookups
 
-**Example: Compressing 7-Day Ephemeris**
+**Example: Compressing One Day of ISS Ephemeris**
 
-A high-fidelity propagator generates positions every second. Compress this to polynomial coefficients.
+`compress(cpr = 21, segmentDuration?)` fits `cpr` coefficients per axis to each segment. Segments default to one orbital period (`StateVector.period` is in minutes and is converted to seconds), so a day of LEO ephemeris becomes about 16 segments.
 
 ```typescript
-import { ChebyshevCompressor } from 'ootk';
+import { ChebyshevCompressor, EpochUTC, Seconds, Sgp4Propagator, Tle } from 'ootk';
 
-// stateInterpolator contains 7 days of ephemeris at 1-second intervals
-// That's ~600,000 position vectors
+const tle = new Tle(
+  '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991',
+  '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741',
+);
+const start = tle.epoch;
+const stop = start.roll(86400 as Seconds);
 
-const compressor = new ChebyshevCompressor(stateInterpolator);
-const compressed = compressor.compress(21); // 21 coefficients per orbital period
+// One day of ephemeris sampled every 60 s (1441 J2000 states)
+const ephemeris = new Sgp4Propagator(tle).ephemeris(start, stop, 60 as Seconds);
 
-// Now use compressed for fast position lookups
-const position = compressed.interpolate(someEpoch);
+// Default: one segment per orbital period, 21 coefficients per axis per segment
+const compressed = new ChebyshevCompressor(ephemeris).compress(21);
 
-// Storage comparison:
-// Original: 600,000 vectors × 3 × 8 bytes = 14.4 MB
-// Compressed: ~100 periods × 21 coeffs × 3 axes × 8 bytes = 50 KB
+console.log(`Original:   ${ephemeris.sizeBytes} bytes`);
+console.log(`Compressed: ${compressed.sizeBytes} bytes`);
+
+// Position error at an arbitrary time inside the window
+const t = start.roll(43210 as Seconds);
+const error = compressed.interpolate(t)!.position.distance(ephemeris.interpolate(t)!.position);
+console.log(`Error at T+43210 s: ${(error * 1000).toFixed(3)} m`);
 ```
+
+In this run 16 segments replace 1441 states: 8,320 bytes instead of 80,696 (about 10x), and the largest position difference from the source interpolator over the day, sampled every 7 s, is about 8 m. Raising `cpr` to 41 doubles the size without reducing that difference, so 21 is enough at this sample spacing.
 
 **Workflow: Mission Planning System**
 
 ```
 ┌─────────────────────────┐
 │ High-Fidelity Propagator│
-│ (RK4/78, full force     │
-│  model, 1-sec steps)    │
+│ (RK4/DP54/RK89, full    │
+│  force model)           │
 └───────────┬─────────────┘
             │
             ▼
@@ -298,8 +304,8 @@ Conjunction     Ground Pass
 
 **Outcomes:**
 
-- Ephemeris compressed by 100-300x with sub-meter accuracy
-- Fast O(1) position interpolation at any time
+- Ephemeris compressed by about 10x for LEO at 60 s sampling (more for denser input), with a few metres of reconstruction error
+- Fast position interpolation at any time (one segment lookup and a Chebyshev evaluation)
 - Efficient ephemeris distribution to field systems
 
 ---
@@ -310,7 +316,7 @@ Conjunction     Ground Pass
 |--------------|-----------|---------|
 | Linear trend in data | SimpleLinearRegression | Altitude decay rate |
 | 1D min/max search | GoldenSection | Closest approach time |
-| Multi-parameter fitting | DownhillSimplex | Orbit determination |
+| Multi-parameter fitting | DownhillSimplex | Model fitting, cost minimization |
 | Smooth curve fitting | PolynomialRegression | Ephemeris smoothing |
 | Ephemeris compression | ChebyshevCompressor | Storage/transmission |
 

@@ -56,7 +56,7 @@ export interface LaserRangingSensorParams extends SensorParams {
  * @example
  * ```typescript
  * const slr = new LaserRangingSensor({
- *   id: 'mlrs',
+ *   id: 3,
  *   name: 'McDonald Laser Ranging Station',
  *   sensorType: SensorType.LASER_RANGING,
  *   wavelength: SLR_WAVELENGTHS.GREEN_532,
@@ -64,12 +64,10 @@ export interface LaserRangingSensorParams extends SensorParams {
  *   pulseRate: 20,          // 20 Hz
  *   timingPrecision: 30,    // 30 ps timing
  *   fieldOfView: {
+ *     halfAngle: 90 as Degrees, // zenith-pointing hemisphere
  *     minRange: 500 as Kilometers,
  *     maxRange: 40000 as Kilometers,
- *     minAzimuth: 0 as Degrees,
- *     maxAzimuth: 360 as Degrees,
  *     minElevation: 20 as Degrees,
- *     maxElevation: 90 as Degrees,
  *   },
  * });
  * ```

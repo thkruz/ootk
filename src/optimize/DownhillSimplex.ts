@@ -116,8 +116,13 @@ export class DownhillSimplex {
    * cost function [f] for the initial simplex [xs].
    *
    * Optional arguments:
-   *  - `xTolerance`: centroid delta termination criteria
-   * - `fTolerance`: cost function delta termination criteria
+   * - `xTolerance`: maximum distance from the centroid of the best n vertices
+   *   to any other vertex; must be met for termination
+   * - `fTolerance`: maximum cost difference between that centroid and any
+   *   other vertex; must also be met for termination
+   *
+   * The search stops when BOTH tolerances are satisfied (as in the scipy
+   * Nelder-Mead `xatol`/`fatol` criteria), or when `maxIter` is reached.
    * - `maxIter`: maximum number of optimization iterations
    * - `adaptive`: use adaptive coefficients if possible
    * - `printIter`: print a debug statement after each iteration
@@ -146,7 +151,7 @@ export class DownhillSimplex {
       maxIter?: number;
       adaptive?: boolean;
       printIter?: boolean;
-    },
+    } = {},
   ): Float64Array {
     let a: number;
     let g: number;
@@ -188,7 +193,7 @@ export class DownhillSimplex {
         // eslint-disable-next-line no-console
         console.log(`${iter}: score=${x0.score} xd=${xd} fd=${fd} [${action}]`);
       }
-      if (iter !== 0 && (xd < xTolerance || fd < fTolerance)) {
+      if (iter !== 0 && xd < xTolerance && fd < fTolerance) {
         return ordered[0].points;
       }
       if (iter >= maxIter) {

@@ -61,6 +61,11 @@ export abstract class BaseObject {
 
   /**
    * Enables history tracking for this object.
+   *
+   * For a Satellite, only states returned by direct `eci()` calls are recorded. The
+   * propagations made internally by `rae()`, `toRae()`, `ecef()`, `lla()`, Doppler and
+   * access sweeps are not, so analysis calls do not flood the history or trip its sampling
+   * interval.
    * @param config - Optional configuration for history behavior
    */
   enableHistory(config?: HistoryConfig): void {

@@ -44,8 +44,9 @@ import { Epoch } from './Epoch';
  *   calculations typically require TT
  * - **Astronomical almanacs**: Most published ephemerides for Earth-based
  *   observations use TT
- * - **High-precision Earth orientation**: IERS Earth Orientation Parameters
- *   are referenced to TT
+ * - **High-precision Earth orientation**: precession and nutation series are
+ *   evaluated in TT (IERS Earth Orientation Parameters themselves are tabulated
+ *   by UTC MJD)
  * - **Satellite orbit propagation**: When using force models that reference
  *   Earth's orientation
  *

@@ -46,18 +46,16 @@ export interface OpticalSensorParams extends SensorParams {
  * @example
  * ```typescript
  * const telescope = new OpticalSensor({
- *   id: 'geodss-1',
+ *   id: 1,
  *   name: 'GEODSS Site 1',
  *   sensorType: SensorType.OPTICAL,
  *   aperture: 1.0,           // 1 meter aperture
  *   limitingMagnitude: 16.5, // Can see objects dimmer than mag 16
  *   fieldOfView: {
+ *     halfAngle: 90 as Degrees, // zenith-pointing hemisphere
  *     minRange: 5000 as Kilometers,
  *     maxRange: 50000 as Kilometers,
- *     minAzimuth: 0 as Degrees,
- *     maxAzimuth: 360 as Degrees,
  *     minElevation: 10 as Degrees,
- *     maxElevation: 90 as Degrees,
  *   },
  * });
  *

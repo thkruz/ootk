@@ -20,8 +20,8 @@ describe('PhasedArrayRadar geometry', () => {
       const { u, v } = radar.uvFromAzEl(az as Degrees, el as Degrees);
       const back = radar.azElFromUV(u, v);
 
-      // Elevation came back mirrored about boresight (10 for an input of 30)
-      expect(back.az).toBeCloseTo(az, 9);
+      // Elevation came back mirrored about boresight (10 for an input of 30). Azimuth is wrapped to [0, 360).
+      expect(back.az).toBeCloseTo((az + 360) % 360, 9);
       expect(back.el).toBeCloseTo(el, 9);
     }
   });

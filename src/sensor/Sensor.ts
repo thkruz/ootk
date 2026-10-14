@@ -94,10 +94,13 @@ export interface SerializedSensor {
  * ```typescript
  * // Create a sensor attached to a ground station
  * const radar = new PhasedArrayRadar({
- *   id: 'eglin-radar',
- *   name: 'Eglin SSPARS',
+ *   id: 399,
+ *   name: 'Eglin AN/FPS-85',
  *   sensorType: SensorType.PHASED_ARRAY_RADAR,
- *   fieldOfView: { ... },
+ *   beamwidth: 1.4 as Degrees,
+ *   boresightAz: [180 as Degrees],
+ *   boresightEl: [45 as Degrees],
+ *   fieldOfView: { halfAngle: 60 as Degrees, minRange: 100 as Kilometers, maxRange: 13210 as Kilometers },
  * });
  *
  * groundStation.addSensor(radar);
@@ -284,7 +287,7 @@ export abstract class Sensor {
    * @param date - Start time (defaults to now)
    * @example
    * ```typescript
-   * import { Sensor, Satellite, GroundObject, FieldOfView, PassType, Degrees, Kilometers } from 'ootk';
+   * import { OpticalSensor, GroundObject, PassType, SensorType, Degrees, Kilometers } from 'ootk';
    *
    * // Create ground station with sensor
    * const station = new GroundObject({
@@ -293,14 +296,17 @@ export abstract class Sensor {
    *   alt: 0.1 as Kilometers,
    * });
    *
-   * const sensor = new Sensor({
-   *   id: 'radar-1',
-   *   name: 'Tracking Radar',
-   *   fov: new FieldOfView({
+   * // Sensor is abstract; use a concrete subclass
+   * const sensor = new OpticalSensor({
+   *   id: 1,
+   *   name: 'Tracking Telescope',
+   *   sensorType: SensorType.OPTICAL,
+   *   fieldOfView: {
    *     boresightEl: 45 as Degrees,
    *     halfAngle: 30 as Degrees,
+   *     minRange: 0 as Kilometers,
    *     maxRange: 5000 as Kilometers,
-   *   }),
+   *   },
    * });
    * sensor.setParent(station);
    *

@@ -241,11 +241,13 @@ export class CovarianceRealism {
   /**
    * Compute covariance consistency ratio.
    *
-   * The ratio of actual miss distance to predicted 1-sigma uncertainty
-   * indicates whether the covariance is appropriately sized:
-   * - < 1: Miss within 1-sigma (optimistic if consistently < 0.5)
-   * - 1-2: Typical range for realistic covariance
-   * - > 3: Covariance likely underestimated (pessimistic)
+   * ratio = miss distance / sigma, with sigma = sqrt(trace(C_pos) / 3) the mean 1-sigma position
+   * uncertainty. The ratio indicates whether the covariance is appropriately sized:
+   * - < 0.5: the miss is far inside the predicted 1-sigma, so the covariance is too LARGE:
+   *   'pessimistic' (it overstates the uncertainty)
+   * - 0.5 to 3: 'realistic'
+   * - > 3: the miss is more than 3 sigma out, so the covariance is too SMALL: 'optimistic'
+   *   (it understates the uncertainty)
    *
    * @param event - Conjunction event with covariance
    * @returns Consistency ratio result or null if no covariance
@@ -272,9 +274,11 @@ export class CovarianceRealism {
     let assessment: 'optimistic' | 'realistic' | 'pessimistic';
 
     if (ratio < 0.5) {
-      assessment = 'optimistic';
-    } else if (ratio > 3.0) {
+      // Covariance too large for the observed miss
       assessment = 'pessimistic';
+    } else if (ratio > 3.0) {
+      // Covariance too small for the observed miss
+      assessment = 'optimistic';
     } else {
       assessment = 'realistic';
     }
@@ -402,71 +406,47 @@ export class CovarianceRealism {
   /**
    * Compute eigenvalues of a 3x3 symmetric matrix.
    *
-   * Uses the analytical solution for the cubic characteristic equation
-   * (Cardano's formula), which is more stable than iterative methods
-   * for small matrices.
+   * Closed-form trigonometric solution of the characteristic cubic in the numerically robust
+   * form of Smith (1961), "Eigenvalues of a symmetric 3 x 3 matrix", Commun. ACM 4(4):168:
+   * q = tr(A) / 3, p = sqrt(tr((A - qI)^2) / 6), B = (A - qI) / p, r = det(B) / 2 clamped to
+   * [-1, 1], phi = acos(r) / 3; eigenvalues q + 2p cos(phi), q + 2p cos(phi + 2 pi / 3) and
+   * 3q minus the other two. A diagonal matrix returns its diagonal exactly and repeated roots
+   * (including the identity) are handled without NaN; the clamp absorbs round-off in r.
    *
    * @param matrix - 3x3 symmetric matrix
-   * @returns Array of 3 eigenvalues
+   * @returns Array of 3 eigenvalues (unsorted)
    */
   private static computeEigenvalues3x3_(matrix: Matrix): number[] {
     const a = matrix.elements;
+    const p1 = a[0][1] * a[0][1] + a[0][2] * a[0][2] + a[1][2] * a[1][2];
 
-    // For symmetric matrix, eigenvalues are real
-    // Characteristic polynomial: det(A - λI) = 0
-    // -λ³ + tr(A)λ² - (sum of 2x2 minors)λ + det(A) = 0
-
-    // Coefficients of cubic: λ³ + p*λ² + q*λ + r = 0
-    const p = -(a[0][0] + a[1][1] + a[2][2]); // -trace
-
-    const q =
-      a[0][0] * a[1][1] +
-      a[0][0] * a[2][2] +
-      a[1][1] * a[2][2] -
-      a[0][1] * a[0][1] -
-      a[0][2] * a[0][2] -
-      a[1][2] * a[1][2];
-
-    const r =
-      -a[0][0] * a[1][1] * a[2][2] -
-      2 * a[0][1] * a[1][2] * a[0][2] +
-      a[0][0] * a[1][2] * a[1][2] +
-      a[1][1] * a[0][2] * a[0][2] +
-      a[2][2] * a[0][1] * a[0][1];
-
-    // Solve using Cardano's formula for depressed cubic
-    // Substitute λ = t - p/3 to get t³ + at + b = 0
-    const p3 = p / 3;
-    const aa = q - p * p3;
-    const bb = r + 2 * p3 * p3 * p3 - p3 * q;
-
-    // Discriminant for roots
-    const aa3 = aa / 3;
-    const bb2 = bb / 2;
-    const discriminant = bb2 * bb2 + aa3 * aa3 * aa3;
-
-    const eigenvalues: number[] = [];
-
-    if (discriminant > 0) {
-      // One real root (shouldn't happen for symmetric positive definite)
-      const sqrtD = Math.sqrt(discriminant);
-      const u = Math.cbrt(-bb2 + sqrtD);
-      const v = Math.cbrt(-bb2 - sqrtD);
-
-      eigenvalues.push(u + v - p3);
-      // Complex roots - return 0 as fallback
-      eigenvalues.push(0);
-      eigenvalues.push(0);
-    } else {
-      // Three real roots (normal case for covariance matrices)
-      const phi = Math.acos(-bb2 / Math.sqrt(-aa3 * aa3 * aa3));
-      const t = 2 * Math.sqrt(-aa3);
-
-      eigenvalues.push(t * Math.cos(phi / 3) - p3);
-      eigenvalues.push(t * Math.cos((phi + 2 * Math.PI) / 3) - p3);
-      eigenvalues.push(t * Math.cos((phi + 4 * Math.PI) / 3) - p3);
+    if (p1 === 0) {
+      // Diagonal: the eigenvalues are the diagonal entries
+      return [a[0][0], a[1][1], a[2][2]];
     }
 
-    return eigenvalues;
+    const q = (a[0][0] + a[1][1] + a[2][2]) / 3;
+    const d0 = a[0][0] - q;
+    const d1 = a[1][1] - q;
+    const d2 = a[2][2] - q;
+    const p2 = d0 * d0 + d1 * d1 + d2 * d2 + 2 * p1;
+    const p = Math.sqrt(p2 / 6);
+
+    // B = (A - qI) / p
+    const b00 = d0 / p;
+    const b11 = d1 / p;
+    const b22 = d2 / p;
+    const b01 = a[0][1] / p;
+    const b02 = a[0][2] / p;
+    const b12 = a[1][2] / p;
+    const detB = b00 * (b11 * b22 - b12 * b12) - b01 * (b01 * b22 - b12 * b02) + b02 * (b01 * b12 - b11 * b02);
+    const r = Math.min(Math.max(detB / 2, -1), 1);
+    const phi = Math.acos(r) / 3;
+
+    const eig1 = q + 2 * p * Math.cos(phi);
+    const eig3 = q + 2 * p * Math.cos(phi + (2 * Math.PI) / 3);
+    const eig2 = 3 * q - eig1 - eig3;
+
+    return [eig1, eig2, eig3];
   }
 }
