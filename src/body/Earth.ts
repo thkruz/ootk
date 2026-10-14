@@ -191,7 +191,7 @@ export class Earth {
   static driftToSemimajorAxis(driftRate: number): number {
     const n = driftRate / secondsPerDay + Earth.rotation.z;
 
-    return (Earth.mu / (n * n)) ** (1 / 3);
+    return Math.cbrt(Earth.mu / (n * n));
   }
 
   /**

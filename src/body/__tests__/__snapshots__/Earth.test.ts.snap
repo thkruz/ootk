@@ -24,10 +24,6 @@ exports[`Earth > should calculate precession angles when given an epoch 2`] = `0
 
 exports[`Earth > should calculate precession angles when given an epoch 3`] = `0.0026872537755354814`;
 
-exports[`Earth > should calculate semimajor axis from drift rate 1`] = `42156.38729110258`;
-
-exports[`Earth > should handle drift rate of 0 when calculating semimajor axis 1`] = `42164.1723550571`;
-
 exports[`Earth > should handle epoch after 2150 when calculating nutation angles 1`] = `-0.000022256073251287026`;
 
 exports[`Earth > should handle epoch after 2150 when calculating precession angles 1`] = `0.0026870317857958003`;
@@ -35,5 +31,3 @@ exports[`Earth > should handle epoch after 2150 when calculating precession angl
 exports[`Earth > should handle epoch before 1900 when calculating nutation angles 1`] = `-0.000022256073251287026`;
 
 exports[`Earth > should handle epoch before 1900 when calculating precession angles 1`] = `0.0026870317857958003`;
-
-exports[`Earth > should handle negative drift rate when calculating semimajor axis 1`] = `42171.961014197186`;

@@ -69,7 +69,8 @@ describe('Earth', () => {
     const driftRate = 0.1; // degrees per day
     const semimajorAxis = Earth.driftDegreesToSma(driftRate);
 
-    expect(semimajorAxis).toMatchSnapshot();
+    // 1 mm tolerance: the last ulp of the cube root varies between V8 JIT tiers
+    expect(semimajorAxis).toBeCloseTo(42156.387291, 6);
   });
 
   // can calculate Earth's diameter from satellite position
@@ -121,7 +122,7 @@ describe('Earth', () => {
     const semimajorAxis = Earth.driftDegreesToSma(driftRate);
 
     expect(semimajorAxis).not.toBeNaN();
-    expect(semimajorAxis).toMatchSnapshot();
+    expect(semimajorAxis).toBeCloseTo(42171.961014, 6);
   });
 
   // can handle drift rate of 0 when calculating semimajor axis
@@ -130,6 +131,6 @@ describe('Earth', () => {
     const semimajorAxis = Earth.driftDegreesToSma(driftRate);
 
     expect(semimajorAxis).not.toBeNaN();
-    expect(semimajorAxis).toMatchSnapshot();
+    expect(semimajorAxis).toBeCloseTo(42164.172355, 6);
   });
 });
