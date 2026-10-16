@@ -206,6 +206,12 @@ export class Satellite extends SpaceObject {
   altId: string = '';
   /** Alternate name */
   altName: string = '';
+  /**
+   * Catalog number of the satellite this object was derived from (for example an
+   * analyst satellite created by applying a maneuver to a cataloged parent).
+   * Undefined for objects that are not derived from another.
+   */
+  derivedFromSccNum?: string;
   /** Visual magnitude */
   vmag: number | null = null;
   /** Radar cross-section */
