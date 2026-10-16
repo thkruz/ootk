@@ -45,6 +45,8 @@ Screening loops one primary against a list of candidate TLEs, then filters event
 
 The output is deterministic (TLE age is measured against the state epoch, not the run date). The Pc values are from ootk 8, whose two-dimensional Pc and RIC covariance combination were corrected; ootk 7 printed values off by a factor of about 4 in either direction for the same inputs.
 
+Pc values below `PC_NEGLIGIBLE` (1e-30, exported from the package) are reported as exactly 0: when an analytic upper bound on Pc (hard-body disc area times the peak Gaussian density over it) is already below that level, the encounter-plane integral is skipped. No operational threshold is anywhere near 1e-30, and it keeps catalog screens from spending seconds per pair on far-tail misses.
+
 ```txt
 === Example 1: Basic Conjunction Assessment ===
 

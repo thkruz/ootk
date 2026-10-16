@@ -104,12 +104,40 @@ function erfc_(x: number): number {
 }
 
 /**
+ * Below this value of (b - a) max(1, |a|, |b|), the standard normal density varies so little over
+ * [a, b] that a single 15-point Kronrod rule integrates it to machine precision.
+ */
+const NARROW_INTERVAL_SPAN = 0.25;
+
+/**
  * P(a <= Z <= b) for a standard normal Z, computed from erfc tails so that probabilities far
  * out in either tail keep their relative precision.
+ *
+ * Narrow intervals integrate the density directly instead: the erfc difference cancels
+ * catastrophically there (relative error about 1e-16 / (b - a), e.g. 4e-8 for a 1e-6 wide
+ * interval at z = 3). The Pc integrand evaluates this at chord half-lengths h much smaller than
+ * sigma (near the disc edge, or whenever sigma is far larger than the hard body), and that noise
+ * used to defeat the 1e-12 quadrature tolerance and drive the adaptive bisection to full depth.
  */
 function normalIntervalProbability_(a: number, b: number): number {
   if (!(b > a)) {
     return 0;
+  }
+  const width = b - a;
+
+  if (width * Math.max(1, Math.abs(a), Math.abs(b)) <= NARROW_INTERVAL_SPAN) {
+    const center = 0.5 * (a + b);
+    const half = 0.5 * width;
+    let sum = GK15_WK[7] * Math.exp(-0.5 * center * center);
+
+    for (let j = 0; j < 7; j++) {
+      const z1 = center - half * GK15_XK[j];
+      const z2 = center + half * GK15_XK[j];
+
+      sum += GK15_WK[j] * (Math.exp(-0.5 * z1 * z1) + Math.exp(-0.5 * z2 * z2));
+    }
+
+    return (sum * half) / SQRT_2PI;
   }
   if (a >= 0) {
     return 0.5 * (erfc_(a / SQRT2) - erfc_(b / SQRT2));
@@ -123,9 +151,19 @@ function normalIntervalProbability_(a: number, b: number): number {
 
 /**
  * Adaptive Gauss-Kronrod 7-15 quadrature of f over [a, b] (Piessens et al. 1983, QUADPACK).
- * Bisects until the |K15 - G7| error estimate is below `relTol` times the panel's integral of |f|.
+ * Bisects until the |K15 - G7| error estimate is below `relTol` times the panel's integral of |f|,
+ * or below the absolute floor `absTol`. The floor matters when the whole integral is tiny (Pc of
+ * 1e-100 and below): rounding noise in the integrand then never meets a relative tolerance and
+ * every panel would bisect to full depth (2^depth evaluations).
  */
-function adaptiveGk15_(f: (x: number) => number, a: number, b: number, relTol: number, depth: number): number {
+function adaptiveGk15_(
+  f: (x: number) => number,
+  a: number,
+  b: number,
+  relTol: number,
+  absTol: number,
+  depth: number,
+): number {
   const center = 0.5 * (a + b);
   const half = 0.5 * (b - a);
 
@@ -153,12 +191,22 @@ function adaptiveGk15_(f: (x: number) => number, a: number, b: number, relTol: n
   const result = resK * half;
   const err = Math.abs((resK - resG) * half);
 
-  if (depth <= 0 || err <= relTol * resAbs * half || err < 1e-300) {
+  if (depth <= 0 || err <= relTol * resAbs * half || err <= absTol || err < 1e-300) {
     return result;
   }
 
-  return adaptiveGk15_(f, a, center, relTol, depth - 1) + adaptiveGk15_(f, center, b, relTol, depth - 1);
+  return adaptiveGk15_(f, a, center, relTol, absTol, depth - 1) + adaptiveGk15_(f, center, b, relTol, absTol, depth - 1);
 }
+
+/**
+ * Pc values below this are reported as exactly 0: `ProbabilityOfCollision.calculate` returns 0
+ * without integrating when an analytic upper bound on Pc is already below it. Operational
+ * thresholds sit around 1e-4 to 1e-7, so nothing near this level can change a screening decision.
+ */
+export const PC_NEGLIGIBLE = 1e-30;
+
+/** Absolute quadrature error floor, relative to the larger of the running total and the Pc bound. */
+const PC_ABS_TOL_FACTOR = 1e-16;
 
 /**
  * Probability of Collision calculator for short-term (linear relative motion) encounters.
@@ -313,6 +361,12 @@ export class ProbabilityOfCollision {
       return normalIntervalProbability_((-c - along) / sigma, (c - along) / sigma);
     }
 
+    const upperBound = this.pcUpperBound_(xm, ym, sigmaX, sigmaY, radius);
+
+    if (upperBound < PC_NEGLIGIBLE) {
+      return 0;
+    }
+
     const r = radius;
     const integrand = (phi: number): number => {
       const xi = r * Math.sin(phi);
@@ -347,10 +401,34 @@ export class ProbabilityOfCollision {
     let total = 0;
 
     for (let i = 0; i < grid.length - 1; i++) {
-      total += adaptiveGk15_(integrand, grid[i], grid[i + 1], 1e-12, 30);
+      const absTol = PC_ABS_TOL_FACTOR * Math.max(Math.abs(total), upperBound);
+
+      total += adaptiveGk15_(integrand, grid[i], grid[i + 1], 1e-12, absTol, 30);
     }
 
     return Math.min(Math.max(total, 0), 1);
+  }
+
+  /**
+   * Analytic upper bound on the 2D Pc in principal axes, used to skip the quadrature when Pc is
+   * negligible. The hard-body disc lies inside the square [-R, R]^2, so with the miss components
+   * clamped to it independently, dx = max(|xm| - R, 0) and dy = max(|ym| - R, 0):
+   *
+   * - area x peak density: Pc <= pi R^2 / (2 pi sigmaX sigmaY) exp(-(dx^2 / sigmaX^2 + dy^2 / sigmaY^2) / 2)
+   * - separable square: Pc <= P(|X| <= R) P(|Y| <= R), X and Y independent in principal axes
+   *
+   * Both are rigorous; the smaller is returned. The second stays below 1 when sigma is much smaller
+   * than R, the first is tight for the usual small hard body.
+   */
+  private static pcUpperBound_(xm: number, ym: number, sigmaX: number, sigmaY: number, radius: number): number {
+    const dx = Math.max(Math.abs(xm) - radius, 0) / sigmaX;
+    const dy = Math.max(Math.abs(ym) - radius, 0) / sigmaY;
+    const areaTimesPeak = ((radius * radius) / (2 * sigmaX * sigmaY)) * Math.exp(-0.5 * (dx * dx + dy * dy));
+    const square =
+      normalIntervalProbability_((-radius - xm) / sigmaX, (radius - xm) / sigmaX) *
+      normalIntervalProbability_((-radius - ym) / sigmaY, (radius - ym) / sigmaY);
+
+    return Math.min(areaTimesPeak, square);
   }
 
   /**

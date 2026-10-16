@@ -19,7 +19,7 @@ export {
   ConjunctionAssessment, type ConjunctionAssessmentOptions, type ConjunctionSpaceObjectInput,
 } from './ConjunctionAssessment';
 export { ConjunctionEvent, type ConjunctionManeuverable, type ConjunctionScreenVolume } from './ConjunctionEvent';
-export { ProbabilityOfCollision } from './ProbabilityOfCollision';
+export { PC_NEGLIGIBLE, ProbabilityOfCollision } from './ProbabilityOfCollision';
 export {
   CatalogScreener, type CatalogObject, type CatalogScreeningOptions, type ScreeningResult,
 } from './CatalogScreener';
