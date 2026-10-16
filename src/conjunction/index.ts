@@ -33,3 +33,16 @@ export {
   type ScaleFactorResult,
 } from './CovarianceRealism';
 
+export {
+  ENCOUNTER_PLANE_FALLBACK_REFERENCE,
+  ENCOUNTER_PLANE_RADIAL_REFERENCE,
+  encounterPlaneBasis,
+  encounterPlaneNormalOffset,
+  encounterPlaneSigmaEllipse,
+  projectToEncounterPlane,
+  sampleEncounterPlaneEllipse,
+  type EncounterPlaneBasis,
+  type EncounterPlaneEllipse,
+  type EncounterPlanePoint,
+  type EncounterPlaneVec3,
+} from './EncounterPlane';
