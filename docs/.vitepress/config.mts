@@ -44,6 +44,7 @@ export default defineConfig({
             { text: 'Lambert State Vectors', link: '/examples/lambert-state-vector' },
             { text: 'Maneuvers', link: '/examples/maneuvers' },
             { text: 'Conjunction Assessment', link: '/examples/conjunction-assessment-example' },
+            { text: 'Breakup Epoch Estimation', link: '/examples/breakup-epoch' },
             { text: 'Covariance Matrix', link: '/examples/covariance-matrix' },
             { text: 'Sun', link: '/examples/sun' },
             { text: 'Moon', link: '/examples/moon' },
