@@ -20,7 +20,7 @@ import type { StateCovariance } from '../covariance/StateCovariance';
 import type { ForceModel } from '../force/ForceModel';
 import type { EpochUTC } from '../time/EpochUTC';
 import type { Kilometers, Seconds } from '../types/types';
-import { ConjunctionAssessment } from './ConjunctionAssessment';
+import { ConjunctionAssessment, type TcaSearchMode } from './ConjunctionAssessment';
 import type { ConjunctionEvent } from './ConjunctionEvent';
 import { ScreeningFilter } from './ScreeningFilter';
 
@@ -62,6 +62,10 @@ export interface CatalogScreeningOptions {
   maxResults?: number;
   /** Distance scale factor for risk scoring in km (default: 1.0 km) */
   riskScaleFactor?: Kilometers;
+  /** TCA search strategy forwarded to each assessment (default: branch-and-bound) */
+  tcaSearchMode?: TcaSearchMode;
+  /** Coarse sample cap in seconds for the coarse-to-fine search */
+  coarseStepCap?: Seconds;
 }
 
 /**
@@ -174,6 +178,8 @@ export class CatalogScreener {
           tcaTolerance: options.tcaTolerance,
           useHighFidelity: options.useHighFidelity,
           forceModel: options.forceModel,
+          tcaSearchMode: options.tcaSearchMode,
+          coarseStepCap: options.coarseStepCap,
         });
 
         if (event) {
@@ -276,6 +282,8 @@ export class CatalogScreener {
             tcaTolerance: options.tcaTolerance,
             useHighFidelity: options.useHighFidelity,
             forceModel: options.forceModel,
+            tcaSearchMode: options.tcaSearchMode,
+            coarseStepCap: options.coarseStepCap,
           });
 
           if (event) {
