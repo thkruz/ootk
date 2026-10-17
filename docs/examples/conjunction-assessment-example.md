@@ -41,6 +41,16 @@ Screening loops one primary against a list of candidate TLEs, then filters event
 
 <<< ../../examples/conjunction-assessment-example.ts#multi-object-screening
 
+## Long windows: coarse-to-fine TCA search
+
+The default TCA search (`tcaSearchMode: 'branch-and-bound'`) samples the whole window at `searchStepSize` and bisects every interval whose Lipschitz lower bound could still beat the best range. Over days of crossing orbits that is thousands of propagations per pair. `tcaSearchMode: 'coarse-to-fine'` samples range and range-rate every quarter of the shorter orbital period (capped by `coarseStepCap`, default 600 s), brackets each local minimum where the range-rate turns from negative to positive, and refines the brackets in order of their smaller end range by false position on the range-rate down to `tcaTolerance`. A bracket is dropped as soon as its Lipschitz lower bound cannot beat the best range found so far (the gate). An interval whose two samples share a range-rate sign but whose cubic Hermite interpolant hides a minimum is resampled at `searchStepSize`.
+
+On 80 SGP4 pairs over 72 h at a 240 s step (40 random LEO and MEO pairs, 40 crossing LEO pairs with misses of a few km), coarse-to-fine took 18 ms per pair against 85 ms (26 against 135 ms for the crossing pairs, 10 against 35 ms for the random ones), found the same minimum in every case (miss distances equal to 1e-6 km), and the same TCA to within 0.32 ms for every pair with a miss under 700 km. Above that the range minimum is so flat that neither search pins the TCA to the millisecond.
+
+The mode needs propagators whose velocity is the time derivative of their position (SGP4 and RK89 are). It cannot see a range dip shorter than the coarse step that leaves no trace in the range-rate at the grid points; such dips do not occur between Keplerian orbits, but a synthetic propagator can produce them, so the exhaustive search stays the default.
+
+<<< ../../examples/conjunction-assessment-example.ts#long-window
+
 ## Output
 
 The output is deterministic (TLE age is measured against the state epoch, not the run date). The Pc values are from ootk 8, whose two-dimensional Pc and RIC covariance combination were corrected; ootk 7 printed values off by a factor of about 4 in either direction for the same inputs.
@@ -101,6 +111,12 @@ Object 2: CLOSE APPROACH DETECTED
   TCA: 2025-01-19T12:07:54.425Z
   Miss Distance: 3.043 km
   Pc: 1.907e-4 [HIGH RISK]
+
+=== Example 5: 72-Hour Window, Coarse-to-Fine TCA Search ===
+
+branch-and-bound: TCA 2025-01-19T12:26:27.651Z, miss 0.9088 km
+coarse-to-fine:   TCA 2025-01-19T12:26:27.652Z, miss 0.9088 km
+TCA difference:   0.048 ms
 
 === All Examples Complete ===
 ```

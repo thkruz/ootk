@@ -23,6 +23,7 @@ import {
   ForceModel,
   Kilometers,
   RungeKutta89Propagator,
+  Seconds,
   StateCovariance,
   Tle,
 } from 'ootk';
@@ -204,6 +205,29 @@ secondaryTles.forEach((tle, index) => {
     console.log(`  Miss Distance: ${event.missDistance.toFixed(3)} km\n`);
   }
 });
+// #endregion multi-object-screening
+
+// #region long-window
+console.log('=== Example 5: 72-Hour Window, Coarse-to-Fine TCA Search ===\n');
+
+// A copy of the ISS orbit with the node 40 deg east, phased to meet it near both plane
+// intersections: two close approaches per orbit, about 90 in three days.
+const crossingTle = new Tle(
+  '1 99999U 98067B   25019.50000000  .00016717  00000-0  10270-3 0  9004',
+  '2 99999  51.6400  19.8000 0002571  90.5000 244.1933 15.50000000000007',
+);
+const longWindow = {
+  startTime,
+  endTime: startTime.roll((72 * 3600) as Seconds),
+  searchStepSize: 240 as Seconds,
+};
+const longAssessment = new ConjunctionAssessment({ tle: primaryTle }, { tle: crossingTle });
+const exhaustive = longAssessment.assess(longWindow);
+const coarseToFine = longAssessment.assess({ ...longWindow, tcaSearchMode: 'coarse-to-fine' });
+
+console.log(`branch-and-bound: TCA ${exhaustive.tca.toDateTime().toISOString()}, miss ${exhaustive.missDistance.toFixed(4)} km`);
+console.log(`coarse-to-fine:   TCA ${coarseToFine.tca.toDateTime().toISOString()}, miss ${coarseToFine.missDistance.toFixed(4)} km`);
+console.log(`TCA difference:   ${(Math.abs(coarseToFine.tca.posix - exhaustive.tca.posix) * 1000).toFixed(3)} ms\n`);
 
 console.log('=== All Examples Complete ===');
-// #endregion multi-object-screening
+// #endregion long-window

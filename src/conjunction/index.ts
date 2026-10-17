@@ -16,7 +16,7 @@
  */
 
 export {
-  ConjunctionAssessment, type ConjunctionAssessmentOptions, type ConjunctionSpaceObjectInput,
+  ConjunctionAssessment, type ConjunctionAssessmentOptions, type ConjunctionSpaceObjectInput, DEFAULT_TCA_COARSE_STEP_CAP, type TcaSearchMode,
 } from './ConjunctionAssessment';
 export { ConjunctionEvent, type ConjunctionManeuverable, type ConjunctionScreenVolume } from './ConjunctionEvent';
 export { PC_NEGLIGIBLE, ProbabilityOfCollision } from './ProbabilityOfCollision';
