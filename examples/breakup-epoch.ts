@@ -6,6 +6,7 @@
  * - Building a synthetic fragment cloud from one parent state and random delta-v kicks
  * - Estimating the breakup epoch, its uncertainty and a quality flag
  * - Locating the parent at the estimated epoch (ground-track point of the breakup)
+ * - Anchoring the search window on the launch date for elements years after the event
  * - Running the same estimate on real TLEs: the Cosmos 1408 debris in the test fixtures
  */
 
@@ -52,24 +53,31 @@ const uniform = (): number => {
 };
 const normal = (): number => Math.sqrt(-2 * Math.log(1 - uniform())) * Math.cos(2 * Math.PI * uniform());
 
-// 60 fragments with 50 m/s (1-sigma per axis) kicks, carried 90 days forward with secular J2.
-const ageSec = 90 * 86400;
-const fragments: BreakupFragmentElements[] = [];
+// 60 fragments with 50 m/s (1-sigma per axis) kicks.
+const kicked: ClassicalElements[] = [];
 
 for (let k = 0; k < 60; k++) {
   const dv = new Vector3D(normal() * 0.05, normal() * 0.05, normal() * 0.05) as Vector3D<KilometersPerSecond>;
-  const el = new J2000(t0, state.position, state.velocity.add(dv)).toClassicalElements();
+
+  kicked.push(new J2000(t0, state.position, state.velocity.add(dv)).toClassicalElements());
+}
+
+// Each fragment's mean elements carried `ageDays` forward with secular J2.
+const carryForward = (ageDays: number): BreakupFragmentElements[] => kicked.map((el) => {
+  const ageSec = ageDays * 86400;
   const rates = j2SecularRates(el.semimajorAxis, el.eccentricity, el.inclination);
 
-  fragments.push({
+  return {
     epoch: t0.roll(ageSec as Seconds),
     semimajorAxis: el.semimajorAxis,
     eccentricity: el.eccentricity,
     inclination: el.inclination,
     rightAscension: el.rightAscension + rates.raanDot * ageSec,
     argPerigee: el.argPerigee + rates.argPerigeeDot * ageSec,
-  });
-}
+  };
+});
+
+const fragments = carryForward(90);
 
 const now = fragmentDispersionStats(fragments)!;
 
@@ -94,6 +102,24 @@ const location = breakupLocationAtEpoch(parent, estimate.epoch!)!;
 console.log('\n=== Parent at the estimated epoch ===');
 console.log(`Lat ${location.latitudeDeg.toFixed(2)} deg, lon ${location.longitudeDeg.toFixed(2)} deg, alt ${location.altitudeKm.toFixed(1)} km (${location.propagator})`);
 // #endregion location
+
+// #region launch-window
+// The same cloud seen 800 days later. 730 days back from the earliest element set starts the
+// window 70 days after the event, so the minimum sits at the window edge: quality none, no epoch.
+const old = carryForward(800);
+const capped = estimateBreakupEpoch(old, { lookbackDays: 730 });
+
+console.log('\n=== 800-day-old elements ===');
+console.log(`730-day look-back: ${capped.quality} ${capped.reasons.join(', ')}, epoch ${capped.epoch?.toDateTime().toISOString() ?? 'none'}`);
+
+// The parent launched six hours before the breakup. Anchoring the window on the launch date
+// (from the International Designator, YYYY-NNN) lifts the 730-day cap.
+const launchEpoch = t0.roll((-6 * 3600) as Seconds);
+const anchored = estimateBreakupEpoch(old, { launchEpoch });
+
+console.log(`Launch-anchored:   ${anchored.quality} ${anchored.reasons.join(', ')}, epoch ${anchored.epoch?.toDateTime().toISOString()}`);
+console.log(`Window:            ${anchored.searchStart.toDateTime().toISOString()} to ${anchored.searchEnd.toDateTime().toISOString()}`);
+// #endregion launch-window
 
 // #region real-tles
 // Cosmos 1408 debris (international designator 1982-092, catalog numbers from 49000) in the ootk

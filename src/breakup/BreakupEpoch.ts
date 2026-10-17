@@ -73,9 +73,16 @@ export type BreakupQualityReason =
   | 'few-fragments'
   /** The fragments' RAAN rates are (nearly) identical, so the planes never converge (`none`, no epoch). */
   | 'indistinguishable-drift-rates'
-  /** The minimum sits within two coarse steps of the window edge: the event may lie outside the window. */
+  /**
+   * The minimum sits within two coarse steps of the window edge: the event may lie outside the
+   * window. `weak` when the window can still be widened, `none` (no epoch) when it is final (see
+   * {@link BreakupEpochEstimate.windowFinal}).
+   */
   | 'minimum-at-window-edge'
-  /** The spread curve barely changes across the window, or the valley spans the whole window. */
+  /**
+   * The spread curve barely changes across the window, or the valley spans the whole window.
+   * `weak` when the window can still be widened, `none` (no epoch) when it is final.
+   */
   | 'flat-valley'
   /** `uncertaintySec` exceeds `maxGoodUncertaintySec`. */
   | 'large-uncertainty'
@@ -84,8 +91,13 @@ export type BreakupQualityReason =
 
 /** Default look-back before the earliest fragment epoch, days. */
 export const DEFAULT_BREAKUP_LOOKBACK_DAYS = 30;
-/** Hard cap on the search-window length, days. */
+/**
+ * Cap on `lookbackDays`, days. It does not limit a window given by `searchStart` or anchored on
+ * `launchEpoch`.
+ */
 export const MAX_BREAKUP_LOOKBACK_DAYS = 730;
+/** Default margin before `launchEpoch` when it anchors the search window, days. */
+export const DEFAULT_BREAKUP_LAUNCH_MARGIN_DAYS = 1;
 /** Default along-line weight of the `plane` metric. */
 export const DEFAULT_BREAKUP_ALONG_LINE_WEIGHT = 0.003;
 /** Default outlier-rejection fraction (see {@link BreakupEpochOptions.trimFraction}). */
@@ -94,7 +106,11 @@ export const DEFAULT_BREAKUP_TRIM_FRACTION = 0.1;
 export const DEFAULT_BREAKUP_MAX_MEAN_MOTION_DOT = 5e-4;
 
 export interface BreakupEpochOptions {
-  /** Start of the search window. Defaults to `searchEnd - lookbackDays`. */
+  /**
+   * Start of the search window. Overrides `launchEpoch` and `lookbackDays`, and is not capped at
+   * {@link MAX_BREAKUP_LOOKBACK_DAYS}. A window given this way is final: an edge minimum or a flat
+   * valley in it gives quality `none`.
+   */
   searchStart?: EpochUTC;
   /**
    * End of the search window. Defaults to the EARLIEST fragment epoch: the event cannot be later
@@ -102,8 +118,17 @@ export interface BreakupEpochOptions {
    */
   searchEnd?: EpochUTC;
   /**
-   * Look-back before `searchEnd` when `searchStart` is not given, days. Default 30. The window
-   * length is capped at {@link MAX_BREAKUP_LOOKBACK_DAYS} either way.
+   * Launch epoch of the parent (for example the launch date behind its International Designator).
+   * When given and `searchStart` is not, the window runs from `launchEpoch` minus
+   * `launchMarginDays` (and at least three coarse steps) to `searchEnd`, with no length cap. The
+   * event cannot precede the launch, so the window is final.
+   */
+  launchEpoch?: EpochUTC;
+  /** Margin before `launchEpoch`, days. Default 1 ({@link DEFAULT_BREAKUP_LAUNCH_MARGIN_DAYS}). */
+  launchMarginDays?: number;
+  /**
+   * Look-back before `searchEnd` when neither `searchStart` nor `launchEpoch` is given, days.
+   * Default 30, capped at {@link MAX_BREAKUP_LOOKBACK_DAYS}. A look-back at the cap is final.
    */
   lookbackDays?: number;
   /** Coarse grid step, seconds. Default: window / 2000, clamped to [60 s, 6 h]. */
@@ -148,7 +173,10 @@ export interface BreakupEpochOptions {
 export interface BreakupEpochEstimate {
   /** Epoch of minimum plane spread, or null when quality is `none`. */
   epoch: EpochUTC | null;
-  /** Spread at the minimum, degrees (metric-dependent; see {@link BreakupSpreadMetric}). */
+  /**
+   * Spread at the minimum, degrees (metric-dependent; see {@link BreakupSpreadMetric}). Also
+   * filled when a final window gives quality `none` with no epoch.
+   */
   spreadAtMinDeg: number;
   /** Spread with every fragment carried to `nowEpoch` (the latest fragment epoch), degrees. */
   spreadNowDeg: number;
@@ -157,7 +185,9 @@ export interface BreakupEpochEstimate {
   /**
    * 1-sigma uncertainty of `epoch`, seconds: hypot(statistical, metricDisagreementSec), where the
    * statistical part is the bootstrap std (or the valley half-width when bootstrap is off),
-   * floored at the refinement tolerance.
+   * floored at the refinement tolerance. With `flat-valley` it is floored at `valleyHalfWidthSec`:
+   * a flat curve cannot pin the epoch more tightly than its valley, however consistent the
+   * bootstrap minima are (they all sit at the same window edge).
    */
   uncertaintySec: number;
   /** Bootstrap standard deviation of the minimum epoch, seconds (NaN when disabled). */
@@ -182,6 +212,13 @@ export interface BreakupEpochEstimate {
   fragmentsTrimmed: number;
   searchStart: EpochUTC;
   searchEnd: EpochUTC;
+  /**
+   * True when the window cannot usefully be widened: it came from `searchStart`, from
+   * `launchEpoch`, or from a look-back at {@link MAX_BREAKUP_LOOKBACK_DAYS}. In a final window an
+   * edge minimum or a flat valley gives quality `none` and no epoch; in any other window they give
+   * `weak`, and the caller can search again over a wider one.
+   */
+  windowFinal: boolean;
   /** The coarse spread curve of the chosen metric, for plotting. */
   curve: { posix: Float64Array; spreadDeg: Float64Array };
 }
@@ -465,16 +502,41 @@ const stdOf_ = (xs: Float64Array): number => {
   return Math.sqrt(v / Math.max(1, xs.length - 1));
 };
 
-/** Search window [start, end] in POSIX seconds from the options and the fragment epochs. */
-const searchWindow_ = (frags: NormalizedFragment[], options: BreakupEpochOptions): [number, number] => {
+/** Coarse grid step for a window of `window` seconds: `coarseStepSec`, else window / 2000 clamped to [60 s, 6 h]. */
+const coarseStep_ = (window: number, options: BreakupEpochOptions): number => options.coarseStepSec ?? Math.min(6 * 3600, Math.max(60, window / 2000));
+
+interface SearchWindow_ {
+  start: number;
+  end: number;
+  /** See {@link BreakupEpochEstimate.windowFinal}. */
+  final: boolean;
+}
+
+/** Search window in POSIX seconds from the options and the fragment epochs. */
+const searchWindow_ = (frags: NormalizedFragment[], options: BreakupEpochOptions): SearchWindow_ => {
   const earliest = frags.length > 0 ? Math.min(...frags.map((f) => f.epochPosix)) : Date.now() / 1000;
   const end = options.searchEnd ? options.searchEnd.posix : earliest;
-  const lookback = Math.min(Math.max(0, options.lookbackDays ?? DEFAULT_BREAKUP_LOOKBACK_DAYS), MAX_BREAKUP_LOOKBACK_DAYS);
-  let start = options.searchStart ? options.searchStart.posix : end - lookback * secondsPerDay;
+  let start: number;
+  let final: boolean;
 
-  start = Math.max(start, end - MAX_BREAKUP_LOOKBACK_DAYS * secondsPerDay);
+  if (options.searchStart) {
+    start = options.searchStart.posix;
+    final = true;
+  } else if (options.launchEpoch) {
+    const marginDays = Math.max(0, options.launchMarginDays ?? DEFAULT_BREAKUP_LAUNCH_MARGIN_DAYS);
+    // Keeps an event on launch day clear of the two-step edge test at the window start.
+    const margin = Math.max(marginDays * secondsPerDay, 3 * coarseStep_(end - options.launchEpoch.posix, options));
 
-  return start < end ? [start, end] : [end - secondsPerDay, end];
+    start = options.launchEpoch.posix - margin;
+    final = true;
+  } else {
+    const lookbackDays = Math.max(0, options.lookbackDays ?? DEFAULT_BREAKUP_LOOKBACK_DAYS);
+
+    start = end - Math.min(lookbackDays, MAX_BREAKUP_LOOKBACK_DAYS) * secondsPerDay;
+    final = lookbackDays >= MAX_BREAKUP_LOOKBACK_DAYS;
+  }
+
+  return start < end ? { start, end, final } : { start: end - secondsPerDay, end, final };
 };
 
 /** One pass of the search over a fixed fragment set. */
@@ -586,9 +648,9 @@ export const estimateBreakupEpoch = (fragments: readonly BreakupFragmentInput[],
   const parsed = fragments.map(normalizeFragment);
   const valid = parsed.filter((f): f is NormalizedFragment => f !== null);
   const filtered = valid.filter((f) => !(Math.abs(f.meanMotionDot) > maxNdot));
-  const [start, end] = searchWindow_(filtered.length > 0 ? filtered : valid, options);
+  const { start, end, final: windowFinal } = searchWindow_(filtered.length > 0 ? filtered : valid, options);
   const window = end - start;
-  const step0 = options.coarseStepSec ?? Math.min(6 * 3600, Math.max(60, window / 2000));
+  const step0 = coarseStep_(window, options);
   const emptyCurve = { posix: new Float64Array(0), spreadDeg: new Float64Array(0) };
 
   const result: BreakupEpochEstimate = {
@@ -609,6 +671,7 @@ export const estimateBreakupEpoch = (fragments: readonly BreakupFragmentInput[],
     fragmentsTrimmed: 0,
     searchStart: epochOf_(start),
     searchEnd: epochOf_(end),
+    windowFinal,
     curve: emptyCurve,
   };
 
@@ -651,7 +714,7 @@ export const estimateBreakupEpoch = (fragments: readonly BreakupFragmentInput[],
   const tCheck = scanAndRefine_((t) => spreadAt_(cloud, checkSettings, t, null), start, end, curve.posix.length, tol);
   const metricDisagreementSec = Math.abs(tCheck - tBest);
   const statistical = Math.max(Number.isFinite(bootstrapStdSec) ? bootstrapStdSec : valley.halfWidth, tol);
-  const uncertaintySec = Math.hypot(statistical, metricDisagreementSec);
+  let uncertaintySec = Math.hypot(statistical, metricDisagreementSec);
 
   const reasons = result.reasons;
 
@@ -666,8 +729,11 @@ export const estimateBreakupEpoch = (fragments: readonly BreakupFragmentInput[],
   curve.spreadDeg.forEach((v) => {
     maxSpread = Math.max(maxSpread, v);
   });
-  if (valley.open || maxSpread < FLAT_CONTRAST * spreadMin) {
+  const flat = valley.open || maxSpread < FLAT_CONTRAST * spreadMin;
+
+  if (flat) {
     reasons.push('flat-valley');
+    uncertaintySec = Math.max(uncertaintySec, valley.halfWidth);
   }
   if (uncertaintySec > (options.maxGoodUncertaintySec ?? 3 * secondsPerDay)) {
     reasons.push('large-uncertainty');
@@ -676,14 +742,25 @@ export const estimateBreakupEpoch = (fragments: readonly BreakupFragmentInput[],
     reasons.push('old-elements');
   }
 
+  /*
+   * A minimum pinned to the edge of a window that cannot be widened, or a valley that never closes
+   * inside it, is an artefact of the window rather than an event time: no epoch.
+   */
+  const unresolved = windowFinal && (flat || reasons.includes('minimum-at-window-edge'));
+  let quality: BreakupEpochQuality = reasons.length === 0 ? 'good' : 'weak';
+
+  if (unresolved) {
+    quality = 'none';
+  }
+
   return {
     ...result,
-    epoch: epochOf_(tBest),
+    epoch: unresolved ? null : epochOf_(tBest),
     spreadAtMinDeg: spreadMin,
     uncertaintySec,
     bootstrapStdSec,
     metricDisagreementSec,
     valleyHalfWidthSec: valley.halfWidth,
-    quality: reasons.length === 0 ? 'good' : 'weak',
+    quality,
   };
 };

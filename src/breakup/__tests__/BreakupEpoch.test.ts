@@ -173,3 +173,56 @@ describe('estimateBreakupEpoch: Cosmos 1408 (real TLEs)', () => {
     expect(r.reasons).toContain('old-elements');
   });
 });
+
+describe('estimateBreakupEpoch: search window anchored on the launch', () => {
+  /*
+   * The 2024-140 (CZ-6A) case: the stage broke up on launch day, the elements are about 800 days
+   * later. 730 days back from the earliest element set starts the window ~70 days after the event.
+   */
+  const { fragments } = syntheticCloud({ count: 40, ageDays: 800, argLatDeg: 30, seed: 5 });
+  const launch = SYNTH_T0.roll((-0.25 * secondsPerDay) as Seconds);
+
+  it('converges when launchEpoch is supplied, with no 730-day cap', () => {
+    const r = estimateBreakupEpoch(fragments, { launchEpoch: launch });
+
+    // Window starts one day (the default margin) before the launch.
+    expect(r.searchStart.posix).toBe(launch.posix - secondsPerDay);
+    expect((r.searchEnd.posix - r.searchStart.posix) / secondsPerDay).toBeGreaterThan(730);
+    expect(r.windowFinal).toBe(true);
+    // Known answer: 13 minutes early, 1-sigma 13 minutes.
+    expect(Math.abs(errorDays(r.epoch))).toBeLessThan(1 / 24);
+    expect(r.quality).toBe('weak');
+    expect(r.reasons).toEqual(['old-elements']);
+  });
+
+  it('returns none (no bogus date) at the 730-day cap without launchEpoch', () => {
+    const r = estimateBreakupEpoch(fragments, { lookbackDays: 730 });
+
+    expect(r.windowFinal).toBe(true);
+    expect(r.quality).toBe('none');
+    expect(r.epoch).toBeNull();
+    expect(r.reasons).toContain('minimum-at-window-edge');
+  });
+
+  it('a caller-supplied searchStart is not capped and is final', () => {
+    const r = estimateBreakupEpoch(fragments, { searchStart: SYNTH_T0.roll((-5 * secondsPerDay) as Seconds), bootstrapSamples: 0 });
+
+    expect(r.searchStart.posix).toBe(SYNTH_T0.posix - 5 * secondsPerDay);
+    expect(r.windowFinal).toBe(true);
+    expect(Math.abs(errorDays(r.epoch))).toBeLessThan(1 / 24);
+  });
+
+  it('keeps a widenable window weak, and floors a flat-valley sigma at the valley half-width', () => {
+    // Default 30-day window, ~770 days after the event: the curve is flat and pinned to the start.
+    const r = estimateBreakupEpoch(fragments);
+
+    expect(r.windowFinal).toBe(false);
+    expect(r.quality).toBe('weak');
+    expect(r.epoch).not.toBeNull();
+    expect(r.reasons).toEqual(expect.arrayContaining(['minimum-at-window-edge', 'flat-valley']));
+    // Every bootstrap resample finds the same edge (std 0); without the floor this was 60 s.
+    expect(r.bootstrapStdSec).toBeLessThan(60);
+    expect(r.uncertaintySec).toBeGreaterThanOrEqual(r.valleyHalfWidthSec);
+    expect(r.uncertaintySec).toBeGreaterThan(secondsPerDay);
+  });
+});

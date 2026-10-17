@@ -19,7 +19,7 @@ The script builds a known answer: one parent state, 60 random 50 m/s kicks, and 
 
 ## Estimating the epoch
 
-`estimateBreakupEpoch` accepts TLE lines (or `Tle` instances), `ClassicalElements`, or plain mean elements. The search window ends at the earliest fragment epoch (the event cannot be later) and reaches back `lookbackDays` (default 30, capped at 730). The spread is evaluated on a coarse grid (default window / 2000, between 1 minute and 6 hours), the global minimum is polished with a golden-section search, and the uncertainty combines a bootstrap over the fragments with a cross-check against a second metric. RAAN is carried back with the closed-form secular rate rather than SGP4: the plane orientation is all the method needs, and one multiply-add per fragment per trial keeps a 500-fragment search well under 100 ms.
+`estimateBreakupEpoch` accepts TLE lines (or `Tle` instances), `ClassicalElements`, or plain mean elements. The search window ends at the earliest fragment epoch (the event cannot be later) and reaches back `lookbackDays` (default 30, capped at 730), or starts at `launchEpoch` or `searchStart` when given (see below). The spread is evaluated on a coarse grid (default window / 2000, between 1 minute and 6 hours), the global minimum is polished with a golden-section search, and the uncertainty combines a bootstrap over the fragments with a cross-check against a second metric. RAAN is carried back with the closed-form secular rate rather than SGP4: the plane orientation is all the method needs, and one multiply-add per fragment per trial keeps a 500-fragment search well under 100 ms.
 
 <<< ../../examples/breakup-epoch.ts#estimate
 
@@ -34,11 +34,20 @@ The script builds a known answer: one parent state, 60 random 50 m/s kicks, and 
 | ------- | ------ | ------- |
 | `none` | `too-few-fragments` | Fewer than 3 usable element sets. No epoch. |
 | `none` | `indistinguishable-drift-rates` | The fragments' RAAN rates are (nearly) identical, so the planes never converge. No epoch. |
+| `none` | `minimum-at-window-edge` or `flat-valley` | Either finding in a final window (`launchEpoch`, `searchStart`, or a 730-day look-back). No epoch. |
 | `weak` | `few-fragments` | Fewer than 10 fragments. |
-| `weak` | `minimum-at-window-edge` | The minimum is at the window edge; the event may lie outside the window. Widen `lookbackDays`. |
-| `weak` | `flat-valley` | The spread barely changes across the window. |
+| `weak` | `minimum-at-window-edge` | The minimum is at the window edge; the event may lie outside the window. Widen `lookbackDays` or pass `launchEpoch`. |
+| `weak` | `flat-valley` | The spread barely changes across the window. `uncertaintySec` is floored at the valley half-width. |
 | `weak` | `large-uncertainty` | The 1-sigma uncertainty exceeds 3 days (`maxGoodUncertaintySec`). |
 | `weak` | `old-elements` | The median element epoch is more than 180 days after the estimate (`oldElementsDays`). |
+
+## Anchoring the window on the launch
+
+A look-back cannot reach an event older than 730 days before the first element set. For a stage that broke up on launch day, the launch date in its International Designator (YYYY-NNN) bounds the event from below. Pass it as `launchEpoch` and the window runs from one day before the launch (`launchMarginDays`, default 1, and at least three coarse steps) to the earliest element epoch, with no length cap. `searchStart` sets the start directly and takes precedence.
+
+A window from `launchEpoch`, from `searchStart`, or from a look-back at the 730-day cap is final (`windowFinal` is true): it cannot usefully be widened. In a final window a minimum at the window edge or a flat valley is an artefact of the window, not an event time, so the result has quality `none` and no epoch, with the reasons kept. In a shorter look-back the same findings give `weak`, and the caller can search again over a wider window.
+
+<<< ../../examples/breakup-epoch.ts#launch-window
 
 ## Locating the breakup
 
@@ -74,6 +83,11 @@ Quality:     good
 
 === Parent at the estimated epoch ===
 Lat -11.28 deg, lon 35.33 deg, alt 472.1 km (secular-j2)
+
+=== 800-day-old elements ===
+730-day look-back: none minimum-at-window-edge, old-elements, epoch none
+Launch-anchored:   weak old-elements, epoch 2021-11-15T02:36:24.595Z
+Window:            2021-11-13T20:47:00.000Z to 2024-01-24T02:47:00.000Z
 
 === Estimate (Cosmos 1408 debris, TLEs up to 2022-08) ===
 Fragments:   180 used, 840 dropped by the drag filter, 20 trimmed
