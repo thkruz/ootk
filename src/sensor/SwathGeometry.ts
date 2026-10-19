@@ -216,6 +216,39 @@ export function swathWidthFromFov(fovRad: number, altKm: number): number {
   return 2 * r * (Math.asin(s) - half);
 }
 
+/**
+ * Off-nadir look half-angle (rad) that images a ground swath `widthKm` wide from one position.
+ *
+ * {@link fovFromSwathWidth} turns a width into a fixed FOV at one altitude, which is right for a
+ * fixed-FOV sensor but makes the ground width follow the height above the surface: on a
+ * near-circular orbit that height changes by about 21 km between the equator and the poles
+ * (the ellipsoid, not the orbit), so the footprint grows by a few percent poleward. A
+ * constant-width swath (a pushbroom's published width, or a coverage grid's ground radius) has to
+ * re-solve the angle at every position, which this does on the local sphere under the
+ * sub-satellite point: with R the WGS84 geocentric radius there, r the satellite distance and
+ * lambda = width / (2 * {@link SWATH_MEAN_EARTH_RADIUS_KM}) the central half-angle of the swath
+ * (the same sphere convention as {@link fovFromSwathWidth}), the half-angle is
+ * atan2(sin lambda, r / R - cos lambda). A swath past the horizon returns an angle beyond it,
+ * which {@link crossTrackEdgesInto} clamps.
+ *
+ * @param rx - Satellite position x (km, ECEF or TEME: the ellipsoid is symmetric about z)
+ * @param ry - Satellite position y (km)
+ * @param rz - Satellite position z (km)
+ * @param widthKm - Ground swath width (km)
+ * @returns Look half-angle in radians, or NaN for a negative width or a position inside the Earth
+ */
+export function lookHalfAngleForSwathWidth(rx: number, ry: number, rz: number, widthKm: number): Radians {
+  const rMag = Math.sqrt(rx * rx + ry * ry + rz * rz);
+  const rLocal = localRadiusKm(geodeticLatitudeRad(rx, ry, rz));
+
+  if (!(widthKm >= 0) || !(rMag > rLocal)) {
+    return Number.NaN as Radians;
+  }
+  const lam = widthKm / (2 * SWATH_MEAN_EARTH_RADIUS_KM);
+
+  return Math.atan2(Math.sin(lam), rMag / rLocal - Math.cos(lam)) as Radians;
+}
+
 /** Ray/ellipsoid intersection into the module scratch; false on a miss or a hit behind the origin. */
 const rayHitInto_ = (ox: number, oy: number, oz: number, dx: number, dy: number, dz: number): boolean => {
   const px = ox / WGS84_A_KM;

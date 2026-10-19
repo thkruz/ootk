@@ -99,6 +99,7 @@ export {
   geodeticLatitudeRad,
   horizonHalfAngleRad,
   localRadiusKm,
+  lookHalfAngleForSwathWidth,
   rayEllipsoidHit,
   splitRuns,
   subpointLit,

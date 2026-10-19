@@ -10,6 +10,7 @@ import {
   fovFromSwathWidth,
   horizonHalfAngleRad,
   localRadiusKm,
+  lookHalfAngleForSwathWidth,
   rayEllipsoidHit,
   splitRuns,
   subpointLit,
@@ -170,5 +171,45 @@ describe('fovFromSwathWidth', () => {
     // Landsat 9: 185 km from 705 km needs 14.935 deg (Python check).
     expect(fovFromSwathWidth(185, 705) / DEG).toBeCloseTo(14.935, 2);
     expect(swathWidthFromFov(14.935 * DEG, 705)).toBeCloseTo(185, 0);
+  });
+});
+
+describe('lookHalfAngleForSwathWidth', () => {
+  /** Central angle (rad) between the two ground edges at `half`, times the 6371 km mean sphere. */
+  const groundWidthKm = (r: SwathVec3, v: SwathVec3, half: number): number => {
+    const { left, right } = crossTrackEdges(r, v, half);
+    const cos = (left.x * right.x + left.y * right.y + left.z * right.z) / (Math.hypot(left.x, left.y, left.z) * Math.hypot(right.x, right.y, right.z));
+
+    return Math.acos(cos) * 6371.0088;
+  };
+  // A circular 7083 km orbit (Landsat 9: ~705 km over the equator, ~726 km over the poles).
+  const R = 7083.137;
+  const atLat = (latDeg: number): { r: SwathVec3; v: SwathVec3 } => {
+    const lat = latDeg * DEG;
+
+    // Velocity along the meridian (polar orbit), perpendicular to r.
+    return { r: { x: R * Math.cos(lat), y: 0, z: R * Math.sin(lat) }, v: { x: -Math.sin(lat) * 7.5, y: 0, z: Math.cos(lat) * 7.5 } };
+  };
+
+  it('keeps a 185 km ground width from the equator to the pole within 0.5%', () => {
+    for (const latDeg of [0, 30, 60, 80]) {
+      const { r, v } = atLat(latDeg);
+      const width = groundWidthKm(r, v, lookHalfAngleForSwathWidth(r.x, r.y, r.z, 185));
+
+      expect(Math.abs(width - 185) / 185).toBeLessThan(0.005);
+    }
+  });
+
+  it('differs from a fixed FOV, which widens the swath by about 3% at high latitude', () => {
+    const half = fovFromSwathWidth(185, R - 6371.0088) / 2;
+    const { r, v } = atLat(80);
+
+    // The fixed-FOV footprint is the drift this function exists to remove.
+    expect(groundWidthKm(r, v, half) / 185).toBeGreaterThan(1.02);
+  });
+
+  it('returns NaN for a negative width or a position inside the Earth', () => {
+    expect(lookHalfAngleForSwathWidth(R, 0, 0, -1)).toBeNaN();
+    expect(lookHalfAngleForSwathWidth(6000, 0, 0, 185)).toBeNaN();
   });
 });
