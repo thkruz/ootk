@@ -97,6 +97,35 @@ describe('rv2tle', () => {
     expect(distKm(fitted.velocity as RvVector, postBurnVelocity)).toBeLessThan(0.005);
   });
 
+  /*
+   * Near-circular targets: SGP4's short-period terms give a mean e of 0 a
+   * non-zero osculating e, so a target below that used to clamp the mean e at 0
+   * and stall the fit kilometres off. Sweep small burns around an exactly
+   * circular state, the case a breakup cloud hits every few hundred fragments.
+   */
+  it('converges for near-circular targets (eccentricity close to zero)', () => {
+    const mu = 398600.4418;
+    const r0 = 6378.137 + 420;
+    const v0 = Math.sqrt(mu / r0);
+    const inc = (51.6 * Math.PI) / 180;
+    const position = { x: r0, y: 0, z: 0 };
+    const time = new Date(Date.UTC(2026, 9, 18));
+    let worstKm = 0;
+
+    for (const radialMps of [-20, -5, 0, 5, 20]) {
+      for (const inTrackMps of [-20, -5, 0, 5, 20]) {
+        const vt = v0 + inTrackMps / 1000;
+        const velocity = { x: radialMps / 1000, y: vt * Math.cos(inc), z: vt * Math.sin(inc) };
+        const result = rv2tle(time, position, velocity, { toleranceKm: 0.05 });
+
+        expect(result).not.toBeNull();
+        worstKm = Math.max(worstKm, result!.positionErrorKm);
+      }
+    }
+
+    expect(worstKm).toBeLessThan(0.05);
+  });
+
   it('returns null for a state vector that SGP4 cannot represent', () => {
     // Position inside the Earth
     expect(rv2tle(new Date(Date.UTC(2025, 0, 19)), { x: 100, y: 0, z: 0 }, { x: 0, y: 1, z: 0 })).toBeNull();

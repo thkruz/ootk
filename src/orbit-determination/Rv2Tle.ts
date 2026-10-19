@@ -155,16 +155,45 @@ export const rv2tle = (epoch: Date, position: RvVector, velocity: RvVector, opti
 
     const achieved = toElements_(epochUtc, achievedPos, achievedVel);
 
-    mean = new ClassicalElements({
-      epoch: epochUtc,
-      semimajorAxis: (mean.semimajorAxis + (target.semimajorAxis - achieved.semimajorAxis)) as Kilometers,
-      eccentricity: Math.min(Math.max(mean.eccentricity + (target.eccentricity - achieved.eccentricity), 0), 0.999),
-      inclination: Math.min(Math.max(mean.inclination + angleDiff_(target.inclination, achieved.inclination), 0), Math.PI) as Radians,
-      rightAscension: wrapTau_(mean.rightAscension + angleDiff_(target.rightAscension, achieved.rightAscension)),
-      argPerigee: wrapTau_(mean.argPerigee + angleDiff_(target.argPerigee, achieved.argPerigee)),
-      trueAnomaly: wrapTau_(mean.trueAnomaly + angleDiff_(target.trueAnomaly, achieved.trueAnomaly)),
-    });
+    mean = correctMeanElements_(epochUtc, mean, target, achieved);
   }
 
   return best;
+};
+
+/**
+ * One fixed-point step: shift the mean elements by (target - achieved).
+ *
+ * Eccentricity and argument of perigee are corrected through the eccentricity
+ * vector (e cos w, e sin w) and the in-orbit position through the argument of
+ * latitude (w + nu). Correcting e, w and nu separately is singular near e = 0:
+ * SGP4's short-period terms give a mean e of 0 a non-zero osculating e, the
+ * target e can sit below that, the clamped e then never moves, and the fit stalls
+ * kilometres off. The vector form passes through e = 0 smoothly.
+ */
+const correctMeanElements_ = (
+  epoch: EpochUTC,
+  mean: ClassicalElements,
+  target: ClassicalElements,
+  achieved: ClassicalElements,
+): ClassicalElements => {
+  const eVec_ = (el: ClassicalElements) => ({ k: el.eccentricity * Math.cos(el.argPerigee), h: el.eccentricity * Math.sin(el.argPerigee) });
+  const argLat_ = (el: ClassicalElements) => el.argPerigee + el.trueAnomaly;
+  const eMean = eVec_(mean);
+  const eTarget = eVec_(target);
+  const eAchieved = eVec_(achieved);
+  const k = eMean.k + (eTarget.k - eAchieved.k);
+  const h = eMean.h + (eTarget.h - eAchieved.h);
+  const argPerigee = Math.atan2(h, k);
+  const argLatitude = argLat_(mean) + angleDiff_(argLat_(target), argLat_(achieved));
+
+  return new ClassicalElements({
+    epoch,
+    semimajorAxis: (mean.semimajorAxis + (target.semimajorAxis - achieved.semimajorAxis)) as Kilometers,
+    eccentricity: Math.min(Math.hypot(k, h), 0.999),
+    inclination: Math.min(Math.max(mean.inclination + angleDiff_(target.inclination, achieved.inclination), 0), Math.PI) as Radians,
+    rightAscension: wrapTau_(mean.rightAscension + angleDiff_(target.rightAscension, achieved.rightAscension)),
+    argPerigee: wrapTau_(argPerigee),
+    trueAnomaly: wrapTau_(argLatitude - argPerigee),
+  });
 };
