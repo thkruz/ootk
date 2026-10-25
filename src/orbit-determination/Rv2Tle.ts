@@ -36,6 +36,14 @@ export interface Rv2TleOptions {
   maxIterations?: number;
   /** Position convergence tolerance at the epoch in km. */
   toleranceKm?: number;
+  /**
+   * Catalog number stamped on both lines (5-digit, alpha-5, or 6-digit numeric,
+   * which is converted to alpha-5). Defaults to "00001". The checksums are
+   * computed with this value, so callers never need to splice it in afterwards.
+   */
+  scc?: string;
+  /** International designator (up to 8 chars, e.g. "98067A"). Defaults to "58001A". */
+  intl?: string;
 }
 
 export interface Rv2TleResult {
@@ -92,13 +100,14 @@ const toElements_ = (epoch: EpochUTC, position: RvVector, velocity: RvVector): C
  * @param epoch Epoch of the state vector.
  * @param position TEME position in km.
  * @param velocity TEME velocity in km/s.
- * @param options Iteration limits.
+ * @param options Iteration limits and optional catalog number / international designator.
  * @returns The fitted TLE with its residual epoch position error, or null when
  * the state cannot be represented (propagation failure on every iteration).
  */
 export const rv2tle = (epoch: Date, position: RvVector, velocity: RvVector, options: Rv2TleOptions = {}): Rv2TleResult | null => {
   const maxIterations = options.maxIterations ?? 15;
   const toleranceKm = options.toleranceKm ?? 1e-4;
+  const ids = { scc: options.scc, intl: options.intl };
 
   const epochUtc = EpochUTC.fromDateTime(epoch);
   const target = toElements_(epochUtc, position, velocity);
@@ -120,7 +129,7 @@ export const rv2tle = (epoch: Date, position: RvVector, velocity: RvVector, opti
     let sv: ReturnType<typeof Sgp4.propagate>;
 
     try {
-      tle = Tle.fromClassicalElements(mean);
+      tle = Tle.fromClassicalElements(mean, ids);
       /*
        * Propagate relative to the TLE's PARSED epoch, not an assumed zero
        * offset: the written epoch is quantized to the TLE field precision, and

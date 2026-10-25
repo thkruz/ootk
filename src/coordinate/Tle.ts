@@ -382,12 +382,14 @@ export class Tle {
   /**
    * Creates a TLE (Two-Line Element) object from classical orbital elements.
    * @param elements - The classical orbital elements.
+   * @param ids - Optional catalog number (5-digit, alpha-5, or 6-digit numeric) and
+   * international designator to stamp on both lines. Defaults to "00001" / "58001A".
    * @returns A TLE object.
    */
-  static fromClassicalElements(elements: ClassicalElements): Tle {
+  static fromClassicalElements(elements: ClassicalElements, ids: { scc?: string; intl?: string } = {}): Tle {
     const { epochYr, epochDay } = elements.epoch.toEpochYearAndDay();
-    const intl = '58001A  ';
-    const scc = '00001';
+    const intl = (ids.intl ?? '58001A').padEnd(8, ' ').substring(0, 8);
+    const scc = ids.scc ?? '00001';
 
     const tles = FormatTle.createTle({
       inc: FormatTle.inclination(elements.inclinationDegrees),

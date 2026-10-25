@@ -1,3 +1,4 @@
+import { FormatTle } from '../../coordinate/FormatTle';
 import { Tle } from '../../coordinate/Tle';
 import { Sgp4 } from '../../main';
 import { rv2tle, RvVector } from '../Rv2Tle';
@@ -129,5 +130,47 @@ describe('rv2tle', () => {
   it('returns null for a state vector that SGP4 cannot represent', () => {
     // Position inside the Earth
     expect(rv2tle(new Date(Date.UTC(2025, 0, 19)), { x: 100, y: 0, z: 0 }, { x: 0, y: 1, z: 0 })).toBeNull();
+  });
+  describe('catalog number and international designator options', () => {
+    const checksumOk = (line: string): boolean => FormatTle.tleChecksum(line) === Number(line[68]);
+
+    it('keeps the default "00001" / "58001A" stamp when no ids are given', () => {
+      const { time, position, velocity } = stateAt(BURN_MINUTES);
+      const result = rv2tle(time, position, velocity)!;
+
+      expect(result.tle1.substring(2, 7)).toBe('00001');
+      expect(result.tle2.substring(2, 7)).toBe('00001');
+      expect(result.tle1.substring(9, 17)).toBe('58001A  ');
+      expect(checksumOk(result.tle1)).toBe(true);
+      expect(checksumOk(result.tle2)).toBe(true);
+    });
+
+    it('stamps the given scc and intl on both lines with valid checksums', () => {
+      const { time, position, velocity } = stateAt(BURN_MINUTES);
+      const plain = rv2tle(time, position, velocity)!;
+      const result = rv2tle(time, position, velocity, { scc: '90123', intl: '26 999A' })!;
+
+      expect(result.tle1).toHaveLength(69);
+      expect(result.tle2).toHaveLength(69);
+      expect(result.tle1.substring(2, 7)).toBe('90123');
+      expect(result.tle2.substring(2, 7)).toBe('90123');
+      expect(result.tle1.substring(9, 17)).toBe('26 999A ');
+      expect(checksumOk(result.tle1)).toBe(true);
+      expect(checksumOk(result.tle2)).toBe(true);
+      // The ids are labels only: the fitted elements and residual are unchanged.
+      expect(result.tle2.substring(7, 68)).toBe(plain.tle2.substring(7, 68));
+      expect(result.positionErrorKm).toBe(plain.positionErrorKm);
+      expect(() => new Tle(result.tle1 as never, result.tle2 as never)).not.toThrow();
+    });
+
+    it('converts a 6-digit catalog number to alpha-5', () => {
+      const { time, position, velocity } = stateAt(BURN_MINUTES);
+      const result = rv2tle(time, position, velocity, { scc: '100001' })!;
+
+      expect(result.tle1.substring(2, 7)).toBe('A0001');
+      expect(result.tle2.substring(2, 7)).toBe('A0001');
+      expect(checksumOk(result.tle1)).toBe(true);
+      expect(checksumOk(result.tle2)).toBe(true);
+    });
   });
 });
