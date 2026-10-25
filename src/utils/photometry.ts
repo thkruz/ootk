@@ -26,9 +26,12 @@
  * SOFTWARE.
  */
 
+import { Radians } from '../types/types';
+
 /**
- * Photometry helpers for estimating the apparent brightness of resident space
- * objects from radar observables.
+ * Photometry helpers for estimating the brightness of resident space objects:
+ * standard magnitude from radar observables, and apparent magnitude from a
+ * standard magnitude plus the observing geometry.
  */
 
 /** Brightest standard magnitude the RCS estimator will report. */
@@ -82,4 +85,90 @@ export function estimateVmagFromRcs(rcs: number, albedo: number = DEFAULT_ALBEDO
   const vmag = SUN_VMAG_ - 2.5 * Math.log10(reflected);
 
   return Math.min(Math.max(vmag, RCS_VMAG_ESTIMATE_MIN), RCS_VMAG_ESTIMATE_MAX);
+}
+
+/** Faintest apparent magnitude {@link apparentVmagFromStdMag} reports before calling an object invisible. */
+export const APPARENT_VMAG_INVISIBLE = 30;
+
+/** Minimal 3-vector shape accepted by the photometry geometry helpers. */
+export interface PhotometryVec3 {
+  x: number;
+  y: number;
+  z: number;
+}
+
+/**
+ * Lambertian sphere phase law relative to its value at 90 deg phase:
+ * F(phi) / F(90 deg) = sin(phi) + (pi - phi) cos(phi).
+ *
+ * It is 1 at 90 deg (the standard-magnitude phase), pi at 0 deg (full phase,
+ * about 1.24 mag brighter) and 0 at 180 deg (the lit side faces away).
+ * @param phase Solar phase angle in radians, 0 to pi.
+ * @returns The phase factor relative to 90 deg.
+ */
+export function lambertPhaseRelativeTo90(phase: number): number {
+  return Math.sin(phase) + (Math.PI - phase) * Math.cos(phase);
+}
+
+/**
+ * Solar phase angle at a target: the angle at the target between the direction
+ * to the Sun and the direction to the observer. All three positions must be in
+ * the same frame and units (for example J2000 km).
+ * @param target Target position.
+ * @param sun Sun position.
+ * @param observer Observer position.
+ * @returns The phase angle in radians (0 = fully lit side toward the observer),
+ * or NaN when either direction has zero length.
+ */
+export function solarPhaseAngle(target: PhotometryVec3, sun: PhotometryVec3, observer: PhotometryVec3): Radians {
+  const sx = sun.x - target.x;
+  const sy = sun.y - target.y;
+  const sz = sun.z - target.z;
+  const ox = observer.x - target.x;
+  const oy = observer.y - target.y;
+  const oz = observer.z - target.z;
+  const norm = Math.hypot(sx, sy, sz) * Math.hypot(ox, oy, oz);
+
+  if (norm === 0) {
+    return NaN as Radians;
+  }
+
+  const cosPhase = (sx * ox + sy * oy + sz * oz) / norm;
+
+  return Math.acos(Math.min(1, Math.max(-1, cosPhase))) as Radians;
+}
+
+/**
+ * Apparent visual magnitude of a diffusely reflecting (Lambertian sphere)
+ * satellite from its standard magnitude (1000 km range, 90 deg solar phase):
+ *
+ *   m = m_std + 5 log10(range / 1000 km) - 2.5 log10( sin(phi) + (pi - phi) cos(phi) ) - 2.5 log10(L)
+ *
+ * The first two terms are the inverse-square range scaling, the third is the
+ * Lambert phase law normalised to 90 deg (McCants standard-magnitude
+ * convention), and the last dims the object by the fraction L of the solar
+ * disk it sees (L < 1 in Earth's penumbra). Specular glints, attitude and
+ * atmospheric extinction are ignored, so treat the value as an estimate good
+ * to about a magnitude.
+ * @param stdMag Standard magnitude (1000 km, 90 deg phase).
+ * @param rangeKm Observer-to-target range in km.
+ * @param phaseAngle Solar phase angle in radians (see {@link solarPhaseAngle}).
+ * @param lightingRatio Visible fraction of the solar disk, 0 to 1 (default 1, full sun).
+ * @returns The apparent magnitude, or null when the object reflects no light
+ * toward the observer (umbra, phase of 180 deg) or an input is invalid.
+ */
+export function apparentVmagFromStdMag(stdMag: number, rangeKm: number, phaseAngle: number, lightingRatio = 1): number | null {
+  if (!Number.isFinite(stdMag) || !Number.isFinite(rangeKm) || rangeKm <= 0 || !Number.isFinite(phaseAngle) || !(lightingRatio > 0)) {
+    return null;
+  }
+
+  const phaseFactor = lambertPhaseRelativeTo90(phaseAngle);
+
+  if (!(phaseFactor > 0)) {
+    return null;
+  }
+
+  const mag = stdMag + 5 * Math.log10(rangeKm / 1000) - 2.5 * Math.log10(phaseFactor) - 2.5 * Math.log10(Math.min(lightingRatio, 1));
+
+  return mag > APPARENT_VMAG_INVISIBLE ? null : mag;
 }

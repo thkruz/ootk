@@ -1,4 +1,12 @@
-import { RCS_VMAG_ESTIMATE_MAX, RCS_VMAG_ESTIMATE_MIN, estimateVmagFromRcs } from '../photometry';
+import {
+  APPARENT_VMAG_INVISIBLE,
+  RCS_VMAG_ESTIMATE_MAX,
+  RCS_VMAG_ESTIMATE_MIN,
+  apparentVmagFromStdMag,
+  estimateVmagFromRcs,
+  lambertPhaseRelativeTo90,
+  solarPhaseAngle,
+} from '../photometry';
 
 describe('estimateVmagFromRcs', () => {
   /*
@@ -49,5 +57,73 @@ describe('estimateVmagFromRcs', () => {
   it('returns null for non-number inputs at runtime', () => {
     expect(estimateVmagFromRcs(undefined as unknown as number)).toBeNull();
     expect(estimateVmagFromRcs('0.5' as unknown as number)).toBeNull();
+  });
+});
+
+describe('lambertPhaseRelativeTo90', () => {
+  it('is 1 at 90 deg, pi at full phase and 0 at 180 deg', () => {
+    expect(lambertPhaseRelativeTo90(Math.PI / 2)).toBeCloseTo(1, 12);
+    expect(lambertPhaseRelativeTo90(0)).toBeCloseTo(Math.PI, 12);
+    expect(lambertPhaseRelativeTo90(Math.PI)).toBeCloseTo(0, 12);
+  });
+});
+
+describe('solarPhaseAngle', () => {
+  it('is 0 when the observer looks from the Sun side and 90 deg in quadrature', () => {
+    const target = { x: 7000, y: 0, z: 0 };
+
+    expect(solarPhaseAngle(target, { x: 1.5e8, y: 0, z: 0 }, { x: 9000, y: 0, z: 0 })).toBeCloseTo(0, 12);
+    expect(solarPhaseAngle(target, { x: 7000, y: 1.5e8, z: 0 }, { x: 6378, y: 0, z: 0 })).toBeCloseTo(Math.PI / 2, 12);
+  });
+
+  it('is 180 deg when the target sits between the observer and the Sun', () => {
+    expect(solarPhaseAngle({ x: 7000, y: 0, z: 0 }, { x: 1.5e8, y: 0, z: 0 }, { x: 0, y: 0, z: 0 })).toBeCloseTo(Math.PI, 12);
+  });
+
+  it('returns NaN for a degenerate (zero-length) direction', () => {
+    expect(solarPhaseAngle({ x: 1, y: 2, z: 3 }, { x: 1, y: 2, z: 3 }, { x: 0, y: 0, z: 0 })).toBeNaN();
+  });
+});
+
+describe('apparentVmagFromStdMag', () => {
+  /*
+   * Hand-computed from m = m_std + 5 log10(R / 1000) - 2.5 log10(sin(phi) + (pi - phi) cos(phi)) - 2.5 log10(L):
+   *   1000 km, 90 deg, L = 1 -> m_std exactly
+   *   2000 km -> + 5 log10(2) = +1.50515
+   *   0 deg phase -> - 2.5 log10(pi) = -1.24287
+   *   L = 0.5 -> + 2.5 log10(2) = +0.75257
+   */
+  it('equals the standard magnitude at 1000 km, 90 deg phase and full sun', () => {
+    expect(apparentVmagFromStdMag(4, 1000, Math.PI / 2)).toBeCloseTo(4, 12);
+  });
+
+  it('adds 5 log10(range / 1000 km) for range', () => {
+    expect(apparentVmagFromStdMag(4, 2000, Math.PI / 2)).toBeCloseTo(5.50515, 5);
+    expect(apparentVmagFromStdMag(4, 500, Math.PI / 2)).toBeCloseTo(2.49485, 5);
+  });
+
+  it('brightens by 2.5 log10(pi) = 1.243 mag at full phase', () => {
+    expect(apparentVmagFromStdMag(4, 1000, 0)).toBeCloseTo(2.75713, 5);
+  });
+
+  it('dims by 2.5 log10(1 / L) in the penumbra', () => {
+    expect(apparentVmagFromStdMag(4, 1000, Math.PI / 2, 0.5)).toBeCloseTo(4.75257, 5);
+  });
+
+  it('matches the ISS order of magnitude: std -1.3 at 420 km, 60 deg phase is about -3.9', () => {
+    // -1.3 + 5 log10(0.42) - 2.5 log10(sin 60 + (2 pi / 3) cos 60) = -1.3 - 1.8838 - 0.7044 = -3.888
+    expect(apparentVmagFromStdMag(-1.3, 420, Math.PI / 3)).toBeCloseTo(-3.888, 3);
+  });
+
+  it('returns null in umbra, at 180 deg phase, and for invalid inputs', () => {
+    expect(apparentVmagFromStdMag(4, 1000, Math.PI / 2, 0)).toBeNull();
+    expect(apparentVmagFromStdMag(4, 1000, Math.PI)).toBeNull();
+    expect(apparentVmagFromStdMag(4, 0, Math.PI / 2)).toBeNull();
+    expect(apparentVmagFromStdMag(NaN, 1000, Math.PI / 2)).toBeNull();
+    expect(apparentVmagFromStdMag(4, 1000, NaN)).toBeNull();
+  });
+
+  it('reports objects fainter than the invisibility floor as null', () => {
+    expect(apparentVmagFromStdMag(APPARENT_VMAG_INVISIBLE, 2000, Math.PI / 2)).toBeNull();
   });
 });
