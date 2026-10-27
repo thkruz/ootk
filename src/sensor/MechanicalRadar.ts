@@ -16,7 +16,9 @@
  */
 
 import { SensorType } from '../enums/SensorType';
-import { DegreesPerSecond } from '../types/types';
+import { Vector3D } from '../operations/Vector3D';
+import { DegreesPerSecond, Kilometers, Radians } from '../types/types';
+import { DEG2RAD, RAD2DEG } from '../utils/constants';
 import { RadarSensor, RadarSensorParams } from './RadarSensor';
 
 /**
@@ -40,19 +42,17 @@ export interface MechanicalRadarParams extends RadarSensorParams {
  * @example
  * ```typescript
  * const radar = new MechanicalRadar({
- *   id: 'tracking-radar-1',
+ *   id: 1,
  *   name: 'AN/FPQ-6',
  *   sensorType: SensorType.MECHANICAL_RADAR,
  *   beamwidth: 0.4 as Degrees,
  *   scanRate: 6 as DegreesPerSecond,
  *   hasTracking: true,
  *   fieldOfView: {
+ *     halfAngle: 90 as Degrees, // zenith-pointing hemisphere
  *     minRange: 100 as Kilometers,
  *     maxRange: 40000 as Kilometers,
- *     minAzimuth: 0 as Degrees,
- *     maxAzimuth: 360 as Degrees,
  *     minElevation: 3 as Degrees,
- *     maxElevation: 85 as Degrees,
  *   },
  * });
  * ```
@@ -79,18 +79,61 @@ export class MechanicalRadar extends RadarSensor {
   }
 
   /**
-   * Calculates the time to scan across the full azimuth range.
+   * Calculates the time to scan across the full azimuth range of the field of view.
    * Only valid if scanRate is defined.
-   * @returns Scan period in seconds, or undefined if no scan rate
+   *
+   * The azimuth span is 360 deg when the FOV contains the zenith (for example a hemisphere).
+   * Otherwise, for a circular cone of half-angle alpha around a boresight at elevation e, it is
+   * 2 asin(sin(alpha) / cos(e)) (the azimuth half-width of a small circle on the sphere); for an
+   * elliptical cone it is measured from the sampled cone boundary.
+   *
+   * @returns Scan period in seconds (azimuth span in degrees / scanRate in deg/s), or undefined
+   *   if no scan rate
    */
   get scanPeriod(): number | undefined {
     if (!this.scanRate) {
       return undefined;
     }
 
-    const azCoverage = this.fieldOfView.angularCoverage;
+    return this.azimuthSpan_() / this.scanRate;
+  }
 
-    return azCoverage / this.scanRate;
+  /** Azimuth extent of the FOV cone in degrees, in (0, 360]. */
+  private azimuthSpan_(): number {
+    const fov = this.fieldOfView;
+    const up = new Vector3D(0, 0, 1);
+    const midRange = ((fov.minRange + fov.maxRange) / 2) as Kilometers;
+
+    if (fov.containsDirection(up, midRange)) {
+      return 360;
+    }
+
+    if (fov.isCircular) {
+      const alpha = fov.halfAngle * DEG2RAD;
+      const cosEl = Math.cos(fov.boresightEl * DEG2RAD);
+      const s = Math.sin(alpha) / cosEl;
+
+      return s >= 1 ? 360 : 2 * Math.asin(s) * RAD2DEG;
+    }
+
+    // Elliptical cone not containing the zenith: 360 minus the largest gap between boundary azimuths
+    const n = 1440;
+    const azs: number[] = [];
+
+    for (let i = 0; i < n; i++) {
+      const d = fov.directionAt(((2 * Math.PI * i) / n) as Radians);
+
+      azs.push(((Math.atan2(d.x, d.y) * RAD2DEG) + 360) % 360);
+    }
+    azs.sort((a, b) => a - b);
+
+    let maxGap = azs[0] + 360 - azs[n - 1];
+
+    for (let i = 1; i < n; i++) {
+      maxGap = Math.max(maxGap, azs[i] - azs[i - 1]);
+    }
+
+    return 360 - maxGap;
   }
 
   /**

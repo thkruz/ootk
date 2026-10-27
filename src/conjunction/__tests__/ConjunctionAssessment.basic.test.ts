@@ -75,9 +75,13 @@ describe('ConjunctionAssessment - Basic', () => {
         endTime,
       });
 
-      expect(event.radialDistance).toBeGreaterThanOrEqual(0);
-      expect(event.intrackDistance).toBeGreaterThanOrEqual(0);
-      expect(event.crosstrackDistance).toBeGreaterThanOrEqual(0);
+      // Signed components of the relative position in primary RIC (CCSDS 508 RELATIVE_POSITION_R/T/N)
+      expect(event.radialDistance).toBe(event.relativeState.position.x);
+      expect(event.intrackDistance).toBe(event.relativeState.position.y);
+      expect(event.crosstrackDistance).toBe(event.relativeState.position.z);
+      expect(event.radialVelocity).toBe(event.relativeState.velocity.x);
+      expect(event.intrackVelocity).toBe(event.relativeState.velocity.y);
+      expect(event.crosstrackVelocity).toBe(event.relativeState.velocity.z);
 
       // Verify that RIC components sum to total miss distance
       const computedMiss = Math.sqrt(

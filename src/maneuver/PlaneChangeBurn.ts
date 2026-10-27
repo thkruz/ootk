@@ -41,18 +41,24 @@ export interface PlaneChangeBurnResult {
  * The most fuel-efficient location is at a node crossing, where the velocity
  * vector lies in the equatorial plane and the required rotation is minimized.
  *
- * Delta-v formula: Δv = 2 · v · sin(|Δi| / 2)
+ * Delta-v formula: Δv = 2 · v · cos(γ) · sin(|Δi| / 2), where γ is the flight-path angle.
+ * Only the horizontal velocity component v·cos(γ) is rotated about the line of nodes; the
+ * radial component is unchanged (Vallado, Fundamentals of Astrodynamics and Applications,
+ * 4th ed., Sec. 6.4, inclination-only change with the flight-path angle).
  */
 export class PlaneChangeBurn {
   /**
-   * Compute the delta-v for a pure inclination plane change at a node.
+   * Compute the delta-v for a pure inclination plane change at a node:
+   * Δv = 2 · v · cos(γ) · sin(|Δi| / 2).
    *
-   * @param velocityAtNode Orbital velocity magnitude at the node (km/s).
+   * @param velocityAtNode Orbital speed at the node (km/s).
    * @param deltaIncRad Inclination change in radians (can be negative).
+   * @param flightPathAngleRad Flight-path angle γ at the node in radians (default 0, exact for a
+   *   circular orbit). For an eccentric orbit tan(γ) = e·sin(ν) / (1 + e·cos(ν)).
    * @returns Delta-v in km/s.
    */
-  static computeDeltaV(velocityAtNode: number, deltaIncRad: number): number {
-    return 2 * velocityAtNode * Math.abs(Math.sin(deltaIncRad / 2));
+  static computeDeltaV(velocityAtNode: number, deltaIncRad: number, flightPathAngleRad = 0): number {
+    return 2 * velocityAtNode * Math.cos(flightPathAngleRad) * Math.abs(Math.sin(deltaIncRad / 2));
   }
 
   /**
@@ -89,7 +95,8 @@ export class PlaneChangeBurn {
    * @param targetInclinationRad Desired inclination after the burn (radians).
    * @param burnDelayOrbits Number of complete orbits to coast before the burn (default 0).
    * @param preferredNode Which node to burn at ('ascending', 'descending', or 'nearest').
-   * @returns PlaneChangeBurnResult with burn epoch, delta-v, and post-burn elements.
+   * @returns PlaneChangeBurnResult with burn epoch, delta-v (km/s, horizontal-velocity rotation
+   *   2 v cos(γ) sin(|Δi|/2)), and post-burn elements.
    */
   static compute(
     elements: ClassicalElements,
@@ -110,7 +117,7 @@ export class PlaneChangeBurn {
     } else if (preferredNode === 'descending') {
       timeToBurn = descending;
       nodeType = 'descending';
-      // 'nearest' — pick whichever node comes first
+      // 'nearest': pick whichever node comes first
     } else if (ascending <= descending) {
       timeToBurn = ascending;
       nodeType = 'ascending';
@@ -127,13 +134,15 @@ export class PlaneChangeBurn {
     // Propagate to the burn epoch to get the true anomaly at the node
     const elementsAtBurn = elements.propagate(burnEpoch);
 
-    // Velocity magnitude at the burn point
-    const r = elementsAtBurn.semimajorAxis * (1 - elementsAtBurn.eccentricity ** 2) /
-      (1 + elementsAtBurn.eccentricity * Math.cos(elementsAtBurn.trueAnomaly));
+    // Speed (vis-viva) and flight-path angle at the burn point
+    const eAtBurn = elementsAtBurn.eccentricity;
+    const nuAtBurn = elementsAtBurn.trueAnomaly;
+    const r = elementsAtBurn.semimajorAxis * (1 - eAtBurn ** 2) / (1 + eAtBurn * Math.cos(nuAtBurn));
     const vMag = Math.sqrt(elements.mu * (2 / r - 1 / elements.semimajorAxis));
+    const flightPathAngle = Math.atan2(eAtBurn * Math.sin(nuAtBurn), 1 + eAtBurn * Math.cos(nuAtBurn));
 
     const deltaInc = targetInclinationRad - elements.inclination;
-    const deltaV = PlaneChangeBurn.computeDeltaV(vMag, deltaInc);
+    const deltaV = PlaneChangeBurn.computeDeltaV(vMag, deltaInc, flightPathAngle);
 
     // Post-burn elements: same orbit shape, new inclination
     // At an ascending node, the RAAN stays the same and only inclination changes.

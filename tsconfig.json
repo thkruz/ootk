@@ -18,6 +18,10 @@
     "./src/**/*.ts",
     "./test/**/*.ts"
   ],
+  // test/integration has its own tsconfig.json that resolves "ootk" to the built dist
+  "exclude": [
+    "./test/integration/**"
+  ],
   "filesGlob": [
     "./src/**/*.ts",
     "./test/**/*.ts"

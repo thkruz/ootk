@@ -7,7 +7,7 @@ describe('createCovarianceFromTle', () => {
   const tleLine2 = '2 25544  51.6461 339.8014 0002571  34.5857 120.4689 15.48919393265019';
 
   beforeEach(() => {
-    vi.spyOn(console, 'log').mockImplementation();
+    vi.spyOn(console, 'log').mockImplementation(() => undefined);
   });
 
   afterEach(() => {
@@ -40,11 +40,10 @@ describe('createCovarianceFromTle', () => {
     expect(covariance2).toBeInstanceOf(StateCovariance);
   });
 
-  it('should parse TLE and convert to J2000', () => {
+  it('does not write to the console (library code)', () => {
     createCovarianceFromTle(tleLine1, tleLine2);
 
-
-    expect(console.log).toHaveBeenCalled();
+    expect(console.log).not.toHaveBeenCalled();
   });
 });
 

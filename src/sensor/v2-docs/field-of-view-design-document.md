@@ -1,8 +1,8 @@
 # Field of View Design Document
 
-**Version:** 1.0
+**Version:** 2.0 (ootk 8)
 **Status:** Implemented
-**Last Updated:** November 2025
+**Last Updated:** October 2026
 
 ---
 
@@ -24,12 +24,14 @@
 
 ## Executive Summary
 
-This document describes the boresight-centric elliptical cone Field of View (FOV) implementation for the sensor module. The new design replaces the legacy min/max azimuth/elevation approach with a more mathematically rigorous and flexible system that supports:
+This document describes the boresight-centric elliptical cone Field of View (FOV) used by the
+sensor module (`src/sensor/FieldOfView.ts`). It replaced the legacy min/max azimuth/elevation
+box and supports:
 
-- Asymmetric FOV patterns (elliptical cones)
-- Multi-face phased array radars
-- Ground-based (topocentric) and space-based (body-frame) sensors
-- Granular elevation masking for terrain/obstruction handling
+- Asymmetric FOV patterns (elliptical cones, for example fence radars)
+- Multi-face phased array radars (one `FieldOfView` per face)
+- A direction-vector containment test for callers that work in a body frame
+- Azimuth-dependent elevation masks, as step sectors or as an interpolated horizon profile
 
 ---
 
@@ -37,10 +39,11 @@ This document describes the boresight-centric elliptical cone Field of View (FOV
 
 ### Legacy Approach Limitations
 
-The original FieldOfView class used min/max azimuth and elevation ranges:
+The original field of view used min/max azimuth and elevation ranges. These keys no longer exist
+and are not accepted by `FieldOfViewParams`:
 
-```typescript
-// OLD - problematic approach
+```text
+// OLD (removed): box in azimuth and elevation
 fieldOfView: {
   minAzimuth: 0,
   maxAzimuth: 120,
@@ -51,27 +54,28 @@ fieldOfView: {
 
 This approach had several issues:
 
-1. **Cannot represent asymmetric patterns** - Phased array radars often have fan-shaped FOVs (e.g., 90° in one direction, 2° in another)
-2. **Zenith singularity** - Az/El ranges behave poorly near zenith (el=90°)
-3. **Multi-face complexity** - Required "secondary FOV" concept for multi-face radars
-4. **Ground-centric assumption** - Math assumed sensors were on the ground in topocentric frame
+1. **Cannot represent asymmetric patterns**: phased array radars often have fan-shaped FOVs (for
+   example 80 deg in one direction, 1 deg in the other) that are not aligned with azimuth and
+   elevation.
+2. **Zenith singularity**: azimuth ranges degenerate near the zenith (el = 90 deg).
+3. **Multi-face complexity**: multi-face radars needed a "secondary FOV" concept.
 
 ### Real-World Requirements
 
-- **Fan-shaped phased arrays**: Boresight pointing straight up with 90° coverage in two directions but only 2° in the perpendicular direction
-- **Space-based sensors**: Sensors mounted on satellites with body-fixed orientation
-- **Terrain masking**: Buildings and hills blocking specific azimuth/elevation regions
+- **Fan-shaped phased arrays**: a boresight pointing straight up with a wide extent along one
+  line and a narrow extent across it (Space Fence style)
+- **Terrain masking**: buildings and hills blocking specific azimuth sectors at low elevation
 
 ---
 
 ## Design Goals
 
-1. **Boresight-centric geometry** - Define FOV relative to a boresight direction, not min/max bounds
-2. **Elliptical cone support** - Major and minor half-angles for asymmetric patterns
-3. **Reference frame flexibility** - Support both topocentric and body-fixed frames
-4. **Modular multi-face support** - Each radar face gets its own FieldOfView instance
-5. **Granular elevation masking** - Per-azimuth-sector elevation limits for obstructions
-6. **Breaking change acceptable** - Clean API over backward compatibility
+1. **Boresight-centric geometry**: define the FOV relative to a boresight direction, not
+   min/max bounds
+2. **Elliptical cone support**: major and minor half-angles for asymmetric patterns
+3. **Modular multi-face support**: each radar face gets its own `FieldOfView` instance
+4. **Granular elevation masking**: per-azimuth elevation limits for obstructions
+5. **Fail fast**: invalid parameters throw `ValidationError` in the constructor
 
 ---
 
@@ -79,35 +83,39 @@ This approach had several issues:
 
 ### Key Components
 
-```
+```text
 FieldOfView
-├── Boresight direction (az, el)
-├── Half-angles (major, minor)
-├── Roll angle (orientation of ellipse)
-├── Range limits (min, max)
-├── Minimum elevation
-├── Elevation masks (array)
-└── BoresightFrame (computed)
+|-- Boresight direction (boresightAz, boresightEl, degrees)
+|-- Half-angles (halfAngle = major, minorHalfAngle = minor, degrees)
+|-- Roll angle (orientation of the ellipse around the boresight, degrees)
+|-- Range limits (minRange, maxRange, km)
+|-- Global minimum elevation (minElevation, degrees)
+|-- Elevation masks (step sectors or interpolated vertices)
+`-- BoresightFrame (computed once in the constructor)
 
 BoresightFrame
-├── b: Vector3D (boresight direction)
-├── u: Vector3D (major axis direction)
-└── v: Vector3D (minor axis direction)
+|-- b: Vector3D (boresight unit vector, ENU)
+|-- u: Vector3D (major axis unit vector, perpendicular to b)
+`-- v: Vector3D (minor axis unit vector, perpendicular to b and u)
 ```
 
 ### Supporting Enums
 
 ```typescript
-enum FovShape {
-  ELLIPTICAL_CONE = 'ELLIPTICAL_CONE',
-  CIRCULAR_CONE = 'CIRCULAR_CONE',
-}
+import { FovFrame, FovShape } from 'ootk';
 
-enum FovFrame {
-  TOPOCENTRIC = 'TOPOCENTRIC',  // Ground sensors (default)
-  BODY = 'BODY',                // Space sensors
-}
+// FovShape.ELLIPTICAL_CONE (the default) and FovShape.CIRCULAR_CONE
+// FovFrame.TOPOCENTRIC (the default) and FovFrame.BODY
+console.log(FovShape.ELLIPTICAL_CONE, FovShape.CIRCULAR_CONE, FovFrame.TOPOCENTRIC, FovFrame.BODY);
 ```
+
+`shape` is not auto-detected. It defaults to `ELLIPTICAL_CONE`; with that shape, a FOV whose
+`minorHalfAngle` equals `halfAngle` (or is omitted) is tested as a circle anyway. Setting
+`CIRCULAR_CONE` forces the circular test on `halfAngle` and ignores `minorHalfAngle`.
+
+`frame` is stored and serialized but does not change any computation. `contains()` always
+interprets its input as topocentric azimuth/elevation; a body-frame caller transforms the target
+direction into the frame the boresight is expressed in and uses `containsDirection()`.
 
 ---
 
@@ -117,45 +125,85 @@ enum FovFrame {
 
 Instead of defining FOV boundaries, define:
 
-1. **Boresight direction**: Where the sensor is "pointing" (az, el in topocentric or body frame)
-2. **Half-angles**: Angular extent from boresight (major for widest, minor for narrowest)
-3. **Roll angle**: Rotation of the ellipse around the boresight axis
+1. **Boresight direction**: where the sensor points (azimuth from North through East, elevation
+   above the horizon, both in degrees)
+2. **Half-angles**: off-boresight angular extent along the major axis (`halfAngle`) and the minor
+   axis (`minorHalfAngle`)
+3. **Roll angle**: rotation of the ellipse around the boresight axis
+
+A half-angle is an angle measured from the boresight on the sky, not a difference in azimuth.
+These differ away from the horizon: for a boresight at elevation e, a target at the same
+elevation and azimuth offset d is `2 asin(cos(e) sin(d / 2))` off boresight. At e = 45 deg an
+azimuth offset of 60 deg is only 41.4 deg off boresight.
 
 ### BoresightFrame Construction
 
-The `boresightFrameFromAzElRoll()` function creates an orthonormal basis:
+`boresightFrameFromAzElRoll(az, el, roll)` takes **radians** and returns an orthonormal basis in
+ENU (x = East, y = North, z = Up):
 
-```typescript
-interface BoresightFrame {
-  b: Vector3D;  // Boresight direction (unit vector)
-  u: Vector3D;  // Major axis direction (perpendicular to b)
-  v: Vector3D;  // Minor axis direction (perpendicular to b and u)
-}
+```text
+b = (cos el sin az, cos el cos az, sin el)
+
+General branch (el != 90 deg):
+  v0 = normalize(up x b)        horizontal, to the left of the boresight (West for a North boresight)
+  u0 = b x v0                   the projection of "up" onto the plane normal to b
+  u  = cos(roll) u0 + sin(roll) v0
+  v  = cos(roll) v0 - sin(roll) u0
+
+Zenith branch (|el - 90 deg| < 1e-10 rad), the limit of the general branch as el -> 90 deg
+along azimuth az:
+  A = (-sin az, -cos az, 0)     back-azimuth direction
+  B = (-cos az,  sin az, 0)     A rotated 90 deg clockwise
+  u = cos(roll) A + sin(roll) B
+  v = -sin(roll) A + cos(roll) B
 ```
 
-**Algorithm:**
+Properties (both branches):
 
-1. Convert boresight az/el to ENU (East-North-Up) unit vector
-2. Compute initial "up" reference (projection of +Z onto plane perpendicular to boresight)
-3. Apply roll rotation around boresight axis
-4. Cross product to get orthogonal minor axis
+- **Handedness**: u x v = -b. Positive roll rotates u toward v.
+- **Roll 0 off the zenith**: the major axis lies in the vertical plane through the boresight
+  (u points "up" relative to the boresight). A fan that is wide in azimuth therefore needs
+  roll 90 deg (or the wide extent put in `minorHalfAngle`).
+- **Roll 0 at the zenith (ootk 8)**: the major axis lies along the boresight azimuth line (both
+  directions, since the ellipse is symmetric). A fan pointing straight up with boresightAz 270
+  and roll 0 is an east-west fan.
+- **Continuity**: the zenith branch equals the general branch evaluated at el = 89.99999 deg to
+  about 2e-7, so a FOV no longer jumps when its boresight elevation crosses 90 deg.
 
-**Zenith Handling:** When boresight is near zenith (el ≈ 90°), the "up" direction becomes ambiguous. Roll angle of 0° means the major axis points North.
+ootk 7 measured zenith roll from North instead (roll 0 = major axis North-South for every
+azimuth), which was discontinuous with the general branch. Convert v7 zenith configs with
+`FieldOfView.migrateZenithRollFromV7` (see [Migration Guide](#migration-guide)).
 
 ### Elliptical Cone Containment
 
-To check if a target is within the FOV:
+`contains(rae)` checks, in this order (all are required, so the order only affects cost):
 
-1. Convert target az/el to ENU unit vector `t`
-2. Compute angular deviation from boresight: `θ = arccos(b · t)`
-3. Project `t` onto the u-v plane to get direction `φ`
-4. Apply ellipse equation:
+1. `minRange <= rng <= maxRange`
+2. `el >= minElevation`
+3. Cone geometry (below)
+4. `el >= getMinElevation(az)`, only when elevation masks are present
 
+Cone geometry for a target unit vector `t` (ENU):
+
+1. Off-boresight angle `theta = angle(b, t)`. `theta` below 1e-10 rad is inside; `theta` above
+   90 deg is outside.
+2. Circular case (`isCircular` or `shape === CIRCULAR_CONE`):
+   `theta <= halfAngle * (1 + BOUNDARY_TOL)`.
+3. Elliptical case: project `t` onto the plane normal to `b`, take the position angle
+   `phi = atan2(t . v, t . u)`, and test
+
+```text
+(theta cos(phi) / halfAngle)^2 + (theta sin(phi) / minorHalfAngle)^2 <= 1 + 2 BOUNDARY_TOL
 ```
-(θ · cos(φ) / halfAngle)² + (θ · sin(φ) / minorHalfAngle)² ≤ 1
-```
 
-If the result is ≤ 1, the target is within the elliptical cone.
+`BOUNDARY_TOL = 1e-10` is a relative round-off allowance so a direction generated exactly on the
+boundary (for example by `directionAt(t, 1)`) counts as inside. The ellipse is defined in
+angular, azimuthal-equidistant coordinates around the boresight (the radial coordinate is the
+off-boresight angle itself), not in a gnomonic (tangent-plane) projection.
+
+`containsDirection(direction, range)` applies the range check and the cone geometry to a
+direction vector. A zero or non-finite vector has no direction and is never contained. It does
+not apply `minElevation` or masks.
 
 ---
 
@@ -164,57 +212,76 @@ If the result is ≤ 1, the target is within the elliptical cone.
 ### FieldOfViewParams Interface
 
 ```typescript
-interface FieldOfViewParams {
-  // Boresight direction
-  boresightAz?: Degrees;      // Default: 0° (North)
-  boresightEl?: Degrees;      // Default: 90° (Zenith)
+import { Degrees, FieldOfViewParams, FovFrame, FovShape, Kilometers } from 'ootk';
 
-  // Cone geometry
-  halfAngle: Degrees;         // Major half-angle (required)
-  minorHalfAngle?: Degrees;   // Minor half-angle (defaults to halfAngle = circular)
-  rollAngle?: Degrees;        // Ellipse orientation (default: 0°)
+const params: FieldOfViewParams = {
+  boresightAz: 0 as Degrees,       // optional, default 0 (North), must be in [0, 360)
+  boresightEl: 90 as Degrees,      // optional, default 90 (zenith), must be in [-90, 90]
+  halfAngle: 45 as Degrees,        // REQUIRED, finite, in (0, 90]
+  minorHalfAngle: 10 as Degrees,   // optional, defaults to halfAngle, finite, in (0, 90]
+  rollAngle: 0 as Degrees,         // optional, default 0
+  minRange: 100 as Kilometers,     // required, >= 0 and <= maxRange
+  maxRange: 5000 as Kilometers,    // required, > 0
+  minElevation: 0 as Degrees,      // optional, default 0, in [-90, 90]
+  elevationMasks: [],              // optional, see Elevation Masking
+  interpolate: false,              // optional, treat masks as horizon vertices
+  shape: FovShape.ELLIPTICAL_CONE, // optional, default ELLIPTICAL_CONE (not auto-detected)
+  frame: FovFrame.TOPOCENTRIC,     // optional, default TOPOCENTRIC (metadata only)
+};
 
-  // Range constraints
-  minRange: Kilometers;       // Minimum observable range
-  maxRange: Kilometers;       // Maximum observable range
-
-  // Elevation constraints
-  minElevation?: Degrees;     // Global minimum elevation (default: 0°)
-  elevationMasks?: ElevationMask[];  // Azimuth-specific masks
-
-  // Metadata
-  shape?: FovShape;           // Auto-detected if not specified
-  frame?: FovFrame;           // Default: TOPOCENTRIC
-}
+console.log(params);
 ```
+
+### Validation
+
+The constructor throws `ValidationError` when:
+
+- `halfAngle` is missing, NaN, non-finite, at or below 0, or above 90 deg (ootk 8: a missing
+  `halfAngle` used to produce a FOV that silently saw nothing)
+- `minorHalfAngle` is given and is non-finite, at or below 0, or above 90 deg
+- `boresightAz` is outside [0, 360) or `boresightEl` outside [-90, 90]
+- `minRange < 0`, `maxRange <= 0` or `minRange > maxRange`
+- `minElevation` is outside [-90, 90]
+- a step mask has `startAz` or `stopAz` outside [0, 360) or `minEl` outside [-90, 90]
+- an interpolated mask does not have 2 to 72 vertices with unique azimuths in [0, 360) and
+  elevations in [0, 89]
+
+`minorHalfAngle` larger than `halfAngle` is accepted; the "major" axis u is then the narrow one.
 
 ### ElevationMask Interface
 
 ```typescript
-interface ElevationMask {
-  startAz: Degrees;   // Start of masked azimuth sector
-  stopAz: Degrees;    // End of masked azimuth sector (handles wraparound)
-  minEl: Degrees;     // Minimum elevation in this sector
-}
+import { Degrees, ElevationMask } from 'ootk';
+
+const mask: ElevationMask = {
+  startAz: 350 as Degrees, // start of the sector (inclusive); the vertex azimuth when interpolated
+  stopAz: 10 as Degrees,   // end of the sector (inclusive, wraps through 0); ignored when interpolated
+  minEl: 15 as Degrees,    // minimum elevation in this sector, or at this vertex
+};
+
+console.log(mask);
 ```
 
-### Key Methods
+### Public Members
 
-```typescript
-class FieldOfView {
-  // Primary containment check
-  contains(rae: RaeVec3<Kilometers, Degrees>): boolean;
+| Member | Purpose |
+|---|---|
+| `contains(rae)` | Full check: range, `minElevation`, cone, masks. `rae` is `{ rng, az, el }` in km and degrees |
+| `containsDirection(direction, range)` | Range and cone only, for a direction vector |
+| `directionAt(t, radialFraction = 1)` | Unit vector on (fraction 1) or inside the cone at parametric ellipse angle `t` (radians) |
+| `getMinElevation(az)` | Effective minimum elevation at an azimuth, never below `minElevation` |
+| `angularOffset(az, el)` | Off-boresight angle of a direction, degrees |
+| `boresightVector` | Boresight unit vector (ENU) |
+| `isCircular` | True when `halfAngle` equals `minorHalfAngle` |
+| `angularCoverage` | `2 * halfAngle`, a cone width (not an azimuth span) |
+| `isDeepSpace()` / `isNearEarth()` | `maxRange` above / at or below 6000 km |
+| `serialize()` / `toString()` | Parameters out / human-readable summary |
+| `FieldOfView.hemisphere(minRange, maxRange, minEl?)` | Zenith cone with `halfAngle` 90 |
+| `FieldOfView.circularCone(az, el, halfAngle, minRange, maxRange)` | `CIRCULAR_CONE` factory |
+| `FieldOfView.migrateZenithRollFromV7(params)` | Converts a v7 zenith roll to the v8 convention |
 
-  // Individual checks
-  isInCone(az: Degrees, el: Degrees): boolean;
-  isInRange(range: Kilometers): boolean;
-  isAboveMinElevation(az: Degrees, el: Degrees): boolean;
-
-  // Utility getters
-  get isCircular(): boolean;
-  get angularCoverage(): Degrees;  // 2 * halfAngle
-}
-```
+There are no separate `isInCone`, `isInRange` or `isAboveMinElevation` methods; the individual
+tests are private and reached through `contains()`.
 
 ---
 
@@ -222,42 +289,28 @@ class FieldOfView {
 
 ### Design Decision
 
-Instead of a "secondary FOV" concept, multi-face phased arrays create a separate `FieldOfView` instance for each face:
+Instead of a "secondary FOV" concept, `PhasedArrayRadar` creates a separate `FieldOfView` for
+each face. The constructor copies `fieldOfView` and overrides `boresightAz` and `boresightEl`
+per face; `faceFovs`, `faceCount`, `isInFov(rae)` (true if any face contains the target) and
+`getFacesInFov(rae)` (indices of the faces that do) are public.
 
 ```typescript
-class PhasedArrayRadar extends RadarSensor {
-  readonly faceFovs: FieldOfView[];  // One per face
-  readonly faceCount: number;
+import { Degrees, Kilometers, PhasedArrayRadar, SensorType } from 'ootk';
 
-  constructor(params: PhasedArrayRadarParams) {
-    // ...
-    this.faceFovs = params.boresightAz.map((az, i) =>
-      new FieldOfView({
-        ...baseFovParams,
-        boresightAz: az,
-        boresightEl: params.boresightEl[i],
-      })
-    );
-  }
+const radar = new PhasedArrayRadar({
+  id: 1,
+  name: 'Two-face radar',
+  sensorType: SensorType.PHASED_ARRAY_RADAR,
+  beamwidth: 2 as Degrees,
+  boresightAz: [0 as Degrees, 180 as Degrees], // one entry per face
+  boresightEl: [45 as Degrees, 45 as Degrees],
+  fieldOfView: { halfAngle: 60 as Degrees, minRange: 100 as Kilometers, maxRange: 5556 as Kilometers },
+});
 
-  override isInFov(rae: RaeVec3<Kilometers, Degrees>): boolean {
-    return this.faceFovs.some((fov) => fov.contains(rae));
-  }
+const rae = { rng: 1000 as Kilometers, az: 10 as Degrees, el: 40 as Degrees };
 
-  getFacesInFov(rae: RaeVec3<Kilometers, Degrees>): number[] {
-    return this.faceFovs
-      .map((fov, i) => fov.contains(rae) ? i : -1)
-      .filter((i) => i >= 0);
-  }
-}
+console.log(radar.faceCount, radar.isInFov(rae), radar.getFacesInFov(rae)); // 2 true [ 0 ]
 ```
-
-### Benefits
-
-- Each face is fully independent with its own boresight and geometry
-- Clean separation of concerns
-- Easy to add/remove faces
-- No special "secondary" logic needed
 
 ---
 
@@ -265,36 +318,40 @@ class PhasedArrayRadar extends RadarSensor {
 
 ### Use Case
 
-Ground-based sensors often have terrain obstructions (buildings, hills) that block specific azimuth sectors at low elevations.
+Ground sensors often have terrain obstructions (buildings, hills) that block specific azimuth
+sectors at low elevations. Masks can only raise the floor above `minElevation`.
 
-### Implementation
+### Step Sectors (default)
+
+Each entry is a sector from `startAz` to `stopAz`, inclusive, wrapping through 0 when
+`startAz > stopAz`. The target azimuth is normalized to [0, 360) first. Where sectors overlap,
+the highest `minEl` wins.
 
 ```typescript
-// Example: Building blocks 30° to 60° azimuth below 15° elevation
+import { Degrees, FieldOfView, Kilometers } from 'ootk';
+
+// Building blocks 30 deg to 60 deg azimuth below 15 deg elevation
 const fov = new FieldOfView({
-  halfAngle: 60 as Degrees,
+  halfAngle: 90 as Degrees,
   minRange: 100 as Kilometers,
   maxRange: 40000 as Kilometers,
-  minElevation: 5 as Degrees,  // Global minimum
-  elevationMasks: [
-    { startAz: 30 as Degrees, stopAz: 60 as Degrees, minEl: 15 as Degrees }
-  ]
+  minElevation: 5 as Degrees, // global minimum
+  elevationMasks: [{ startAz: 30 as Degrees, stopAz: 60 as Degrees, minEl: 15 as Degrees }],
 });
+
+console.log(fov.getMinElevation(45 as Degrees)); // 15
+console.log(fov.getMinElevation(90 as Degrees)); // 5
 ```
 
-### Azimuth Wraparound
+### Interpolated Horizon (`interpolate: true`)
 
-The elevation mask logic handles azimuth wraparound (e.g., startAz=350°, stopAz=10°):
+Each entry is a vertex at (`startAz`, `minEl`); the floor is the straight line between the
+neighbouring vertices, wrapping at 360 deg. `stopAz` is ignored. The constructor sorts the
+vertices by azimuth once (`sortElevationMasks`), so lookups are a binary search with no
+allocation.
 
-```typescript
-private isAzimuthInMaskRange_(az: Degrees, mask: ElevationMask): boolean {
-  if (mask.startAz <= mask.stopAz) {
-    return az >= mask.startAz && az <= mask.stopAz;
-  }
-  // Wraparound case
-  return az >= mask.startAz || az <= mask.stopAz;
-}
-```
+Both modes store a copy of the caller's array and of each entry, so mutating the input after
+construction has no effect on the FOV.
 
 ---
 
@@ -303,6 +360,8 @@ private isAzimuthInMaskRange_(az: Degrees, mask: ElevationMask): boolean {
 ### Creating a Circular Cone FOV
 
 ```typescript
+import { Degrees, FieldOfView, Kilometers } from 'ootk';
+
 const fov = new FieldOfView({
   boresightAz: 0 as Degrees,
   boresightEl: 45 as Degrees,
@@ -310,46 +369,61 @@ const fov = new FieldOfView({
   minRange: 100 as Kilometers,
   maxRange: 40000 as Kilometers,
 });
+
+console.log(fov.isCircular); // true
 ```
 
 ### Creating an Elliptical Cone FOV
 
 ```typescript
-// Fan-shaped: 90° wide, 2° tall
-const fov = new FieldOfView({
-  boresightAz: 0 as Degrees,
+import { Degrees, FieldOfView, Kilometers } from 'ootk';
+
+// Fence-style fan pointing straight up: 80 deg along the boresight azimuth line, 1 deg across it.
+// At the zenith, roll 0 puts the major axis along the boresight azimuth, so boresightAz 270 with
+// roll 0 is an east-west fan.
+const fan = new FieldOfView({
+  boresightAz: 270 as Degrees,
   boresightEl: 90 as Degrees,
-  halfAngle: 90 as Degrees,      // Major (widest)
-  minorHalfAngle: 2 as Degrees,  // Minor (narrowest)
-  rollAngle: 0 as Degrees,       // Major axis points North
+  halfAngle: 80 as Degrees,
+  minorHalfAngle: 1 as Degrees,
+  rollAngle: 0 as Degrees,
   minRange: 100 as Kilometers,
   maxRange: 40000 as Kilometers,
 });
+
+console.log(fan.contains({ rng: 1000 as Kilometers, az: 90 as Degrees, el: 45 as Degrees })); // true (east)
+console.log(fan.contains({ rng: 1000 as Kilometers, az: 0 as Degrees, el: 45 as Degrees })); // false (north)
 ```
 
 ### Using the BoresightFrame Helper
 
-```typescript
-import { boresightFrameFromAzElRoll } from 'ootk/sensor';
+`boresightFrameFromAzElRoll` takes radians, unlike `FieldOfViewParams`, which takes degrees.
 
+```typescript
+import { boresightFrameFromAzElRoll, Radians } from 'ootk';
+
+const DEG2RAD = Math.PI / 180;
 const frame = boresightFrameFromAzElRoll(
-  0 as Degrees,    // Azimuth
-  45 as Degrees,   // Elevation
-  0 as Degrees     // Roll
+  (0 * DEG2RAD) as Radians, // azimuth
+  (45 * DEG2RAD) as Radians, // elevation
+  0 as Radians, // roll
 );
 
-console.log(frame.b);  // Boresight unit vector
-console.log(frame.u);  // Major axis direction
-console.log(frame.v);  // Minor axis direction
+console.log(frame.b); // boresight unit vector (ENU)
+console.log(frame.u); // major axis: toward "up" when roll is 0 and el is below 90 deg
+console.log(frame.v); // minor axis: u x v = -b
 ```
 
 ### Checking FOV Containment
 
 ```typescript
+import { Degrees, FieldOfView, Kilometers, RaeVec3 } from 'ootk';
+
+const fov = FieldOfView.circularCone(0 as Degrees, 45 as Degrees, 30 as Degrees, 100 as Kilometers, 40000 as Kilometers);
 const rae: RaeVec3<Kilometers, Degrees> = {
   rng: 1000 as Kilometers,
-  az: 45 as Degrees,
-  el: 30 as Degrees,
+  az: 10 as Degrees,
+  el: 40 as Degrees,
 };
 
 if (fov.contains(rae)) {
@@ -363,9 +437,24 @@ if (fov.contains(rae)) {
 
 ### From Legacy min/max FOV
 
-**Before:**
+An azimuth/elevation box cannot be represented exactly by an ellipse, and half-angles are
+off-boresight angles, not azimuth differences. To approximate a box of azimuth 0 to 120 deg and
+elevation 5 to 85 deg:
 
-```typescript
+- Boresight at the box center: az 60, el 45.
+- Azimuth half-width: a target at el 45 and 60 deg of azimuth from the boresight is
+  `2 asin(cos 45 sin 30) = 41.4 deg` off boresight. That point is not exactly on the major axis
+  (a line of constant elevation is not a great circle), so round up slightly; 42 deg works here.
+  Using 60 would reach out to about azimuth -30 to 150 deg at el 45.
+- Elevation half-width: 40 deg (5 to 85).
+- Off the zenith, roll 0 puts the major axis vertical, so put the azimuth extent on the major
+  axis with roll 90 (or swap the two half-angles and keep roll 0).
+- Keep `minElevation` to clip the bottom of the cone. The corners of the old box (for example
+  az 0, el 10) fall outside the ellipse.
+
+**Before (removed):**
+
+```text
 fieldOfView: {
   minAzimuth: 0,
   maxAzimuth: 120,
@@ -379,38 +468,67 @@ fieldOfView: {
 **After:**
 
 ```typescript
-fieldOfView: {
-  boresightAz: 60 as Degrees,    // Center of az range
-  boresightEl: 45 as Degrees,    // Center of el range
-  halfAngle: 60 as Degrees,      // Half the az range
-  minorHalfAngle: 40 as Degrees, // Half the el range
+import { Degrees, FieldOfView, Kilometers } from 'ootk';
+
+const fov = new FieldOfView({
+  boresightAz: 60 as Degrees, // center of the azimuth range
+  boresightEl: 45 as Degrees, // center of the elevation range
+  halfAngle: 42 as Degrees, // covers az 0 and az 120 at el 45 (41.4 deg off boresight, see above)
+  minorHalfAngle: 40 as Degrees, // half the elevation range
+  rollAngle: 90 as Degrees, // major axis horizontal
   minRange: 100 as Kilometers,
   maxRange: 40000 as Kilometers,
   minElevation: 5 as Degrees,
-}
+});
+
+console.log(fov.contains({ rng: 1000 as Kilometers, az: 0 as Degrees, el: 45 as Degrees })); // true
+console.log(fov.contains({ rng: 1000 as Kilometers, az: 0 as Degrees, el: 10 as Degrees })); // false (box corner)
 ```
 
 ### From Secondary FOV (Multi-Face)
 
-**Before:**
+The `secondaryFov` sensor parameter was removed. Use `PhasedArrayRadar` with one boresight per
+face, as in [Multi-Face Phased Array Support](#multi-face-phased-array-support). `Sensor` is
+abstract; construct a concrete class (`PhasedArrayRadar`, `MechanicalRadar`, `OpticalSensor`,
+`PassiveRFSensor`, `LaserRangingSensor`, `TtcAntenna`) with a numeric `id`, a `name`, a
+`sensorType` and a `fieldOfView` that includes `halfAngle`.
 
-```typescript
-const sensor = new Sensor({
-  fieldOfView: { /* face 1 */ },
-  secondaryFov: { /* face 2 */ },  // Removed
-});
+### From ootk 7 Zenith Roll (ootk 8)
+
+ootk 7 measured roll at the zenith from North; ootk 8 measures it from the boresight azimuth
+line (roll 0 = major axis along the boresight azimuth). Only zenith (`boresightEl` 90),
+non-circular FOVs are affected; every other configuration keeps its meaning.
+
+```text
+newRoll = (oldRoll - boresightAz - 180) mod 360
 ```
 
-**After:**
+Because the ellipse is symmetric under u -> -u, `(oldRoll - boresightAz) mod 180` is equivalent.
+For the Space Fence configuration (az 270, el 90, v7 roll 90): (90 - 270 - 180) mod 360 = 0.
 
 ```typescript
-const radar = new PhasedArrayRadar({
-  fieldOfView: { halfAngle: 60, minRange: 100, maxRange: 40000 },
-  boresightAz: [0, 180] as Degrees[],    // Face directions
-  boresightEl: [45, 45] as Degrees[],
+import { Degrees, FieldOfView, Kilometers } from 'ootk';
+
+const v8Params = FieldOfView.migrateZenithRollFromV7({
+  boresightAz: 270 as Degrees,
+  boresightEl: 90 as Degrees,
+  halfAngle: 80 as Degrees,
+  minorHalfAngle: 1 as Degrees,
+  rollAngle: 90 as Degrees, // v7 convention
+  minRange: 0 as Kilometers,
+  maxRange: 5000 as Kilometers,
 });
-// radar.faceFovs[0] and radar.faceFovs[1] are auto-created
+
+console.log(v8Params.rollAngle); // 0
 ```
+
+`migrateZenithRollFromV7` returns an unchanged copy for non-zenith or circular parameters (a
+missing `boresightEl` counts as the default 90), so it is safe to run over a whole catalog once.
+Do not run it on configs that are already in the v8 convention.
+
+For a default zenith config (az 0, roll 0) the v8 frame is the v7 frame rotated 180 deg
+(u = (0, -1, 0) instead of (0, 1, 0)). Containment is identical, but `directionAt(t)` returns
+what v7 returned at `t + 180 deg`, so boundary samples start on the opposite side.
 
 ---
 
@@ -418,37 +536,39 @@ const radar = new PhasedArrayRadar({
 
 ### Mathematical Considerations
 
-1. **Zenith singularity is real** - Traditional az/el representations break down at el=90°. The boresight frame approach with explicit roll angle handles this gracefully.
-
-2. **Ellipse equation works in angular space** - The containment check uses angular deviation from boresight, not Cartesian coordinates. This makes the math cleaner.
-
-3. **ENU frame simplifies ground sensors** - Using East-North-Up as the base coordinate system makes topocentric calculations intuitive.
+1. **Zenith singularity is real**: az/el representations break down at el = 90 deg. The
+   boresight frame with an explicit roll angle handles it, but only if the zenith branch is the
+   limit of the general branch. The v7 branch (roll from North) was not, and a fan at el 89.9
+   and el 90 pointed 90 deg apart; v8 fixed this.
+2. **The ellipse lives in angular space**: the containment check uses the off-boresight angle
+   and position angle (azimuthal-equidistant), not Cartesian tangent-plane coordinates.
+3. **Half-angles are not azimuth spans**: off the horizon an azimuth offset is a smaller angle
+   on the sky; convert with `2 asin(cos(e) sin(d / 2))`.
 
 ### Design Decisions
 
-1. **Composition over inheritance for multi-face** - Instead of complex inheritance with "primary" and "secondary" FOVs, using an array of independent FieldOfView instances is cleaner and more maintainable.
-
-2. **Breaking changes are sometimes better** - Rather than maintaining backward compatibility with the legacy API, a clean break allowed a much simpler implementation.
-
-3. **Defaults matter** - Choosing boresightEl=90° (zenith) as default with topocentric frame makes the most common ground sensor case trivial to configure.
-
-4. **Roll convention must be documented** - The meaning of roll=0° (major axis points North for zenith boresight) is arbitrary but must be consistent and documented.
+1. **Composition over inheritance for multi-face**: an array of independent `FieldOfView`
+   instances replaced primary/secondary FOVs.
+2. **Defaults matter**: boresightEl 90 (zenith) with a topocentric frame makes the all-sky
+   ground sensor trivial to configure. `halfAngle` has no default and is required.
+3. **Roll convention must be documented**: off the zenith roll 0 puts the major axis vertical;
+   at the zenith roll 0 puts it along the boresight azimuth.
 
 ### Implementation Tips
 
-1. **Cache computed values** - The BoresightFrame and radian conversions are cached in private readonly members to avoid recomputation.
-
-2. **Validate early** - Constructor validation catches configuration errors immediately rather than at observation time.
-
-3. **Use branded types** - TypeScript branded types (Degrees, Kilometers, Radians) prevent unit confusion at compile time.
+1. **Cache computed values**: the BoresightFrame and radian half-angles are computed once in
+   the constructor.
+2. **Validate early**: constructor validation rejects configuration errors immediately.
+3. **Use branded types**: `Degrees`, `Radians` and `Kilometers` catch unit mix-ups at compile
+   time, for example passing degrees to `boresightFrameFromAzElRoll`.
 
 ### Future Considerations
 
-1. **Body-frame sensors** - The FovFrame.BODY option is defined but not fully implemented. Space-based sensors will need additional coordinate transforms.
-
-2. **Non-cone shapes** - FovShape enum allows for future rectangular or custom FOV shapes, though only elliptical/circular cones are currently implemented.
-
-3. **Time-varying FOV** - Some sensors may have FOVs that change over time (scanning radars). The current design is static but could be extended.
+1. **Body-frame sensors**: `FovFrame.BODY` is metadata only; there is no attitude model, so the
+   caller supplies body-frame directions to `containsDirection()`.
+2. **Non-cone shapes**: only elliptical and circular cones exist.
+3. **Time-varying FOV**: the FOV is static; scanning is modeled separately
+   (`MechanicalRadar.scanPeriod`).
 
 ---
 
@@ -456,11 +576,12 @@ const radar = new PhasedArrayRadar({
 
 | Question | Decision | Rationale |
 |----------|----------|-----------|
-| How to handle zenith? | Explicit roll angle | Avoids az/el singularity, provides deterministic behavior |
-| Secondary FOV for multi-face? | Remove - use faceFovs array | Cleaner separation, more flexible |
-| Hemisphere representation? | Circular cone with halfAngle=90° | No special case needed |
-| Elevation masking granularity? | Array of az-sector masks | Handles complex terrain without overcomplicating simple cases |
-| Roll convention at zenith? | Roll=0° means major axis points North | Arbitrary but consistent and documented |
-| Backward compatibility? | Breaking change | Clean API more valuable than legacy support |
+| How to handle zenith? | Explicit roll angle | Avoids the az/el singularity |
+| Roll convention at zenith? | Roll 0 = major axis along the boresight azimuth (v8) | Limit of the general branch, so the frame is continuous through el 90; v7 used North |
+| Secondary FOV for multi-face? | Removed; use `faceFovs` | Cleaner separation |
+| Hemisphere representation? | Zenith cone with halfAngle 90 (`FieldOfView.hemisphere`) | No special case needed |
+| Elevation masking granularity? | Step sectors or interpolated vertices | Handles terrain without complicating simple cases |
+| Missing `halfAngle`? | Throw `ValidationError` (v8) | v7 accepted it and the sensor silently saw nothing |
+| Backward compatibility? | Breaking changes allowed, with migration helpers | Correct geometry over legacy behavior |
 
 ---

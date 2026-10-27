@@ -9,7 +9,7 @@ This module provides Initial Orbit Determination (IOD) and Orbit Determination (
 | **GibbsIOD** | 3 positions | Position vectors | Radar tracking, widely-spaced positions |
 | **HerrickGibbsIOD** | 3 positions + times | Position vectors | Radar tracking, closely-spaced positions |
 | **LambertIOD** | 2 positions + times | Position vectors | Transfer orbits, rendezvous planning |
-| **GaussIOD** | 3 angles | Optical (RA/Dec) | Telescope observations |
+| **GaussIOD** (internal) | 3 angles | Optical (RA/Dec) | Seeds GoodingIOD and ModifiedGoodingIOD; not exported |
 | **GoodingIOD** | 3 angles | Optical (RA/Dec) | Telescope observations with range iteration |
 | **ModifiedGoodingIOD** | 3+ angles | Optical (RA/Dec) | Multi-observation optical refinement |
 | **BatchLeastSquaresOD** | N observations | Optical or Radar | Orbit refinement from many observations |
@@ -19,7 +19,7 @@ This module provides Initial Orbit Determination (IOD) and Orbit Determination (
 
 ## Position-Based IOD Methods
 
-These methods require inertial position vectors (e.g., from radar range + angles).
+These methods require inertial (J2000) position vectors in km (for example from radar range plus angles). The examples below take positions from an SGP4 propagation of the ISS, so the recovered velocity differs from the SGP4 velocity by the perturbations two-body IOD ignores.
 
 ### GibbsIOD
 
@@ -32,7 +32,7 @@ Determines an orbit from three position vectors. The classic geometric method.
 - Includes velocity direction ambiguity resolution
 
 **Cons:**
-- Requires coplanar positions (throws error if >5 degrees out of plane)
+- Requires coplanar positions (throws `OrbitDeterminationError` if position 1 is more than 5 degrees out of the plane of positions 2 and 3, or if 2 and 3 are collinear)
 - Accuracy degrades for closely-spaced positions
 - Needs position vectors, not angles-only observations
 
@@ -43,8 +43,24 @@ Determines an orbit from three position vectors. The classic geometric method.
 
 **Example:**
 ```typescript
+import { EpochUTC, GibbsIOD, Seconds, Sgp4Propagator, Tle } from 'ootk';
+
+const tle = new Tle(
+  '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991',
+  '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741',
+);
+const truth = new Sgp4Propagator(tle);
+
+// Three J2000 positions (km) 10 minutes apart (about 39 deg of arc)
+const t1 = tle.epoch;
+const t2 = t1.roll(600 as Seconds);
+const t3 = t1.roll(1200 as Seconds);
+const [r1, r2, r3] = [t1, t2, t3].map((t) => truth.propagate(t).position);
+
 const iod = new GibbsIOD();
-const state = iod.solve(r1, r2, r3, t2, t3); // Returns state at t2
+const state = iod.solve(r1, r2, r3, t2, t3); // J2000 state at t2; throws if not coplanar within 5 deg
+
+console.log(state.velocity.subtract(truth.propagate(t2).velocity).magnitude()); // velocity error, km/s
 ```
 
 ---
@@ -71,8 +87,24 @@ An improved method for closely-spaced position vectors using Taylor series expan
 
 **Example:**
 ```typescript
+import { HerrickGibbsIOD, Seconds, Sgp4Propagator, Tle } from 'ootk';
+
+const tle = new Tle(
+  '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991',
+  '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741',
+);
+const truth = new Sgp4Propagator(tle);
+
+// Three J2000 positions (km) 30 s apart (about 2 deg of arc)
+const t1 = tle.epoch;
+const t2 = t1.roll(30 as Seconds);
+const t3 = t1.roll(60 as Seconds);
+const [r1, r2, r3] = [t1, t2, t3].map((t) => truth.propagate(t).position);
+
 const iod = new HerrickGibbsIOD();
-const state = iod.solve(r1, t1, r2, t2, r3, t3); // Returns state at t2
+const state = iod.solve(r1, t1, r2, t2, r3, t3); // J2000 state at t2
+
+console.log(state.velocity.subtract(truth.propagate(t2).velocity).magnitude()); // velocity error, km/s
 ```
 
 ---
@@ -100,16 +132,33 @@ Solves Lambert's problem: find the orbit connecting two positions given time of 
 
 **Example:**
 ```typescript
+import { LambertIOD, Seconds, Sgp4Propagator, Tle } from 'ootk';
+
+const tle = new Tle(
+  '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991',
+  '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741',
+);
+const truth = new Sgp4Propagator(tle);
+
+const t1 = tle.epoch;
+const t2 = t1.roll(1800 as Seconds); // about 116 deg of arc later
+const p1 = truth.propagate(t1).position;
+const p2 = truth.propagate(t2).position;
+
 const iod = new LambertIOD();
-const state = iod.estimate(p1, p2, t1, t2, { posigrade: true, nRev: 0 });
-// Returns state at t1, or null if no solution
+// shortWay: true sweeps the transfer angle below 180 deg, false the long way (named posigrade before v8).
+// For nRev >= 1 the sign of nRev selects one of the two multi-revolution solutions.
+const state = iod.estimate(p1, p2, t1, t2, { shortWay: true, nRev: 0 });
+// J2000 state at t1, or null if no solution
+
+console.log(state?.velocity.subtract(truth.propagate(t1).velocity).magnitude()); // velocity error, km/s
 ```
 
 ---
 
 ## Angles-Only IOD Methods
 
-These methods work with optical observations (Right Ascension / Declination).
+These methods work with optical observations (topocentric right ascension / declination, `ObservationOptical` built from the site's J2000 state and a `RadecTopocentric`).
 
 ### GaussIOD
 
@@ -123,7 +172,8 @@ The classic angles-only method using an 8th-order polynomial solver.
 **Cons:**
 - Requires minimum 10-second spacing between observations
 - Polynomial root-finding can be sensitive
-- May return `null` for poor observation geometry
+- Returns `null` when the observations are less than 10 s apart or the range polynomial has no unique
+  positive root (it never substitutes a default radius)
 
 **When to Use:**
 - Telescope observations of unknown objects
@@ -131,10 +181,7 @@ The classic angles-only method using an 8th-order polynomial solver.
 - Quick initial orbit from optical data
 
 **Example:**
-```typescript
-const iod = new GaussIOD();
-const state = iod.estimate(obs1, obs2, obs3);
-```
+GaussIOD is not exported from the `ootk` entry point in v8; it is used internally to seed GoodingIOD and ModifiedGoodingIOD, so call one of those for angles-only work. Its contract: `estimate(o1, o2, o3)` returns the J2000 state at `o2`, or `null` (see Cons).
 
 ---
 
@@ -145,10 +192,11 @@ Iterative angles-only method with range estimation using Newton-Raphson.
 **Pros:**
 - More robust than Gauss for some geometries
 - Uses Lambert solver internally for consistency
-- Supports retrograde orbit detection
+- `shortWay` (last argument) selects the short-way or long-way Lambert arc between the first and third
+  observation; it does not select prograde vs retrograde motion
 
 **Cons:**
-- Requires initial range estimates
+- Seeds its range guesses from GaussIOD when none are given, so it fails where Gauss finds no root
 - Iterative (slower than Gauss)
 - May not converge for poor initial guesses
 
@@ -159,8 +207,30 @@ Iterative angles-only method with range estimation using Newton-Raphson.
 
 **Example:**
 ```typescript
+import { Degrees, EpochUTC, GroundStation, Kilometers, ObservationOptical, RadecTopocentric, Seconds, Sgp4Propagator, Tle, GoodingIOD } from 'ootk';
+
+const tle = new Tle(
+  '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991',
+  '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741',
+);
+const truth = new Sgp4Propagator(tle);
+const site = new GroundStation({ name: 'Cape Cod', lat: 41.754785 as Degrees, lon: -70.539151 as Degrees, alt: 0.060966 as Kilometers });
+
+// Simulated topocentric RA/Dec of the ISS during a pass over the site, every 180 s
+const start = EpochUTC.fromDateTime(new Date('2024-01-28T00:55:00Z'));
+const observations = Array.from({ length: 3 }, (_, i) => {
+  const epoch = start.roll((180 * i) as Seconds);
+  const siteState = site.toJ2000(epoch.toDateTime());
+
+  return new ObservationOptical(siteState, RadecTopocentric.fromStateVector(truth.propagate(epoch), siteState));
+});
+const [obs1, obs2, obs3] = observations;
+
 const iod = new GoodingIOD();
-const state = iod.estimate(obs1, obs2, obs3, rho1init, rho3init);
+// Slant-range guesses (km) for obs1 and obs3 are optional; without them GaussIOD seeds them
+const state = iod.estimate(obs1, obs2, obs3); // J2000 state at obs2; throws if Gauss finds no seed
+
+console.log(state.position.subtract(truth.propagate(obs2.epoch).position).magnitude()); // position error, km
 ```
 
 ---
@@ -176,8 +246,8 @@ Extended Gooding method with Nelder-Mead optimization for 3+ observations.
 
 **Cons:**
 - Slower due to optimization
-- Requires good initial range estimates
-- More complex to configure
+- Range guesses are optional (seeded from GaussIOD); a poor seed may not converge
+- More complex to configure (options object: `nRev`, `direction` for the short-way (true) or long-way Lambert arc, `posSearch`, `velSearch`, `tolerance`, `maxIter`)
 
 **When to Use:**
 - Multiple optical observations available (5-10+)
@@ -186,8 +256,29 @@ Extended Gooding method with Nelder-Mead optimization for 3+ observations.
 
 **Example:**
 ```typescript
+import { Degrees, EpochUTC, GroundStation, Kilometers, ObservationOptical, RadecTopocentric, Seconds, Sgp4Propagator, Tle, ModifiedGoodingIOD } from 'ootk';
+
+const tle = new Tle(
+  '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991',
+  '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741',
+);
+const truth = new Sgp4Propagator(tle);
+const site = new GroundStation({ name: 'Cape Cod', lat: 41.754785 as Degrees, lon: -70.539151 as Degrees, alt: 0.060966 as Kilometers });
+
+// Simulated topocentric RA/Dec of the ISS during a pass over the site, every 60 s
+const start = EpochUTC.fromDateTime(new Date('2024-01-28T00:55:00Z'));
+const observations = Array.from({ length: 7 }, (_, i) => {
+  const epoch = start.roll((60 * i) as Seconds);
+  const siteState = site.toJ2000(epoch.toDateTime());
+
+  return new ObservationOptical(siteState, RadecTopocentric.fromStateVector(truth.propagate(epoch), siteState));
+});
+
 const iod = new ModifiedGoodingIOD();
-const state = iod.solve(observations, rho1init, rho3init);
+// Range guesses (km) for the first and last observation are optional (seeded from GaussIOD)
+const state = iod.solve(observations); // J2000 state
+
+console.log(state.position.subtract(truth.propagate(state.epoch).position).magnitude()); // position error, km
 ```
 
 ---
@@ -218,9 +309,53 @@ Classical batch least squares using normal equations.
 
 **Example:**
 ```typescript
+import {
+  BatchLeastSquaresOD,
+  Degrees,
+  EpochUTC,
+  GroundStation,
+  J2000,
+  Kilometers,
+  KilometersPerSecond,
+  ObservationRadar,
+  RAE,
+  Seconds,
+  Sgp4Propagator,
+  Tle,
+  Vector3D,
+} from 'ootk';
+
+const tle = new Tle(
+  '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991',
+  '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741',
+);
+const truth = new Sgp4Propagator(tle);
+const site = new GroundStation({ name: 'Cape Cod', lat: 41.754785 as Degrees, lon: -70.539151 as Degrees, alt: 0.060966 as Kilometers });
+
+// Simulated range/azimuth/elevation of the ISS during a pass over the site, every 30 s for 10 minutes
+const start = EpochUTC.fromDateTime(new Date('2024-01-28T00:54:00Z'));
+const observations = Array.from({ length: 21 }, (_, i) => {
+  const epoch = start.roll((30 * i) as Seconds);
+  const siteState = site.toJ2000(epoch.toDateTime());
+
+  return new ObservationRadar(siteState, RAE.fromStateVector(truth.propagate(epoch), siteState));
+});
+
+// A priori state at the first observation: truth displaced by 5 km and 5 m/s
+const t0 = truth.propagate(start);
+const aprioriState = new J2000(
+  start,
+  t0.position.add(new Vector3D(5 as Kilometers, 0 as Kilometers, 0 as Kilometers)),
+  t0.velocity.add(new Vector3D(0 as KilometersPerSecond, 0.005 as KilometersPerSecond, 0 as KilometersPerSecond)),
+);
+
+// Default force model is two-body (ForceModel().setGravity()); pass one as the third argument for more
 const blsOd = new BatchLeastSquaresOD(observations, aprioriState);
-const result = blsOd.solve({ tolerance: 1e-6, maxIter: 100 });
-// result.state, result.covariance, result.rms
+const result = blsOd.solve({ tolerance: 1e-3, maxIter: 100 }); // tolerance on the change in weighted RMS
+// result.state (J2000 at the first observation epoch), result.covariance, result.rms, result.converged
+// solve() throws SingularMatrixError when the observations do not determine all six state components
+
+console.log(result.converged, result.rms, result.state.position.subtract(t0.position).magnitude());
 ```
 
 ---
@@ -233,7 +368,7 @@ Damped least squares with adaptive step control.
 - More robust than batch least squares
 - Adaptive damping prevents divergence
 - Handles larger initial errors
-- Returns convergence status
+- Returns convergence status (`result.converged`, as does BatchLeastSquaresOD since v8)
 
 **Cons:**
 - Slightly slower per iteration
@@ -247,9 +382,53 @@ Damped least squares with adaptive step control.
 
 **Example:**
 ```typescript
+import {
+  LevenbergMarquardtOD,
+  Degrees,
+  EpochUTC,
+  GroundStation,
+  J2000,
+  Kilometers,
+  KilometersPerSecond,
+  ObservationRadar,
+  RAE,
+  Seconds,
+  Sgp4Propagator,
+  Tle,
+  Vector3D,
+} from 'ootk';
+
+const tle = new Tle(
+  '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991',
+  '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741',
+);
+const truth = new Sgp4Propagator(tle);
+const site = new GroundStation({ name: 'Cape Cod', lat: 41.754785 as Degrees, lon: -70.539151 as Degrees, alt: 0.060966 as Kilometers });
+
+// Simulated range/azimuth/elevation of the ISS during a pass over the site, every 30 s for 10 minutes
+const start = EpochUTC.fromDateTime(new Date('2024-01-28T00:54:00Z'));
+const observations = Array.from({ length: 21 }, (_, i) => {
+  const epoch = start.roll((30 * i) as Seconds);
+  const siteState = site.toJ2000(epoch.toDateTime());
+
+  return new ObservationRadar(siteState, RAE.fromStateVector(truth.propagate(epoch), siteState));
+});
+
+// A priori state at the first observation: truth displaced by 5 km and 5 m/s
+const t0 = truth.propagate(start);
+const aprioriState = new J2000(
+  start,
+  t0.position.add(new Vector3D(5 as Kilometers, 0 as Kilometers, 0 as Kilometers)),
+  t0.velocity.add(new Vector3D(0 as KilometersPerSecond, 0.005 as KilometersPerSecond, 0 as KilometersPerSecond)),
+);
+
+// Default force model is two-body (ForceModel().setGravity()); pass one as the third argument for more
 const lmOd = new LevenbergMarquardtOD(observations, aprioriState);
-const result = lmOd.solve({ tolerance: 1e-6, maxIter: 100 });
-// result.state, result.covariance, result.rms, result.converged
+const result = lmOd.solve({ epsilon: 1e-6, maxIterations: 50 });
+// result.state (J2000 at the first observation epoch), result.covariance, result.rms, result.converged
+// solve() throws SingularMatrixError when the observations do not determine all six state components
+
+console.log(result.converged, result.rms, result.state.position.subtract(t0.position).magnitude());
 ```
 
 ---
@@ -276,8 +455,7 @@ Do you have position vectors (from radar)?
               |
               +-- YES --> How many observations?
               |             |
-              |             +-- 3 observations --> GaussIOD (try first)
-              |             |                      or GoodingIOD
+              |             +-- 3 observations --> GoodingIOD (seeded by Gauss)
               |             |
               |             +-- 4+ observations --> ModifiedGoodingIOD
               |
@@ -314,7 +492,7 @@ Do you have position vectors (from radar)?
    - Near-180 degree transfer (numerical singularity)
    - Time of flight is incompatible with orbital mechanics
 
-3. **GaussIOD Returns Null**: Check that observations are:
+3. **GoodingIOD Throws "Gauss IOD failed"**: the internal Gauss seed returned null. Check that observations are:
    - At least 10 seconds apart
    - From the same object
    - Have sufficient angular separation
@@ -322,13 +500,16 @@ Do you have position vectors (from radar)?
 4. **BatchLeastSquaresOD Divergence**: If RMS increases instead of decreasing:
    - A priori estimate is too far from truth (use LevenbergMarquardtOD)
    - Observations have outliers
-   - Force model mismatch (use `fastDerivatives: true` for Kepler-only)
+   - Force model mismatch (pass a `ForceModel` as the third constructor argument; the default is two-body)
 
-5. **Epoch Conventions**:
+5. **SingularMatrixError from BatchLeastSquaresOD / LevenbergMarquardtOD**: since v8 `Matrix.inverse` throws on a singular normal matrix instead of returning garbage, and both solvers let it propagate. It means the observations do not determine all six state components (too few, or angles-only data over too short an arc). Catch it, or add observations.
+
+6. **Epoch Conventions**:
    - GibbsIOD returns state at **t2** (middle position)
    - HerrickGibbsIOD returns state at **t2** (middle position)
    - LambertIOD returns state at **t1** (first position)
-   - BatchLeastSquaresOD returns state at **first observation epoch**
+   - GoodingIOD returns state at the **second (middle) observation**
+   - BatchLeastSquaresOD and LevenbergMarquardtOD return state at the **first observation epoch**
 
 ### Testing Your Implementation
 
@@ -341,8 +522,8 @@ When validating IOD results:
 ### Performance Tips
 
 1. **Use KeplerPropagator** for testing: It's fast and eliminates force model complexity
-2. **fastDerivatives flag** in BatchLeastSquaresOD uses Kepler for Jacobian computation (faster, slightly less accurate)
-3. **Batch observations first**: Sort by epoch before passing to OD methods
+2. **fastDerivatives** (sixth constructor argument of BatchLeastSquaresOD and LevenbergMarquardtOD) uses Kepler for the Jacobian (faster, slightly less accurate)
+3. **Observation order**: BatchLeastSquaresOD and LevenbergMarquardtOD sort a copy of the observations by epoch; the caller's array is not modified
 
 ---
 

@@ -30,6 +30,7 @@ describe('observation rates and angles', () => {
     // velocity() threw "missing ra/dec rates" for zero rates
     expect(() => topo.velocity(site)).not.toThrow();
 
+    // RadecGeocentric.fromDegrees rate parameters are DegreesPerSecond, as in RadecTopocentric
     const geo = RadecGeocentric.fromDegrees(epoch, 10 as Degrees, 20 as Degrees, 7000 as Kilometers,
       0 as DegreesPerSecond, 0 as DegreesPerSecond, 0 as KilometersPerSecond);
 

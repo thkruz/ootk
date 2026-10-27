@@ -107,6 +107,40 @@ export abstract class GroundObject extends BaseObject {
   }
 
   /**
+   * Geodetic position of the object at `date`.
+   *
+   * For a fixed object this is {@link lla} regardless of `date`. Time-dependent subclasses
+   * (DynamicGroundObject) override it to return the position at `date`, or null when `date`
+   * is outside their defined path. Observer-relative calculations (`Satellite.rae()`,
+   * `AccessCalculator`) call this, so a moving observer is evaluated where it is at `date`.
+   * @param _date - The date of interest (unused for a fixed object).
+   * @returns Latitude and longitude in degrees and altitude in km, or null if undefined at `date`.
+   */
+  llaAt(_date: Date): LlaVec3<Degrees, Kilometers> | null {
+    return this.lla();
+  }
+
+  /**
+   * TEME position of the object at `date` (same model as {@link eci}), using {@link llaAt}.
+   * @param date - The date of interest.
+   * @returns TEME position in km, or null if the position is undefined at `date`.
+   */
+  eciAt(date: Date): TemeVec3<Kilometers> | null {
+    const lla = this.llaAt(date);
+
+    if (!lla) {
+      return null;
+    }
+
+    const { gmst } = calcGmst(date);
+
+    return ecef2eci(
+      llaRad2ecef({ lat: (lla.lat * DEG2RAD) as Radians, lon: (lla.lon * DEG2RAD) as Radians, alt: lla.alt }),
+      gmst,
+    );
+  }
+
+  /**
    * Returns the latitude, longitude, and altitude of the GroundObject.
    * @returns The latitude, longitude, and altitude as an LlaVec3 object.
    */
@@ -227,12 +261,35 @@ export abstract class GroundObject extends BaseObject {
 
   /**
    * Validates the input data for the GroundObject.
+   *
+   * Latitude must be a finite number in [-90, 90] deg and longitude a finite number in
+   * [-180, 180] deg. Altitude (km, above the WGS-84 ellipsoid) must be finite and may be
+   * negative: the Dead Sea shore is about -0.43 km and in places the geoid, and so mean sea
+   * level, lies up to about 0.1 km below the ellipsoid. NaN and infinities are rejected.
    * @param info - The GroundPositionParams object containing the latitude,
    * longitude, and altitude.
    */
   private validateGroundObjectInputData_(info: GroundObjectParams): void {
-    this.validateParameter(info.lat, -90, 90, 'Invalid latitude - must be between -90 and 90');
-    this.validateParameter(info.lon, -180, 180, 'Invalid longitude - must be between -180 and 180');
-    this.validateParameter(info.alt, 0, null, 'Invalid altitude - must be greater than 0');
+    GroundObject.validateLla(info.lat, info.lon, info.alt);
+  }
+
+  /**
+   * Validates a geodetic position: finite latitude in [-90, 90] deg, finite longitude in
+   * [-180, 180] deg and a finite altitude in km (negative values allowed).
+   * @param lat - Latitude in degrees.
+   * @param lon - Longitude in degrees.
+   * @param alt - Altitude in km above the WGS-84 ellipsoid.
+   * @throws RangeError if any value is out of range or not finite.
+   */
+  static validateLla(lat: number, lon: number, alt: number): void {
+    if (!Number.isFinite(lat) || lat < -90 || lat > 90) {
+      throw new RangeError('Invalid latitude - must be between -90 and 90');
+    }
+    if (!Number.isFinite(lon) || lon < -180 || lon > 180) {
+      throw new RangeError('Invalid longitude - must be between -180 and 180');
+    }
+    if (!Number.isFinite(alt)) {
+      throw new RangeError('Invalid altitude - must be a finite number of kilometers');
+    }
   }
 }

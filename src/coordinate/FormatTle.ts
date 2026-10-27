@@ -111,6 +111,26 @@ export abstract class FormatTle {
   }
 
   /**
+   * Shortest round-trip decimal string of a non-negative number below 1e21, never in exponential notation.
+   * Number.prototype.toString switches to exponential form below 1e-6 (5e-7 prints as "5e-7"); this expands the
+   * shortest digits of that form with zeros instead, so no binary noise is introduced (unlike toFixed(20)).
+   * @param value The number to format.
+   * @returns The decimal string, for example "0.0000005" for 5e-7.
+   */
+  private static toPlainDecimalString_(value: number): string {
+    const str = value.toString();
+    const match = (/^(?<int>\d)(?:\.(?<frac>\d+))?e-(?<exp>\d+)$/u).exec(str);
+
+    if (!match?.groups) {
+      return str;
+    }
+    const digits = `${match.groups.int}${match.groups.frac ?? ''}`;
+    const exp = parseInt(match.groups.exp, 10);
+
+    return `0.${'0'.repeat(exp - 1)}${digits}`;
+  }
+
+  /**
    * Returns the eccentricity value formatted for TLE.
    * @param ecen - The eccentricity value (string or number).
    * @returns The eccentricity value formatted as 7 digits without leading "0.".
@@ -121,7 +141,7 @@ export abstract class FormatTle {
       // Truncate to 7 decimal places (no rounding) to match TLE/NORAD convention.
       // Work with string representation to avoid IEEE 754 precision issues
       // (e.g., 0.0002554 * 1e7 = 2553.999... in floating point).
-      const ecenStr = ecen.toString();
+      const ecenStr = FormatTle.toPlainDecimalString_(ecen);
       const dotIdx = ecenStr.indexOf('.');
       const afterDot = dotIdx >= 0 ? ecenStr.substring(dotIdx + 1) : '';
 

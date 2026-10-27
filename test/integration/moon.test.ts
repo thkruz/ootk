@@ -4,7 +4,7 @@
  */
 import {
   Degrees,
-  GroundObject,
+  GroundStation,
   Kilometers,
   Moon,
   calcGmst,
@@ -54,7 +54,7 @@ describe('Moon Calculations', () => {
   });
 
   describe('Moon Rise/Set Times', () => {
-    const observer = new GroundObject({
+    const observer = new GroundStation({
       lat: 41 as Degrees,
       lon: -71 as Degrees,
       alt: 0 as Kilometers,

@@ -44,13 +44,13 @@ export interface PhasedArrayRadarParams extends RadarSensorParams {
  * @example
  * ```typescript
  * const radar = new PhasedArrayRadar({
- *   id: 'pave-paws',
+ *   id: 1,
  *   name: 'PAVE PAWS',
  *   sensorType: SensorType.PHASED_ARRAY_RADAR,
  *   beamwidth: 2.0 as Degrees,
  *   boresightAz: [0 as Degrees, 180 as Degrees],  // Two faces
  *   boresightEl: [45 as Degrees, 45 as Degrees],
- *   fieldOfView: { ... },
+ *   fieldOfView: { halfAngle: 60 as Degrees, minRange: 100 as Kilometers, maxRange: 5556 as Kilometers },
  * });
  *
  * // Convert target Az/El to UV coordinates
@@ -123,10 +123,21 @@ export class PhasedArrayRadar extends RadarSensor {
   // ==================== UV Coordinate Methods ====================
 
   /**
+   * Field-of-view half-angle in radians, the bound used by sine-space conversions.
+   * Every face shares the same FOV parameters, so face 0 is representative.
+   */
+  private get fovHalfAngleRad_(): Radians {
+    return (this.faceFovs[0].halfAngle * DEG2RAD) as Radians;
+  }
+
+  /**
    * Converts azimuth and elevation angles to UV coordinates relative to boresight.
    *
-   * UV coordinates represent the angular deviation from the radar's boresight
-   * direction, normalized by the beamwidth.
+   * UV coordinates are the direction cosines (sine space) of the line of sight in the
+   * face frame: u along the face's right axis, v along its up axis (see {@link azel2uv}).
+   * The face's boresight elevation is taken into account, so a tilted face is exact.
+   * They do not depend on the beamwidth; the field-of-view half-angle bounds the
+   * accepted angle off boresight, acos(w).
    *
    * @param az - Azimuth angle in degrees
    * @param el - Elevation angle in degrees
@@ -143,16 +154,18 @@ export class PhasedArrayRadar extends RadarSensor {
     const azDiff = wrapAngle((azRad - this.boresightAzRad(face)) as Radians);
     const elDiff = (elRad - this.boresightElRad(face)) as Radians;
 
-    return azel2uv(azDiff, elDiff, this.beamwidthRad);
+    return azel2uv(azDiff, elDiff, this.fovHalfAngleRad_, this.boresightElRad(face));
   }
 
   /**
    * Converts UV coordinates back to azimuth and elevation angles.
    *
+   * Exact inverse of {@link uvFromAzEl} for the same face, including tilted faces.
+   *
    * @param u - U coordinate
    * @param v - V coordinate
    * @param face - Face number (0-indexed), required for multi-face sensors
-   * @returns Az/El in degrees { az, el }
+   * @returns Az/El in degrees { az, el }, azimuth wrapped to [0, 360)
    * @throws Error if face number not specified for multi-face sensors
    */
   azElFromUV(u: number, v: number, face?: number): { az: Degrees; el: Degrees } {
@@ -164,10 +177,12 @@ export class PhasedArrayRadar extends RadarSensor {
 
     this.validateFace_(faceIndex);
 
-    const { az, el } = uv2azel(u, v, this.beamwidthRad);
+    const { az, el } = uv2azel(u, v, this.fovHalfAngleRad_, this.boresightElRad(faceIndex));
+
+    const azDeg = (az * RAD2DEG) + this.boresightAz[faceIndex];
 
     return {
-      az: ((az * RAD2DEG) + this.boresightAz[faceIndex]) as Degrees,
+      az: (((azDeg % 360) + 360) % 360) as Degrees,
       el: ((el * RAD2DEG) + this.boresightEl[faceIndex]) as Degrees,
     };
   }

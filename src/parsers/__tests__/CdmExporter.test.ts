@@ -56,12 +56,19 @@ describe('CdmExporter', () => {
       primaryState,
       secondaryState,
       relativeState,
-      missDistance: 0.5 as Kilometers,
-      radialDistance: 0.1 as Kilometers,
-      intrackDistance: 0.3 as Kilometers,
-      crosstrackDistance: 0.35 as Kilometers,
-      relativeVelocity: 14.2 as KilometersPerSecond,
+      // Signed RIC components consistent with the two states (CCSDS 508 RELATIVE_POSITION_R/T/N)
+      missDistance: relativeState.range,
+      radialDistance: relativeState.position.x,
+      intrackDistance: relativeState.position.y,
+      crosstrackDistance: relativeState.position.z,
+      relativeVelocity: relativeState.velocity.magnitude(),
+      radialVelocity: relativeState.velocity.x,
+      intrackVelocity: relativeState.velocity.y,
+      crosstrackVelocity: relativeState.velocity.z,
       combinedCovariance: covariance,
+      // CDM covariances are per object (CCSDS 508.0-B-1 Table 3-4); combinedCovariance is not written
+      primaryCovariance: covariance,
+      secondaryCovariance: covariance,
       probabilityOfCollision: 1.5e-5,
       primaryRadius: 0.01 as Kilometers,
       secondaryRadius: 0.005 as Kilometers,
@@ -153,7 +160,8 @@ describe('CdmExporter', () => {
       const cdm = CdmExporter.export(event);
 
       expect(cdm).toContain('COLLISION_PROBABILITY =');
-      expect(cdm).toContain('COLLISION_PROBABILITY_METHOD = CHAN-2D');
+      // FOSTER-1992 (SANA registry) is the exact 2D integral ProbabilityOfCollision computes; CHAN-2D is not a registry value
+      expect(cdm).toContain('COLLISION_PROBABILITY_METHOD = FOSTER-1992');
     });
 
     it('should include object sections', () => {
@@ -272,6 +280,10 @@ describe('CdmExporter', () => {
       expect(roundTripped.intrackDistance).toBeCloseTo(event.intrackDistance, 6);
       expect(roundTripped.crosstrackDistance).toBeCloseTo(event.crosstrackDistance, 6);
       expect(roundTripped.relativeVelocity).toBeCloseTo(event.relativeVelocity, 6);
+      // Signed velocity components survive the round trip as well
+      expect(roundTripped.radialVelocity).toBeCloseTo(event.radialVelocity!, 6);
+      expect(roundTripped.intrackVelocity).toBeCloseTo(event.intrackVelocity!, 6);
+      expect(roundTripped.crosstrackVelocity).toBeCloseTo(event.crosstrackVelocity!, 6);
 
       if (event.probabilityOfCollision !== undefined) {
         expect(roundTripped.probabilityOfCollision).toBeCloseTo(event.probabilityOfCollision, 10);
@@ -300,6 +312,108 @@ describe('CdmExporter', () => {
       expect(roundTripped.secondaryState.position.x).toBeCloseTo(event.secondaryState.position.x, 6);
       expect(roundTripped.secondaryState.position.y).toBeCloseTo(event.secondaryState.position.y, 6);
       expect(roundTripped.secondaryState.position.z).toBeCloseTo(event.secondaryState.position.z, 6);
+    });
+  });
+
+  /*
+   * Verifier fix M.3: RELATIVE_POSITION_* and RELATIVE_VELOCITY_* come from one source. With
+   * stored velocity components the stored (signed) fields are written; without them both are
+   * recomputed from the states, never a stored position next to a recomputed velocity.
+   */
+  describe('relative state source', () => {
+    const valueOf = (cdm: string, key: string): number => {
+      const line = cdm.split(/\r?\n/u).find((l) => l.startsWith(`${key} =`));
+
+      return parseFloat(line!.split('=')[1]);
+    };
+
+    it('writes the stored signed fields when the event carries relative velocity components', () => {
+      const base = createTestEvent(false);
+      const event = new ConjunctionEvent({
+        ...base,
+        radialDistance: -0.111 as Kilometers,
+        intrackDistance: -0.222 as Kilometers,
+        crosstrackDistance: 0.333 as Kilometers,
+        radialVelocity: -0.001 as KilometersPerSecond,
+        intrackVelocity: 0.002 as KilometersPerSecond,
+        crosstrackVelocity: -0.003 as KilometersPerSecond,
+      });
+      const cdm = CdmExporter.export(event);
+
+      expect(valueOf(cdm, 'RELATIVE_POSITION_R')).toBeCloseTo(-111, 6);
+      expect(valueOf(cdm, 'RELATIVE_POSITION_T')).toBeCloseTo(-222, 6);
+      expect(valueOf(cdm, 'RELATIVE_POSITION_N')).toBeCloseTo(333, 6);
+      expect(valueOf(cdm, 'RELATIVE_VELOCITY_R')).toBeCloseTo(-1, 6);
+      expect(valueOf(cdm, 'RELATIVE_VELOCITY_T')).toBeCloseTo(2, 6);
+      expect(valueOf(cdm, 'RELATIVE_VELOCITY_N')).toBeCloseTo(-3, 6);
+    });
+
+    it('recomputes both position and velocity from the states when no velocity components are stored', () => {
+      const base = createTestEvent(false);
+      const event = new ConjunctionEvent({
+        ...base,
+        radialDistance: 99 as Kilometers,
+        intrackDistance: 99 as Kilometers,
+        crosstrackDistance: 99 as Kilometers,
+        radialVelocity: undefined,
+        intrackVelocity: undefined,
+        crosstrackVelocity: undefined,
+      });
+      const ric = RIC.fromJ2000(event.secondaryState, event.primaryState);
+      const cdm = CdmExporter.export(event);
+
+      expect(valueOf(cdm, 'RELATIVE_POSITION_R')).toBeCloseTo(ric.position.x * 1000, 3);
+      expect(valueOf(cdm, 'RELATIVE_POSITION_T')).toBeCloseTo(ric.position.y * 1000, 3);
+      expect(valueOf(cdm, 'RELATIVE_POSITION_N')).toBeCloseTo(ric.position.z * 1000, 3);
+      expect(valueOf(cdm, 'RELATIVE_VELOCITY_R')).toBeCloseTo(ric.velocity.x * 1000, 3);
+      expect(valueOf(cdm, 'RELATIVE_VELOCITY_T')).toBeCloseTo(ric.velocity.y * 1000, 3);
+      expect(valueOf(cdm, 'RELATIVE_VELOCITY_N')).toBeCloseTo(ric.velocity.z * 1000, 3);
+    });
+
+    it('exports and re-parses INTERNATIONAL_DESIGNATOR, MANEUVERABLE, EPHEMERIS_NAME and the screening volume', () => {
+      const base = createTestEvent(false);
+      const event = new ConjunctionEvent({
+        ...base,
+        primaryDesignator: '25544',
+        secondaryDesignator: '12345',
+        primaryInternationalDesignator: '1998-067A',
+        secondaryInternationalDesignator: '1981-053A',
+        primaryManeuverable: 'YES',
+        secondaryManeuverable: 'NO',
+        primaryEphemerisName: 'ISS_EPH_2025',
+        secondaryEphemerisName: 'NONE',
+        screenVolume: {
+          startScreenPeriod: '2025-01-19T00:00:00.000',
+          stopScreenPeriod: '2025-01-26T00:00:00.000',
+          frame: 'RTN',
+          shape: 'ELLIPSOID',
+          x: 0.2 as Kilometers,
+          y: 1 as Kilometers,
+          z: 1 as Kilometers,
+          entryTime: '2025-01-20T15:30:40.000',
+          exitTime: '2025-01-20T15:30:50.000',
+        },
+      });
+      const cdm = CdmExporter.export(event);
+
+      expect(cdm).toContain('INTERNATIONAL_DESIGNATOR = 1998-067A');
+      expect(cdm).toContain('INTERNATIONAL_DESIGNATOR = 1981-053A');
+      expect(cdm).toContain('MANEUVERABLE = YES');
+      expect(cdm).toContain('MANEUVERABLE = NO');
+      expect(cdm).toContain('EPHEMERIS_NAME = ISS_EPH_2025');
+      expect(cdm).toContain('SCREEN_VOLUME_SHAPE = ELLIPSOID');
+      expect(valueOf(cdm, 'SCREEN_VOLUME_X')).toBeCloseTo(200, 9);
+
+      const back = CdmParser.toConjunctionEvent(CdmParser.parse(cdm));
+
+      expect(back.primaryInternationalDesignator).toBe('1998-067A');
+      expect(back.secondaryManeuverable).toBe('NO');
+      expect(back.primaryEphemerisName).toBe('ISS_EPH_2025');
+      expect(back.screenVolume?.frame).toBe('RTN');
+      expect(back.screenVolume?.x).toBeCloseTo(0.2, 12);
+      expect(back.screenVolume?.y).toBeCloseTo(1, 12);
+      expect(back.screenVolume?.stopScreenPeriod).toBe('2025-01-26T00:00:00.000');
+      expect(back.screenVolume?.exitTime).toBe('2025-01-20T15:30:50.000');
     });
   });
 });

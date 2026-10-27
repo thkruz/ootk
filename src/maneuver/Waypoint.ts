@@ -176,11 +176,12 @@ export class Waypoint {
       }
       const wpState = targetWp.toJ2000(targetState);
       const tof = wp.epoch.difference(state.epoch);
-      const revs = Math.floor(tof / state.period);
+      // tof is in seconds and StateVector.period is in minutes
+      const revs = Math.floor(tof / (state.period * 60));
       const shortPath = LambertIOD.useShortPath(state, targetState);
       const lambert = new LambertIOD();
       const components = lambert.estimate(state.position, wpState.position, state.epoch, wp.epoch, {
-        posigrade: shortPath,
+        shortWay: shortPath,
         nRev: revs,
       });
 

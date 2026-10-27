@@ -46,11 +46,11 @@ Four estimates are produced: `LambertIOD.estimate` from two positions and their 
 ```txt
 Lambert IOD (two RAE-derived positions, 10 s apart) fitted to a TLE:
   1 00001U 58001A   24007.49608796  .00000000  00000+0  00000+0 0  9995
-  2 00001  39.7846 174.6222 4631813  47.8228   0.3099 05.92361752    02
+  2 00001  39.7846 174.6222 4631813  47.8227   0.3099 05.92361752    01
 
 Herrick-Gibbs IOD (three RAE-derived positions, 10 s spacing) fitted to a TLE:
   1 00001U 58001A   24007.49620370  .00000000  00000+0  00000+0 0  9997
-  2 00001  42.2255 178.7484 0588845  46.9219 359.5543 13.74736092    07
+  2 00001  42.2255 178.7485 0588845  46.9219 359.5543 13.74736093    09
 
 Gibbs IOD (three ECI positions, 10 s spacing) fitted to a TLE:
   1 00001U 58001A   24007.49620370  .00000000  00000+0  00000+0 0  9997

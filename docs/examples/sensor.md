@@ -67,16 +67,16 @@ The same point can be routed through the inertial frame: `calcGmst(date)` gives 
 
 RAE from ECEF:
 {
-  rng: 11867.826042828654,
+  rng: 11868.534961127207,
   az: 46.3936383480027,
-  el: -45.14527065977833
+  el: -45.14867557726829
 }
 
 RAE from ECI (should match the ECEF path):
 {
-  rng: 11867.826042828654,
+  rng: 11868.534961127207,
   az: 46.3936383480027,
-  el: -45.14527065977833
+  el: -45.14867557726829
 }
 
 Geodetic coordinates of the ECI point:
@@ -88,16 +88,16 @@ Geodetic coordinates of the ECI point:
 
 Satellite look angles from the ground station:
 {
-  rng: 2323.6437976750553,
+  rng: 2323.1223087073095,
   az: 220.1318954201388,
-  el: 31.442701897926916
+  el: 31.421660131198042
 }
 
 Satellite geodetic position (J2000 -> ITRF -> Geodetic):
 _Geodetic {
-  lat: 0.5103321455362404,
-  lon: -1.4268203137993296,
-  alt: 1467.0398331566748
+  lat: 0.5103321455362402,
+  lon: -1.4268203137997941,
+  alt: 1467.0398331566776
 }
 
 Is the satellite in the radar's FOV? YES

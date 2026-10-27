@@ -26,7 +26,7 @@ import { DataHandler } from '../data/DataHandler';
 import { EpochUTC } from '../time/EpochUTC';
 import { Kilometers, Radians, RadiansPerSecond } from '../types/types';
 import { angularDiameter, evalPoly } from '../utils/functions';
-import { asec2rad, DEG2RAD, earthGravityParam, RAD2DEG, secondsPerDay, secondsPerSiderealDay, TAU, ttasec2rad } from '../utils/constants';
+import { asec2rad, DEG2RAD, earthGravityParam, RAD2DEG, secondsPerDay, TAU, ttasec2rad } from '../utils/constants';
 import { Vector3D } from './../operations/Vector3D';
 import { NutationAngles } from './NutationAngles';
 import { PrecessionAngles } from './PrecessionAngles';
@@ -101,7 +101,17 @@ export class Earth {
     return { zeta: zeta as Radians, theta: theta as Radians, zed: zed as Radians };
   }
 
-  // / Calculate Earth [NutationAngles] for a given UTC [epoch].
+  /**
+   * Calculate Earth [NutationAngles] for a given UTC [epoch] with the full 106-term IAU 1980
+   * nutation series (Seidelmann 1982; Vallado Table D-6; SOFA `nut80`).
+   *
+   * The equation of the equinoxes includes the 1994 IAU correction terms
+   * 0.00264" sin(Om) + 0.000063" sin(2 Om) (IERS Conventions 1996). `gast` is GMST plus the
+   * equation of the equinoxes, wrapped to [0, 2pi). GMST is evaluated with UTC standing in
+   * for UT1 (no DUT1 correction, up to 0.9 s of time).
+   * @param epoch UTC epoch.
+   * @returns Nutation angles in radians.
+   */
   static nutation(epoch: EpochUTC): NutationAngles {
     const t = epoch.toTT().toJulianCenturies();
     const moonAnom = evalPoly(t, Earth.moonAnomPoly_);
@@ -113,7 +123,8 @@ export class Earth {
     let deltaEpsilon = 0.0;
     const dh = DataHandler.getInstance();
 
-    for (let i = 0; i < 4; i++) {
+    // Sum smallest terms first (the table is ordered largest first) to limit round-off.
+    for (let i = dh.getIau1980Count() - 1; i >= 0; i--) {
       const [a1, a2, a3, a4, a5, ai, bi, ci, di] = dh.getIau1980Coeffs(i);
       const arg = a1 * moonAnom + a2 * sunAnom + a3 * moonLat + a4 * sunElong + a5 * moonRaan;
       const sinC = ai + bi * t;
@@ -130,7 +141,11 @@ export class Earth {
       deltaPsi * Math.cos(meanEpsilon) +
       0.00264 * asec2rad * Math.sin(moonRaan) +
       0.000063 * asec2rad * Math.sin(2.0 * moonRaan);
-    const gast = epoch.gmstAngle() + eqEq;
+    let gast = (epoch.gmstAngle() + eqEq) % TAU;
+
+    if (gast < 0) {
+      gast += TAU;
+    }
 
     return {
       dPsi: deltaPsi as Radians,
@@ -142,26 +157,48 @@ export class Earth {
     };
   }
 
-  // / Convert a [semimajorAxis] _(km)_ to an eastward drift rate _(rad/day)_.
+  /**
+   * Convert a [semimajorAxis] _(km)_ of a circular equatorial orbit to the eastward drift
+   * rate of its sub-satellite longitude _(rad/day, 86400 s solar day)_.
+   *
+   * drift = (n - wE) * 86400 s, with n = sqrt(mu / a^3) the two-body mean motion and wE the
+   * Earth rotation rate (`Earth.rotation.z`). Positive is eastward (below GEO height a
+   * satellite drifts east). J2 secular rates are not included.
+   * @param semimajorAxis Semi-major axis in km.
+   * @returns Eastward drift in rad per day.
+   */
   static smaToDrift(semimajorAxis: number): number {
-    const t = (TAU * Math.sqrt(semimajorAxis ** 3 / Earth.mu)) / secondsPerSiderealDay;
+    const n = Math.sqrt(Earth.mu / semimajorAxis ** 3);
 
-    return (1.0 - t) * TAU;
+    return (n - Earth.rotation.z) * secondsPerDay;
   }
 
-  // / Convert a [semimajorAxis] _(km)_ to an eastward drift rate _(°/day)_.
+  /**
+   * Convert a [semimajorAxis] _(km)_ to an eastward drift rate _(deg/day)_. See `smaToDrift`.
+   * @param semimajorAxis Semi-major axis in km.
+   * @returns Eastward drift in degrees per day.
+   */
   static smaToDriftDegrees(semimajorAxis: number): number {
     return Earth.smaToDrift(semimajorAxis) * RAD2DEG;
   }
 
-  // / Convert an eastward [driftRate] _(rad/day)_ to a semimajor-axis _(km)_.
+  /**
+   * Convert an eastward [driftRate] _(rad/day)_ to a semimajor-axis _(km)_. Exact inverse of
+   * `smaToDrift`: n = drift / 86400 s + wE, a = (mu / n^2)^(1/3).
+   * @param driftRate Eastward drift in rad per day.
+   * @returns Semi-major axis in km.
+   */
   static driftToSemimajorAxis(driftRate: number): number {
-    const t = (-driftRate / TAU + 1) * secondsPerSiderealDay;
+    const n = driftRate / secondsPerDay + Earth.rotation.z;
 
-    return ((Earth.mu * t * t) / (4 * Math.PI * Math.PI)) ** (1 / 3);
+    return Math.cbrt(Earth.mu / (n * n));
   }
 
-  // / Convert an eastward [driftRate] _(°/day)_ to a semimajor-axis _(km)_.
+  /**
+   * Convert an eastward [driftRate] _(deg/day)_ to a semimajor-axis _(km)_.
+   * @param driftRate Eastward drift in degrees per day.
+   * @returns Semi-major axis in km.
+   */
   static driftDegreesToSma(driftRate: number): number {
     return Earth.driftToSemimajorAxis(DEG2RAD * driftRate);
   }

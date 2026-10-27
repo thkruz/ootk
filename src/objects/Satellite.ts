@@ -76,6 +76,9 @@ import { dopplerFactor } from './../utils/functions';
 import { GroundObject } from './GroundObject';
 import { SpaceObject } from './SpaceObject';
 
+/** WGS-84 equatorial radius (km), the reference for {@link Satellite.apogee} and {@link Satellite.perigee}. */
+const WGS84_EQUATORIAL_RADIUS_KM = 6378.137;
+
 /**
  * Options for the Satellite.clone() method.
  */
@@ -89,7 +92,15 @@ export interface SatelliteCloneOptions {
  * calculating its position and other properties.
  */
 export class Satellite extends SpaceObject {
+  /**
+   * Apogee altitude in km: the geocentric apogee radius a (1 + e) minus the WGS-84 equatorial
+   * radius 6378.137 km, with a the Keplerian semimajor axis from the mean motion. This is a
+   * height above a sphere of equatorial radius, not a geodetic altitude. For the distance from
+   * the Earth's center use {@link apogeeRadius}.
+   */
   apogee!: Kilometers;
+  /** Geocentric apogee radius a (1 + e) in km, measured from the Earth's center. */
+  apogeeRadius!: Kilometers;
   argOfPerigee!: Degrees;
   bstar!: number;
   eccentricity!: number;
@@ -102,7 +113,14 @@ export class Satellite extends SpaceObject {
   meanMoDev2!: number;
   meanMotion!: number;
   options: OptionsParams;
+  /**
+   * Perigee altitude in km: the geocentric perigee radius a (1 - e) minus the WGS-84 equatorial
+   * radius 6378.137 km. This is a height above a sphere of equatorial radius, not a geodetic
+   * altitude. For the distance from the Earth's center use {@link perigeeRadius}.
+   */
   perigee!: Kilometers;
+  /** Geocentric perigee radius a (1 - e) in km, measured from the Earth's center. */
+  perigeeRadius!: Kilometers;
   period!: Minutes;
   rightAscension!: Degrees;
   satrec!: SatelliteRecord;
@@ -188,6 +206,12 @@ export class Satellite extends SpaceObject {
   altId: string = '';
   /** Alternate name */
   altName: string = '';
+  /**
+   * Catalog number of the satellite this object was derived from (for example an
+   * analyst satellite created by applying a maneuver to a cataloged parent).
+   * Undefined for objects that are not derived from another.
+   */
+  derivedFromSccNum?: string;
   /** Visual magnitude */
   vmag: number | null = null;
   /** Radar cross-section */
@@ -321,6 +345,11 @@ export class Satellite extends SpaceObject {
 
   /**
    * Creates a Satellite from an OMM (Orbit Mean-elements Message) data object.
+   *
+   * SGP4 is initialised from the OMM values at full precision. The generated `tle1` / `tle2`
+   * strings round the epoch to the TLE's 8 decimal places of a day (1e-8 day = 0.864 ms) and the
+   * other elements to their TLE column widths, so a Satellite rebuilt from those lines (for example
+   * via {@link toTle}) can differ from this one by up to 0.432 ms in epoch.
    * @param omm - The OMM data in flat format
    * @param name - Optional satellite name (overrides OMM OBJECT_NAME)
    */
@@ -352,9 +381,14 @@ export class Satellite extends SpaceObject {
   /**
    * Normalizes {@link sccNum} to the display-canonical numeric form and derives
    * {@link sccNum5} and {@link sccNum6}. The class invariant is that
-   * `Satellite.sccNum` is always numeric — never an alpha-5 string. Alpha-5
-   * inputs ("T0001") are converted to their 6-digit numeric equivalent
-   * ("270001"); the alpha-5 form is preserved on {@link sccNum5}.
+   * `Satellite.sccNum` is always numeric (never an alpha-5 string) with no
+   * leading zeros. Alpha-5 inputs ("T0001") are converted to their 6-digit
+   * numeric equivalent ("270001"); the alpha-5 form is preserved on
+   * {@link sccNum5}.
+   *
+   * {@link sccNum5} and {@link sccNum6} are fixed-width forms and keep their
+   * leading zeros: catalog number 5 gives sccNum "5", sccNum5 "00005" (the TLE
+   * columns 3-7 form) and sccNum6 "000005".
    *
    * Extended (7+ digit) IDs that exceed the alpha-5 capacity (max 339 999)
    * leave sccNum5/sccNum6 set to `null`.
@@ -376,19 +410,85 @@ export class Satellite extends SpaceObject {
     // while the OMM path produces "00005" via padStart, and the catalog
     // would carry two different display strings for the same satellite.
     // Alpha-5 strings (e.g. "T0001") have no leading zeros and are untouched.
+    // Keep the last digit so catalog number 0 (VIMPEL entries) stays "0", not "".
     if ((/^0+\d/u).test(this.sccNum)) {
-      this.sccNum = this.sccNum.replace(/^0+/u, '');
+      this.sccNum = this.sccNum.replace(/^0+(?=\d)/u, '');
     }
 
     const kind = Tle.classifySatNum(this.sccNum);
 
     if (kind === 'numeric5' || kind === 'numeric6') {
-      this.sccNum5 = Tle.convert6DigitToA5(this.sccNum);
-      this.sccNum6 = this.sccNum;
+      // Fixed-width forms: pad before converting so values below 10000 keep their zeros.
+      this.sccNum6 = this.sccNum.padStart(6, '0');
+      this.sccNum5 = Tle.convert6DigitToA5(this.sccNum.padStart(5, '0'));
     } else {
       this.sccNum5 = null;
       this.sccNum6 = null;
     }
+  }
+
+  /**
+   * Sets {@link apogee}, {@link perigee}, {@link apogeeRadius} and {@link perigeeRadius} from
+   * {@link semiMajorAxis} and {@link eccentricity}: radius r = a (1 +/- e) and altitude
+   * r - 6378.137 km (WGS-84 equatorial radius), matching `Tle.apogee` / `Tle.perigee`.
+   */
+  private updateApsides_(): void {
+    this.apogeeRadius = (this.semiMajorAxis * (1 + this.eccentricity)) as Kilometers;
+    this.perigeeRadius = (this.semiMajorAxis * (1 - this.eccentricity)) as Kilometers;
+    this.apogee = (this.apogeeRadius - WGS84_EQUATORIAL_RADIUS_KM) as Kilometers;
+    this.perigee = (this.perigeeRadius - WGS84_EQUATORIAL_RADIUS_KM) as Kilometers;
+  }
+
+  /**
+   * Parses an OMM EPOCH into its calendar fields and the TLE-style day of year.
+   *
+   * Accepts the CCSDS 502.0 forms `YYYY-MM-DDThh:mm:ss[.d...][Z]` and
+   * `YYYY-DDDThh:mm:ss[.d...][Z]`. The day of year counts from 1.0 at 00:00:00 UTC on
+   * January 1, so doy = dayNumber + (hh * 3600 + mm * 60 + ss) / 86400 with ss keeping every
+   * fractional digit (it is not routed through `Date.UTC`, which drops sub-millisecond parts).
+   * @param epoch - The OMM EPOCH string (UTC).
+   * @returns Calendar fields and the fractional day of year.
+   */
+  private static parseOmmEpoch_(epoch: string): {
+    year: number;
+    month: number;
+    day: number;
+    hour: number;
+    minute: number;
+    second: number;
+    doy: number;
+  } {
+    const match = (/^(?<year>\d{4})-(?:(?<month>\d{2})-(?<day>\d{2})|(?<dayOfYear>\d{3}))T(?<hour>\d{2}):(?<minute>\d{2}):(?<second>\d{2}(?:\.\d*)?)Z?$/u).exec(epoch.trim());
+
+    if (!match?.groups) {
+      throw new Error(`Invalid OMM EPOCH: "${epoch}"`);
+    }
+
+    const g = match.groups;
+    const year = Number(g.year);
+    const hour = Number(g.hour);
+    const minute = Number(g.minute);
+    const second = Number(g.second);
+    let month: number;
+    let day: number;
+    let dayNumber: number;
+
+    if (g.dayOfYear) {
+      dayNumber = Number(g.dayOfYear);
+      const date = new Date(Date.UTC(year, 0, dayNumber));
+
+      month = date.getUTCMonth() + 1;
+      day = date.getUTCDate();
+    } else {
+      month = Number(g.month);
+      day = Number(g.day);
+      // Whole days only, so the integer milliseconds of Date.UTC are exact here.
+      dayNumber = (Date.UTC(year, month - 1, day) - Date.UTC(year, 0, 0)) / 86400000;
+    }
+
+    const doy = dayNumber + (hour * 3600 + minute * 60 + second) / 86400;
+
+    return { year, month, day, hour, minute, second, doy };
   }
 
   private parseTleAndUpdateOrbit_(tle1: TleLine1, tle2: TleLine2, sccNum?: string) {
@@ -412,10 +512,10 @@ export class Satellite extends SpaceObject {
     this.meanAnomaly = tleData.meanAnomaly;
     this.meanMotion = tleData.meanMotion;
     this.period = tleData.period;
-    this.semiMajorAxis = ((8681663.653 / this.meanMotion) ** (2 / 3)) as Kilometers;
+    // WGS-72 mu, the SGP4 convention; identical to Tle.semimajorAxis
+    this.semiMajorAxis = Tle.semimajorAxisFromMeanMotion(this.meanMotion);
     this.semiMinorAxis = (this.semiMajorAxis * Math.sqrt(1 - this.eccentricity ** 2)) as Kilometers;
-    this.apogee = (this.semiMajorAxis * (1 + this.eccentricity) - 6371) as Kilometers;
-    this.perigee = (this.semiMajorAxis * (1 - this.eccentricity) - 6371) as Kilometers;
+    this.updateApsides_();
     this.satrec = Sgp4.createSatrec(tle1, tle2);
   }
 
@@ -425,14 +525,8 @@ export class Satellite extends SpaceObject {
     this.sccNum = noradStr.padStart(5, '0');
     this.assignAlpha5Forms_();
     this.intlDes = omm.OBJECT_ID;
-    const YYYY = omm.EPOCH.slice(0, 4);
-    const MM = omm.EPOCH.slice(5, 7);
-    const DD = omm.EPOCH.slice(8, 10);
-    const hh = omm.EPOCH.slice(11, 13);
-    const mm = omm.EPOCH.slice(14, 16);
-    const ss = omm.EPOCH.slice(17, 23);
-    const epochDateObj = Date.UTC(Number(YYYY), Number(MM) - 1, Number(DD), Number(hh), Number(mm), Number(ss));
-    const dayOfYear = (epochDateObj - Date.UTC(Number(YYYY), 0, 0)) / 86400000;
+    const epoch = Satellite.parseOmmEpoch_(omm.EPOCH);
+    const dayOfYear = epoch.doy;
 
     const ommParsed: OmmParsedDataFormat = {
       ...omm,
@@ -449,18 +543,10 @@ export class Satellite extends SpaceObject {
       BSTAR: String(omm.BSTAR),
       MEAN_MOTION_DOT: String(omm.MEAN_MOTION_DOT),
       MEAN_MOTION_DDOT: String(omm.MEAN_MOTION_DDOT),
-      epoch: {
-        year: Number(YYYY),
-        month: Number(MM),
-        day: Number(DD),
-        hour: Number(hh),
-        minute: Number(mm),
-        second: Number(ss),
-        doy: dayOfYear,
-      },
+      epoch,
     };
 
-    this.epochYear = parseInt(YYYY.slice(2, 4));
+    this.epochYear = epoch.year % 100;
     this.epochDay = dayOfYear;
     this.meanMoDev1 = Number(omm.MEAN_MOTION_DOT);
     this.meanMoDev2 = Number(omm.MEAN_MOTION_DDOT);
@@ -472,10 +558,10 @@ export class Satellite extends SpaceObject {
     this.meanAnomaly = Number(omm.MEAN_ANOMALY) as Degrees;
     this.meanMotion = Number(omm.MEAN_MOTION);
     this.period = (1440 / this.meanMotion) as Minutes;
-    this.semiMajorAxis = ((8681663.653 / this.meanMotion) ** (2 / 3)) as Kilometers;
+    // WGS-72 mu, the SGP4 convention; identical to Tle.semimajorAxis
+    this.semiMajorAxis = Tle.semimajorAxisFromMeanMotion(this.meanMotion);
     this.semiMinorAxis = (this.semiMajorAxis * Math.sqrt(1 - this.eccentricity ** 2)) as Kilometers;
-    this.apogee = (this.semiMajorAxis * (1 + this.eccentricity) - 6371) as Kilometers;
-    this.perigee = (this.semiMajorAxis * (1 - this.eccentricity) - 6371) as Kilometers;
+    this.updateApsides_();
 
     // Generate TLE lines from OMM data so tle1/tle2 are always available
     const { tle1, tle2 } = FormatTle.createTle({
@@ -494,7 +580,7 @@ export class Satellite extends SpaceObject {
       bstar: this.bstar,
       meanMotionDot: this.meanMoDev1,
       meanMotionDdot: this.meanMoDev2,
-      classification: String(omm.CLASSIFICATION_TYPE) || 'U',
+      classification: omm.CLASSIFICATION_TYPE ? String(omm.CLASSIFICATION_TYPE) : 'U',
       revAtEpoch: Number(omm.REV_AT_EPOCH) || 0,
       elementSetNo: Number(omm.ELEMENT_SET_NO) || 999,
       ephemerisType: Number(omm.EPHEMERIS_TYPE) || 0,
@@ -648,7 +734,7 @@ export class Satellite extends SpaceObject {
    */
   override ecef(date: Date = new Date()): EcefVec3<Kilometers> | null {
     const { gmst } = Satellite.calculateTimeVariables_(date);
-    const eci = this.eci(date);
+    const eci = this.propagateTeme_(date);
 
     if (!eci) {
       return null;
@@ -703,6 +789,25 @@ export class Satellite extends SpaceObject {
    */
   override eci(date?: Date, j?: number, gmst?: GreenwichMeanSiderealTime): PosVel | null {
     date ??= new Date();
+    const pv = this.propagateTeme_(date, j, gmst);
+
+    // Only direct eci() calls are recorded. The propagations made inside rae(), toRae(),
+    // ecef(), lla() and access sweeps go through propagateTeme_ and are not recorded.
+    if (pv && this.isHistoryEnabled) {
+      this.recordToHistory(date, { position: pv.position, velocity: pv.velocity });
+    }
+
+    return pv;
+  }
+
+  /**
+   * SGP4 propagation to `date` in TEME without recording to history.
+   * @param date - The date to propagate to.
+   * @param j - Julian date (UTC), optional.
+   * @param gmst - Greenwich Mean Sidereal Time (rad), optional.
+   * @returns Position (km) and velocity (km/s) in TEME, or null if propagation fails.
+   */
+  private propagateTeme_(date: Date, j?: number, gmst?: GreenwichMeanSiderealTime): PosVel | null {
     const { m } = Satellite.calculateTimeVariables_(date, this.satrec, j, gmst);
 
     if (m === null) {
@@ -712,11 +817,6 @@ export class Satellite extends SpaceObject {
 
     if (!pv.position || !pv.velocity) {
       return null;
-    }
-
-    // Record to history if enabled
-    if (this.isHistoryEnabled) {
-      this.recordToHistory(date, { position: pv.position, velocity: pv.velocity });
     }
 
     return pv as PosVel;
@@ -798,7 +898,7 @@ export class Satellite extends SpaceObject {
       gmst = timeVar.gmst;
     }
 
-    const eci = this.eci(date, j, gmst);
+    const eci = this.propagateTeme_(date, j, gmst);
 
     if (!eci) {
       return null;
@@ -906,15 +1006,22 @@ export class Satellite extends SpaceObject {
       j = timeVariables.j;
       gmst = timeVariables.gmst;
     }
-    const eci = this.eci(date, j, gmst);
+    const eci = this.propagateTeme_(date, j, gmst);
 
     if (!eci) {
       return null;
     }
 
+    // Observer position at `date` (a DynamicGroundObject moves; a fixed site returns its lla()).
+    const observerLla = observer.llaAt(date);
+
+    if (!observerLla) {
+      return null;
+    }
+
     const ecef = eci2ecef(eci.position, gmst);
 
-    return ecef2rae(observer, ecef);
+    return ecef2rae(observerLla, ecef);
   }
 
   /**
@@ -960,13 +1067,15 @@ export class Satellite extends SpaceObject {
    * @returns The calculated Doppler factor.
    */
   dopplerFactor(observer: GroundObject, date?: Date): number | null {
-    const position = this.eci(date);
+    date ??= new Date();
+    const position = this.propagateTeme_(date);
+    const observerEci = observer.eciAt(date);
 
-    if (!position) {
+    if (!position || !observerEci) {
       return null;
     }
 
-    return dopplerFactor(observer.eci(date), position.position, position.velocity);
+    return dopplerFactor(observerEci, position.position, position.velocity);
   }
 
   // ==================== Detailed Property Getters ====================
@@ -1141,7 +1250,7 @@ export class Satellite extends SpaceObject {
     for (let i = 0; i < points; i++) {
       const offset = (i * periodMs * orbits) / points;
       const date = new Date(startDate.getTime() + offset);
-      const pv = this.eci(date);
+      const pv = this.propagateTeme_(date);
 
       if (pv) {
         result.push(new Vector3D(pv.position.x, pv.position.y, pv.position.z));
@@ -1350,14 +1459,18 @@ export class Satellite extends SpaceObject {
   }
 
   /**
-   * Calculates the angular separation between this satellite and another.
+   * Direction of the relative angular momentum of this satellite about another.
    *
-   * Returns the azimuth and elevation angles of the relative position vector
-   * in the orbital plane reference frame.
+   * With r = r_this - r_other and v = v_this - v_other in TEME, the result is the direction of
+   * h = r x v expressed as spherical angles in the TEME axes: `az` = atan2(h_y, h_x) (a right
+   * ascension-like longitude, -180 to 180 deg) and `el` = asin(h_z / |h|) (a declination-like
+   * latitude). It is the pole of the plane in which `other` sees this satellite move; it is
+   * not an azimuth/elevation in any local or orbital-plane frame. Identical positions return
+   * (0, 0).
    *
    * @param other - The other satellite.
    * @param date - The date for the calculation.
-   * @returns Object containing azimuth and elevation angles in degrees.
+   * @returns The pole direction of r x v, in degrees.
    * @throws Error if positions are undefined.
    * @example
    * ```typescript
@@ -1366,8 +1479,8 @@ export class Satellite extends SpaceObject {
    * ```
    */
   angleTo(other: Satellite, date: Date = new Date()): { az: Degrees; el: Degrees } {
-    const pv1 = this.eci(date);
-    const pv2 = other.eci(date);
+    const pv1 = this.propagateTeme_(date);
+    const pv2 = other.propagateTeme_(date);
 
     if (!pv1 || !pv2) {
       throw new Error('Cannot determine satellite positions');
@@ -1411,8 +1524,8 @@ export class Satellite extends SpaceObject {
    * @throws Error if positions are undefined.
    */
   sunAngleTo(other: Satellite, sunPosition: Vector3D<Kilometers>, date: Date = new Date()): Radians {
-    const pv1 = this.eci(date);
-    const pv2 = other.eci(date);
+    const pv1 = this.propagateTeme_(date);
+    const pv2 = other.propagateTeme_(date);
 
     if (!pv1 || !pv2) {
       throw new Error('Cannot determine satellite positions');

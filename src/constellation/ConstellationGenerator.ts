@@ -78,7 +78,7 @@ export class ConstellationGenerator {
    * orbital planes at the same inclination. The phasing factor determines the
    * relative angular offset between satellites in adjacent planes.
    *
-   * @param altitude - Orbital altitude above Earth's surface in kilometers
+   * @param altitude - Orbital altitude in kilometers above the mean Earth radius `Earth.radiusMean` (about 6371 km)
    * @param inclination - Orbital inclination in degrees (0-180)
    * @param totalSats - Total number of satellites (T)
    * @param planes - Number of orbital planes (P)
@@ -97,14 +97,19 @@ export class ConstellationGenerator {
    *   new Date()
    * );
    *
-   * // Iridium-like constellation: 66/6/2 at 780 km, 86.4 deg inclination
-   * const iridiumSats = ConstellationGenerator.walker(
-   *   780 as Kilometers,
-   *   86.4 as Degrees,
-   *   66, 6, 2,
+   * // Galileo-like constellation: 24/3/1 at 23,222 km, 56 deg inclination
+   * const galileoSats = ConstellationGenerator.walker(
+   *   23222 as Kilometers,
+   *   56 as Degrees,
+   *   24, 3, 1,
    *   new Date()
    * );
    * ```
+   *
+   * Only Walker Delta patterns are generated: the P planes are spread over 360 deg of right
+   * ascension. Walker Star constellations such as Iridium (66 satellites in 6 near-polar planes
+   * spread over about 180 deg) are not supported; passing 66/6/2 produces a Delta pattern whose
+   * counter-rotating planes cross at the equator.
    */
   static walker(
     altitude: Kilometers,

@@ -13,6 +13,8 @@
 import {
   ClassicalElements,
   Degrees,
+  DEG2RAD,
+  Radians,
   EpochUTC,
   J2000,
   Kilometers,
@@ -61,16 +63,16 @@ const customElements = new ClassicalElements({
   epoch: EpochUTC.fromDateTime(date),
   semimajorAxis: 8000 as Kilometers,
   eccentricity: 0.1,
-  inclination: 45 as Degrees,
-  rightAscension: 90 as Degrees,
-  argPerigee: 30 as Degrees,
-  trueAnomaly: 0 as Degrees,
+  inclination: (45 * DEG2RAD) as Radians,
+  rightAscension: (90 * DEG2RAD) as Radians,
+  argPerigee: (30 * DEG2RAD) as Radians,
+  trueAnomaly: (0 * DEG2RAD) as Radians,
 });
 
 console.log('Custom Orbit:');
 console.log(`  Semi-major axis: ${customElements.semimajorAxis.toFixed(2)} km`);
 console.log(`  Eccentricity: ${customElements.eccentricity.toFixed(6)}`);
-console.log(`  Inclination: ${customElements.inclination.toFixed(4)}°`);
+console.log(`  Inclination: ${(customElements.inclination * (180 / Math.PI)).toFixed(4)}°`);
 console.log(`  Period: ${customElements.period.toFixed(2)} minutes`);
 
 const stateVector = customElements.toJ2000();
@@ -117,10 +119,10 @@ const geoElements = new ClassicalElements({
   epoch: EpochUTC.fromDateTime(date),
   semimajorAxis: 42164 as Kilometers, // GEO altitude
   eccentricity: 0.0001,
-  inclination: 0.1 as Degrees,
-  rightAscension: 0 as Degrees,
-  argPerigee: 0 as Degrees,
-  trueAnomaly: 0 as Degrees,
+  inclination: (0.1 * DEG2RAD) as Radians,
+  rightAscension: (0 * DEG2RAD) as Radians,
+  argPerigee: (0 * DEG2RAD) as Radians,
+  trueAnomaly: (0 * DEG2RAD) as Radians,
 });
 
 const geoTle = Tle.fromClassicalElements(geoElements);
@@ -153,10 +155,10 @@ const orbits = [
       epoch: EpochUTC.fromDateTime(date),
       semimajorAxis: 6778 as Kilometers,
       eccentricity: 0.001,
-      inclination: 51.6 as Degrees,
-      rightAscension: 0 as Degrees,
-      argPerigee: 0 as Degrees,
-      trueAnomaly: 0 as Degrees,
+      inclination: (51.6 * DEG2RAD) as Radians,
+      rightAscension: (0 * DEG2RAD) as Radians,
+      argPerigee: (0 * DEG2RAD) as Radians,
+      trueAnomaly: (0 * DEG2RAD) as Radians,
     }),
   },
   {
@@ -165,10 +167,10 @@ const orbits = [
       epoch: EpochUTC.fromDateTime(date),
       semimajorAxis: 26560 as Kilometers,
       eccentricity: 0.01,
-      inclination: 55 as Degrees,
-      rightAscension: 0 as Degrees,
-      argPerigee: 0 as Degrees,
-      trueAnomaly: 0 as Degrees,
+      inclination: (55 * DEG2RAD) as Radians,
+      rightAscension: (0 * DEG2RAD) as Radians,
+      argPerigee: (0 * DEG2RAD) as Radians,
+      trueAnomaly: (0 * DEG2RAD) as Radians,
     }),
   },
   {
@@ -177,10 +179,10 @@ const orbits = [
       epoch: EpochUTC.fromDateTime(date),
       semimajorAxis: 26554 as Kilometers,
       eccentricity: 0.74,
-      inclination: 63.4 as Degrees,
-      rightAscension: 0 as Degrees,
-      argPerigee: 270 as Degrees,
-      trueAnomaly: 0 as Degrees,
+      inclination: (63.4 * DEG2RAD) as Radians,
+      rightAscension: (0 * DEG2RAD) as Radians,
+      argPerigee: (270 * DEG2RAD) as Radians,
+      trueAnomaly: (0 * DEG2RAD) as Radians,
     }),
   },
 ];

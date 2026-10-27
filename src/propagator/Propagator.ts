@@ -20,6 +20,7 @@ import { VerletBlendInterpolator } from '../interpolator/VerletBlendInterpolator
 import { EpochUTC } from '../time/EpochUTC';
 import { J2000 } from '../coordinate/J2000';
 import { Seconds } from '../types/types';
+import { PropagationError } from '../errors';
 import { GoldenSection } from './../optimize/GoldenSection';
 
 // Propagator base class.
@@ -27,20 +28,49 @@ export abstract class Propagator {
   // Propagate state to the provided [epoch].
   abstract propagate(epoch: EpochUTC): J2000;
 
-  /*
-   * Generate a [VerletBlendInterpolator] containing ephemeris over the
-   * [start] and [stop] propagation period, with an optional
-   * ephemeris [interval].
+  /**
+   * Sample epochs from [start] to [stop] inclusive on a fixed [interval] grid.
+   *
+   * Samples are `start + k * interval` for every k with `start + k * interval < stop`, followed by
+   * `stop` itself, so the last sample is exactly `stop` and never one interval past it. Each
+   * sample is computed from `start` directly (not by repeated rolling) so rounding does not
+   * accumulate. When `stop` does not follow `start` the result is the single epoch `start`.
+   * @param start First epoch.
+   * @param stop Last epoch.
+   * @param interval Grid spacing in seconds (must be positive).
+   * @returns Ascending list of sample epochs.
+   */
+  protected static sampleEpochs_(start: EpochUTC, stop: EpochUTC, interval: Seconds): EpochUTC[] {
+    const span = stop.posix - start.posix;
+
+    if (!(interval > 0) || span <= 0) {
+      return [start];
+    }
+
+    // Treat a grid point within 1 microsecond of stop as stop itself.
+    const tolerance = 1e-6;
+    const epochs: EpochUTC[] = [start];
+
+    for (let k = 1; k * interval < span - tolerance; k++) {
+      epochs.push(start.roll(k * interval as Seconds));
+    }
+    epochs.push(stop);
+
+    return epochs;
+  }
+
+  /**
+   * Generate a [VerletBlendInterpolator] containing ephemeris over the [start] to [stop]
+   * propagation period, sampled every [interval] seconds. The first sample is at [start] and
+   * the last is exactly at [stop] (the final step is shortened when the span is not a whole
+   * multiple of the interval).
+   * @param start Ephemeris start epoch.
+   * @param stop Ephemeris stop epoch.
+   * @param interval Sample spacing in seconds (default 60).
+   * @returns Interpolator whose window is [start, stop].
    */
   ephemeris(start: EpochUTC, stop: EpochUTC, interval = 60.0 as Seconds): VerletBlendInterpolator {
-    const output: J2000[] = [this.propagate(start)];
-    let tempEpoch = start;
-
-    // Compare raw POSIX seconds; relational operators on Epoch objects coerce via toISOString().
-    while (tempEpoch.posix <= stop.posix) {
-      tempEpoch = tempEpoch.roll(interval);
-      output.push(this.propagate(tempEpoch));
-    }
+    const output = Propagator.sampleEpochs_(start, stop, interval).map((epoch) => this.propagate(epoch));
 
     return new VerletBlendInterpolator(output);
   }
@@ -68,30 +98,29 @@ export abstract class Propagator {
   // Return the last propagated state.
   abstract get state(): J2000;
 
-  /*
-   * Generate a list of [J2000] states integrating over a maneuver.
+  /**
+   * Generate a list of [J2000] states sampled across a maneuver, from its start to its stop
+   * epoch every [interval] seconds, with the last sample exactly at the stop epoch.
    *
-   * If the maneuver is impulsive, the list will only contain a single state.
+   * If the maneuver is impulsive (start equals stop), the list contains a single state.
+   * This base implementation does not apply the thrust; numerical propagators override it.
+   * @param maneuver Maneuver to sample.
+   * @param interval Sample spacing in seconds (default 60).
+   * @returns States across the maneuver.
    */
   maneuver(maneuver: Thrust, interval = 60.0 as Seconds): J2000[] {
-    const output: J2000[] = [];
-    const tempEpoch = maneuver.start;
-    const stop = maneuver.stop;
-
-    output.push(this.propagate(tempEpoch));
-    let current = tempEpoch;
-
-    while (current <= stop) {
-      current = current.roll(interval);
-      output.push(this.propagate(current));
-    }
-
-    return output;
+    return Propagator.sampleEpochs_(maneuver.start, maneuver.stop, interval).map((epoch) => this.propagate(epoch));
   }
 
-  /*
-   * Generate a [VerletBlendInterpolator] containing maneuver ephemeris over
-   * the [start] and [finish] interval, with an optional ephemeris [interval].
+  /**
+   * Generate a [VerletBlendInterpolator] containing ephemeris over the [start] to [finish]
+   * interval, sampled every [interval] seconds with the last sample exactly at [finish].
+   * This base implementation ignores the maneuvers; numerical propagators override it.
+   * @param start Ephemeris start epoch.
+   * @param finish Ephemeris stop epoch.
+   * @param _maneuvers Maneuvers (ignored by the base class).
+   * @param interval Sample spacing in seconds (default 60).
+   * @returns Interpolator whose window is [start, finish].
    */
   ephemerisManeuver(
     start: EpochUTC,
@@ -99,71 +128,53 @@ export abstract class Propagator {
     _maneuvers: Thrust[],
     interval = 60.0 as Seconds,
   ): VerletBlendInterpolator {
-    const output: J2000[] = [];
-    const tempEpoch = start;
-
-    output.push(this.propagate(tempEpoch));
-    const stop = finish;
-    let current = tempEpoch;
-
-    while (current <= stop) {
-      current = current.roll(interval);
-      output.push(this.propagate(current));
-    }
-
-    return new VerletBlendInterpolator(output);
+    return this.ephemeris(start, finish, interval);
   }
 
-  // Return the epoch of the ascending node after the [start] epoch.
-  ascendingNodeEpoch(start: EpochUTC): EpochUTC {
-    const period = this.state.period / 60 as Seconds;
+  /**
+   * Coarse-scan one orbital period after [start] in eighths for an equator crossing in the
+   * requested direction, then refine it with a golden-section search on |z|.
+   * @param start Search start epoch.
+   * @param ascending True for the ascending node (z goes from negative to positive).
+   * @returns Node epoch.
+   * @throws {PropagationError} When no crossing in that direction occurs within the scan
+   *   (for example an equatorial orbit, where z never changes sign).
+   */
+  private nodeEpoch_(start: EpochUTC, ascending: boolean): EpochUTC {
+    this.propagate(start);
+    // StateVector.period is in MINUTES; convert to seconds before rolling epochs.
+    const period = this.state.period * 60 as Seconds;
     const step = period / 8 as Seconds;
-    let current = start;
-    const stop = current.roll(period);
-
-    this.propagate(current);
     let previous = this.state.position.z;
+    let current = start;
+    let found = false;
 
-    while (current <= stop) {
-      current = current.roll(step);
+    // One extra step past a full period so a node exactly at start + period is still found.
+    for (let k = 1; k <= 9; k++) {
+      current = start.roll(k * step as Seconds);
       this.propagate(current);
-      if (Math.sign(this.state.position.z) === Math.sign(-previous) && this.state.velocity.z > 0) {
+      const z = this.state.position.z;
+      const crossed = ascending ? previous < 0 && z >= 0 : previous > 0 && z <= 0;
+
+      if (crossed) {
+        found = true;
         break;
       }
-      previous = this.state.position.z;
+      previous = z;
     }
-    const t = GoldenSection.search(
-      (x) => {
-        this.propagate(new EpochUTC(x as Seconds));
 
-        return Math.abs(this.state.position.z) as Seconds;
-      },
-      current.posix - step,
-      current.posix,
-      { tolerance: 1e-3 },
-    ) as Seconds;
-
-    return new EpochUTC(t);
-  }
-
-  // Return the epoch of the descending node after the [start] epoch.
-  descendingNodeEpoch(start: EpochUTC): EpochUTC {
-    const period = this.state.period / 60 as Seconds;
-    const step = period / 8 as Seconds;
-    let current = start;
-    const stop = current.roll(period);
-
-    this.propagate(current);
-    let previous = this.state.position.z;
-
-    while (current <= stop) {
-      current = current.roll(step);
-      this.propagate(current);
-      if (Math.sign(this.state.position.z) === Math.sign(-previous) && this.state.velocity.z < 0) {
-        break;
-      }
-      previous = this.state.position.z;
+    /*
+     * Without a sign change the golden-section search below would return the |z| minimum of the
+     * last slice, an epoch that is not a node at all (v7 did that for equatorial orbits).
+     */
+    if (!found) {
+      throw new PropagationError(
+        `No ${ascending ? 'ascending' : 'descending'} node within one period after ${start.toString()}: ` +
+        'the orbit does not cross the equator (equatorial orbit?)',
+        start.toDateTime(),
+      );
     }
+
     const t = GoldenSection.search(
       (x: number) => {
         this.propagate(new EpochUTC(x as Seconds));
@@ -178,19 +189,47 @@ export abstract class Propagator {
     return new EpochUTC(t);
   }
 
-  // Return the epoch of apogee after the [start] epoch.
-  apogeeEpoch(start: EpochUTC): EpochUTC {
-    const slice = 8;
-    const period = this.state.period / 60 as Seconds;
-    const step = period / slice as Seconds;
-    let current = start;
+  /**
+   * Return the epoch of the first ascending node (equator crossing heading north, z from
+   * negative to positive in J2000) within one orbital period after [start].
+   * @param start Search start epoch.
+   * @returns Ascending node epoch, refined to about 1 ms.
+   * @throws {PropagationError} When the orbit has no ascending node (equatorial orbit).
+   */
+  ascendingNodeEpoch(start: EpochUTC): EpochUTC {
+    return this.nodeEpoch_(start, true);
+  }
 
-    this.propagate(current);
-    let tCache = current;
+  /**
+   * Return the epoch of the first descending node (equator crossing heading south, z from
+   * positive to negative in J2000) within one orbital period after [start].
+   * @param start Search start epoch.
+   * @returns Descending node epoch, refined to about 1 ms.
+   * @throws {PropagationError} When the orbit has no descending node (equatorial orbit).
+   */
+  descendingNodeEpoch(start: EpochUTC): EpochUTC {
+    return this.nodeEpoch_(start, false);
+  }
+
+  /**
+   * Split one orbital period after [start] into eight slices, golden-section search each slice
+   * for an extremum of the radius, and keep the best.
+   * @param start Search start epoch.
+   * @param solveMax True for the maximum radius (apogee), false for the minimum (perigee).
+   * @returns Epoch of the extremum.
+   */
+  private apsisEpoch_(start: EpochUTC, solveMax: boolean): EpochUTC {
+    const slice = 8;
+
+    this.propagate(start);
+    // StateVector.period is in MINUTES; convert to seconds before rolling epochs.
+    const period = this.state.period * 60 as Seconds;
+    const step = period / slice as Seconds;
+    let tCache = start;
     let rCache = this.state.position.magnitude();
 
-    for (let i = 0; i < slice; i++) {
-      current = current.roll(step);
+    for (let i = 1; i <= slice; i++) {
+      const sliceEnd = start.roll(i * step as Seconds);
       const t = new EpochUTC(
         GoldenSection.search(
           (x: number) => {
@@ -198,16 +237,16 @@ export abstract class Propagator {
 
             return this.state.position.magnitude();
           },
-          current.posix - step,
-          current.posix,
-          { tolerance: 1e-3, solveMax: true },
+          sliceEnd.posix - step,
+          sliceEnd.posix,
+          { tolerance: 1e-3, solveMax },
         ) as Seconds,
       );
 
       this.propagate(t);
       const r = this.state.position.magnitude();
 
-      if (r > rCache) {
+      if (solveMax ? r > rCache : r < rCache) {
         tCache = t;
         rCache = r;
       }
@@ -216,41 +255,23 @@ export abstract class Propagator {
     return tCache;
   }
 
-  // Return the epoch of perigee after the [start] epoch.
+  /**
+   * Return the epoch of apogee (maximum geocentric radius) within one orbital period after
+   * [start].
+   * @param start Search start epoch.
+   * @returns Apogee epoch, refined to about 1 ms.
+   */
+  apogeeEpoch(start: EpochUTC): EpochUTC {
+    return this.apsisEpoch_(start, true);
+  }
+
+  /**
+   * Return the epoch of perigee (minimum geocentric radius) within one orbital period after
+   * [start].
+   * @param start Search start epoch.
+   * @returns Perigee epoch, refined to about 1 ms.
+   */
   perigeeEpoch(start: EpochUTC): EpochUTC {
-    const slice = 8;
-    const period = this.state.period / 60 as Seconds;
-    const step = period / slice as Seconds;
-    let current = start;
-
-    this.propagate(current);
-    let tCache = current;
-    let rCache = this.state.position.magnitude();
-
-    for (let i = 0; i < slice; i++) {
-      current = current.roll(step);
-      const t = new EpochUTC(
-        GoldenSection.search(
-          (x: number) => {
-            this.propagate(new EpochUTC(x as Seconds));
-
-            return this.state.position.magnitude();
-          },
-          current.posix - step,
-          current.posix,
-          { tolerance: 1e-3, solveMax: false },
-        ) as Seconds,
-      );
-
-      this.propagate(t);
-      const r = this.state.position.magnitude();
-
-      if (r < rCache) {
-        tCache = t;
-        rCache = r;
-      }
-    }
-
-    return tCache;
+    return this.apsisEpoch_(start, false);
   }
 }

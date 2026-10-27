@@ -18,22 +18,42 @@ This module provides force models for high-fidelity spacecraft propagation. Forc
 ## Usage Example
 
 ```typescript
-import { ForceModel } from './ForceModel';
-import { Thrust } from './Thrust';
+import {
+  EpochUTC,
+  ForceModel,
+  J2000,
+  Kilometers,
+  KilometersPerSecond,
+  MetersPerSecond,
+  Thrust,
+  Vector3D,
+} from 'ootk';
 
+// A 500 km circular LEO state in J2000 (km, km/s)
+const state = new J2000(
+  EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00Z')),
+  new Vector3D(6878.137 as Kilometers, 0 as Kilometers, 0 as Kilometers),
+  new Vector3D(0 as KilometersPerSecond, 7.612607 as KilometersPerSecond, 0 as KilometersPerSecond),
+);
+
+// Every setter returns the ForceModel, so they chain.
 const forces = new ForceModel()
-  .setGravity()                              // Point-mass Earth gravity
-  .setEarthGravity(20, 20);                  // Or use EGM-96 to degree/order 20
+  .setEarthGravity(20, 20) // EGM-96 to degree/order 20 (use setGravity() for point mass)
+  .setThirdBodyGravity({ moon: true, sun: true })
+  .setSolarRadiationPressure(500, 10, 1.2) // mass (kg), area (m^2), Cr
+  .setAtmosphericDrag(500, 10, 2.2, 4, 150); // mass (kg), area (m^2), Cd, HP exponent n, F10.7 (SFU)
 
-forces.setThirdBodyGravity({ moon: true, sun: true });
-forces.setSolarRadiationPressure(500, 10, 1.2);  // mass (kg), area (m²), Cr
-forces.setAtmosphericDrag(500, 10, 2.2, 4);      // mass, area, Cd, cosine exp
-
-// Get acceleration at a state
+// Total acceleration at the state (km/s^2)
 const accel = forces.acceleration(state);
 
-// Get full derivative (velocity, acceleration) for integration
+// Full derivative [vx, vy, vz, ax, ay, az] for an integrator
 const deriv = forces.derivative(state);
+
+console.log(accel.magnitude(), deriv.length);
+
+// A finite maneuver: 10 m/s in-track centred on the epoch
+forces.loadManeuver(new Thrust(state.epoch, 0 as MetersPerSecond, 10 as MetersPerSecond, 0 as MetersPerSecond));
+forces.clearManeuver();
 ```
 
 ## What This Library Does Well
@@ -49,7 +69,7 @@ The `EarthGravity` class implements spherical harmonic expansion up to degree an
 
 ### Harris-Priester Atmospheric Drag
 Includes diurnal density variation with configurable:
-- F10.7 solar radio flux (70-250 SFU for solar min/max)
+- F10.7 solar radio flux: a multiplicative factor on the whole HP density, 1 at 150 SFU (the HP table), about 0.2x at 70 SFU and 2.3x at 250 SFU near 400 km; the day/night ratio is unchanged
 - Cosine exponent for day/night transition modeling
 - Atmospheric bulge lag (30° behind subsolar point)
 

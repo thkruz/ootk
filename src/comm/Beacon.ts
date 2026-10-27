@@ -44,7 +44,7 @@ export interface BeaconParams extends TransmitterParams {
  * ```typescript
  * // Create a telemetry beacon
  * const beacon = new Beacon({
- *   id: 'sat-beacon',
+ *   id: 401,
  *   name: 'Telemetry Beacon',
  *   frequency: 437e6 as Hertz,      // 437 MHz (UHF amateur band)
  *   power: 1 as Watts,
@@ -65,8 +65,9 @@ export interface BeaconParams extends TransmitterParams {
  *   console.log('Beacon is active');
  * }
  *
- * // Get next transmission window
+ * // Get the next transmission window (strictly after now) or the one in progress
  * const nextTx = beacon.getNextTransmission(new Date());
+ * const currentTx = beacon.getCurrentTransmission(new Date());
  * console.log(`Next beacon at ${nextTx.start}`);
  * ```
  */
@@ -179,90 +180,127 @@ export class Beacon extends Transmitter {
   }
 
   /**
-   * Gets the next transmission window.
-   *
-   * @param afterDate - Find transmission after this time (defaults to now)
-   * @returns Object with start and end times of next transmission
+   * Window k (k = 0, 1, 2, ...) is the half-open interval
+   * [epoch + k * transmitInterval, epoch + k * transmitInterval + transmitDuration).
+   * @param k Cycle index.
+   * @returns The window's start and end.
    */
-  getNextTransmission(afterDate: Date = new Date()): { start: Date; end: Date } {
-    const secondsSinceEpoch = (afterDate.getTime() - this.epoch.getTime()) / 1000;
+  private window_(k: number): { start: Date; end: Date } {
+    const startMs = this.epoch.getTime() + k * this.transmitInterval * 1000;
 
-    // Handle times before epoch
-    if (secondsSinceEpoch < 0) {
-      return {
-        start: this.epoch,
-        end: new Date(this.epoch.getTime() + this.transmitDuration * 1000),
-      };
-    }
-
-    const positionInCycle = secondsSinceEpoch % this.transmitInterval;
-
-    let nextStartOffset: number;
-
-    if (positionInCycle < this.transmitDuration) {
-      // Currently transmitting - return current transmission window
-      nextStartOffset = -positionInCycle;
-    } else {
-      // Not transmitting - return next transmission
-      nextStartOffset = this.transmitInterval - positionInCycle;
-    }
-
-    const startTime = new Date(afterDate.getTime() + nextStartOffset * 1000);
-    const endTime = new Date(startTime.getTime() + this.transmitDuration * 1000);
-
-    return { start: startTime, end: endTime };
+    return { start: new Date(startMs), end: new Date(startMs + this.transmitDuration * 1000) };
   }
 
   /**
-   * Gets all transmission windows within a time range.
+   * Gets the transmission window in progress at a given time.
    *
-   * @param startDate - Start of time range
-   * @param endDate - End of time range
-   * @returns Array of transmission windows
+   * @param date - Time to check (defaults to now)
+   * @returns The window containing `date` (start <= date < end), or null when the beacon is
+   * silent at that time or `date` is before the epoch
+   */
+  getCurrentTransmission(date: Date = new Date()): { start: Date; end: Date } | null {
+    const elapsedMs = date.getTime() - this.epoch.getTime();
+
+    if (elapsedMs < 0) {
+      return null;
+    }
+
+    const win = this.window_(Math.floor(elapsedMs / (this.transmitInterval * 1000)));
+
+    return date.getTime() < win.end.getTime() ? win : null;
+  }
+
+  /**
+   * Gets the next transmission window that starts strictly after a given time.
+   *
+   * A window already in progress at `afterDate`, or starting exactly at it, is not returned;
+   * use {@link getCurrentTransmission} for that one.
+   *
+   * @param afterDate - Find the first transmission starting after this time (defaults to now)
+   * @returns Object with start and end times of that transmission
+   */
+  getNextTransmission(afterDate: Date = new Date()): { start: Date; end: Date } {
+    const elapsedMs = afterDate.getTime() - this.epoch.getTime();
+
+    if (elapsedMs < 0) {
+      return this.window_(0);
+    }
+
+    // Window floor(elapsed / interval) starts at or before afterDate, so the next one is k + 1
+    return this.window_(Math.floor(elapsedMs / (this.transmitInterval * 1000)) + 1);
+  }
+
+  /**
+   * Index range of the windows that overlap [startDate, endDate): window k overlaps when
+   * start_k < endDate and end_k > startDate.
+   * @param startDate Start of the range (inclusive).
+   * @param endDate End of the range (exclusive).
+   * @returns First and last overlapping cycle indices (first > last when there are none).
+   */
+  private overlappingRange_(startDate: Date, endDate: Date): { first: number; last: number } {
+    const intervalMs = this.transmitInterval * 1000;
+    const durationMs = this.transmitDuration * 1000;
+    const startMs = startDate.getTime() - this.epoch.getTime();
+    const endMs = endDate.getTime() - this.epoch.getTime();
+
+    if (endMs <= startMs) {
+      return { first: 0, last: -1 };
+    }
+
+    // k * I + D > startMs  <=>  k > (startMs - D) / I
+    const first = Math.max(0, Math.floor((startMs - durationMs) / intervalMs) + 1);
+    // k * I < endMs  <=>  k < endMs / I
+    const last = Math.ceil(endMs / intervalMs) - 1;
+
+    return { first, last };
+  }
+
+  /**
+   * Gets every transmission window that overlaps a time range, each clipped to the range.
+   *
+   * The range is half-open, [startDate, endDate). A window in progress at `startDate` is
+   * included with its start clipped to `startDate`; a window running past `endDate` is included
+   * with its end clipped to `endDate`. A window starting exactly at `endDate` is not included.
+   *
+   * @param startDate - Start of time range (inclusive)
+   * @param endDate - End of time range (exclusive)
+   * @returns Array of transmission windows in time order
    */
   getTransmissionsInRange(
     startDate: Date,
     endDate: Date,
   ): Array<{ start: Date; end: Date }> {
+    const { first, last } = this.overlappingRange_(startDate, endDate);
     const windows: Array<{ start: Date; end: Date }> = [];
+    // Safety cap so a tiny interval over a long range cannot exhaust memory
+    const lastCapped = Math.min(last, first + 10000);
 
-    let current = this.getNextTransmission(startDate);
+    for (let k = first; k <= lastCapped; k++) {
+      const win = this.window_(k);
 
-    while (current.start.getTime() < endDate.getTime()) {
-      // Only include if transmission starts within range
-      if (current.start.getTime() >= startDate.getTime()) {
-        windows.push({
-          start: current.start,
-          end: new Date(Math.min(current.end.getTime(), endDate.getTime())),
-        });
-      }
-
-      // Move to next cycle
-      const nextSearch = new Date(current.end.getTime() + 1);
-
-      current = this.getNextTransmission(nextSearch);
-
-      // Safety check to prevent infinite loops
-      if (windows.length > 10000) {
-        break;
-      }
+      windows.push({
+        start: new Date(Math.max(win.start.getTime(), startDate.getTime())),
+        end: new Date(Math.min(win.end.getTime(), endDate.getTime())),
+      });
     }
 
     return windows;
   }
 
   /**
-   * Gets the number of transmissions in a time range.
+   * Gets the number of transmissions that overlap a time range [startDate, endDate).
    *
-   * @param startDate - Start of time range
-   * @param endDate - End of time range
+   * Counts the same windows as {@link getTransmissionsInRange} (without its 10001-window cap),
+   * using the epoch phase, so a range that falls entirely between two windows counts 0.
+   *
+   * @param startDate - Start of time range (inclusive)
+   * @param endDate - End of time range (exclusive)
    * @returns Number of transmissions
    */
   getTransmissionCount(startDate: Date, endDate: Date): number {
-    const durationSeconds = (endDate.getTime() - startDate.getTime()) / 1000;
+    const { first, last } = this.overlappingRange_(startDate, endDate);
 
-    // Approximate count based on interval
-    return Math.floor(durationSeconds / this.transmitInterval) + 1;
+    return Math.max(0, last - first + 1);
   }
 
   // ==================== Serialization ====================

@@ -22,6 +22,7 @@ import {
   MakeTime,
   MoonPhase,
   Observer,
+  SearchHourAngle,
   SearchRiseSet,
 } from 'astronomy-engine';
 import { Vector3D } from '../operations/Vector3D';
@@ -71,9 +72,11 @@ export interface MoonPhaseInfo {
 export interface MoonTimes {
   rise: Date | null;
   set: Date | null;
+  /** Unused, always null (kept for suncalc result-shape compatibility). */
   ye: number | null;
   alwaysUp: boolean | null;
   alwaysDown: boolean | null;
+  /** Upper culmination (hour angle 0) between rise and set, or null. */
   highest: Date | null;
 }
 
@@ -452,7 +455,10 @@ export class MoonBody extends CelestialBody {
       const setMs = setTime.date.getTime();
 
       if (setMs > riseMs) {
-        result.highest = new Date((riseMs + setMs) / 2);
+        // Upper culmination (hour angle 0) after the rise. The Moon's rise-to-set interval is
+        // not symmetric about culmination because of its fast eastward motion, so the midpoint
+        // of rise and set is only an approximation.
+        result.highest = SearchHourAngle(Body.Moon, obs, 0, riseTime, +1).time.date;
       }
     } else {
       result.alwaysUp = false;

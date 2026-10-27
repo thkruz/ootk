@@ -30,6 +30,12 @@ import { DEG2RAD, RAD2DEG, secondsPerDay, secondsPerSiderealDay, TAU } from '../
 const SUN_SYNC_PRECESSION_RAD_PER_SEC = (0.9856 * DEG2RAD) / secondsPerDay;
 
 /**
+ * Reference radius for the altitudes reported and accepted by {@link RepeatGroundTrack.findNearest}:
+ * the WGS-84 equatorial radius in km, matching `ClassicalElements.apogee` / `perigee`.
+ */
+const ALTITUDE_REFERENCE_RADIUS_KM = 6378.137;
+
+/**
  * Result from repeat ground track calculation.
  */
 export interface RepeatOrbitResult {
@@ -39,11 +45,11 @@ export interface RepeatOrbitResult {
   revolutions: number;
   /** Number of days in repeat cycle */
   days: number;
-  /** Altitude above Earth's mean radius (km) */
+  /** Altitude in km: semimajor axis minus the WGS-84 equatorial radius 6378.137 km */
   altitude: Kilometers;
   /** Whether orbit is sun-synchronous */
   isSunSynchronous: boolean;
-  /** Nodal precession rate (deg/day) */
+  /** Nodal precession rate in deg/day (negative for prograde orbits, +0.9856 for sun-synchronous) */
   nodalPrecessionRate: number;
   /** Ground track spacing at equator (km) */
   groundTrackSpacing: Kilometers;
@@ -89,9 +95,9 @@ export interface FindNearestOptions extends RepeatGroundTrackOptions {
  * ```typescript
  * // Calculate Landsat-8 style orbit: 233 revs / 16 days
  * const elements = RepeatGroundTrack.calculate(233, 16, 98.2 as Degrees);
- * console.log(`Altitude: ${elements.semimajorAxis - Earth.radiusMean} km`);
+ * console.log(`Semimajor axis: ${elements.semimajorAxis} km`); // ~7077.7 km
  *
- * // Find RGT orbits near 700 km
+ * // Find RGT orbits near 700 km (altitude above 6378.137 km)
  * const orbits = RepeatGroundTrack.findNearest(
  *   700 as Kilometers,
  *   50 as Kilometers,
@@ -107,8 +113,9 @@ export class RepeatGroundTrack {
   /**
    * Calculate orbital elements for a repeat ground track orbit.
    *
-   * The calculation accounts for J2 perturbation effects on the mean motion,
-   * which is critical for accurate altitude determination.
+   * The calculation uses the secular J2 rates of mean anomaly, argument of perigee and right
+   * ascension (Vallado, 4th ed., Algorithm 71): the track repeats when R nodal periods
+   * 2 pi / (n + Mdot + omegadot) equal D nodal days 2 pi / (omegaE - Omegadot).
    *
    * @param revolutions - Number of orbital revolutions in repeat cycle (must be positive integer)
    * @param days - Number of days in repeat cycle (must be positive integer)
@@ -121,8 +128,8 @@ export class RepeatGroundTrack {
    * ```typescript
    * // Landsat-8 style orbit: 233 revs / 16 days, sun-synchronous
    * const elements = RepeatGroundTrack.calculate(233, 16, 98.2 as Degrees);
-   * console.log(`Altitude: ${elements.semimajorAxis - Earth.radiusMean} km`);
-   * // Output: ~705 km
+   * console.log(`Semimajor axis: ${elements.semimajorAxis} km`);
+   * // Output: ~7077.7 km (about 699.6 km above the 6378.137 km equatorial radius)
    *
    * // Sun-synchronous RGT (inclination auto-calculated)
    * const ssoElements = RepeatGroundTrack.calculate(233, 16, undefined, {
@@ -165,7 +172,26 @@ export class RepeatGroundTrack {
       incRad = ((inclination as number) * DEG2RAD) as Radians;
     }
 
-    // Iterative refinement with J2 perturbation
+    /*
+     * Iterative refinement with secular J2 rates (Vallado, Fundamentals of Astrodynamics and
+     * Applications, 4th ed., Sec. 11.4.2, Algorithm 71):
+     *
+     *   K  = J2 (Re / p)^2
+     *   Mdot     = 3/4 n K sqrt(1 - e^2) (3 cos^2 i - 1)   (J2 drift of mean anomaly)
+     *   omegadot = 3/4 n K (5 cos^2 i - 1)                 (apsidal rotation)
+     *   Omegadot = -3/2 n K cos i                          (nodal regression)
+     *
+     * The satellite completes one nodal revolution when its argument of latitude advances by
+     * 2 pi, at the rate n + Mdot + omegadot. The Earth turns once relative to the orbit plane
+     * at the rate omegaE - Omegadot. The track repeats after R revolutions in D nodal days:
+     *
+     *   R / (n + Mdot + omegadot) = D / (omegaE - Omegadot)
+     *
+     * Solved by fixed-point iteration on n (all three rates scale with n through K).
+     */
+    const earthRotationRate = TAU / secondsPerSiderealDay;
+    const sqrtOneMinusE2 = Math.sqrt(1 - eccentricity * eccentricity);
+
     for (let iter = 0; iter < maxIterations; iter++) {
       const prevSma = sma;
 
@@ -174,42 +200,23 @@ export class RepeatGroundTrack {
         incRad = RepeatGroundTrack.calculateSunSyncInclination_(sma, eccentricity);
       }
 
-      // Calculate J2 effect on mean motion
-      // The J2 perturbation modifies the effective mean motion
-      const p = sma * (1 - eccentricity * eccentricity); // semi-latus rectum
+      const p = sma * (1 - eccentricity * eccentricity); // semi-latus rectum (km)
       const cosI = Math.cos(incRad);
+      const cos2I = cosI * cosI;
+      const k = Earth.j2 * (Earth.radiusEquator / p) ** 2;
+      const nKeplerian = Math.sqrt(Earth.mu / (sma * sma * sma)); // rad/s
 
-      // J2 secular perturbation to mean motion (Brouwer theory)
-      // ṅ/n = 3/4 * J2 * (Re/p)² * √(1-e²) * (3cos²i - 1)
-      const j2Factor = (3 / 4) * Earth.j2 * (Earth.radiusEquator / p) ** 2;
-      const meanMotionFactor = 1 + j2Factor * Math.sqrt(1 - eccentricity * eccentricity) * (3 * cosI * cosI - 1);
+      // Nodal regression Omegadot (rad/s), negative for prograde orbits
+      const nodalPrecessionRate = (-3 / 2) * nKeplerian * k * cosI;
 
-      // J2 effect on nodal precession
-      // Ω̇ = -3/2 * J2 * (Re/p)² * n * cos(i)
-      const nodalFactor = (-3 / 2) * Earth.j2 * (Earth.radiusEquator / p) ** 2 * cosI;
+      // (n + Mdot + omegadot) / n
+      const nodalRateFactor = 1 + (3 / 4) * k * (sqrtOneMinusE2 * (3 * cos2I - 1) + (5 * cos2I - 1));
 
-      // The nodal period (time between successive equator crossings at same longitude)
-      // depends on both the orbital period and the RAAN precession
-      // For repeat ground track: R * T_nodal = D * T_earth
-      // where T_nodal includes corrections for ω̇ and Ω̇
+      // Required rate of the argument of latitude (rad/s), then the Keplerian n that gives it
+      const argLatRateRequired = (revolutions / days) * (earthRotationRate - nodalPrecessionRate);
+      const nRequired = argLatRateRequired / nodalRateFactor;
 
-      // Effective mean motion for ground track repeat
-      const nKeplerian = Math.sqrt(Earth.mu / (sma * sma * sma));
-      const nEffective = nKeplerian * meanMotionFactor;
-
-      // Required mean motion for R revs in D nodal days
-      // Account for Earth's rotation relative to the orbit
-      const earthRotationRate = TAU / secondsPerSiderealDay;
-      const nodalPrecessionRate = nEffective * nodalFactor;
-
-      // The nodal day is the time for Earth to rotate 360° relative to the orbit's ascending node
-      const nodalDaySeconds = TAU / (earthRotationRate - nodalPrecessionRate);
-
-      // Required mean motion
-      const nRequired = (revolutions * TAU) / (days * nodalDaySeconds);
-
-      // Update semi-major axis
-      sma = ((Earth.mu / (nRequired / meanMotionFactor) ** 2) ** (1 / 3)) as Kilometers;
+      sma = ((Earth.mu / (nRequired * nRequired)) ** (1 / 3)) as Kilometers;
 
       // Check convergence
       if (Math.abs(sma - prevSma) < tolerance) {
@@ -240,10 +247,14 @@ export class RepeatGroundTrack {
    * Searches through possible R/D combinations to find RGT orbits within
    * the specified altitude range, sorted by proximity to the target.
    *
-   * @param targetAltitude - Desired orbital altitude in km
+   * Altitudes (input and `RepeatOrbitResult.altitude`) are semimajor axis minus the WGS-84
+   * equatorial radius 6378.137 km, the same reference as `ClassicalElements.apogee`.
+   *
+   * @param targetAltitude - Desired altitude in km above 6378.137 km
    * @param maxDeviation - Maximum altitude deviation to search in km
    * @param options - Search options including inclination constraints
-   * @returns Array of nearby RGT orbits sorted by altitude proximity
+   * @returns Array of nearby RGT orbits sorted by altitude proximity. `isSunSynchronous` is true
+   * only when the nodal precession is within 0.1 deg/day of +0.9856 deg/day (eastward).
    *
    * @example
    * ```typescript
@@ -307,15 +318,18 @@ export class RepeatGroundTrack {
           epoch,
         });
 
-        const altitude = (elements.semimajorAxis - Earth.radiusMean) as Kilometers;
+        const altitude = (elements.semimajorAxis - ALTITUDE_REFERENCE_RADIUS_KM) as Kilometers;
 
         if (altitude >= minAlt && altitude <= maxAlt) {
           // Calculate nodal precession rate in deg/day
           const nodalPrecessionRate = elements.nodalPrecessionRate * secondsPerDay * RAD2DEG;
 
-          // Check if it's sun-synchronous (precession ≈ 0.9856 deg/day)
-          // Use looser tolerance (0.1 deg/day) to account for J2 modeling differences
-          const isSunSynchronous = Math.abs(Math.abs(nodalPrecessionRate) - 0.9856) < 0.1;
+          /*
+           * Sun-synchronous means the node advances eastward with the mean Sun at +0.9856 deg/day.
+           * The sign matters: a prograde orbit regressing at -0.9856 deg/day drifts 2 deg/day
+           * relative to the Sun. Tolerance 0.1 deg/day allows for J2 modeling differences.
+           */
+          const isSunSynchronous = Math.abs(nodalPrecessionRate - 0.9856) < 0.1;
 
           // Ground track spacing at equator
           // The sub-satellite tracks are spaced by Earth circumference / revolutions per repeat
@@ -456,8 +470,8 @@ export class RepeatGroundTrack {
 
   /**
    * Generate candidate R/D pairs for a given altitude range.
-   * @param minAlt - Minimum altitude in km
-   * @param maxAlt - Maximum altitude in km
+   * @param minAlt - Minimum altitude in km above 6378.137 km
+   * @param maxAlt - Maximum altitude in km above 6378.137 km
    * @param maxDays - Maximum repeat cycle length in days
    * @returns Array of {revs, days} candidates
    */
@@ -469,8 +483,8 @@ export class RepeatGroundTrack {
     const candidates: Array<{ revs: number; days: number }> = [];
 
     // Calculate approximate revs/day range from altitude
-    const minSma = (minAlt + Earth.radiusMean) as Kilometers;
-    const maxSma = (maxAlt + Earth.radiusMean) as Kilometers;
+    const minSma = (minAlt + ALTITUDE_REFERENCE_RADIUS_KM) as Kilometers;
+    const maxSma = (maxAlt + ALTITUDE_REFERENCE_RADIUS_KM) as Kilometers;
 
     // Period = 2π * sqrt(a³/μ) seconds
     const minPeriod = TAU * Math.sqrt((minSma * minSma * minSma) / Earth.mu);

@@ -34,7 +34,7 @@ type SolveRangeProblemParams = {
   t13: Seconds;
   t12: Seconds;
   nRev: number;
-  direction: boolean;
+  shortWay: boolean;
   lineOfSight1: Vector3D<Kilometers>;
   lineOfSight2: Vector3D<Kilometers>;
   lineOfSight3: Vector3D<Kilometers>;
@@ -54,7 +54,7 @@ type ComputeDerivativesParams = {
   t12: Seconds;
   withHalley: boolean;
   nrev: number;
-  direction: boolean;
+  shortWay: boolean;
   fd: Float64Array;
   gd: Float64Array;
 };
@@ -67,7 +67,7 @@ type GetPositionOnLoS2Params = {
   t13: Seconds;
   t12: Seconds;
   nRev: number;
-  posigrade: boolean;
+  shortWay: boolean;
 };
 
 /**
@@ -149,12 +149,14 @@ export class GoodingIOD {
    * @param o2 - second angular observation
    * @param o3 - third angular observation
    * @param nRev - number of full revolutions between observation 1 and 3
-   * @param direction - true for prograde (short-way), false for retrograde
+   * @param shortWay - true for the short-way Lambert arc from observation 1 to 3 (transfer angle
+   *   below 180 deg), false for the long way. This selects the sweep angle, not prograde vs
+   *   retrograde motion
    * @returns Orbit estimate referenced to the epoch of the second observation
    */
   estimate(o1: ObservationOptical, o2: ObservationOptical, o3: ObservationOptical,
     rho1init: Kilometers | null = null, rho3init: Kilometers | null = null,
-    nRev = 0, direction = true,
+    nRev = 0, shortWay = true,
   ): J2000 {
     if (rho1init === null || rho3init === null) {
       const gaussIod = new GaussIOD(this._mu);
@@ -183,7 +185,7 @@ export class GoodingIOD {
       rho1init,
       rho3init,
       nRev,
-      direction,
+      shortWay,
     );
   }
 
@@ -191,11 +193,13 @@ export class GoodingIOD {
    * @param r1Init - Initial guess for range at first observation
    * @param r3Init - Initial guess for range at third observation
    * @param nRev - Number of revolutions
-   * @param direction - Direction of orbit (true for prograde, false for retrograde)
+   * @param shortWay - true for the short-way Lambert arc from observation 1 to 3 (transfer angle
+   *   below 180 deg), false for the long way. This selects the sweep angle, not prograde vs
+   *   retrograde motion
    * @returns
    */
   solve(o1: ObservationOptical, o2: ObservationOptical, o3: ObservationOptical,
-    r1Init: Kilometers, r3Init: Kilometers, nRev = 0, direction = true,
+    r1Init: Kilometers, r3Init: Kilometers, nRev = 0, shortWay = true,
   ): J2000 {
     this.o1_ = o1;
     this.o2_ = o2;
@@ -222,7 +226,7 @@ export class GoodingIOD {
       t13: this.o3_.epoch.difference(this.o1_.epoch) / this.t_ as Seconds,
       t12: this.o2_.epoch.difference(this.o1_.epoch) / this.t_ as Seconds,
       nRev,
-      direction,
+      shortWay,
       lineOfSight1,
       lineOfSight2,
       lineOfSight3,
@@ -246,14 +250,15 @@ export class GoodingIOD {
   }
 
   /**
-   * Solve the range problem when three line of sight are given.
-   * @param frame frame to be used (orbit frame)
-   * @param rho1init   initial value for range R1, in meters
-   * @param rho3init   initial value for range R3, in meters
-   * @param T13   time of flight 1->3, in seconds
-   * @param T12   time of flight 1->2, in seconds
+   * Solve the range problem when three line of sight are given. All lengths and times are
+   * canonical: lengths in units of r = max(rho1, rho3) guess (km), times in units of
+   * r / sqrt(mu / r) (s).
+   * @param rho1init   initial value for range rho1 (canonical)
+   * @param rho3init   initial value for range rho3 (canonical)
+   * @param t13   time of flight 1->3 (canonical)
+   * @param t12   time of flight 1->2 (canonical)
    * @param nRev number of revolutions
-   * @param direction  posigrade (true) or retrograde
+   * @param shortWay  true for the short-way arc (below 180 deg), false for the long way
    * @param lineOfSight1  line of sight 1
    * @param lineOfSight2  line of sight 2
    * @param lineOfSight3  line of sight 3
@@ -264,7 +269,7 @@ export class GoodingIOD {
     t13,
     t12,
     nRev,
-    direction,
+    shortWay,
     lineOfSight1,
     lineOfSight2,
     lineOfSight3,
@@ -293,7 +298,7 @@ export class GoodingIOD {
         t13,
         t12,
         nRev,
-        posigrade: direction,
+        shortWay,
       });
 
       if (p2 === null) {
@@ -336,7 +341,7 @@ export class GoodingIOD {
           t12,
           withHalley,
           nrev: nRev,
-          direction,
+          shortWay,
           fd,
           gd,
         });
@@ -415,7 +420,6 @@ export class GoodingIOD {
    *    dy = f*gx / D
    * where D is the determinant of the Jacobian matrix.
    *
-   * @param frame frame to be used (orbit frame)
    * @param x    current range 1
    * @param y    current range 3
    * @param lineOfSight1  line of sight
@@ -423,11 +427,11 @@ export class GoodingIOD {
    * @param Pin   basis vector
    * @param Ein   basis vector
    * @param F     value of the f-function
-   * @param T13   time of flight 1->3, in seconds
-   * @param T12   time of flight 1->2, in seconds
+   * @param t13   time of flight 1->3 (canonical)
+   * @param t12   time of flight 1->2 (canonical)
    * @param withHalley    use Halley iterative method
    * @param nRev  number of revolutions
-   * @param direction direction of motion
+   * @param shortWay true for the short-way arc (below 180 deg), false for the long way
    * @param FD    derivatives of f wrt (rho1, rho3) by finite differences
    * @param GD    derivatives of g wrt (rho1, rho3) by finite differences
    */
@@ -445,7 +449,7 @@ export class GoodingIOD {
     t12,
     withHalley,
     nrev,
-    direction,
+    shortWay,
     fd,
     gd,
   }: ComputeDerivativesParams): void {
@@ -463,7 +467,7 @@ export class GoodingIOD {
       t13,
       t12,
       nRev: nrev,
-      posigrade: direction,
+      shortWay,
     });
 
     if (pm1 === null) {
@@ -481,7 +485,7 @@ export class GoodingIOD {
       t13,
       t12,
       nRev: nrev,
-      posigrade: direction,
+      shortWay,
     });
 
     if (pp1 === null) {
@@ -502,7 +506,7 @@ export class GoodingIOD {
       t13,
       t12,
       nRev: nrev,
-      posigrade: direction,
+      shortWay,
     });
 
     if (pm3 === null) {
@@ -520,7 +524,7 @@ export class GoodingIOD {
       t13,
       t12,
       nRev: nrev,
-      posigrade: direction,
+      shortWay,
     });
 
     if (pp3 === null) {
@@ -558,7 +562,7 @@ export class GoodingIOD {
         t13,
         t12,
         nRev: nrev,
-        posigrade: direction,
+        shortWay,
       });
 
       if (pp13 === null) {
@@ -577,7 +581,7 @@ export class GoodingIOD {
         t13,
         t12,
         nRev: nrev,
-        posigrade: direction,
+        shortWay,
       });
 
       if (pm13 === null) {
@@ -614,17 +618,18 @@ export class GoodingIOD {
   }
 
   /**
-   * Calculate the position along sight-line (forced planar mock-up for debugging).
-   * @param frame frame to be used (orbit frame)
-   * @param E1 line of sight 1 (ignored in planar mock-up)
-   * @param RO1 distance along E1 (used for R1)
-   * @param E3 line of sight 3 (ignored in planar mock-up)
-   * @param RO3 distance along E3 (used for R3)
-   * @param T13 time of flight 1->3
-   * @param T12 time of flight 1->2
+   * Predict the position at the second observation epoch: solve Lambert from the points at
+   * ranges r01 along e1 and r03 along e3, then propagate the departure state to t12. All
+   * inputs and the output are canonical (see {@link solveRangeProblem_}).
+   * @param e1 line of sight 1 (unit vector)
+   * @param r01 range along e1 (canonical)
+   * @param e3 line of sight 3 (unit vector)
+   * @param r03 range along e3 (canonical)
+   * @param t13 time of flight 1->3 (canonical)
+   * @param t12 time of flight 1->2 (canonical)
    * @param nRev number of revolutions
-   * @param posigrade direction of motion
-   * @return (R2-O2) in normalized units
+   * @param shortWay true for the short-way arc (below 180 deg), false for the long way
+   * @returns predicted position at t12 (canonical), or null if the Lambert solve fails
    */
   private getPositionOnLoS2_({
     e1,
@@ -634,7 +639,7 @@ export class GoodingIOD {
     t13,
     t12,
     nRev,
-    posigrade,
+    shortWay,
   }: GetPositionOnLoS2Params): Vector3D<Kilometers> | null {
     const p1 = this.vObserverPosition1_.add(e1.scale(r01));
 
@@ -648,7 +653,7 @@ export class GoodingIOD {
 
     let th = Math.atan2(p13.magnitude(), p1.dot(p3));
 
-    if (!posigrade) {
+    if (!shortWay) {
       th = TAU - th;
     }
 
@@ -661,7 +666,7 @@ export class GoodingIOD {
 
       let rt = pt.magnitude();
 
-      if (!posigrade) {
+      if (!shortWay) {
         rt = -rt as Kilometers;
       }
 

@@ -21,6 +21,7 @@ import { EpochUTC } from '../time/EpochUTC';
 import { J2000 } from '../coordinate/J2000';
 import { Kilometers, KilometersPerSecond } from '../types/types';
 import { Matrix } from '../operations/Matrix';
+import { SingularMatrixError } from '../operations/SingularMatrixError';
 import { Vector } from '../operations/Vector';
 import { Vector3D } from '../operations/Vector3D';
 import { concat } from '../utils/functions';
@@ -41,12 +42,16 @@ export class LevenbergMarquardtOD {
   private readonly nominal_: J2000;
   /**  Solve start epoch. */
   private readonly start_: EpochUTC;
+  /** Observations sorted by epoch (a copy; the caller's array is not modified). */
+  private readonly observations_: Observation[];
 
   /**
    * Create a new [LevenbergMarquardtOD] object from a list of [Observation]
    * objects, an [apriori] state estimate, and an optional
    * spacecraft [forceModel].
-   * @param observations_ List of observations.
+   *
+   * The observations are copied and sorted by epoch; the caller's array is left unchanged.
+   * @param observations List of observations.
    * @param apriori_ Apriori state estimate.
    * @param forceModel_ Spacecraft force model.
    * @param posStep_ Position step size.
@@ -55,14 +60,14 @@ export class LevenbergMarquardtOD {
    * @returns [LevenbergMarquardtOD] object.
    */
   constructor(
-    private readonly observations_: Observation[],
+    observations: Observation[],
     private readonly apriori_: J2000,
     private readonly forceModel_?: ForceModel,
     private readonly posStep_: number = 1e-5,
     private readonly velStep_: number = 1e-5,
     private readonly fastDerivatives_: boolean = false,
   ) {
-    this.observations_.sort((a, b) => a.epoch.posix - b.epoch.posix);
+    this.observations_ = [...observations].sort((a, b) => a.epoch.posix - b.epoch.posix);
     this.start_ = this.observations_[0].epoch;
     this.propPairs_ = new PropagatorPairs(this.posStep_, this.velStep_);
     this.forceModel_ ??= new ForceModel().setGravity();
@@ -119,7 +124,7 @@ export class LevenbergMarquardtOD {
     return Math.sqrt(rmsTotal / measCount);
   }
 
-  private computeLinearSystem(x: Float64Array): { atwa: Matrix; atwb: Matrix; rms: number } {
+  private computeLinearSystem(x: Float64Array): { atwa: Matrix; atwb: Matrix; rms: number; measCount: number } {
     const propagator = this.buildPropagator_(x, false);
 
     this.setPropagatorPairs_(x);
@@ -144,18 +149,48 @@ export class LevenbergMarquardtOD {
       atwa: atwaMat,
       atwb: atwbMat,
       rms: Math.sqrt(rmsTotal / measCount),
+      measCount,
     };
   }
 
+  /** Invert a normal matrix, or throw a SingularMatrixError naming the cause. */
+  private static invertNormal_(mat: Matrix): Matrix {
+    const inv = mat.tryInverse();
+
+    if (inv === null) {
+      throw new SingularMatrixError(
+        'LevenbergMarquardtOD: the normal matrix J^T W J is singular; the observations do not determine all six ' +
+        'state components (too few observations or degenerate geometry)',
+      );
+    }
+
+    return inv;
+  }
+
   /**
-   * Attempt to solve a state estimate using the Levenberg-Marquardt algorithm.
+   * Attempt to solve a state estimate using the Levenberg-Marquardt algorithm (Marquardt
+   * scaling: the diagonal of J^T W J is multiplied by 1 + lambda).
+   *
+   * Convergence is tested at every linearisation point, before a step is attempted, so the
+   * returned state, `rms` and covariance always belong to the same state. The solve has
+   * converged when either
+   * - the noise-weighted RMS is below [epsilon] (noiseless data), or
+   * - the undamped Gauss-Newton step would lower the weighted RMS by at most
+   *   epsilon * max(RMS, 1). The predicted mean-square reduction is g^T (J^T W J)^-1 g / m with
+   *   g = J^T W r and m the number of measurements (exact for a linear model). At the noise
+   *   floor the weighted RMS is about 1, so this is a relative test there.
+   *
+   * `converged` is false when [maxIterations] accepted steps did not meet either test, or when
+   * the damping factor exceeded 1e10 without finding a step that lowers the RMS.
    * @param root0 Options.
-   * @param root0.maxIterations Maximum number of iterations.
-   * @param root0.epsilon Convergence tolerance (RMS error).
+   * @param root0.maxIterations Maximum number of accepted steps.
+   * @param root0.epsilon Convergence tolerance on the weighted RMS (see above), default 1e-6.
    * @param root0.lambdaInit Initial damping factor.
    * @param root0.lambdaFactor Factor to increase/decrease lambda.
    * @param root0.printIter Print iterations to console.
    * @returns [LevenbergMarquardtResult] object.
+   * @throws {SingularMatrixError} If J^T W J is singular (the observations do not determine the
+   *   full state). It is not caught here.
    */
   solve({
     maxIterations = 50,
@@ -176,14 +211,31 @@ export class LevenbergMarquardtOD {
     let converged = false;
 
     // Initial system calculation
-    let { atwa: JtWJ, atwb: JtWr, rms: currentRms } = this.computeLinearSystem(xNom);
+    let sys = this.computeLinearSystem(xNom);
+    let currentRms = sys.rms;
 
     if (printIter) {
       // eslint-disable-next-line no-console
       console.log(`0: rms=${currentRms} lambda=${lambda} x=${new Vector(xNom)}`);
     }
 
-    while (iter < maxIterations) {
+    for (;;) {
+      // Convergence test at the current linearisation point
+      const jtwjInv = LevenbergMarquardtOD.invertNormal_(sys.atwa);
+      const predictedMsReduction = Math.max(
+        0,
+        sys.atwb.transpose().multiply(jtwjInv).multiply(sys.atwb).elements[0][0] / sys.measCount,
+      );
+      const predictedRms = Math.sqrt(Math.max(0, currentRms * currentRms - predictedMsReduction));
+
+      if (currentRms < epsilon || currentRms - predictedRms <= epsilon * Math.max(currentRms, 1)) {
+        converged = true;
+        break;
+      }
+
+      if (iter >= maxIterations) {
+        break;
+      }
       iter++;
 
       let stepAccepted = false;
@@ -197,13 +249,13 @@ export class LevenbergMarquardtOD {
 
         for (let i = 0; i < 6; i++) {
           for (let j = 0; j < 6; j++) {
-            A.elements[i][j] = JtWJ.elements[i][j];
+            A.elements[i][j] = sys.atwa.elements[i][j];
           }
           A.elements[i][i] *= (1.0 + lambda);
         }
 
         // Solve for delta
-        const delta = A.inverse().multiply(JtWr);
+        const delta = LevenbergMarquardtOD.invertNormal_(A).multiply(sys.atwb);
 
         // Trial state
         const xTrial = new Float64Array(6);
@@ -218,21 +270,17 @@ export class LevenbergMarquardtOD {
         if (trialRms < currentRms) {
           // Accept step
           xNom = xTrial;
-          currentRms = trialRms;
           lambda /= lambdaFactor;
           stepAccepted = true;
+
+          // Recompute system for next iteration (sys.rms equals trialRms)
+          sys = this.computeLinearSystem(xNom);
+          currentRms = sys.rms;
 
           if (printIter) {
             // eslint-disable-next-line no-console
             console.log(`${iter}: rms=${currentRms} lambda=${lambda} x=${new Vector(xNom)}`);
           }
-
-          // Recompute system for next iteration
-          const sys = this.computeLinearSystem(xNom);
-
-          JtWJ = sys.atwa;
-          JtWr = sys.atwb;
-          // Note: sys.rms should match trialRms
         } else {
           // Reject step
           lambda *= lambdaFactor;
@@ -243,14 +291,13 @@ export class LevenbergMarquardtOD {
         }
       }
 
-      if (currentRms < epsilon || lambda > 1e10) {
-        converged = currentRms < epsilon;
+      if (!stepAccepted) {
         break;
       }
     }
 
-    // Final covariance
-    const p = JtWJ.inverse();
+    // Final covariance at the returned state
+    const p = LevenbergMarquardtOD.invertNormal_(sys.atwa);
     const covariance = new StateCovariance(p, CovarianceFrame.ECI);
 
     return new LevenbergMarquardtResult(

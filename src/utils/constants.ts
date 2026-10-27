@@ -1,4 +1,4 @@
-import { Days, Degrees, Milliseconds, Minutes, Radians, Seconds } from '../types/types';
+import { Degrees, Milliseconds, Minutes, Radians, Seconds } from '../types/types';
 
 /**
  * Full circle in radians (PI * 2)
@@ -23,12 +23,12 @@ export const DEG2RAD = (Math.PI / 180.0) as Radians;
 export const RAD2DEG = (180.0 / Math.PI) as Degrees;
 
 /**
- * Conversion factor from seconds to degrees.
+ * Conversion factor from arcseconds to degrees (1 / 3600).
  */
 export const sec2deg = (1.0 / 60.0 / 60.0) as Degrees;
 
 /**
- * Conversion factor from seconds to days.
+ * Conversion factor from (time) seconds to days, 1 / 86400.
  */
 export const sec2day: number = sec2deg / 24.0;
 
@@ -94,14 +94,14 @@ export const temp4 = 1.5e-12;
 export const MINUTES_PER_DAY = 1440 as Minutes;
 
 /**
- * The number of milliseconds in a day.
+ * Days per millisecond, 1 / 86 400 000 (multiply a millisecond count by this to get days).
  */
-export const MILLISECONDS_TO_DAYS = 1.15741e-8;
+export const MILLISECONDS_TO_DAYS = 1 / 86400000;
 
 /**
- * The number of milliseconds in a day.
+ * The number of milliseconds in a day, 86 400 000.
  */
-export const MILLISECONDS_PER_DAY = <Days>1000 * 60 * 60 * 24;
+export const MILLISECONDS_PER_DAY = (1000 * 60 * 60 * 24) as Milliseconds;
 
 /**
  * The number of milliseconds in a second.

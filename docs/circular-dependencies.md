@@ -28,7 +28,7 @@ ESM and CJS bundles, which is why the full test suite passes.
 
 These are the fluent frame/element/epoch conversion APIs (`a.toB()`), idiomatic
 for an astrodynamics library. Removing them would mean breaking the fluent API
-(moving conversions into separate converter modules) — disproportionate for
+(moving conversions into separate converter modules), which is disproportionate for
 cycles that are safe.
 
 ## The frame hierarchy is co-located on purpose
@@ -42,7 +42,7 @@ frames convert into one another *and* every frame does `class X extends
 StateVector`, the cross-module cycle crossed a top-level `extends`. That is the
 one cycle shape that can throw at load time ("Cannot access 'StateVector' before
 initialization" / "Class extends value undefined") if module-evaluation order is
-unlucky — a failure tests would not catch. Co-locating them makes every `extends`
+unlucky: a failure tests would not catch. Co-locating them makes every `extends`
 **intra-module** (StateVector is declared first), so the hazard cannot occur.
 
 > A dependency-injection alternative (registering the converter lazily) was tried
@@ -53,10 +53,10 @@ unlucky — a failure tests would not catch. Co-locating them makes every `exten
 ## Rules
 
 - **Never** raise the baseline to unblock a build. A rising count means a new
-  cycle — break it.
+  cycle: break it.
 - When you remove a cycle, lower `BASELINE` in `scripts/check-circular.mjs` and
   update this table.
-- Prefer `import type` for type-only references — the checker already ignores
+- Prefer `import type` for type-only references: the checker already ignores
   them, and they never cause load-order hazards.
 - Keep the `StateVector` hierarchy co-located in `coordinate/frames.ts`. Do not
   re-split it into per-class files, or the extends-crossing hazard returns.

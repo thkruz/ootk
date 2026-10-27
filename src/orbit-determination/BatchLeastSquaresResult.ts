@@ -22,12 +22,19 @@ import { J2000 } from '../coordinate/J2000';
 export class BatchLeastSquaresResult {
   /**
    * Create a new [BatchLeastSquaresResult] object, containing the solved
-   * [state], [covariance], and root-mean-squared error [rms].
+   * [state], [covariance], noise-weighted root-mean-squared residual [rms], and
+   * whether the solve [converged].
    * @param state The solved state.
-   * @param covariance The solved covariance.
-   * @param rms The root-mean-squared error.
+   * @param covariance The solved covariance (inverse of A^T W A at [state]).
+   * @param rms The noise-weighted RMS of the residuals at [state] (about 1 for a fit at the noise floor).
+   * @param converged True only if the RMS tolerance was met before `maxIter` was exhausted.
    */
-  constructor(public state: J2000, public covariance: StateCovariance, public rms: number) {
+  constructor(
+    public state: J2000,
+    public covariance: StateCovariance,
+    public rms: number,
+    public converged: boolean = false,
+  ) {
     // Nothing to do here.
   }
 }

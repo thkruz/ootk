@@ -28,7 +28,10 @@ export class SolarRadiationPressure extends Force {
     super();
   }
 
-  // / Solar pressure _(N/m²)_;
+  /**
+   * Solar radiation pressure at 1 AU (4.56e-6 N/m^2) times (1 AU in km)^2, in N/m^2 * km^2, so
+   * that dividing by the squared Sun distance in km gives the pressure in N/m^2.
+   */
   private static readonly _kRef: number = 4.56e-6 * KM_PER_AU ** 2;
 
   acceleration(state: J2000): Vector3D {

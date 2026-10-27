@@ -31,6 +31,11 @@ import { GoodingIOD } from './GoodingIOD';
 
 type SolveOptions = {
   nRev?: number;
+  /**
+   * True (default) for the short-way Lambert arc between the first and last observation (transfer
+   * angle below 180 deg), false for the long way. Passed to GoodingIOD as `shortWay`; it does not
+   * select prograde vs retrograde motion.
+   */
   direction?: boolean;
   posSearch?: number;
   velSearch?: number;

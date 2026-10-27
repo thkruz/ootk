@@ -32,18 +32,17 @@
  *
  * // Create a phased array radar
  * const radar = new PhasedArrayRadar({
- *   id: 'radar-1',
+ *   id: 1,
  *   name: 'Tracking Radar',
+ *   sensorType: SensorType.PHASED_ARRAY_RADAR,
  *   beamwidth: 2 as Degrees,
  *   boresightAz: [0 as Degrees],
  *   boresightEl: [45 as Degrees],
  *   fieldOfView: {
+ *     halfAngle: 60 as Degrees, // cone half-angle around each face boresight (required)
  *     minRange: 100 as Kilometers,
  *     maxRange: 40000 as Kilometers,
- *     minAzimuth: 0 as Degrees,
- *     maxAzimuth: 120 as Degrees,
  *     minElevation: 5 as Degrees,
- *     maxElevation: 85 as Degrees,
  *   },
  * });
  *
@@ -59,7 +58,15 @@
  */
 
 // Base classes and types
-export { boresightFrameFromAzElRoll, FieldOfView } from './FieldOfView';
+export {
+  boresightFrameFromAzElRoll,
+  FieldOfView,
+  MAX_INTERPOLATED_MASK_EL,
+  MAX_INTERPOLATED_MASK_VERTICES,
+  MIN_INTERPOLATED_MASK_VERTICES,
+  maskMinElevation,
+  sortElevationMasks,
+} from './FieldOfView';
 export type { BoresightFrame, ElevationMask, FieldOfViewParams } from './FieldOfView';
 export { Sensor } from './Sensor';
 export type { SensorParams, SensorPlatform, SerializedSensor } from './Sensor';
@@ -83,3 +90,26 @@ export type { PassiveRFSensorParams } from './PassiveRFSensor';
 // Communication antennas
 export { TtcAntenna } from './TtcAntenna';
 export type { TtcAntennaParams } from './TtcAntenna';
+
+// Ground swath geometry (nadir imager swath / field of regard)
+export {
+  crossTrackEdges,
+  crossTrackEdgesInto,
+  fovFromSwathWidth,
+  geodeticLatitudeRad,
+  horizonHalfAngleRad,
+  localRadiusKm,
+  lookHalfAngleForSwathWidth,
+  rayEllipsoidHit,
+  splitRuns,
+  subpointLit,
+  swathFrame,
+  swathWidthFromFov,
+  SWATH_HORIZON_MARGIN_RAD,
+  SWATH_MEAN_EARTH_RADIUS_KM,
+  WGS84_A_KM,
+  WGS84_B_KM,
+  WGS84_E2,
+  WGS84_F,
+} from './SwathGeometry';
+export type { SwathFrame, SwathRun, SwathVec3 } from './SwathGeometry';

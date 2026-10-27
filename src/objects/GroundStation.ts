@@ -15,7 +15,9 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { CommunicationDevice } from '../comm/CommunicationDevice';
 import type { Geodetic } from '../coordinate/Geodetic';
+import { Sensor } from '../sensor/Sensor';
 import { Degrees, Kilometers, SpaceObjectType } from '../types/types';
 import { GroundObject, GroundObjectParams } from './GroundObject';
 
@@ -55,7 +57,8 @@ export class GroundStation extends GroundObject {
   }
 
   /**
-   * Creates a deep copy of this ground station.
+   * Creates a deep copy of this ground station. Attached sensors and communication devices
+   * are cloned too and re-parented to the copy.
    */
   clone(): GroundStation {
     const cloned = new GroundStation({
@@ -69,9 +72,21 @@ export class GroundStation extends GroundObject {
       metadata: this.metadata ? { ...this.metadata } : undefined,
     });
 
-    // Copy sensors and comm devices references
-    cloned.sensors = [...this.sensors];
-    cloned.commDevices = [...this.commDevices];
+    // Deep clone sensors and comm devices so their parent is the clone, not this station
+    cloned.sensors = this.sensors.map((sensor) => {
+      const clonedSensor = (sensor as Sensor).clone();
+
+      clonedSensor.setParent(cloned);
+
+      return clonedSensor;
+    });
+    cloned.commDevices = this.commDevices.map((device) => {
+      const clonedDevice = (device as CommunicationDevice).clone();
+
+      clonedDevice.setParent(cloned);
+
+      return clonedDevice;
+    });
 
     return cloned;
   }

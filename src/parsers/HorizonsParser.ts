@@ -19,6 +19,12 @@ import { ParseError } from '../errors';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { Kilometers, KilometersPerSecond, Seconds } from '../types/types';
+import { KM_PER_AU } from '../utils/constants';
+
+const MONTHS_: Record<string, number> = {
+  Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+  Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+};
 
 /**
  * Converts a Julian Date to a JavaScript Date.
@@ -132,11 +138,14 @@ export class HorizonsParser {
    * Parses NASA Horizons vector table format.
    *
    * Expects output from Horizons with settings:
-   * - VECTORS (type 2 or 3)
-   * - Output in km and km/s
+   * - VECTORS (type 2 or 3), plain or CSV (CSV_FORMAT=YES)
+   * - OUT_UNITS KM-S, KM-D or AU-D (read from the "Output units" header line; values are
+   *   converted to km and km/s, with 1 au = KM_PER_AU km and 1 day = 86400 s). A table with no
+   *   "Output units" line is read as KM-S.
    *
    * @param data - Raw Horizons output text
-   * @returns Parsed ephemeris data
+   * @returns Parsed ephemeris data (km, km/s)
+   * @throws ParseError when the output units are not one of the above
    */
   static parseVectors(data: string): HorizonsVectorResult {
     if (!data || data.trim().length === 0) {
@@ -223,6 +232,27 @@ export class HorizonsParser {
     // Validate we found some data
     if (ephemeris.length === 0) {
       throw new ParseError('No valid ephemeris data found between $$SOE and $$EOE markers', 'HORIZONS');
+    }
+
+    // Convert to km and km/s from the table's OUT_UNITS
+    const units = (metadata.outputUnits ?? 'KM-S').trim().toUpperCase();
+    const unitScales: Record<string, [number, number]> = {
+      'KM-S': [1, 1],
+      'KM-D': [1, 1 / 86400],
+      'AU-D': [KM_PER_AU, KM_PER_AU / 86400],
+    };
+    const scale = unitScales[units];
+
+    if (!scale) {
+      throw new ParseError(`Unsupported Horizons output units "${metadata.outputUnits}"; use KM-S, KM-D or AU-D`, 'HORIZONS');
+    }
+    if (scale[0] !== 1 || scale[1] !== 1) {
+      for (const ep of ephemeris) {
+        ep.position = ep.position.scale(scale[0]) as Vector3D<Kilometers>;
+        if (ep.velocity) {
+          ep.velocity = ep.velocity.scale(scale[1]) as Vector3D<KilometersPerSecond>;
+        }
+      }
     }
 
     // Determine if heliocentric
@@ -375,6 +405,11 @@ export class HorizonsParser {
     // Line 2: X, Y, Z (position)
     // Line 3: VX, VY, VZ (velocity) - optional
 
+    // CSV_FORMAT=YES: "JDTDB, Calendar Date (TDB), X, Y, Z, VX, VY, VZ, [LT, RG, RR,]"
+    if (line.includes(',')) {
+      return HorizonsParser.parseCsvVectorLine_(line, currentIndex);
+    }
+
     // Try to parse the Julian Date / Calendar date line
     const dateMatch = line.match(/^(\d+\.\d+)\s*=\s*A\.D\.\s*(\d{4})-(\w{3})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2}\.?\d*)/u);
 
@@ -431,11 +466,7 @@ export class HorizonsParser {
     const minute = parseInt(dateMatch[6], 10);
     const second = parseFloat(dateMatch[7]);
 
-    const monthMap: Record<string, number> = {
-      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
-    };
-    const month = monthMap[monthStr] ?? 0;
+    const month = MONTHS_[monthStr] ?? 0;
 
     const date = new Date(Date.UTC(year, month, day, hour, minute, Math.floor(second), (second % 1) * 1000));
     // Vector tables are on TDB (the line ends "TDB"); only a line marked UT is already UTC
@@ -515,36 +546,133 @@ export class HorizonsParser {
   }
 
   /**
+   * Parses one CSV vector line (CSV_FORMAT=YES). Columns: JDTDB, calendar date (TDB), X, Y, Z,
+   * then VX, VY, VZ when present; any further columns (LT, RG, RR) are ignored.
+   * @param line The trimmed data line.
+   * @param currentIndex Index of the line.
+   * @returns The state, or null when the line is not a CSV vector record.
+   * @throws ParseError when a record has a JD but non-numeric position fields.
+   */
+  private static parseCsvVectorLine_(
+    line: string,
+    currentIndex: number,
+  ): { data: HorizonsEphemerisData; nextIndex: number } | null {
+    const fields = line.split(',').map((f) => f.trim());
+
+    while (fields.length > 0 && fields[fields.length - 1] === '') {
+      fields.pop();
+    }
+
+    const jd = Number(fields[0]);
+
+    if (fields.length < 5 || !Number.isFinite(jd)) {
+      return null;
+    }
+
+    const nums = fields.slice(2).map((f) => Number(f));
+
+    if (nums.slice(0, 3).some((n) => !Number.isFinite(n))) {
+      throw new ParseError(`Malformed Horizons CSV vector line: "${line}"`, 'HORIZONS');
+    }
+
+    const position = new Vector3D(nums[0] as Kilometers, nums[1] as Kilometers, nums[2] as Kilometers);
+    let velocity: Vector3D<KilometersPerSecond> | undefined;
+
+    if (nums.length >= 6 && nums.slice(3, 6).every((n) => Number.isFinite(n))) {
+      velocity = new Vector3D(nums[3] as KilometersPerSecond, nums[4] as KilometersPerSecond, nums[5] as KilometersPerSecond);
+    }
+
+    return {
+      // Vector tables are on TDB
+      data: { epoch: tdbDateToEpochUtc(julianDateToDate(jd)), position, velocity },
+      nextIndex: currentIndex + 1,
+    };
+  }
+
+  /**
    * Parses an observer table data line.
+   *
+   * Observer tables start with the UT calendar date ("2024-Dec-01 00:00[:ss[.fff]]"), followed
+   * by optional solar/lunar presence flags, then the requested quantities. This parser reads the
+   * first four quantities as RA (deg), Dec (deg), Delta (au) and one-way light time (min), the
+   * layout of QUANTITIES='1,20,21' with ANG_FORMAT=DEG; sexagesimal RA/Dec (ANG_FORMAT=HMS) is
+   * converted to degrees. Both CSV and whitespace-separated tables are accepted. A line that
+   * starts with a Julian date (UT) instead of a calendar date is also accepted.
+   * @param line The trimmed data line.
+   * @returns The observation (RA/Dec in deg, distance in au, light time in s), or null.
    */
   private static parseObserverLine_(line: string): HorizonsObserverResult['observations'][0] | null {
-    // Observer format typically includes:
-    // Date, RA (HMS), Dec (DMS), Delta (AU), Delta-dot, S-O-T, etc.
-    // This is a simplified parser
+    const dateMatch = (/^b?(\d{4})-([A-Za-z]{3})-(\d{2})\s+(\d{2}):(\d{2})(?::(\d{2}(?:\.\d+)?))?/u).exec(line);
+    let epoch: EpochUTC;
+    let rest: string;
 
-    const parts = line.split(/\s+/u);
+    if (dateMatch) {
+      const month = MONTHS_[dateMatch[2]];
 
-    if (parts.length < 5) {
-      return null;
-    }
-
-    try {
-      // Try to parse as JD RA Dec Delta LT format
-      const jd = parseFloat(parts[0]);
-
-      if (isNaN(jd)) {
+      if (month === undefined) {
         return null;
       }
+      const sec = dateMatch[6] ? Number(dateMatch[6]) : 0;
+      const ms = Date.UTC(Number(dateMatch[1]), month, Number(dateMatch[3]), Number(dateMatch[4]), Number(dateMatch[5])) +
+        sec * 1000;
 
-      const epoch = EpochUTC.fromDateTime(julianDateToDate(jd));
-      const ra = parseFloat(parts[1]); // Assuming already in degrees
-      const dec = parseFloat(parts[2]);
-      const distance = parseFloat(parts[3]);
-      const lightTime = parseFloat(parts[4]) * 60; // Convert minutes to seconds if needed
+      epoch = EpochUTC.fromDateTime(new Date(ms));
+      rest = line.substring(dateMatch[0].length);
+    } else {
+      const first = (/^\s*(\d+\.\d+)[,\s]/u).exec(line);
 
-      return { epoch, ra, dec, distance, lightTime };
-    } catch {
+      if (!first) {
+        return null;
+      }
+      epoch = EpochUTC.fromDateTime(julianDateToDate(Number(first[1])));
+      rest = line.substring(first[0].length);
+    }
+
+    const isCsv = rest.includes(',');
+    let tokens = isCsv
+      ? rest.split(',').map((t) => t.trim())
+      : rest.trim().split(/\s+/u);
+
+    // Drop empty CSV cells and the solar/lunar presence flags ("*", "C", "N", "A", "m", ...)
+    tokens = tokens.filter((t) => t.length > 0 && !(/^[*A-Za-z]{1,2}$/u).test(t));
+
+    let ra: number;
+    let dec: number;
+    let next: number;
+    const sexagesimal = (t: string[], i: number): boolean => (/^\d{1,2}$/u).test(t[i] ?? '') &&
+      (/^\d{1,2}$/u).test(t[i + 1] ?? '') && (/^\d{1,2}(?:\.\d*)?$/u).test(t[i + 2] ?? '') &&
+      (/^[+-]?\d{1,2}$/u).test(t[i + 3] ?? '') && (/^\d{1,2}$/u).test(t[i + 4] ?? '') &&
+      (/^\d{1,2}(?:\.\d*)?$/u).test(t[i + 5] ?? '');
+
+    if (isCsv && tokens[0]?.includes(' ')) {
+      // CSV with sexagesimal cells: "hh mm ss.ff", "+dd mm ss.f"
+      const [h, m, sRa] = tokens[0].split(/\s+/u).map(Number);
+      const decParts = tokens[1].split(/\s+/u);
+      const sign = decParts[0].startsWith('-') ? -1 : 1;
+
+      ra = (h + m / 60 + sRa / 3600) * 15;
+      dec = sign * (Math.abs(Number(decParts[0])) + Number(decParts[1]) / 60 + Number(decParts[2]) / 3600);
+      next = 2;
+    } else if (!isCsv && sexagesimal(tokens, 0)) {
+      const sign = tokens[3].startsWith('-') ? -1 : 1;
+
+      ra = (Number(tokens[0]) + Number(tokens[1]) / 60 + Number(tokens[2]) / 3600) * 15;
+      dec = sign * (Math.abs(Number(tokens[3])) + Number(tokens[4]) / 60 + Number(tokens[5]) / 3600);
+      next = 6;
+    } else {
+      ra = Number(tokens[0]);
+      dec = Number(tokens[1]);
+      next = 2;
+    }
+
+    const distance = Number(tokens[next]);
+    const lightTimeMin = Number(tokens[next + 1]);
+
+    if (![ra, dec, distance, lightTimeMin].every((v) => Number.isFinite(v))) {
       return null;
     }
+
+    // One-way light time is given in minutes
+    return { epoch, ra, dec, distance, lightTime: lightTimeMin * 60 };
   }
 }

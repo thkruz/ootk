@@ -44,10 +44,18 @@ export class BoxMuller {
     this._generate();
   }
 
-  // / Refill the cache with random Gaussian numbers.
+  /**
+   * Refill the cache with two independent Gaussian numbers using the basic
+   * Box-Muller transform (Box and Muller, 1958): with u1 in (0, 1] and u2 in
+   * [0, 1), z0 = sqrt(-2 ln u1) cos(2 pi u2) and z1 = sqrt(-2 ln u1) sin(2 pi u2)
+   * are independent standard normal variates.
+   *
+   * The uniform source returns values in [0, 1) and can return exactly 0, so
+   * u1 is taken as 1 - u to keep it in (0, 1] and avoid ln(0) = -Infinity.
+   */
   _generate() {
     this._index = 0;
-    const u1 = this.rand.nextFloat();
+    const u1 = 1.0 - this.rand.nextFloat();
     const u2 = this.rand.nextFloat();
     const mag = this.sigma * Math.sqrt(-2.0 * Math.log(u1));
 

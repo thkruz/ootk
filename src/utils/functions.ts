@@ -5,22 +5,24 @@ import { DifferentiableFunction, EcefVec3, Kilometers, KilometersPerSecond, Radi
 import { angularVelocityOfEarth, cKmPerSec } from './constants';
 
 /**
- * Converts magnitude to decibels.
- * @param magnitude - The magnitude to convert (must be positive).
+ * Converts a power ratio (or a power-like quantity such as an RCS in m^2) to decibels:
+ * dB = 10 log10(power). This is MATLAB's `pow2db`; an amplitude (field) ratio would use
+ * 20 log10 instead.
+ * @param power - The power ratio to convert (must be positive).
  * @returns The value in decibels.
- * @throws Error if magnitude is not positive.
+ * @throws Error if power is not positive.
  * @example
  * ```typescript
- * const db = mag2db(1000); // Returns 30
- * const db2 = mag2db(100); // Returns 20
+ * const db = pow2db(1000); // Returns 30
+ * const db2 = pow2db(100); // Returns 20
  * ```
  */
-export function mag2db(magnitude: number): number {
-  if (magnitude <= 0) {
-    throw new Error('Magnitude must be positive for decibel conversion');
+export function pow2db(power: number): number {
+  if (power <= 0) {
+    throw new Error('Power must be positive for decibel conversion');
   }
 
-  return 10 * Math.log10(magnitude);
+  return 10 * Math.log10(power);
 }
 
 /**
@@ -45,74 +47,69 @@ export function relativeVelocity<T extends number>(vel1: Vec3<T>, vel2: Vec3<T>)
 export type RcsShape = 'sphere' | 'cylinder' | 'cone' | 'hexagon' | 'cube';
 
 /**
- * Estimates the Radar Cross Section (RCS) of an object based on its dimensions and shape.
- * @param length - Length in meters.
- * @param width - Width in meters.
- * @param height - Height in meters.
+ * Estimates the radar cross section (RCS) of an object from its dimensions and shape, in m^2.
+ *
+ * The estimate is the orientation-averaged geometric cross-section. By Cauchy's surface-area
+ * formula, a convex body's projected area averaged over all orientations is S / 4, where S is
+ * its surface area. For a sphere this is pi r^2, which is also the exact optical-region RCS of a
+ * conducting sphere (Skolnik, Radar Handbook 3rd ed., section 14.3), so the estimate is the usual
+ * frequency-independent proxy for a tumbling object. Shape geometry:
+ * - sphere: diameter = `length` (`width` and `height` ignored), S = pi d^2
+ * - cylinder: length `length`, diameter `width`, S = pi d L + pi d^2 / 2
+ * - cone: height `length`, base diameter `width`, S = pi r (r + sqrt(r^2 + L^2))
+ * - hexagon (regular hexagonal prism): length `length`, corner-to-corner width `width`
+ *   (side a = width / 2), S = 6 a L + 3 sqrt(3) a^2
+ * - anything else (box / cube): edges `length`, `width`, `height`, S = 2 (LW + LH + WH)
+ *
+ * Shape matching is case-insensitive and by substring ('sphere', 'cyl', 'cone', 'hex').
+ * @param length - Length in metres (diameter for a sphere).
+ * @param width - Width in metres (diameter for a cylinder or cone).
+ * @param height - Height in metres (box only).
  * @param shape - The shape type ('sphere', 'cylinder', 'cone', 'hexagon', 'cube').
- * @returns Estimated RCS in square meters.
+ * @returns Estimated RCS in square metres (m^2).
  * @example
  * ```typescript
- * const rcs = estimateRcs(2.0, 1.5, 1.5, 'cylinder');
- * console.log(`Estimated RCS: ${rcs.toFixed(2)} m²`);
+ * const rcs = estimateRcs(2.0, 2.0, 2.0, 'sphere'); // pi m^2 (3.1416)
  * ```
  */
-export function estimateRcs(length: number, width: number, height: number, shape: string): number {
+export function estimateRcs(length: number, width: number, height: number, shape: RcsShape | (string & {})): number {
   const shapeLower = shape.toLowerCase();
+  let surfaceArea: number;
 
   if (shapeLower.includes('sphere')) {
-    const rcs = Math.PI * (length / 2) ** 2;
+    surfaceArea = Math.PI * length * length;
+  } else if (shapeLower.includes('cyl')) {
+    surfaceArea = Math.PI * width * length + (Math.PI * width * width) / 2;
+  } else if (shapeLower.includes('cone')) {
+    const r = width / 2;
 
+    surfaceArea = Math.PI * r * (r + Math.sqrt(r * r + length * length));
+  } else if (shapeLower.includes('hex')) {
+    const a = width / 2;
 
-    return (Math.sqrt(rcs) * 3) / 2;
+    surfaceArea = 6 * a * length + 3 * Math.sqrt(3) * a * a;
+  } else {
+    surfaceArea = 2 * (length * width + length * height + width * height);
   }
 
-  if (shapeLower.includes('cyl')) {
-    const minRcs = length * 2 * (width / 2);
-    const maxRcs = Math.PI * (length / 2) ** 2;
-    const rcs = (minRcs + maxRcs) / 2;
-
-
-    return (Math.sqrt(rcs) * 3) / 2;
-  }
-
-  if (shapeLower.includes('cone')) {
-    const rcs = (Math.PI * (width / 2) ** 2) / 2;
-
-
-    return (Math.sqrt(rcs) * 3) / 2;
-  }
-
-  if (shapeLower.includes('hex')) {
-    const minLength = Math.min(length * width, length * height, width * height);
-    const minRcs = (3 * ((Math.sqrt(3) / 2) * minLength ** 2)) / 4;
-    const maxLength = Math.max(length * width, length * height, width * height);
-    const maxRcs = (3 * ((Math.sqrt(3) / 2) * maxLength ** 2)) / 2;
-    const rcs = (minRcs + maxRcs) / 2;
-
-
-    return (Math.sqrt(rcs) * 3) / 2;
-  }
-
-  // Default to cube/box
-  const minRcs = Math.min(length * width, length * height, width * height);
-  const maxRcs = Math.max(length * width, length * height, width * height);
-  const rcs = (minRcs + maxRcs) / 2;
-
-
-  return (Math.sqrt(rcs) * 3) / 2;
+  // Cauchy: mean projected area of a convex body = S / 4
+  return surfaceArea / 4;
 }
 
 /**
- * Calculates the factorial of a given number.
- * @param n - The number to calculate the factorial for.
- * @returns The factorial of the given number.
+ * Calculates the factorial n! of a non-negative integer.
+ * @param n - A non-negative integer.
+ * @returns n!, or NaN when n is negative or not an integer (n! is undefined there; use
+ * {@link gamma} for Gamma(n + 1) at non-integer n).
  */
 export function factorial(n: number): number {
-  const nAbs = Math.abs(n);
+  if (!Number.isInteger(n) || n < 0) {
+    return NaN;
+  }
+
   let result = 1;
 
-  for (let i = 2; i <= nAbs; i++) {
+  for (let i = 2; i <= n; i++) {
     result *= i;
   }
 
@@ -180,7 +177,8 @@ export function acoth(x: number): number {
  * @returns The number with the magnitude of `mag` and the sign of `sgn`.
  */
 export function copySign(mag: number, sgn: number): number {
-  return Math.abs(mag) * Math.sign(sgn);
+  // Like C copysign: a zero sign keeps its own sign bit (+0 -> +|mag|, -0 -> -|mag|), never 0
+  return sgn < 0 || Object.is(sgn, -0) ? -Math.abs(mag) : Math.abs(mag);
 }
 
 /**
@@ -401,29 +399,93 @@ export function covariance(a: number[], b: number[], isSample = false): number {
   return result / (n - m);
 }
 
+/** Lanczos coefficients for g = 7, n = 9 (Godfrey; Press et al., Numerical Recipes 3rd ed. section 6.1). */
+const LANCZOS_G_ = 7;
+const LANCZOS_COEF_ = [
+  0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
+  -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6,
+  1.5056327351493116e-7,
+];
+
 /**
- * Calculates the gamma function of a number.
- * @param n - The input number.
- * @returns The gamma function value.
+ * Calculates the gamma function Gamma(x).
+ *
+ * Positive integers use Gamma(n) = (n - 1)! exactly. Other arguments use the Lanczos
+ * approximation (g = 7, 9 terms, relative error about 1e-15) for x >= 0.5 and the reflection
+ * formula Gamma(x) Gamma(1 - x) = pi / sin(pi x) below that.
+ * @param x - The input number.
+ * @returns Gamma(x), or NaN at the poles x = 0, -1, -2, ...
  */
-export function gamma(n: number): number {
-  return factorial(n - 1);
+export function gamma(x: number): number {
+  if (Number.isInteger(x)) {
+    return x > 0 ? factorial(x - 1) : NaN;
+  }
+  if (x < 0.5) {
+    return Math.PI / (Math.sin(Math.PI * x) * gamma(1 - x));
+  }
+
+  const z = x - 1;
+  let a = LANCZOS_COEF_[0];
+  const t = z + LANCZOS_G_ + 0.5;
+
+  for (let i = 1; i < LANCZOS_COEF_.length; i++) {
+    a += LANCZOS_COEF_[i] / (z + i);
+  }
+
+  return Math.sqrt(2 * Math.PI) * t ** (z + 0.5) * Math.exp(-t) * a;
 }
 
 /**
- * Calculates the eccentric anomaly (e0) and true anomaly (nu) using Newton's method
- * for a given eccentricity (ecc) and mean anomaly (m).
+ * Solves Kepler's equation for the eccentric (or hyperbolic / parabolic) anomaly and the true
+ * anomaly by Newton iteration (Vallado, Fundamentals of Astrodynamics 4th ed., algorithms 2 to 4,
+ * `newtonm`).
+ *
+ * - e < 1: M = E - e sin E; returns E and nu.
+ * - e > 1: M = e sinh H - H; returns H and nu.
+ * - e = 1 (within 1e-8): Barker, M = B + B^3 / 3 with B = tan(nu / 2); returns B and nu.
+ * - e near 0: E = nu = M.
  * @param ecc - The eccentricity of the orbit.
- * @param m - The mean anomaly.
- * @returns An object containing the eccentric anomaly (e0) and true anomaly (nu).
+ * @param m - The mean anomaly in radians.
+ * @returns e0: the converged eccentric (E), hyperbolic (H) or parabolic (B) anomaly; nu: the true
+ * anomaly in radians.
  */
 export function newtonM(ecc: number, m: number): { e0: number; nu: number } {
   const numiter = 50;
   const small = 1e-8;
-  let e0;
-  let nu;
+  let e0: number;
+  let nu: number;
 
-  if (ecc > small) {
+  if (Math.abs(ecc - 1) < small) {
+    // Parabolic: closed-form root of Barker's equation (Vallado eq. 2-50)
+    const s = 0.5 * (Math.PI / 2 - Math.atan(1.5 * m));
+    const w = Math.atan(Math.cbrt(Math.tan(s)));
+
+    e0 = 2 / Math.tan(2 * w);
+    nu = 2 * Math.atan(e0);
+  } else if (ecc > 1) {
+    // Hyperbolic
+    if (ecc < 1.6) {
+      e0 = (m < 0 && m > -Math.PI) || m > Math.PI ? m - ecc : m + ecc;
+    } else if (ecc < 3.6 && Math.abs(m) > Math.PI) {
+      e0 = m - Math.sign(m) * ecc;
+    } else {
+      e0 = m / (ecc - 1);
+    }
+    let ktr = 1;
+    let e1 = e0 + (m - ecc * Math.sinh(e0) + e0) / (ecc * Math.cosh(e0) - 1);
+
+    while (Math.abs(e1 - e0) > small && ktr <= numiter) {
+      ktr++;
+      e0 = e1;
+      e1 = e0 + (m - ecc * Math.sinh(e0) + e0) / (ecc * Math.cosh(e0) - 1);
+    }
+    e0 = e1;
+    const sinv = -(Math.sqrt(ecc * ecc - 1) * Math.sinh(e1)) / (1 - ecc * Math.cosh(e1));
+    const cosv = (Math.cosh(e1) - ecc) / (1 - ecc * Math.cosh(e1));
+
+    nu = Math.atan2(sinv, cosv);
+  } else if (ecc > small) {
+    // Elliptical
     if ((m < 0.0 && m > -Math.PI) || m > Math.PI) {
       e0 = m - ecc;
     } else {
@@ -437,6 +499,8 @@ export function newtonM(ecc: number, m: number): { e0: number; nu: number } {
       e0 = e1;
       e1 = e0 + (m - e0 + ecc * Math.sin(e0)) / (1.0 - ecc * Math.cos(e0));
     }
+    // Return the converged iterate, the one nu is computed from
+    e0 = e1;
     const sinv = (Math.sqrt(1.0 - ecc * ecc) * Math.sin(e1)) / (1.0 - ecc * Math.cos(e1));
     const cosv = (Math.cos(e1) - ecc) / (1.0 - ecc * Math.cos(e1));
 
@@ -450,11 +514,16 @@ export function newtonM(ecc: number, m: number): { e0: number; nu: number } {
 }
 
 /**
- * Calculates the eccentric anomaly (e0) and mean anomaly (m) using Newton's method
- * for a given eccentricity (ecc) and true anomaly (nu).
+ * Converts a true anomaly to the eccentric (or hyperbolic / parabolic) anomaly and the mean
+ * anomaly (Vallado, Fundamentals of Astrodynamics 4th ed., algorithm 5, `newtonnu`).
+ *
+ * - e < 1: E from nu, M = E - e sin E, both wrapped to [0, 2 pi).
+ * - e > 1: H = asinh(sqrt(e^2 - 1) sin nu / (1 + e cos nu)), M = e sinh H - H (not wrapped).
+ *   Only defined for |nu| below the asymptote pi - acos(1 / e); outside it e0 = m = 0.
+ * - e = 1 (within 1e-8): B = tan(nu / 2), M = B + B^3 / 3.
  * @param ecc - The eccentricity of the orbit.
- * @param nu - The true anomaly.
- * @returns An object containing the calculated eccentric anomaly (e0) and mean anomaly (m).
+ * @param nu - The true anomaly in radians.
+ * @returns e0: the eccentric (E), hyperbolic (H) or parabolic (B) anomaly; m: the mean anomaly.
  */
 export function newtonNu(ecc: number, nu: number): { e0: number; m: Radians } {
   const small = 1e-8;
@@ -464,14 +533,26 @@ export function newtonNu(ecc: number, nu: number): { e0: number; m: Radians } {
   if (Math.abs(ecc) < small) {
     m = nu;
     e0 = nu;
-  } else if (ecc < 1.0 - small) {
+  } else if (Math.abs(ecc - 1) < small) {
+    e0 = Math.tan(0.5 * nu);
+    m = e0 + (e0 * e0 * e0) / 3;
+  } else if (ecc < 1.0) {
     const sine = (Math.sqrt(1.0 - ecc * ecc) * Math.sin(nu)) / (1.0 + ecc * Math.cos(nu));
     const cose = (ecc + Math.cos(nu)) / (1.0 + ecc * Math.cos(nu));
 
     e0 = Math.atan2(sine, cose);
     m = e0 - ecc * Math.sin(e0);
+  } else {
+    const nuW = Math.atan2(Math.sin(nu), Math.cos(nu));
+
+    if (Math.abs(nuW) < Math.PI - Math.acos(1 / ecc)) {
+      const sine = (Math.sqrt(ecc * ecc - 1) * Math.sin(nuW)) / (1 + ecc * Math.cos(nuW));
+
+      e0 = Math.asinh(sine);
+      m = ecc * Math.sinh(e0) - e0;
+    }
   }
-  if (ecc < 1.0) {
+  if (ecc < 1.0 - small) {
     m -= Math.floor(m / (2 * Math.PI)) * (2 * Math.PI);
     if (m < 0.0) {
       m += 2.0 * Math.PI;
@@ -649,7 +730,7 @@ export const dopplerFactor = (
   const rangeX = position.x - location.x;
   const rangeY = position.y - location.y;
   const rangeZ = position.z - location.z;
-  // Math.sqrt of the dot product beats Math.hypot — this is a hot path
+  // Math.sqrt of the dot product beats Math.hypot: this is a hot path
   const distance = Math.sqrt(rangeX * rangeX + rangeY * rangeY + rangeZ * rangeZ);
   const rangeVelX = velocity.x + angularVelocityOfEarth * location.y;
   const rangeVelY = velocity.y - angularVelocityOfEarth * location.x;

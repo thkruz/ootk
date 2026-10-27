@@ -17,15 +17,15 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth } from '../body/Earth';
 import { ValidationError } from '../errors';
 import { Sensor } from '../sensor/Sensor';
 import { boresightFrameFromAzElRoll } from '../sensor/FieldOfView';
-import { rae2ecef } from '../transforms/transforms';
+import { eci2lla, rae2ecef } from '../transforms/transforms';
 import { DEG2RAD, RAD2DEG } from '../utils/constants';
 import {
   Degrees,
   EcefVec3,
+  GreenwichMeanSiderealTime,
   TemeVec3,
   Kilometers,
   KilometersPerSecond,
@@ -42,6 +42,7 @@ export interface OrbitTrackPoint {
   time: Date;
   position: TemeVec3;
   velocity: TemeVec3<KilometersPerSecond>;
+  /** Geodetic altitude above the WGS-84 ellipsoid, km. */
   altitude: Kilometers;
 }
 
@@ -136,7 +137,7 @@ export class VisualizationHelpers {
    * // Generate 3 orbits for longer visualization
    * const extendedTrack = VisualizationHelpers.generateOrbitTrack(satellite, new Date(), 3, 120);
    * ```
-   * @returns Array of orbit track points with position, velocity, and altitude
+   * @returns Array of orbit track points with TEME position, velocity, and geodetic altitude (km)
    */
   static generateOrbitTrack(
     satellite: Satellite,
@@ -163,9 +164,9 @@ export class VisualizationHelpers {
 
       if (pv) {
         const { position, velocity } = pv;
-        const altitude = (Math.sqrt(
-          position.x ** 2 + position.y ** 2 + position.z ** 2,
-        ) - Earth.radiusEquator) as Kilometers;
+        // Geodetic (WGS-84) height. It does not depend on the rotation angle about z, so GMST 0
+        // is used: |r| - R_eq would be up to ~21 km low at high latitude.
+        const altitude = eci2lla(position, 0 as GreenwichMeanSiderealTime).alt;
 
         points.push({
           time: date,
@@ -236,8 +237,8 @@ export class VisualizationHelpers {
    * // Generate boundary once (cached in ECEF)
    * const boundary = VisualizationHelpers.generateFOVBoundary(sensor, 72);
    *
-   * // Convert to TEME at any time
-   * const gmst = gstime(jday(renderDate));
+   * // Convert to TEME at any time (calcGmst takes a Date; jday takes calendar fields, not a Date)
+   * const { gmst } = calcGmst(renderDate);
    * const temePoints = boundary.map(pt => ({
    *   ...pt,
    *   teme: ecef2eci(pt.ecef, gmst)

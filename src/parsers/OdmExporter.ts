@@ -48,7 +48,7 @@ export class OdmExporter {
   }
 
   // ==========================================================================
-  // OPM — Orbit Parameter Message
+  // OPM: Orbit Parameter Message
   // ==========================================================================
 
   /**
@@ -72,14 +72,12 @@ export class OdmExporter {
     }
     lines.push('');
 
-    // Metadata
-    lines.push('META_START');
+    // Metadata (CCSDS 502.0-B-3 section 3.2.3: OPM KVN has no META_START/META_STOP; those exist only in OEM)
     lines.push(`OBJECT_NAME = ${satellite.name}`);
     lines.push(`OBJECT_ID = ${satellite.intlDes}`);
     lines.push('CENTER_NAME = EARTH');
     lines.push(`REF_FRAME = ${refFrame}`);
     lines.push('TIME_SYSTEM = UTC');
-    lines.push('META_STOP');
     lines.push('');
 
     // State vector
@@ -128,7 +126,7 @@ export class OdmExporter {
   }
 
   // ==========================================================================
-  // OEM — Orbit Ephemeris Message
+  // OEM: Orbit Ephemeris Message
   // ==========================================================================
 
   /**
@@ -150,7 +148,48 @@ export class OdmExporter {
     const refFrame = options.refFrame ?? 'TEME';
     const totalSeconds = spanHours * 3600;
     const numPoints = Math.floor(totalSeconds / stepSec) + 1;
-    const stopTime = new Date(startTime.getTime() + totalSeconds * 1000);
+    const dataLines: string[] = [];
+    let firstTime: Date | null = null;
+    let lastTime: Date | null = null;
+
+    // Ephemeris data (propagation failures are skipped, so START/STOP_TIME follow the emitted points)
+    for (let i = 0; i < numPoints; i++) {
+      const time = new Date(startTime.getTime() + i * stepSec * 1000);
+      let pos: { x: number; y: number; z: number } | null = null;
+      let vel: { x: number; y: number; z: number } | null = null;
+
+      if (refFrame === 'EME2000') {
+        try {
+          const j2k = satellite.toJ2000(time);
+
+          pos = j2k.position;
+          vel = j2k.velocity;
+        } catch {
+          // Skip points where propagation fails
+        }
+      } else {
+        const pv = satellite.eci(time);
+
+        if (pv?.position && pv?.velocity) {
+          pos = pv.position;
+          vel = pv.velocity;
+        }
+      }
+
+      if (pos && vel) {
+        firstTime ??= time;
+        lastTime = time;
+        dataLines.push([
+          OdmExporter.formatDateTime_(time),
+          OdmExporter.formatNumber_(pos.x),
+          OdmExporter.formatNumber_(pos.y),
+          OdmExporter.formatNumber_(pos.z),
+          OdmExporter.formatNumber_(vel.x),
+          OdmExporter.formatNumber_(vel.y),
+          OdmExporter.formatNumber_(vel.z),
+        ].join('  '));
+      }
+    }
 
     const lines: string[] = [];
 
@@ -171,57 +210,19 @@ export class OdmExporter {
     lines.push('CENTER_NAME = EARTH');
     lines.push(`REF_FRAME = ${refFrame}`);
     lines.push('TIME_SYSTEM = UTC');
-    lines.push(`START_TIME = ${OdmExporter.formatDateTime_(startTime)}`);
-    lines.push(`STOP_TIME = ${OdmExporter.formatDateTime_(stopTime)}`);
+    lines.push(`START_TIME = ${OdmExporter.formatDateTime_(firstTime ?? startTime)}`);
+    lines.push(`STOP_TIME = ${OdmExporter.formatDateTime_(lastTime ?? new Date(startTime.getTime() + totalSeconds * 1000))}`);
     lines.push(`INTERPOLATION = ${options.interpolation ?? 'LAGRANGE'}`);
     lines.push(`INTERPOLATION_DEGREE = ${options.interpolationDegree ?? 7}`);
     lines.push('META_STOP');
     lines.push('');
-
-    // Ephemeris data
-    for (let i = 0; i < numPoints; i++) {
-      const offsetMs = i * stepSec * 1000;
-      const time = new Date(startTime.getTime() + offsetMs);
-      const epoch = OdmExporter.formatDateTime_(time);
-
-      if (refFrame === 'EME2000') {
-        try {
-          const j2k = satellite.toJ2000(time);
-
-          lines.push([
-            epoch,
-            OdmExporter.formatNumber_(j2k.position.x),
-            OdmExporter.formatNumber_(j2k.position.y),
-            OdmExporter.formatNumber_(j2k.position.z),
-            OdmExporter.formatNumber_(j2k.velocity.x),
-            OdmExporter.formatNumber_(j2k.velocity.y),
-            OdmExporter.formatNumber_(j2k.velocity.z),
-          ].join('  '));
-        } catch {
-          // Skip points where propagation fails
-        }
-      } else {
-        const pv = satellite.eci(time);
-
-        if (pv?.position && pv?.velocity) {
-          lines.push([
-            epoch,
-            OdmExporter.formatNumber_(pv.position.x),
-            OdmExporter.formatNumber_(pv.position.y),
-            OdmExporter.formatNumber_(pv.position.z),
-            OdmExporter.formatNumber_(pv.velocity.x),
-            OdmExporter.formatNumber_(pv.velocity.y),
-            OdmExporter.formatNumber_(pv.velocity.z),
-          ].join('  '));
-        }
-      }
-    }
+    lines.push(...dataLines);
 
     return lines.join('\n');
   }
 
   // ==========================================================================
-  // OEM from State Vectors — direct J2000 array export
+  // OEM from State Vectors: direct J2000 array export
   // ==========================================================================
 
   /**
@@ -297,7 +298,7 @@ export class OdmExporter {
   }
 
   // ==========================================================================
-  // OMM — Orbit Mean-Elements Message
+  // OMM: Orbit Mean-Elements Message
   // ==========================================================================
 
   /**
@@ -319,15 +320,13 @@ export class OdmExporter {
     }
     lines.push('');
 
-    // Metadata
-    lines.push('META_START');
+    // Metadata (CCSDS 502.0-B-3 section 4.2.3: OMM KVN has no META_START/META_STOP; those exist only in OEM)
     lines.push(`OBJECT_NAME = ${satellite.name}`);
     lines.push(`OBJECT_ID = ${satellite.intlDes}`);
     lines.push('CENTER_NAME = EARTH');
     lines.push('REF_FRAME = TEME');
     lines.push('TIME_SYSTEM = UTC');
     lines.push('MEAN_ELEMENT_THEORY = SGP4');
-    lines.push('META_STOP');
     lines.push('');
 
     // Mean elements

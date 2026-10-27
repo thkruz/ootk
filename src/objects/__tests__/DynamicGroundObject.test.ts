@@ -352,7 +352,8 @@ describe('DynamicGroundObject', () => {
           time: new Date('2025-12-24T03:00:00Z'),
           lat: 45 as Degrees,
           lon: 0 as Degrees,
-          alt: -1 as Kilometers,
+          // Negative altitudes are valid (Dead Sea, geoid below the ellipsoid); NaN is not
+          alt: NaN as Kilometers,
         }),
       ).toThrow('Invalid altitude');
     });
@@ -764,7 +765,7 @@ describe('DynamicGroundObject', () => {
       expect(obj.isHistoryEnabled).toBe(false);
     });
 
-    it('should provide history getter as alias for positionHistory', () => {
+    it('keeps the LLA trail on positionHistory; the inherited TEME history stays null', () => {
       const obj = new DynamicGroundObject({
         id: 5001,
         name: 'Test Object',
@@ -772,8 +773,11 @@ describe('DynamicGroundObject', () => {
         historyConfig: { maxLength: 100 },
       });
 
-      expect(obj.history).toBe(obj.positionHistory);
-      expect(obj.history).not.toBeNull();
+      // v8: history is the base-class History<HistoricalState>, which a moving ground object
+      // does not record; the LLA trail is positionHistory (so the object is a valid GroundObject)
+      expect(obj.positionHistory).not.toBeNull();
+      expect(obj.history).toBeNull();
+      expect(obj.isHistoryEnabled).toBe(true);
     });
 
     it('should return null for both getters when history is disabled', () => {

@@ -71,13 +71,13 @@ Observation Time: 2024-01-28T12:00:00.000Z
 === Example 1: Topocentric RADEC Observations ===
 
 Topocentric Observation (from ground station):
-  Right Ascension: 1.110122 rad
-                   63.6053°
-                   04h 14m 25.27s
-  Declination:     -0.275015 rad
-                   -15.7572°
-                   -15° 45' 25.99"
-  Range:           8518.78 km
+  Right Ascension: 1.107873 rad
+                   63.4765°
+                   04h 13m 54.35s
+  Declination:     -0.275189 rad
+                   -15.7671°
+                   -15° 46' 01.73"
+  Range:           8498.28 km
 
 === Example 2: Geocentric RADEC Observations ===
 
@@ -87,7 +87,7 @@ Geocentric Observation (from Earth center):
                    06h 53m 17.41s
   Declination:     0.191907 rad
                    10.9955°
-                   +10° 59' 43.71"
+                   +10° 59' 43.70"
   Range:           6794.28 km
 
 === Example 3: Comparing Observation Formats ===
@@ -96,8 +96,8 @@ Same satellite observed in different coordinate systems:
 
 RAE (Range-Azimuth-Elevation):
   Azimuth:   276.8752°
-  Elevation: -37.9621°
-  Range:     8497.55 km
+  Elevation: -37.9685°
+  Range:     8498.28 km
 
 ... (truncated)
 
@@ -105,12 +105,12 @@ RAE (Range-Azimuth-Elevation):
 
 Time      Right Ascension    Declination    Range
 ────────  ─────────────────  ─────────────  ─────────
-12:00:00  04h 14m 25.27s  -15° 45' 25.99"     8518.8 km
-12:05:00  04h 49m 42.69s  -28° 52' 45.75"     8488.1 km
-12:10:00  05h 16m 45.24s  -43° 02' 03.28"     8542.8 km
-12:15:00  05h 33m 00.74s  -57° 35' 01.74"     8657.4 km
-12:20:00  05h 23m 32.44s  -71° 55' 07.33"     8802.6 km
-12:25:00  02h 26m 51.15s  -83° 15' 21.53"     8951.3 km
+12:00:00  04h 13m 54.35s  -15° 46' 01.73"     8498.3 km
+12:05:00  04h 49m 13.90s  -28° 55' 37.61"     8466.6 km
+12:10:00  05h 16m 15.90s  -43° 07' 15.01"     8522.8 km
+12:15:00  05h 32m 24.76s  -57° 42' 07.50"     8641.0 km
+12:20:00  05h 22m 23.77s  -72° 03' 05.17"     8791.4 km
+12:25:00  02h 21m 13.75s  -83° 17' 26.93"     8946.2 km
 
 === Example 6: Angular Separation Between Objects ===
 
@@ -118,8 +118,8 @@ Time: 2024-01-28T12:00:00.000Z
 
 Satellite  Right Ascension    Declination    Range
 ─────────  ─────────────────  ─────────────  ─────────
-ISS        06h 53m 17.41s  +10° 59' 43.71"     6794.3 km
-Hubble     02h 26m 13.70s  +24° 10' 36.23"     6912.0 km
+ISS        06h 53m 17.41s  +10° 59' 43.70"     6794.3 km
+Hubble     02h 26m 13.70s  +24° 10' 36.19"     6912.0 km
 
 Angular Separation:
   64.4435°

@@ -43,7 +43,7 @@ export interface CommunicationDeviceParams {
  * ```typescript
  * // Create a transmitter and attach to ground station
  * const tx = new Transmitter({
- *   id: 'gs-uplink',
+ *   id: 201,
  *   name: 'Ground Station Uplink',
  *   frequency: 14e9 as Hertz,
  *   power: 1000 as Watts,

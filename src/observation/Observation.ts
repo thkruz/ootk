@@ -35,14 +35,18 @@ export abstract class Observation {
   /** Inertial observer location. */
   abstract get site(): J2000;
 
-  /** Observation noise matrix. */
+  /**
+   * Observation noise matrix: the weight (information) matrix, the inverse of the measurement
+   * noise covariance. For independent measurements it is diag(1 / sigma_i^2).
+   */
   abstract get noise(): Matrix;
 
   /**
-   * Return range-normalized cross line-of-sight residual for the observation
-   * when compared against a nominal state propagator.
+   * Cross line-of-sight residual (km): the chord 2 rho sin(theta / 2) between the observed line
+   * of sight and the line of sight to the propagated state, where theta is the angle between
+   * them and rho the predicted slant range. Range errors along the line of sight do not count.
    * @param propagator Propagator to compare against.
-   * @throws Not implemented.
+   * @returns The cross line-of-sight distance in km.
    */
   abstract clos(propagator: Propagator): number;
 
@@ -75,27 +79,31 @@ export abstract class Observation {
   abstract residual(propagator: Propagator): Matrix;
 
   /**
-   * Convert this observation's noise matrix into a covariance matrix.
+   * Measurement noise covariance: the matrix inverse of {@link noise}. (The element-wise
+   * reciprocal used before v8 is only right for a diagonal matrix.)
    * @returns A matrix representing the noise covariance.
+   * @throws {SingularMatrixError} If the noise matrix is singular.
    */
   noiseCovariance(): Matrix {
-    return this.noise.reciprocal();
+    return this.noise.inverse();
   }
 
   /**
-   * Generates a noise sample from the noise covariance matrix.
-   * @param sigma - The scaling factor for the noise covariance matrix.
-   * @returns A matrix representing the noise sample.
+   * Lower-triangular square root of the noise covariance scaled to `sigma` standard
+   * deviations: L = sigma * chol(C), so L L^T = sigma^2 C and L g with g ~ N(0, I) has
+   * covariance sigma^2 C (per-component standard deviation sigma * sigma_i).
+   * @param sigma - Number of standard deviations (1 gives the stated noise).
+   * @returns The scaled Cholesky factor.
    */
   noiseSample_(sigma: number): Matrix {
-    return this.noiseCovariance().scale(sigma).cholesky();
+    return this.noiseCovariance().cholesky().scale(sigma);
   }
 
   /**
-   * Randomly sample this observation in vector form within the
-   * observation noise.
+   * Randomly sample this observation in vector form within the observation noise:
+   * measurement + L g with L from {@link noiseSample_} and g a standard normal vector.
    * @param random Random number generator.
-   * @param sigma Sigma value to scale the noise by.
+   * @param sigma Number of standard deviations to scale the noise by (1 gives the stated noise).
    * @returns Sampled observation.
    */
   sampleVector(random: RandomGaussianSource, sigma: number): Vector {
@@ -108,10 +116,10 @@ export abstract class Observation {
 
   /**
    * Randomly sample this observation within the observation noise, scaled to
-   * the provided sigma value.
+   * the provided sigma value (see {@link sampleVector}).
    * @param random Random number generator.
-   * @param sigma Sigma value to scale the noise by.
-   * @throws Not implemented.
+   * @param sigma Number of standard deviations to scale the noise by (1 gives the stated noise).
+   * @returns The sampled observation.
    */
   abstract sample(random: RandomGaussianSource, sigma: number): Observation;
 }

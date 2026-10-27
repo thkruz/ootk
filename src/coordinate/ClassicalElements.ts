@@ -33,6 +33,9 @@ import { clamp, matchHalfPlane, newtonNu } from '../utils/functions';
 import { EquinoctialElements } from './EquinoctialElements';
 import { StateVector } from './StateVector';
 
+/** WGS-84 equatorial radius in km, the reference for apogee and perigee altitudes (plan decision, ootk v8). */
+const WGS84_EQUATORIAL_RADIUS = 6378.137;
+
 /**
  * The ClassicalElements class represents the classical orbital elements of an object.
  * @example
@@ -81,9 +84,23 @@ export class ClassicalElements {
   }
 
   /**
-   * Creates a new instance of ClassicalElements from a StateVector.
-   * @param state The StateVector to convert.
-   * @param mu The gravitational parameter of the central body. Default value is Earth's gravitational parameter.
+   * Creates a new instance of ClassicalElements from a StateVector (Vallado, Fundamentals of Astrodynamics and
+   * Applications, 4th ed., Algorithm 9 "RV2COE").
+   *
+   * Special cases follow Vallado Algorithm 9, mapped onto the angles {@link toPositionVelocity} consumes, so that
+   * `fromStateVector(s).toJ2000()` reproduces `s` in every case:
+   * - Inclined, elliptical: RAAN, argument of perigee and true anomaly as usual.
+   * - Inclined, circular (e below 1e-11): perigee is undefined, so `argPerigee` = 0 and `trueAnomaly` holds the
+   *   argument of latitude u (angle from the ascending node to the position).
+   * - Equatorial, elliptical (sin i below 1e-11): the node is undefined, so `rightAscension` = 0 and `argPerigee`
+   *   holds the true longitude of periapsis measured from +X (for i = 180 deg it is measured clockwise, because
+   *   {@link toPositionVelocity} applies the rotX(-pi) mirror).
+   * - Equatorial, circular: `rightAscension` = `argPerigee` = 0 and `trueAnomaly` holds the true longitude
+   *   (angle from +X to the position, clockwise for i = 180 deg).
+   *
+   * All returned angles are in radians in [0, 2pi).
+   * @param state The StateVector to convert. Must be inertial; position in km, velocity in km/s.
+   * @param mu The gravitational parameter of the central body in km^3/s^2. Default is Earth's.
    * @returns A new instance of ClassicalElements.
    * @throws Error if the StateVector is not in an inertial frame.
    */
@@ -91,6 +108,7 @@ export class ClassicalElements {
     if (!state.inertial) {
       throw new Error('State vector must be in inertial frame (like J2000).');
     }
+    const small = 1e-11;
     const pos = state.position;
     const vel = state.velocity;
     // Vis-viva with the caller's mu (state.semimajorAxis always uses Earth's)
@@ -100,38 +118,53 @@ export class ClassicalElements {
     const eVec = eVecA.subtract(eVecB).scale(1 / mu);
     const e = eVec.magnitude();
     const h = pos.cross(vel);
-    const i = Math.acos(clamp(h.z / h.magnitude(), -1.0, 1.0)) as Radians;
+    const hMag = h.magnitude();
+    const i = Math.acos(clamp(h.z / hMag, -1.0, 1.0)) as Radians;
     const n = Vector3D.zAxis.cross(h);
     const nMag = n.magnitude();
+    const isCircular = e < small;
+    const wrap = (angle: number): Radians => (((angle % TAU) + TAU) % TAU) as Radians;
     let o: Radians;
     let w: Radians;
+    let v: Radians;
 
-    if (nMag < 1e-12) {
-      // Equatorial orbit: RAAN is undefined, set to 0; measure argPerigee from X-axis
+    if (nMag / hMag < small) {
+      /*
+       * Equatorial. toPositionVelocity maps the perifocal angle theta to inertial (cos theta, sin theta) for i = 0
+       * and, through rotX(-pi), to (cos theta, -sin theta) for i = pi. Measure angles with the same handedness.
+       */
+      const ySign = h.z >= 0 ? 1 : -1;
+
       o = 0 as Radians;
-      if (e > 1e-12) {
-        w = Math.atan2(eVec.y, eVec.x) as Radians;
-        if (w < 0) {
-          w = w + TAU as Radians;
-        }
-      } else {
+      if (isCircular) {
         w = 0 as Radians;
+        v = wrap(Math.atan2(ySign * pos.y, pos.x));
+      } else {
+        w = wrap(Math.atan2(ySign * eVec.y, eVec.x));
+        v = wrap(Math.atan2(ySign * pos.y, pos.x) - w);
       }
     } else {
       o = Math.acos(clamp(n.x / nMag, -1.0, 1.0)) as Radians;
       if (n.y < 0) {
         o = TAU - o as Radians;
       }
-      w = n.angle(eVec);
-      if (eVec.z < 0) {
-        w = TAU - w as Radians;
+      if (isCircular) {
+        // Argument of latitude u, measured from the ascending node in the direction of motion.
+        w = 0 as Radians;
+        v = n.angle(pos);
+        if (pos.z < 0) {
+          v = TAU - v as Radians;
+        }
+      } else {
+        w = n.angle(eVec);
+        if (eVec.z < 0) {
+          w = TAU - w as Radians;
+        }
+        v = eVec.angle(pos);
+        if (pos.dot(vel) < 0) {
+          v = TAU - v as Radians;
+        }
       }
-    }
-
-    let v = eVec.angle(pos);
-
-    if (pos.dot(vel) < 0) {
-      v = TAU - v as Radians;
     }
 
     return new ClassicalElements({
@@ -179,20 +212,39 @@ export class ClassicalElements {
   }
 
   /**
-   * Gets the apogee of the classical elements. It is measured from the surface of the earth.
-   * @returns The apogee in kilometers.
+   * Apogee altitude: geocentric apogee radius a (1 + e) minus the WGS-84 equatorial radius 6378.137 km. This is the
+   * reference radius used for apogee and perigee altitudes across ootk. For the geocentric distance use
+   * {@link apogeeRadius}.
+   * @returns The apogee altitude in kilometers above the equatorial radius.
    */
   get apogee(): Kilometers {
-    return (this.semimajorAxis * (1.0 + this.eccentricity) - Earth.radiusMean) as Kilometers;
+    return (this.apogeeRadius - WGS84_EQUATORIAL_RADIUS) as Kilometers;
   }
 
   /**
-   * Gets the perigee of the classical elements. The perigee is the point in an
-   * orbit that is closest to the surface of the earth.
-   * @returns The perigee distance in kilometers.
+   * Perigee altitude: geocentric perigee radius a (1 - e) minus the WGS-84 equatorial radius 6378.137 km. This is the
+   * reference radius used for apogee and perigee altitudes across ootk. For the geocentric distance use
+   * {@link perigeeRadius}.
+   * @returns The perigee altitude in kilometers above the equatorial radius.
    */
-  get perigee(): number {
-    return (this.semimajorAxis * (1.0 - this.eccentricity) - Earth.radiusMean) as Kilometers;
+  get perigee(): Kilometers {
+    return (this.perigeeRadius - WGS84_EQUATORIAL_RADIUS) as Kilometers;
+  }
+
+  /**
+   * Geocentric apogee radius a (1 + e), measured from the Earth's center.
+   * @returns The apogee radius in kilometers.
+   */
+  get apogeeRadius(): Kilometers {
+    return (this.semimajorAxis * (1.0 + this.eccentricity)) as Kilometers;
+  }
+
+  /**
+   * Geocentric perigee radius a (1 - e), measured from the Earth's center.
+   * @returns The perigee radius in kilometers.
+   */
+  get perigeeRadius(): Kilometers {
+    return (this.semimajorAxis * (1.0 - this.eccentricity)) as Kilometers;
   }
 
   toString(): string {
@@ -209,16 +261,16 @@ export class ClassicalElements {
   }
 
   /**
-   * Calculates the mean motion of the celestial object.
-   * @returns The mean motion in radians.
+   * Calculates the Keplerian mean motion n = sqrt(mu / a^3).
+   * @returns The mean motion in radians per second.
    */
   get meanMotion(): Radians {
     return Math.sqrt(this.mu / this.semimajorAxis ** 3) as Radians;
   }
 
   /**
-   * Calculates the period of the orbit.
-   * @returns The period in seconds.
+   * Calculates the Keplerian period of the orbit, 2 pi sqrt(a^3 / mu).
+   * @returns The period in minutes.
    */
   get period(): Minutes {
     const periodSec = (TAU * Math.sqrt(this.semimajorAxis ** 3 / this.mu)) as Seconds;
@@ -235,17 +287,24 @@ export class ClassicalElements {
   }
 
   /**
-   * Returns the orbit regime based on the classical elements.
+   * Returns the orbit regime based on the classical elements, checked in this order:
+   * - GEO: 0.99 to 1.01 revolutions per day and e below 0.01.
+   * - MEO: e at most 0.25 with perigee and apogee altitudes (above 6378.137 km) both within 2,000 to 31,570 km, the
+   *   MEO band of the ESA Space Environment Report orbit classes. Covers O3b/mPOWER (about 288 min period), GPS
+   *   (718 min), GLONASS (676 min), BeiDou MEO (773 min) and Galileo (845 min).
+   * - LEO: at least 11.25 revolutions per day (period at most 128 min, a at most about 8,378 km, i.e. below about
+   *   2,000 km altitude) and e at most 0.25.
+   * - HEO: e above 0.25.
+   * - OTHER: anything else (for example near-circular orbits between the MEO band and GEO).
    * @returns The orbit regime.
    */
   getOrbitRegime(): OrbitRegime {
     const n = this.revsPerDay;
-    const p = this.period; // minutes
 
     if (n >= 0.99 && n <= 1.01 && this.eccentricity < 0.01) {
       return OrbitRegime.GEO;
     }
-    if (p >= 600 && p <= 800 && this.eccentricity <= 0.25) {
+    if (this.eccentricity <= 0.25 && this.perigee >= 2000 && this.apogee <= 31570) {
       return OrbitRegime.MEO;
     }
     if (n >= 11.25 && this.eccentricity <= 0.25) {

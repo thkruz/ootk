@@ -104,8 +104,20 @@ export class RAE {
       azimuth = Math.atan2(-pEDot, pSDot) + Math.PI;
     }
     const rangeRate = p.dot(pDot) / pMag;
-    const azimuthRate = (pSDot * pE - pEDot * pS) / (pS * pS + pE * pE);
-    const elevationRate = (pZDot - rangeRate * Math.sin(elevation)) / pSEMag;
+    let azimuthRate: number;
+    let elevationRate: number;
+
+    // Within 1e-9 rad of zenith/nadir the horizontal component is round-off: use the limit
+    if (pSEMag > 1e-9 * pMag) {
+      azimuthRate = (pSDot * pE - pEDot * pS) / (pS * pS + pE * pE);
+      elevationRate = (pZDot - rangeRate * Math.sin(elevation)) / pSEMag;
+    } else {
+      // At zenith (or nadir) the azimuth is undefined and the formulas above are 0/0.
+      // Elevation then has a corner: it changes at -|horizontal relative velocity| / range
+      // (zenith) or +|...| / range (nadir). The azimuth rate is reported as 0.
+      azimuthRate = 0;
+      elevationRate = (-Math.sign(pZ) * Math.hypot(pSDot, pEDot)) / pMag;
+    }
 
     return new RAE(
       state.epoch,
@@ -196,16 +208,17 @@ export class RAE {
   /**
    * Convert this observation into a [J2000] state vector.
    *
-   * This will throw an error if the [rangeRate], [elevationRate], or
-   * [azimuthRate] are not defined.
+   * Missing rates (range rate, azimuth rate, elevation rate) are treated as zero, i.e. the
+   * target is taken as fixed relative to the Earth-fixed site. This observation is not
+   * modified: the missing fields stay undefined.
    * @param site The observer [site].
    * @returns A [J2000] state vector.
    */
   toStateVector(site: J2000): J2000 {
-    // If the rates are not defined then assume stationary
-    this.rngRate ??= 0;
-    this.elRateRad ??= 0;
-    this.azRateRad ??= 0;
+    // If the rates are not defined then assume stationary (locals only; do not mutate this)
+    const rngRate = this.rngRate ?? 0;
+    const elRateRad = this.elRateRad ?? 0;
+    const azRateRad = this.azRateRad ?? 0;
 
     const ecef = site.toITRF();
     const geo = ecef.toGeodetic();
@@ -220,13 +233,13 @@ export class RAE {
       (this.rng * sEl) as Kilometers,
     );
     const pDotSez = new Vector3D<Kilometers>(
-      (-this.rngRate * cEl * cAz +
-        this.rng * sEl * cAz * this.elRateRad +
-        this.rng * cEl * sAz * this.azRateRad) as Kilometers,
-      (this.rngRate * cEl * sAz -
-        this.rng * sEl * sAz * this.elRateRad +
-        this.rng * cEl * cAz * this.azRateRad) as Kilometers,
-      (this.rngRate * sEl + this.rng * cEl * this.elRateRad) as Kilometers,
+      (-rngRate * cEl * cAz +
+        this.rng * sEl * cAz * elRateRad +
+        this.rng * cEl * sAz * azRateRad) as Kilometers,
+      (rngRate * cEl * sAz -
+        this.rng * sEl * sAz * elRateRad +
+        this.rng * cEl * cAz * azRateRad) as Kilometers,
+      (rngRate * sEl + this.rng * cEl * elRateRad) as Kilometers,
     );
     const pEcef = pSez.rotY(-(po2 - geo.lat) as Radians).rotZ(-geo.lon as Radians);
     const pDotEcef = pDotSez

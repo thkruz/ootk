@@ -46,11 +46,16 @@ export type EphemerisInterpolationType = 'lagrange' | 'spline';
  * Parameters for constructing an EphemerisBody.
  */
 export interface EphemerisBodyParams extends Omit<CelestialBodyParams, 'astronomyBody'> {
-  /** Array of ephemeris data points */
+  /** Array of ephemeris data points (copied; the caller's array is not reordered) */
   ephemeris: EphemerisDataPoint[];
   /** Whether positions are heliocentric (true) or geocentric (false, default) */
   isHeliocentric?: boolean;
-  /** Interpolation method (default: lagrange) */
+  /**
+   * Interpolation method (default: lagrange). 'spline' is a cubic Hermite spline whose
+   * tangents are the point velocities; points without a velocity get a tangent estimated
+   * from the positions (derivative of the degree-4 Lagrange polynomial through the five
+   * nearest samples).
+   */
   interpolationType?: EphemerisInterpolationType;
   /** Interpolation order for Lagrange (default: 8) */
   interpolationOrder?: number;
@@ -116,11 +121,10 @@ export class EphemerisBody extends CelestialBody {
       type: spaceObjectType,
     });
 
-    this.ephemeris_ = params.ephemeris;
     this.isHeliocentric_ = params.isHeliocentric ?? false;
 
-    // Sort ephemeris by time
-    this.ephemeris_.sort((a, b) => a.epoch.toDateTime().getTime() - b.epoch.toDateTime().getTime());
+    // Sort a copy by time so the caller's array keeps its order.
+    this.ephemeris_ = [...params.ephemeris].sort((a, b) => a.epoch.posix - b.epoch.posix);
 
     // Set validity window
     this.validityStart_ = this.ephemeris_[0].epoch.toDateTime();
@@ -175,6 +179,8 @@ export class EphemerisBody extends CelestialBody {
    * Gets the body's position in Earth-Centered Inertial (J2000) coordinates.
    * @param date - The date/time for the position calculation
    * @returns Position vector in kilometers
+   * @throws Error if `date` is outside the ephemeris, or if the ephemeris is heliocentric
+   * (heliocentric to geocentric conversion is not implemented).
    */
   eci(date: Date = new Date()): Vector3D<Kilometers> {
     this.validateTime_(date);
@@ -203,6 +209,8 @@ export class EphemerisBody extends CelestialBody {
    * Gets the body's position in heliocentric coordinates.
    * @param date - The date/time for the position calculation
    * @returns Position vector in kilometers (Sun-centered)
+   * @throws Error if `date` is outside the ephemeris, or if the ephemeris is geocentric
+   * (geocentric to heliocentric conversion is not implemented).
    */
   heliocentric(date: Date = new Date()): Vector3D<Kilometers> {
     this.validateTime_(date);
@@ -315,13 +323,11 @@ export class EphemerisBody extends CelestialBody {
     type: EphemerisInterpolationType,
     order: number,
   ): StateInterpolator {
-    // Convert ephemeris to J2000 states for the interpolator
-    const j2000States = this.ephemeris_.map((ep) => {
-      const velocity = ep.velocity ?? new Vector3D(
-        0 as KilometersPerSecond,
-        0 as KilometersPerSecond,
-        0 as KilometersPerSecond,
-      );
+    // Convert ephemeris to J2000 states for the interpolator. The Hermite spline uses the
+    // velocities as tangents, so a missing velocity is estimated from the positions rather
+    // than set to zero (zero tangents give errors of order the distance travelled per step).
+    const j2000States = this.ephemeris_.map((ep, i) => {
+      const velocity = ep.velocity ?? EphemerisBody.estimateVelocity_(this.ephemeris_, i);
 
       return new J2000(ep.epoch, ep.position, velocity);
     });
@@ -333,6 +339,60 @@ export class EphemerisBody extends CelestialBody {
       default:
         return LagrangeInterpolator.fromEphemeris(j2000States, order);
     }
+  }
+
+  /**
+   * Estimates the velocity at sample [index] as the derivative, at that node, of the Lagrange
+   * polynomial through up to five neighbouring samples (non-uniform spacing allowed).
+   *
+   * For nodes x_m, the derivative of the interpolant at node x_k is sum_j f_j L'_j(x_k) with
+   * L'_k(x_k) = sum_{m != k} 1 / (x_k - x_m) and, for j != k,
+   * L'_j(x_k) = 1 / (x_j - x_k) * prod_{m != j, k} (x_k - x_m) / (x_j - x_m)
+   * (Berrut and Trefethen, "Barycentric Lagrange Interpolation", SIAM Review 46, 2004).
+   * @param ephemeris Time-sorted samples.
+   * @param index Sample at which to estimate the velocity.
+   * @returns Velocity in km/s (zero if there is only one sample).
+   */
+  private static estimateVelocity_(ephemeris: EphemerisDataPoint[], index: number): Vector3D<KilometersPerSecond> {
+    const n = ephemeris.length;
+
+    if (n < 2) {
+      return new Vector3D(0 as KilometersPerSecond, 0 as KilometersPerSecond, 0 as KilometersPerSecond);
+    }
+    const width = Math.min(5, n);
+    const start = Math.min(Math.max(0, index - Math.floor(width / 2)), n - width);
+    const t = Array.from({ length: width }, (_, m) => ephemeris[start + m].epoch.posix);
+    const k = index - start;
+    let vx = 0;
+    let vy = 0;
+    let vz = 0;
+
+    for (let j = 0; j < width; j++) {
+      let w: number;
+
+      if (j === k) {
+        w = 0;
+        for (let m = 0; m < width; m++) {
+          if (m !== k) {
+            w += 1 / (t[k] - t[m]);
+          }
+        }
+      } else {
+        w = 1 / (t[j] - t[k]);
+        for (let m = 0; m < width; m++) {
+          if (m !== j && m !== k) {
+            w *= (t[k] - t[m]) / (t[j] - t[m]);
+          }
+        }
+      }
+      const p = ephemeris[start + j].position;
+
+      vx += w * p.x;
+      vy += w * p.y;
+      vz += w * p.z;
+    }
+
+    return new Vector3D(vx as KilometersPerSecond, vy as KilometersPerSecond, vz as KilometersPerSecond);
   }
 
   // ==================== Serialization ====================

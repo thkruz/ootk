@@ -306,6 +306,10 @@ COVARIANCE_START
 EPOCH = 2024-01-01T00:00:00.000
 1.0e-6
 2.0e-6 3.0e-6
+4.0e-6 5.0e-6 6.0e-6
+0 0 0 1.0e-9
+0 0 0 0 2.0e-9
+0 0 0 0 0 3.0e-9
 COVARIANCE_STOP
 
 DATA_STOP
@@ -314,8 +318,28 @@ DATA_STOP
 
       expect(parsed.dataBlocks.length).toBe(1);
       expect(parsed.dataBlocks[0].ephemeris.length).toBe(1);
-      // Covariance is stored but processing is deferred
-      expect(parsed.dataBlocks[0].covariance).toBeDefined();
+      expect(parsed.dataBlocks[0].covariance).toHaveLength(1);
+      expect(parsed.dataBlocks[0].covariance?.[0].values[20]).toBe(3.0e-9);
+    });
+
+    it('rejects a covariance matrix with fewer than 21 terms (CCSDS 502.0-B-3 section 5.2.5)', () => {
+      const truncated = `CCSDS_OEM_VERS = 2.0
+META_START
+OBJECT_NAME = SAT
+OBJECT_ID = 2024-001A
+CENTER_NAME = EARTH
+REF_FRAME = J2000
+TIME_SYSTEM = UTC
+META_STOP
+2024-01-01T00:00:00.000 6878.137 0.0 0.0 0.0 7.612 0.0
+COVARIANCE_START
+EPOCH = 2024-01-01T00:00:00.000
+1.0e-6
+2.0e-6 3.0e-6
+COVARIANCE_STOP
+`;
+
+      expect(() => OemParser.parse(truncated)).toThrow(/3 of 21/u);
     });
   });
 

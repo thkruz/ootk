@@ -168,7 +168,7 @@ describe('Beacon', () => {
   });
 
   describe('getNextTransmission', () => {
-    it('should return current transmission if active', () => {
+    it('should return the following transmission (not the active one) when called during a window', () => {
       const beacon = createTestBeacon({
         transmitInterval: 60,
         transmitDuration: 5,
@@ -177,9 +177,10 @@ describe('Beacon', () => {
       const during = new Date(epoch.getTime() + 2000);
       const next = beacon.getNextTransmission(during);
 
-      // Should return the transmission that started at epoch
-      expect(next.start).toEqual(epoch);
-      expect(next.end).toEqual(new Date(epoch.getTime() + 5000));
+      // Strictly after `during`: the window at epoch + 60 s; the active one is getCurrentTransmission
+      expect(next.start).toEqual(new Date(epoch.getTime() + 60000));
+      expect(next.end).toEqual(new Date(epoch.getTime() + 65000));
+      expect(beacon.getCurrentTransmission(during)).toEqual({ start: epoch, end: new Date(epoch.getTime() + 5000) });
     });
 
     it('should return next transmission if not active', () => {
@@ -269,8 +270,8 @@ describe('Beacon', () => {
 
       const count = beacon.getTransmissionCount(start, end);
 
-      // 5 minutes / 60 seconds = 5 cycles + 1 = 6 transmissions
-      expect(count).toBe(6);
+      // Windows start at 0, 60, 120, 180, 240 s; the one at 300 s starts at the (exclusive) range end
+      expect(count).toBe(5);
     });
   });
 

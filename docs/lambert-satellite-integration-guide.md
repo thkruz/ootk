@@ -1,6 +1,10 @@
 # Lambert Integration Guide: Generating State Vectors Without SGP4
 
-This guide demonstrates how to use Lambert's problem solution to generate state vectors and integrate them with OOTK's orbit propagation capabilities, bypassing SGP4.
+This guide shows how to use the Lambert solver (`LambertIOD`) to build state vectors from two
+positions and a time of flight, and how to feed those states into ootk's numerical propagators,
+the `Satellite` class and transfer planning. Every example below compiles against ootk 8 and the
+runnable versions live in [`examples/lambert-state-vector.ts`](https://github.com/thkruz/ootk/blob/main/examples/lambert-state-vector.ts)
+(see also the annotated [Lambert State Vectors](./examples/lambert-state-vector.md) page).
 
 ## Table of Contents
 
@@ -10,63 +14,60 @@ This guide demonstrates how to use Lambert's problem solution to generate state 
 4. [Integration Workflows](#integration-workflows)
 5. [Complete Examples](#complete-examples)
 6. [Advanced Usage](#advanced-usage)
+7. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## Overview
 
-**Lambert's Problem** finds the orbit connecting two position vectors at specific times. This is useful for:
+**Lambert's problem** finds the two-body orbit that passes through position `p1` at time `t1`
+and position `p2` at time `t2`. It is useful for:
 
-- Orbit determination from observation data
-- Transfer orbit design
-- Maneuver planning
-- Rendezvous calculations
-- Generating state vectors from position-only observations
+- Orbit determination from two position fixes
+- Transfer orbit design and delta-V budgeting
+- Rendezvous and intercept planning
+- Generating a full state vector (position and velocity) from position-only data
 
 ### Key Classes
 
-- **LambertIOD**: Solves Lambert's problem, returns J2000 state vectors
-- **J2000**: ECI state vector (position + velocity)
-- **ClassicalElements**: Orbital elements (a, e, i, Ω, ω, ν)
-- **Satellite**: TLE-based satellite object (requires SGP4 data)
-- **RungeKutta89Propagator**: High-precision numerical propagator
+- **LambertIOD**: solves Lambert's problem and returns a `J2000` state at `t1`
+- **J2000**: inertial state vector (position in km, velocity in km/s, `EpochUTC` epoch)
+- **ClassicalElements**: orbital elements (angles stored in radians, with `*Degrees` getters)
+- **Tle** and **Satellite**: TLE generation and SGP4-based propagation
+- **RungeKutta89Propagator**: high-precision numerical propagator
 
 ---
 
 ## Quick Start
 
-### Installation
-
 ```bash
 npm install ootk
 ```
 
-### Basic Lambert Solution
-
 ```typescript
-import { LambertIOD, EpochUTC, Vector3D, Kilometers } from 'ootk';
+import { EpochUTC, Kilometers, LambertIOD, Vector3D } from 'ootk';
 
-// Create Lambert solver (default: Earth's gravitational parameter)
+// Default central body is the Earth (mu = Earth.mu, km^3/s^2)
 const lambert = new LambertIOD();
 
-// Define two positions in ECI coordinates (km)
-const p1 = new Vector3D<Kilometers>(6778, 0, 0);
-const p2 = new Vector3D<Kilometers>(0, 6778, 0);
+// Two positions in the J2000 inertial frame (km)
+const p1 = new Vector3D<Kilometers>(6778 as Kilometers, 0 as Kilometers, 0 as Kilometers);
+const p2 = new Vector3D<Kilometers>(0 as Kilometers, 6778 as Kilometers, 0 as Kilometers);
 
-// Define epochs
 const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
-const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T01:30:00.000Z'));
+const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T00:30:00.000Z'));
 
-// Solve Lambert's problem
-const stateVector = lambert.estimate(p1, p2, t1, t2, {
-  posigrade: true,  // Use short path
-  nRev: 0           // Zero-revolution transfer
+const state = lambert.estimate(p1, p2, t1, t2, {
+  shortWay: true, // sweep the transfer angle below 180 deg
+  nRev: 0, // no complete revolutions
 });
 
-if (stateVector) {
-  console.log('Position:', stateVector.position);
-  console.log('Velocity:', stateVector.velocity);
-  console.log('Epoch:', stateVector.epoch);
+if (state) {
+  console.log('Epoch:', state.epoch.toString());
+  console.log('Position (km):', state.position.toString());
+  console.log('Velocity (km/s):', state.velocity.toString());
+} else {
+  console.log('Lambert solver did not converge');
 }
 ```
 
@@ -77,391 +78,342 @@ if (stateVector) {
 ### Constructor
 
 ```typescript
-const lambert = new LambertIOD(mu?: number);
+import { Earth, LambertIOD } from 'ootk';
+
+const earthLambert = new LambertIOD(); // mu defaults to Earth.mu
+const sameThing = new LambertIOD(Earth.mu);
 ```
 
-**Parameters:**
+`mu` is the gravitational parameter of the **central body** of the transfer, in km^3/s^2. The
+default is `Earth.mu` (398600.4415 km^3/s^2). The positions you pass must be measured from that
+same body. For an Earth-centred trajectory (including a trans-lunar coast from LEO) use the
+Earth's `mu`; using the Moon's `mu` with geocentric positions gives a meaningless answer. Use a
+different `mu` only when the positions are relative to that body (for example a lunar-orbit
+transfer with Moon-centred positions and `MoonBody.MU`).
 
-- `mu`: Gravitational parameter (km³/s²)
-  - Default: `Earth.mu` (398600.4418 km³/s²)
-  - Moon: `Moon.mu` (4902.8 km³/s²)
-  - Other bodies: Provide custom value
+### Main method: `estimate()`
 
-### Main Method: `estimate()`
-
+<!-- doccheck:skip -->
 ```typescript
 estimate(
   p1: Vector3D<Kilometers>,
   p2: Vector3D<Kilometers>,
   t1: EpochUTC,
   t2: EpochUTC,
-  options?: { posigrade?: boolean; nRev?: number }
+  options?: { shortWay?: boolean; nRev?: number },
 ): J2000 | null
 ```
 
-**Parameters:**
+- `p1`, `p2`: position vectors in km in an inertial frame centred on the body whose `mu` the
+  solver uses (J2000 for Earth).
+- `t1`, `t2`: epochs. The time of flight is `t2.difference(t1)` in seconds.
+- `shortWay` (default `true`): which of the two transfer angles to sweep. `true` sweeps the angle
+  between `p1` and `p2` that is below 180 deg, `false` sweeps 360 deg minus that angle. It does
+  **not** select prograde or retrograde motion: the orbit normal is `p1 x p2` for the short way and
+  the opposite for the long way, so a retrograde transfer is obtained by choosing the sweep that
+  matches the desired motion. `LambertIOD.useShortPath(interceptor, target)` makes that choice from
+  the interceptor's current angular momentum. (This option was called `posigrade` before ootk 8. The
+  old key is ignored at runtime, so a call that still passes `posigrade: false` silently gets the
+  short way.)
+- `nRev` (default `0`): number of complete revolutions. For `|nRev| >= 1` there are two solutions
+  for the same time of flight; the sign selects the branch (positive gives the branch the solver
+  has always returned, negative gives the other one). See `LambertIOD.solve`.
 
-- `p1`, `p2`: Position vectors (km) in ECI/J2000 frame
-- `t1`, `t2`: Epoch times (EpochUTC objects)
-- `posigrade`:
-  - `true` = short path (transfer angle < 180°)
-  - `false` = long path (transfer angle > 180°)
-- `nRev`: Number of complete revolutions (0, 1, 2, ...)
+**Returns** a `J2000` state at `t1` whose velocity is the departure velocity in km/s, or `null`
+when the iteration does not converge. Always check for `null`.
 
-**Returns:**
-
-- `J2000` state vector at epoch `t1` (null if solution fails)
-
-### Understanding the Output
-
-The returned `J2000` object contains:
+### Working with the output
 
 ```typescript
-{
-  epoch: EpochUTC,                           // Time of the state
-  position: Vector3D<Kilometers>,            // Position (km)
-  velocity: Vector3D<KilometersPerSecond>    // Velocity (km/s)
+import { EpochUTC, Kilometers, LambertIOD, Seconds, Vector3D } from 'ootk';
+
+const p1 = new Vector3D<Kilometers>(7000 as Kilometers, 0 as Kilometers, 0 as Kilometers);
+const p2 = new Vector3D<Kilometers>(0 as Kilometers, 7000 as Kilometers, 0 as Kilometers);
+const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
+const t2 = t1.roll(1460 as Seconds); // EpochUTC.roll takes seconds
+
+const state = new LambertIOD().estimate(p1, p2, t1, t2);
+
+if (state) {
+  const elements = state.toClassicalElements();
+
+  console.log('|r| (km):', state.position.magnitude().toFixed(3));
+  console.log('|v| (km/s):', state.velocity.magnitude().toFixed(6));
+  console.log('a (km):', elements.semimajorAxis.toFixed(3));
+  console.log('e:', elements.eccentricity.toFixed(6));
+  console.log('i (deg):', elements.inclinationDegrees.toFixed(3)); // inclination itself is radians
+  console.log('Period (min):', elements.period.toFixed(2)); // period is already in minutes
 }
 ```
 
-**Key Methods:**
+`magnitude()` is a method, not a property. `ClassicalElements` stores its angles in radians
+(`inclination`, `rightAscension`, `argPerigee`, `trueAnomaly`); print them through the
+`inclinationDegrees`, `rightAscensionDegrees`, `argPerigeeDegrees` and `trueAnomalyDegrees`
+getters. `period` is in minutes.
 
-```typescript
-stateVector.toClassicalElements()  // Convert to orbital elements
-stateVector.magnitude              // Position magnitude
-stateVector.velocity.magnitude     // Speed
-```
+### Algorithm
+
+`LambertIOD.solve` works in canonical units (lengths in units of the larger radius, time in
+units of r / sqrt(mu / r)) on the Lancaster-Blanchard `x` variable of the transfer ellipse:
+
+- the time of flight is written as a function of `x` (elliptic for |x| < 1, hyperbolic for
+  x > 1), with the long way flipping the sign of the `beta` angle;
+- for zero revolutions the solver runs a **secant iteration** on log(time of flight) against
+  log(1 + x); for multi-revolution transfers it runs the secant iteration on time of flight
+  against tan(pi x / 2), starting from a pair of initial guesses on the requested branch;
+- the iteration stops when successive `x` values agree to 1e-13, or fails (returns `null`) after
+  50 iterations;
+- the departure velocity is then built from its radial and transverse components.
+
+It is not Householder's method, and there is no third-order convergence guarantee; a typical
+zero-revolution solve takes a handful of secant steps.
 
 ---
 
 ## Integration Workflows
 
-### Workflow 1: Direct Use with Numerical Propagators (Recommended)
-
-**Best for:** High-precision orbit propagation without TLE constraints
+### Workflow 1: Lambert state into a numerical propagator (recommended)
 
 ```typescript
-import { LambertIOD, RungeKutta89Propagator, ForceModel, EpochUTC } from 'ootk';
+import { EpochUTC, ForceModel, Kilometers, LambertIOD, RungeKutta89Propagator, Seconds, Vector3D } from 'ootk';
 
-// 1. Solve Lambert's problem
-const lambert = new LambertIOD();
-const j2000State = lambert.estimate(p1, p2, t1, t2);
+const p1 = new Vector3D<Kilometers>(7000 as Kilometers, 0 as Kilometers, 0 as Kilometers);
+const p2 = new Vector3D<Kilometers>(0 as Kilometers, 7000 as Kilometers, 0 as Kilometers);
+const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
+const t2 = t1.roll(1460 as Seconds);
 
-if (!j2000State) {
+const initialState = new LambertIOD().estimate(p1, p2, t1, t2);
+
+if (!initialState) {
   throw new Error('Lambert solution failed');
 }
 
-// 2. Set up force model for propagation
-const forceModel = new ForceModel();
-forceModel.setEarthGravity(8, 8);  // 8x8 gravity harmonics
-forceModel.setAtmosphericDrag();   // Optional: add drag
-forceModel.setSolarRadiationPressure();  // Optional: add SRP
+// Every ForceModel setter returns the model, so calls chain.
+const forceModel = new ForceModel()
+  .setEarthGravity(8, 8) // EGM96 to degree and order 8 (replaces point-mass gravity)
+  .setThirdBodyGravity({ moon: true, sun: true })
+  .setSolarRadiationPressure(500, 10); // mass 500 kg, area 10 m^2
 
-// 3. Create propagator with Lambert-derived state
-const propagator = new RungeKutta89Propagator(j2000State, forceModel);
+const propagator = new RungeKutta89Propagator(initialState, forceModel);
+const futureState = propagator.propagate(EpochUTC.fromDateTime(new Date('2024-01-02T00:00:00.000Z')));
 
-// 4. Propagate to future epochs
-const futureEpoch = EpochUTC.fromDateTime(new Date('2024-01-02T00:00:00.000Z'));
-const futureState = propagator.propagate(futureEpoch);
-
-console.log('Future position:', futureState.position);
-console.log('Future velocity:', futureState.velocity);
+console.log('Position after 1 day (km):', futureState.position.toString());
+console.log('Velocity after 1 day (km/s):', futureState.velocity.toString());
 ```
 
-**Advantages:**
+Without a `forceModel` argument the propagator uses point-mass Earth gravity. Drag can be added
+with `setAtmosphericDrag(mass, area, coeff?, cosine?, f107?)` (mass in kg, area in m^2, `cosine`
+is the Harris-Priester exponent n, `f107` the solar flux in SFU); the method is still marked
+deprecated as a work in progress.
 
-- No TLE conversion artifacts
-- Full control over perturbation forces
-- Higher precision for short-term propagation
-- Direct state vector manipulation
-
----
-
-### Workflow 2: Convert to Satellite Object
-
-**Best for:** Using Satellite class features (ground tracks, visibility, etc.)
+### Workflow 2: Lambert state into a `Satellite`
 
 ```typescript
-import {
-  LambertIOD,
-  ClassicalElements,
-  Tle,
-  Satellite
-} from 'ootk';
+import { EpochUTC, Kilometers, LambertIOD, Satellite, Seconds, Tle, Vector3D } from 'ootk';
 
-// 1. Solve Lambert's problem
-const lambert = new LambertIOD();
-const j2000State = lambert.estimate(p1, p2, t1, t2);
+const p1 = new Vector3D<Kilometers>(6878.137 as Kilometers, 0 as Kilometers, 0 as Kilometers);
+const p2 = new Vector3D<Kilometers>(0 as Kilometers, 6878.137 as Kilometers, 0 as Kilometers);
+const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
+const t2 = t1.roll(1420 as Seconds);
 
-if (!j2000State) {
+const state = new LambertIOD().estimate(p1, p2, t1, t2);
+
+if (!state) {
   throw new Error('Lambert solution failed');
 }
 
-// 2. Convert to classical orbital elements
-const elements = j2000State.toClassicalElements();
-
-console.log('Semi-major axis:', elements.semimajorAxis, 'km');
-console.log('Eccentricity:', elements.eccentricity);
-console.log('Inclination:', elements.inclination, 'deg');
-
-// 3. Generate TLE from classical elements
+const elements = state.toClassicalElements();
 const tle = Tle.fromClassicalElements(elements);
 
-// 4. Create Satellite object
-const satellite = new Satellite({
-  tle1: tle.line1,
-  tle2: tle.line2,
-  name: 'Lambert-derived Satellite'
-});
+const satellite = new Satellite({ tle1: tle.line1, tle2: tle.line2, name: 'Lambert-derived' });
 
-// 5. Use Satellite methods
-const futureState = satellite.toJ2000(new Date('2024-01-02T00:00:00.000Z'));
-const lla = satellite.lla(new Date('2024-01-02T00:00:00.000Z'));
+console.log('Inclination (deg):', satellite.inclination.toFixed(3));
+console.log('Period (min):', satellite.period.toFixed(2));
 
-console.log('Latitude:', lla.lat, 'deg');
-console.log('Longitude:', lla.lon, 'deg');
-console.log('Altitude:', lla.alt, 'km');
+const lla = satellite.lla(new Date('2024-01-01T06:00:00.000Z'));
+
+if (lla) {
+  console.log(`Lat ${lla.lat.toFixed(3)} deg, lon ${lla.lon.toFixed(3)} deg, alt ${lla.alt.toFixed(3)} km`);
+}
 ```
 
-**Note:** This workflow uses SGP4 for propagation after TLE conversion.
+`Tle.fromClassicalElements` treats the osculating Lambert elements as SGP4 mean elements, so the
+generated TLE does not reproduce the Lambert state exactly; SGP4 positions drift away from it by
+kilometres. `satellite.lla()` returns `null` when SGP4 fails, so check it.
 
----
-
-### Workflow 3: Hybrid Approach
-
-**Best for:** Combining Lambert IOD with TLE-based satellites
+### Workflow 3: Transfer between two catalogued satellites
 
 ```typescript
-import { LambertIOD, Satellite, RungeKutta89Propagator, ForceModel } from 'ootk';
+import { LambertIOD, RungeKutta89Propagator, Satellite, TleLine1, TleLine2 } from 'ootk';
 
-// Scenario: Plan a transfer from one satellite to another
+const iss = new Satellite({
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
+const hubble = new Satellite({
+  tle1: '1 20580U 90037B   24028.50123227  .00000825  00000-0  39644-4 0  9997' as TleLine1,
+  tle2: '2 20580  28.4696 273.2640 0002975 297.7865 189.2151 15.09696656316758' as TleLine2,
+});
 
-// 1. Get current states from existing satellites
-const satellite1 = new Satellite({ tle1, tle2 });
-const satellite2 = new Satellite({ tle1: target_tle1, tle2: target_tle2 });
+// Use times close to the TLE epochs; SGP4 accuracy degrades with TLE age.
+const departureDate = new Date('2024-01-28T12:00:00.000Z');
+const arrivalDate = new Date(departureDate.getTime() + 45 * 60 * 1000); // 45 minutes later
 
-const currentDate = new Date();
-const transferDate = new Date(currentDate.getTime() + 3600000); // +1 hour
+const start = iss.toJ2000(departureDate);
+const end = hubble.toJ2000(arrivalDate);
 
-const state1 = satellite1.toJ2000(currentDate);
-const state2 = satellite2.toJ2000(transferDate);
+const transfer = new LambertIOD().estimate(start.position, end.position, start.epoch, end.epoch, {
+  shortWay: LambertIOD.useShortPath(start, end),
+});
 
-// 2. Solve for transfer orbit using Lambert
-const lambert = new LambertIOD();
-const transferOrbit = lambert.estimate(
-  state1.position,
-  state2.position,
-  state1.epoch,
-  state2.epoch,
-  { posigrade: true, nRev: 0 }
-);
+if (transfer) {
+  const dv1 = transfer.velocity.subtract(start.velocity).magnitude();
 
-if (!transferOrbit) {
-  throw new Error('No transfer solution found');
+  // Two-body coast to the arrival epoch, then match the target velocity.
+  const arrival = new RungeKutta89Propagator(transfer).propagate(end.epoch);
+  const dv2 = end.velocity.subtract(arrival.velocity).magnitude();
+
+  console.log(`Departure dv ${dv1.toFixed(3)} km/s, arrival dv ${dv2.toFixed(3)} km/s`);
 }
-
-// 3. Calculate delta-V required
-const deltaV1 = transferOrbit.velocity.subtract(state1.velocity);
-console.log('Delta-V magnitude:', deltaV1.magnitude, 'km/s');
-
-// 4. Propagate transfer orbit with high precision
-const forceModel = new ForceModel();
-forceModel.setEarthGravity(20, 20);
-const propagator = new RungeKutta89Propagator(transferOrbit, forceModel);
-
-const arrivalState = propagator.propagate(state2.epoch);
-const deltaV2 = state2.velocity.subtract(arrivalState.velocity);
-
-console.log('Arrival delta-V:', deltaV2.magnitude, 'km/s');
-console.log('Total delta-V:', deltaV1.magnitude + deltaV2.magnitude, 'km/s');
 ```
+
+The second burn is computed from a two-body propagation so it matches the Lambert assumption. If
+you coast with a richer force model the arrival point misses `p2`; see
+[Combining with force models](#combining-with-force-models).
 
 ---
 
 ## Complete Examples
 
-### Example 1: Orbit Determination from Two Observations
+### Example 1: Orbit from two position fixes
 
 ```typescript
-import {
-  LambertIOD,
-  EpochUTC,
-  Vector3D,
-  Kilometers,
-  ClassicalElements
-} from 'ootk';
+import { EpochUTC, Kilometers, LambertIOD, Vector3D } from 'ootk';
 
-// Observation data from radar/optical tracking
-const observation1 = {
-  time: new Date('2024-01-01T12:00:00.000Z'),
-  position: new Vector3D<Kilometers>(6778.137, 0.0, 0.0)  // ECI coordinates
-};
+const p1 = new Vector3D<Kilometers>(6778.137 as Kilometers, 0 as Kilometers, 0 as Kilometers);
+const p2 = new Vector3D<Kilometers>(-2000 as Kilometers, 6400 as Kilometers, 1500 as Kilometers);
+const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T12:00:00.000Z'));
+const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T12:28:00.000Z'));
 
-const observation2 = {
-  time: new Date('2024-01-01T13:30:00.000Z'),
-  position: new Vector3D<Kilometers>(-2000.0, 6400.0, 1500.0)
-};
-
-// Convert times to EpochUTC
-const epoch1 = EpochUTC.fromDateTime(observation1.time);
-const epoch2 = EpochUTC.fromDateTime(observation2.time);
-
-// Solve for the orbit
-const lambert = new LambertIOD();
-const orbit = lambert.estimate(
-  observation1.position,
-  observation2.position,
-  epoch1,
-  epoch2,
-  { posigrade: true, nRev: 0 }
-);
+const orbit = new LambertIOD().estimate(p1, p2, t1, t2, { shortWay: true, nRev: 0 });
 
 if (orbit) {
-  // Extract orbital elements
-  const elements = orbit.toClassicalElements();
+  const el = orbit.toClassicalElements();
 
-  console.log('=== Determined Orbit ===');
-  console.log('Epoch:', orbit.epoch.toISOString());
-  console.log('Position (km):', orbit.position.x, orbit.position.y, orbit.position.z);
-  console.log('Velocity (km/s):', orbit.velocity.x, orbit.velocity.y, orbit.velocity.z);
-  console.log('\n=== Classical Elements ===');
-  console.log('Semi-major axis:', elements.semimajorAxis.toFixed(3), 'km');
-  console.log('Eccentricity:', elements.eccentricity.toFixed(6));
-  console.log('Inclination:', elements.inclination.toFixed(3), 'deg');
-  console.log('RAAN:', elements.rightAscension.toFixed(3), 'deg');
-  console.log('Arg of Perigee:', elements.argOfPerigee.toFixed(3), 'deg');
-  console.log('True Anomaly:', elements.trueAnomaly.toFixed(3), 'deg');
-
-  // Calculate orbital period
-  const period = elements.period;
-  console.log('Orbital Period:', (period / 60).toFixed(2), 'minutes');
+  console.log('Epoch:', orbit.epoch.toString());
+  console.log('Semi-major axis:', el.semimajorAxis.toFixed(3), 'km');
+  console.log('Eccentricity:', el.eccentricity.toFixed(6));
+  console.log('Inclination:', el.inclinationDegrees.toFixed(3), 'deg');
+  console.log('RAAN:', el.rightAscensionDegrees.toFixed(3), 'deg');
+  console.log('Arg of perigee:', el.argPerigeeDegrees.toFixed(3), 'deg');
+  console.log('True anomaly:', el.trueAnomalyDegrees.toFixed(3), 'deg');
+  console.log('Period:', el.period.toFixed(2), 'min'); // already minutes
+  console.log('Perigee altitude:', el.perigee.toFixed(3), 'km'); // above 6378.137 km
+  console.log('Apogee altitude:', el.apogee.toFixed(3), 'km');
 } else {
-  console.error('Lambert solution failed - check input geometry');
+  console.error('Lambert solution failed: check the geometry and time of flight');
 }
 ```
 
-### Example 2: Multi-Revolution Transfer
+`ClassicalElements.apogee` and `perigee` are altitudes above the WGS-84 equatorial radius
+(6378.137 km); `apogeeRadius` and `perigeeRadius` are the geocentric distances.
+
+### Example 2: Multi-revolution transfers
 
 ```typescript
-import { LambertIOD, EpochUTC, Vector3D, Kilometers } from 'ootk';
+import { EpochUTC, Kilometers, LambertIOD, Vector3D } from 'ootk';
 
-// LEO to GEO transfer with one complete revolution
-const leoPosition = new Vector3D<Kilometers>(6778, 0, 0);  // ~400 km altitude
-const geoPosition = new Vector3D<Kilometers>(42164, 0, 0);  // GEO altitude
-
+const p1 = new Vector3D<Kilometers>(7000 as Kilometers, 0 as Kilometers, 0 as Kilometers);
+const p2 = new Vector3D<Kilometers>(0 as Kilometers, 8000 as Kilometers, 0 as Kilometers);
 const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
-const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T12:00:00.000Z'));
+const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T06:00:00.000Z'));
 
 const lambert = new LambertIOD();
 
-// Compare different revolution options
-for (let nRev = 0; nRev <= 2; nRev++) {
-  const solution = lambert.estimate(leoPosition, geoPosition, t1, t2, {
-    posigrade: true,
-    nRev
-  });
+for (const nRev of [0, 1, -1, 2, -2]) {
+  const solution = lambert.estimate(p1, p2, t1, t2, { shortWay: true, nRev });
 
   if (solution) {
-    const elements = solution.toClassicalElements();
-    console.log(`\n=== ${nRev}-Revolution Transfer ===`);
-    console.log('Departure V:', solution.velocity.magnitude.toFixed(3), 'km/s');
-    console.log('Semi-major axis:', elements.semimajorAxis.toFixed(1), 'km');
-    console.log('Eccentricity:', elements.eccentricity.toFixed(4));
+    const el = solution.toClassicalElements();
+
+    console.log(
+      `nRev ${nRev}: |v1| ${solution.velocity.magnitude().toFixed(4)} km/s, ` +
+        `a ${el.semimajorAxis.toFixed(1)} km, e ${el.eccentricity.toFixed(4)}`,
+    );
+  } else {
+    console.log(`nRev ${nRev}: no solution`);
   }
 }
 ```
 
-### Example 3: Rendezvous Planning with Time Window
+For each `|nRev| >= 1` the positive and negative values return the two branches. A branch has
+no solution when the time of flight is shorter than the minimum time for that many revolutions.
+
+### Example 3: Choosing a rendezvous time
 
 ```typescript
-import {
-  LambertIOD,
-  Satellite,
-  EpochUTC,
-  Vector3D,
-  Kilometers,
-  KilometersPerSecond
-} from 'ootk';
+import { EpochUTC, Kilometers, KilometersPerSecond, LambertIOD, Satellite, TleLine1, TleLine2, Vector3D } from 'ootk';
 
-// ISS TLE (example - use current TLE in practice)
 const iss = new Satellite({
-  name: 'ISS',
-  tle1: '1 25544U 98067A   24001.50000000  .00016717  00000-0  10270-3 0  9005',
-  tle2: '2 25544  51.6400 208.9163 0006317  69.9862  25.2906 15.54225995  67973'
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
 });
 
-// Chaser spacecraft initial state
-const chaserStart = new Date('2024-01-01T00:00:00.000Z');
-const chaserState = new Vector3D<Kilometers>(6778, 100, 50);  // Slightly offset
-const chaserVelocity = new Vector3D<KilometersPerSecond>(0, 7.5, 0.1);
+const chaserStart = new Date('2024-01-28T12:00:00.000Z');
+const chaserPosition = new Vector3D<Kilometers>(6778 as Kilometers, 100 as Kilometers, 50 as Kilometers);
+const chaserVelocity = new Vector3D<KilometersPerSecond>(
+  0 as KilometersPerSecond,
+  7.5 as KilometersPerSecond,
+  0.1 as KilometersPerSecond,
+);
 
-// Find optimal transfer time (test multiple windows)
 const lambert = new LambertIOD();
-const transferTimes = [1800, 3600, 5400, 7200];  // 30, 60, 90, 120 minutes
+const flightTimesSec = [1800, 3600, 5400, 7200]; // 30, 60, 90, 120 minutes
+let best: { dtSec: number; deltaV: number } | null = null;
 
-let bestSolution = null;
-let minDeltaV = Infinity;
-
-for (const dt of transferTimes) {
-  const rendezvousTime = new Date(chaserStart.getTime() + dt * 1000);
-  const issState = iss.toJ2000(rendezvousTime);
-
-  const solution = lambert.estimate(
-    chaserState,
-    issState.position,
-    EpochUTC.fromDateTime(chaserStart),
-    issState.epoch,
-    { posigrade: true, nRev: 0 }
-  );
+for (const dtSec of flightTimesSec) {
+  const target = iss.toJ2000(new Date(chaserStart.getTime() + dtSec * 1000));
+  const solution = lambert.estimate(chaserPosition, target.position, EpochUTC.fromDateTime(chaserStart), target.epoch);
 
   if (solution) {
-    const deltaV = solution.velocity.subtract(chaserVelocity).magnitude;
+    const deltaV = solution.velocity.subtract(chaserVelocity).magnitude();
 
-    console.log(`Transfer time: ${dt/60} min, Delta-V: ${deltaV.toFixed(3)} km/s`);
+    console.log(`Flight time ${dtSec / 60} min: departure dv ${deltaV.toFixed(3)} km/s`);
 
-    if (deltaV < minDeltaV) {
-      minDeltaV = deltaV;
-      bestSolution = { solution, dt, issState };
+    if (!best || deltaV < best.deltaV) {
+      best = { dtSec, deltaV };
     }
   }
 }
 
-if (bestSolution) {
-  console.log(`\n=== Optimal Rendezvous ===`);
-  console.log('Transfer time:', bestSolution.dt / 60, 'minutes');
-  console.log('Required delta-V:', minDeltaV.toFixed(3), 'km/s');
-  console.log('Intercept position:', bestSolution.issState.position);
+if (best) {
+  console.log(`Lowest departure dv: ${best.deltaV.toFixed(3)} km/s at ${best.dtSec / 60} min`);
 }
 ```
 
-### Example 4: Moon Transfer Trajectory
+### Example 4: Trans-lunar coast (geocentric)
+
+A coast from LEO to lunar distance is a geocentric problem, so it uses the Earth's `mu` (the
+default). This is the two-body approximation only: it ignores the Moon's gravity, which dominates
+near arrival.
 
 ```typescript
-import { LambertIOD, EpochUTC, Vector3D, Kilometers, Moon } from 'ootk';
+import { Earth, EpochUTC, Kilometers, LambertIOD, Vector3D } from 'ootk';
 
-// Use Moon's gravitational parameter for cislunar trajectory
-const lambert = new LambertIOD(Moon.mu);
-
-// Earth-Moon transfer positions (simplified)
-const earthDeparture = new Vector3D<Kilometers>(6778, 0, 0);      // LEO
-const moonArrival = new Vector3D<Kilometers>(384400, 0, 0);        // ~Moon distance
-
+const departure = new Vector3D<Kilometers>(6778 as Kilometers, 0 as Kilometers, 0 as Kilometers);
+const arrival = new Vector3D<Kilometers>(-384400 as Kilometers, 20000 as Kilometers, 0 as Kilometers);
 const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
-const t2 = EpochUTC.fromDateTime(new Date('2024-01-04T00:00:00.000Z'));  // 3-day transfer
+const t2 = EpochUTC.fromDateTime(new Date('2024-01-04T12:00:00.000Z'));
 
-const solution = lambert.estimate(earthDeparture, moonArrival, t1, t2, {
-  posigrade: true,
-  nRev: 0
-});
+const solution = new LambertIOD(Earth.mu).estimate(departure, arrival, t1, t2);
 
 if (solution) {
-  const elements = solution.toClassicalElements();
+  const el = solution.toClassicalElements();
+  const escapeSpeed = Math.sqrt((2 * Earth.mu) / departure.magnitude());
 
-  console.log('=== Trans-Lunar Injection ===');
-  console.log('Departure velocity:', solution.velocity.magnitude.toFixed(3), 'km/s');
-  console.log('Escape velocity at LEO:', (Math.sqrt(2 * 398600.4418 / 6778)).toFixed(3), 'km/s');
-  console.log('Transfer orbit apogee:',
-    (elements.semimajorAxis * (1 + elements.eccentricity)).toFixed(0), 'km');
+  console.log('Departure speed:', solution.velocity.magnitude().toFixed(3), 'km/s');
+  console.log('Local escape speed:', escapeSpeed.toFixed(3), 'km/s');
+  console.log('Transfer apogee radius:', el.apogeeRadius.toFixed(0), 'km');
 }
 ```
 
@@ -469,308 +421,196 @@ if (solution) {
 
 ## Advanced Usage
 
-### Path Selection: Short vs Long
+### Path selection: short vs long
 
 ```typescript
-import { LambertIOD, J2000 } from 'ootk';
+import { EpochUTC, J2000, Kilometers, KilometersPerSecond, LambertIOD, Seconds, Vector3D } from 'ootk';
+
+const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
+const t2 = t1.roll(3000 as Seconds);
+const p1 = new Vector3D<Kilometers>(7000 as Kilometers, 0 as Kilometers, 0 as Kilometers);
+const p2 = new Vector3D<Kilometers>(-5000 as Kilometers, -5000 as Kilometers, 0 as Kilometers);
+const v1 = new Vector3D<KilometersPerSecond>(0 as KilometersPerSecond, 7.5 as KilometersPerSecond, 0 as KilometersPerSecond);
+const v2 = new Vector3D<KilometersPerSecond>(0 as KilometersPerSecond, 0 as KilometersPerSecond, 0 as KilometersPerSecond);
 
 const lambert = new LambertIOD();
 
-// Method 1: Manual selection
-const shortPath = lambert.estimate(p1, p2, t1, t2, { posigrade: true });
-const longPath = lambert.estimate(p1, p2, t1, t2, { posigrade: false });
+// Manual selection: p2 lies 225 deg counter-clockwise from p1, i.e. 135 deg clockwise.
+const shortPath = lambert.estimate(p1, p2, t1, t2, { shortWay: true }); // sweeps 135 deg (clockwise about +z)
+const longPath = lambert.estimate(p1, p2, t1, t2, { shortWay: false }); // sweeps 225 deg (counter-clockwise)
 
-// Method 2: Automatic optimal path selection
-const interceptor = new J2000(t1, p1, v1);  // Current state
-const target = new J2000(t2, p2, v2);       // Target state
+// Automatic selection: keep the interceptor's current sense of motion.
+const interceptor = new J2000(t1, p1, v1);
+const target = new J2000(t2, p2, v2);
+const shortWay = LambertIOD.useShortPath(interceptor, target);
+const matched = lambert.estimate(p1, p2, t1, t2, { shortWay });
 
-const useShort = LambertIOD.useShortPath(interceptor, target);
-const optimalSolution = lambert.estimate(p1, p2, t1, t2, {
-  posigrade: useShort
-});
+console.log(shortPath !== null, longPath !== null, shortWay, matched !== null);
 ```
 
-### Error Handling
+Here the interceptor moves counter-clockwise about +z (angular momentum along +z), while
+`p1 x p2` points along -z because the short way is clockwise. `useShortPath` compares the two and
+returns `false`, so `matched` is the 225 deg counter-clockwise transfer that keeps the
+interceptor's direction of motion. An interceptor moving clockwise at the same point would get
+`true`. This is why `shortWay` is not a prograde/retrograde switch.
+
+### Feasibility: parabolic and minimum-energy times of flight
+
+With r1 = |p1|, r2 = |p2|, chord c = |p2 - p1| and semiperimeter s = (r1 + r2 + c) / 2:
+
+- **Parabolic time** (the boundary between elliptic and hyperbolic zero-revolution transfers):
+  t_p = (sqrt(2) / 3) / sqrt(mu) * (s^1.5 - sgn * (s - c)^1.5), with sgn = +1 for the short way
+  and -1 for the long way. A zero-revolution solution exists for any positive time of flight;
+  below t_p it is hyperbolic (e > 1).
+- **Minimum-energy time**: the transfer ellipse with the smallest semi-major axis, a_m = s / 2,
+  takes t_m = sqrt(a_m^3 / mu) * (pi - sgn * (beta_m - sin beta_m)) with
+  sin(beta_m / 2) = sqrt((s - c) / s).
 
 ```typescript
-const solution = lambert.estimate(p1, p2, t1, t2);
+import { Earth, Kilometers, Vector3D } from 'ootk';
 
-if (!solution) {
-  // Solution failed - possible reasons:
-  // 1. Positions are too close (collinear)
-  // 2. Time of flight too short/long for geometry
-  // 3. Numerical convergence failure
-  // 4. Hyperbolic trajectory (|x| >= 1)
+function transferTimes(p1: Vector3D<Kilometers>, p2: Vector3D<Kilometers>, shortWay = true, mu = Earth.mu) {
+  const r1 = p1.magnitude();
+  const r2 = p2.magnitude();
+  const c = p2.subtract(p1).magnitude();
+  const s = (r1 + r2 + c) / 2;
+  const sgn = shortWay ? 1 : -1;
 
-  console.error('Lambert solution failed');
+  const parabolic = (Math.SQRT2 / 3) / Math.sqrt(mu) * (s ** 1.5 - sgn * (s - c) ** 1.5);
+  const betaM = 2 * Math.asin(Math.sqrt((s - c) / s));
+  const minEnergy = Math.sqrt((s / 2) ** 3 / mu) * (Math.PI - sgn * (betaM - Math.sin(betaM)));
 
-  // Diagnostics
-  const distance = p2.subtract(p1).magnitude;
-  const timeOfFlight = (t2.toDateTime().getTime() - t1.toDateTime().getTime()) / 1000;
-
-  console.log('Distance between positions:', distance, 'km');
-  console.log('Time of flight:', timeOfFlight, 'seconds');
-
-  // Try increasing time or adjusting positions
+  return { parabolicSec: parabolic, minEnergySec: minEnergy };
 }
+
+const p1 = new Vector3D<Kilometers>(7000 as Kilometers, 0 as Kilometers, 0 as Kilometers);
+const p2 = new Vector3D<Kilometers>(0 as Kilometers, 7000 as Kilometers, 0 as Kilometers);
+
+console.log(transferTimes(p1, p2)); // parabolic about 906 s, minimum energy about 2225 s (a = s / 2 = 5975 km)
 ```
 
-### Iterative Optimization for Specific Constraints
+### Validating a solution: does it hit the Earth?
+
+A converged solution can still be useless. Short flight times force very high velocities, and
+the transfer conic can pass below the surface. The test is on the **perigee radius**
+r_p = a (1 - e), not on the semi-major axis, and it only matters if perigee lies on the arc that
+is actually flown: the transfer hits the Earth when r_p < R and the true anomaly increases through
+0 (perigee) between departure and arrival, or when either endpoint is itself below R.
 
 ```typescript
-import { LambertIOD, EpochUTC, Vector3D, Kilometers } from 'ootk';
+import { EpochUTC, Kilometers, LambertIOD, Vector3D } from 'ootk';
 
-// Find transfer time for specific delta-V budget
-function findTransferTime(
-  p1: Vector3D<Kilometers>,
-  p2: Vector3D<Kilometers>,
-  t1: EpochUTC,
-  currentVelocity: Vector3D<KilometersPerSecond>,
-  maxDeltaV: number,
-  maxTimeHours: number
-): { transferTime: number; solution: J2000 } | null {
+const EARTH_RADIUS_KM = 6378.137;
 
-  const lambert = new LambertIOD();
-  const startMs = t1.toDateTime().getTime();
+const p1 = new Vector3D<Kilometers>(7000 as Kilometers, 0 as Kilometers, 0 as Kilometers);
+const p2 = new Vector3D<Kilometers>(-7000 as Kilometers, 1000 as Kilometers, 0 as Kilometers);
+const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
+const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T00:20:00.000Z'));
 
-  // Binary search for optimal time
-  let low = 300;  // 5 minutes minimum
-  let high = maxTimeHours * 3600;
-
-  while (high - low > 60) {  // 1-minute precision
-    const mid = Math.floor((low + high) / 2);
-    const t2 = EpochUTC.fromDateTime(new Date(startMs + mid * 1000));
-
-    const solution = lambert.estimate(p1, p2, t1, t2, { posigrade: true });
-
-    if (solution) {
-      const deltaV = solution.velocity.subtract(currentVelocity).magnitude;
-
-      if (deltaV <= maxDeltaV) {
-        high = mid;  // Can do it faster
-      } else {
-        low = mid;   // Need more time
-      }
-    } else {
-      low = mid;
-    }
-  }
-
-  const finalT2 = EpochUTC.fromDateTime(new Date(startMs + high * 1000));
-  const finalSolution = lambert.estimate(p1, p2, t1, finalT2, { posigrade: true });
-
-  if (finalSolution) {
-    return { transferTime: high, solution: finalSolution };
-  }
-
-  return null;
-}
-```
-
-### Combining with Force Models
-
-```typescript
-import {
-  LambertIOD,
-  RungeKutta89Propagator,
-  ForceModel,
-  EpochUTC
-} from 'ootk';
-
-// 1. Get initial estimate from Lambert
 const lambert = new LambertIOD();
-const initialOrbit = lambert.estimate(p1, p2, t1, t2);
+const departure = lambert.estimate(p1, p2, t1, t2);
 
-if (!initialOrbit) {
-  throw new Error('No solution');
-}
+if (departure) {
+  const elements = departure.toClassicalElements();
+  const nu1 = elements.trueAnomaly; // radians, in [0, 2 pi)
+  // Arrival true anomaly: nu1 plus the swept angle (short way here).
+  const nu2 = nu1 + p1.angle(p2);
+  const passesPerigee = nu2 > 2 * Math.PI; // the arc crosses nu = 0
 
-// 2. Set up high-fidelity force model
-const forceModel = new ForceModel();
-forceModel.setEarthGravity(20, 20);      // High-order gravity
-forceModel.setThirdBody(true);           // Sun/Moon perturbations
-forceModel.setAtmosphericDrag(2.2, 0.01); // Drag (Cd, area/mass)
-forceModel.setSolarRadiationPressure(1.2, 0.02); // SRP
+  if (elements.eccentricity >= 1) {
+    console.log('Hyperbolic transfer (e >= 1)');
+  }
 
-// 3. Propagate with perturbations
-const propagator = new RungeKutta89Propagator(initialOrbit, forceModel);
-const highFidelityState = propagator.propagate(t2);
-
-// 4. Check accuracy against target
-const positionError = highFidelityState.position.subtract(p2).magnitude;
-console.log('Position error:', positionError, 'km');
-
-// 5. Optional: Iterate to refine solution
-if (positionError > 1.0) {  // More than 1 km error
-  // Re-solve Lambert with adjusted target
-  const correctedTarget = p2.add(
-    highFidelityState.position.subtract(p2).scale(0.5)
-  );
-
-  const refinedOrbit = lambert.estimate(p1, correctedTarget, t1, t2);
-  // Continue iteration...
+  if (passesPerigee && elements.perigeeRadius < EARTH_RADIUS_KM) {
+    console.log('Transfer passes below the surface, perigee radius', elements.perigeeRadius.toFixed(1), 'km');
+  } else {
+    console.log('Transfer stays above the surface');
+  }
 }
 ```
 
----
+### Combining with force models
 
-## Best Practices
-
-### 1. Choose the Right Workflow
-
-| Use Case | Recommended Approach |
-|----------|---------------------|
-| High-precision orbit propagation | J2000 + RungeKutta89Propagator |
-| Quick orbit estimation | J2000 + ClassicalElements |
-| Ground track visualization | J2000 → TLE → Satellite |
-| Transfer planning | Lambert + direct delta-V calculation |
-| Real-time operations | Cache Lambert solutions |
-
-### 2. Validate Solutions
+Lambert is a two-body solution. Propagating it with perturbations makes the arrival miss `p2`;
+a simple fix is to re-aim with the miss vector (a shooting iteration).
 
 ```typescript
-// Always check for null returns
-const solution = lambert.estimate(p1, p2, t1, t2);
-if (!solution) {
-  // Handle failure gracefully
-  return;
-}
+import { EpochUTC, ForceModel, Kilometers, LambertIOD, RungeKutta89Propagator, Vector3D } from 'ootk';
 
-// Verify solution makes physical sense
-const elements = solution.toClassicalElements();
-if (elements.eccentricity >= 1.0) {
-  console.warn('Hyperbolic trajectory detected');
-}
+const p1 = new Vector3D<Kilometers>(7000 as Kilometers, 0 as Kilometers, 0 as Kilometers);
+const p2 = new Vector3D<Kilometers>(0 as Kilometers, 7000 as Kilometers, 1000 as Kilometers);
+const t1 = EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00.000Z'));
+const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T00:40:00.000Z'));
 
-if (elements.semimajorAxis < 6378) {
-  console.error('Orbit intersects Earth!');
+const lambert = new LambertIOD();
+const forceModel = new ForceModel().setEarthGravity(20, 20).setThirdBodyGravity({ moon: true, sun: true });
+
+let aim = p2;
+let solution = lambert.estimate(p1, aim, t1, t2);
+
+for (let i = 0; i < 5 && solution; i++) {
+  const arrival = new RungeKutta89Propagator(solution, forceModel).propagate(t2);
+  const miss = arrival.position.subtract(p2);
+
+  console.log(`Iteration ${i}: miss ${miss.magnitude().toFixed(3)} km`);
+
+  if (miss.magnitude() < 0.001) {
+    break;
+  }
+
+  aim = aim.subtract(miss) as Vector3D<Kilometers>;
+  solution = lambert.estimate(p1, aim, t1, t2);
 }
 ```
 
-### 3. Time of Flight Considerations
-
-- **Too short**: May not have physical solution
-- **Too long**: Multiple revolution solutions possible
-- **Rule of thumb**: Time should be 0.1 to 10 orbital periods
-
-### 4. Numerical Stability
-
-The Lambert solver uses:
-
-- Householder's method (3rd order convergence)
-- Tolerance: 1e-13
-- Max iterations: 50
-
-Most solutions converge in < 10 iterations.
+`setEarthGravity` clamps degree and order to the bundled EGM96 table (36).
 
 ---
 
 ## Troubleshooting
 
-### Problem: Lambert returns null
+### `estimate()` returns `null`
 
-**Causes:**
+The secant iteration did not reach 1e-13 within 50 steps. Common causes:
 
-1. Positions nearly collinear
-2. Time of flight incompatible with geometry
-3. Numerical convergence issues
+1. `p1` and `p2` are nearly collinear (transfer angle near 0 or 180 deg), so the transfer plane
+   is undefined.
+2. The time of flight is too short for the requested number of revolutions (`|nRev| >= 1`).
+3. Extreme geometries (very large radius ratio, very long flight times at `nRev = 0`).
 
-**Solutions:**
-
-```typescript
-// Check input validity
-const r1 = p1.magnitude;
-const r2 = p2.magnitude;
-const c = p2.subtract(p1).magnitude;  // Chord
-
-// Triangle inequality must hold
-if (c >= r1 + r2 || c <= Math.abs(r1 - r2)) {
-  console.error('Invalid geometry');
-}
-
-// Try different time of flight
-const minTOF = Math.PI * Math.sqrt(Math.pow((r1 + r2 + c) / 2, 3) / mu);
-console.log('Minimum TOF:', minTOF, 'seconds');
-```
-
-### Problem: Large delta-V requirements
-
-**Cause:** Inefficient transfer geometry
-
-**Solution:**
+Try a different time of flight, the other `shortWay` value, or the other multi-revolution branch
+(negate `nRev`). Changing a time is done in seconds:
 
 ```typescript
-// Try multiple revolution transfers
-for (let nRev = 0; nRev <= 2; nRev++) {
-  const sol = lambert.estimate(p1, p2, t1, t2, { nRev });
-  if (sol) {
-    console.log(`${nRev} revs: ${sol.velocity.magnitude} km/s`);
-  }
-}
+import { EpochUTC, Seconds } from 'ootk';
 
-// Or adjust transfer time
-const adjustedT2 = new EpochUTC(t2.toDateTime().getTime() + 3600000);
-const betterSol = lambert.estimate(p1, p2, t1, adjustedT2);
+const t2 = EpochUTC.fromDateTime(new Date('2024-01-01T01:30:00.000Z'));
+const oneHourLater = t2.roll(3600 as Seconds); // roll() takes seconds
+const sameFromConstructor = new EpochUTC((t2.posix + 3600) as Seconds); // the constructor takes POSIX seconds, not ms
+
+console.log(oneHourLater.toString() === sameFromConstructor.toString());
 ```
 
-### Problem: TLE conversion artifacts
+### Large delta-V
 
-**Cause:** Classical elements → TLE conversion limitations
+Compare the zero-revolution, multi-revolution and long-way solutions, and scan the time of flight
+(Example 3). The minimum-energy time above is a good starting point for a single transfer.
 
-**Solution:**
-Use numerical propagators directly instead of Satellite class:
+### TLE conversion artifacts
 
-```typescript
-// Instead of:
-const tle = Tle.fromClassicalElements(elements);
-const sat = new Satellite({ tle1: tle.line1, tle2: tle.line2 });
-
-// Use:
-const propagator = new RungeKutta89Propagator(j2000State, forceModel);
-```
-
----
-
-## Performance Tips
-
-1. **Reuse Lambert instances**: Constructor is lightweight
-2. **Cache solutions**: Lambert solve is ~microseconds, but caching helps for repeated queries
-3. **Use appropriate propagators**:
-   - Keplerian: Fastest, no perturbations
-   - RK4: Medium speed, fixed step
-   - RK89: Adaptive step, best accuracy
-   - SGP4: For TLE-based satellites only
-
-4. **Parallel processing**: Lambert solutions are independent
-
-```typescript
-const transfers = await Promise.all(
-  targets.map(target =>
-    Promise.resolve(lambert.estimate(start, target, t1, t2))
-  )
-);
-```
+`Tle.fromClassicalElements` fits osculating elements as if they were SGP4 mean elements. If you
+need the Lambert trajectory itself, propagate the `J2000` state with `RungeKutta89Propagator`
+instead of converting to a `Satellite`.
 
 ---
 
 ## References
 
-- Lambert solver: `/home/user/ootk/src/orbit_determination/LambertIOD.ts:1`
-- J2000 class: `/home/user/ootk/src/coordinate/J2000.ts:1`
-- RungeKutta89: `/home/user/ootk/src/propagator/RungeKutta89Propagator.ts:1`
-- ClassicalElements: `/home/user/ootk/src/coordinate/ClassicalElements.ts:1`
-- Examples: `/home/user/ootk/examples/iod.ts:1`
-
----
-
-## Summary
-
-Lambert integration provides a powerful alternative to SGP4 for state vector generation:
-
-✅ **Direct state vector generation** from position observations
-✅ **Transfer orbit design** without TLE requirements
-✅ **High-precision propagation** using numerical integrators
-✅ **Flexible force modeling** for perturbation analysis
-✅ **Seamless integration** with existing OOTK components
-
-For most applications involving precise orbit determination or maneuver planning, using Lambert with numerical propagators provides superior accuracy compared to TLE-based SGP4 propagation.
+- `src/orbit-determination/LambertIOD.ts`: solver, `estimate`, `solve`, `useShortPath`
+- `src/coordinate/J2000.ts`: inertial state vector
+- `src/propagator/RungeKutta89Propagator.ts`: numerical propagator
+- `src/coordinate/ClassicalElements.ts`: element conversion, `apogee`/`perigee` altitudes,
+  `apogeeRadius`/`perigeeRadius`
+- `examples/lambert-state-vector.ts`: runnable versions of the workflows above
+- Vallado, *Fundamentals of Astrodynamics and Applications*, 4th ed., section 7.6 (Lambert's
+  problem, minimum-energy and parabolic times of flight)

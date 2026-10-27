@@ -19,9 +19,13 @@
  * Configuration options for history tracking.
  */
 export interface HistoryConfig {
-  /** Maximum number of entries to store. Undefined means unlimited. */
+  /** Maximum number of entries to store. Undefined or 0 means unlimited. */
   maxLength?: number;
-  /** Minimum time between samples in milliseconds. */
+  /**
+   * Minimum time between samples in milliseconds. A sample is skipped when its timestamp is
+   * within this interval of the last stored sample, in either direction (|t - t_last| <
+   * samplingInterval), so an earlier sample far from the last one is still kept.
+   */
   samplingInterval?: number;
   /** If true, automatically removes oldest entries when maxLength is reached. */
   autoClean?: boolean;
@@ -42,7 +46,8 @@ export interface HistoryEntry<T> {
 export class History<T> {
   private entries_: HistoryEntry<T>[] = [];
   private config_: HistoryConfig;
-  private lastSampleTime_ = 0;
+  /** Timestamp (ms) of the last stored sample, or null before the first one. */
+  private lastSampleTime_: number | null = null;
 
   constructor(config?: HistoryConfig) {
     this.config_ = {
@@ -53,7 +58,7 @@ export class History<T> {
   }
 
   /**
-   * Adds a new entry to the history.
+   * Adds a new entry to the history (entries are kept in insertion order).
    * Respects sampling interval and max length constraints.
    * @param time - The timestamp for this entry
    * @param data - The data to store
@@ -61,9 +66,11 @@ export class History<T> {
   add(time: Date, data: T): void {
     const timeMs = time.getTime();
 
-    // Check sampling interval
-    if (this.config_.samplingInterval && this.config_.samplingInterval > 0) {
-      if (timeMs - this.lastSampleTime_ < this.config_.samplingInterval) {
+    // Check sampling interval: skip only samples close in time to the last stored one. A plain
+    // (t - t_last) test would drop every sample earlier than the last, so one forward sweep
+    // sample (e.g. 7 days ahead) used to block all real-time samples until the clock caught up.
+    if (this.config_.samplingInterval && this.config_.samplingInterval > 0 && this.lastSampleTime_ !== null) {
+      if (Math.abs(timeMs - this.lastSampleTime_) < this.config_.samplingInterval) {
         return; // Skip this sample
       }
     }
@@ -138,30 +145,67 @@ export class History<T> {
    */
   clear(): void {
     this.entries_ = [];
-    this.lastSampleTime_ = 0;
+    this.lastSampleTime_ = null;
   }
 
   /**
-   * Creates a deep copy of this history.
+   * Creates a deep copy of this history. Entry data is copied recursively (plain objects,
+   * arrays, Dates and class instances, whose prototype is kept), so changing nested data in
+   * one history does not affect the other. Functions are shared.
    * @returns A new History instance with cloned entries
    */
   clone(): History<T> {
     const cloned = new History<T>(this.config);
 
     for (const entry of this.entries_) {
-      // Deep copy the entry data (for objects like HistoricalState: {position, velocity})
-      const clonedData = typeof entry.data === 'object' && entry.data !== null
-        ? { ...entry.data } as T
-        : entry.data;
-
       cloned.entries_.push({
         time: new Date(entry.time),
-        data: clonedData,
+        data: History.deepCopy_(entry.data),
       });
     }
     cloned.lastSampleTime_ = this.lastSampleTime_;
 
     return cloned;
+  }
+
+  /**
+   * Recursive copy of a value (see {@link clone}). Cycles are preserved through `seen`.
+   * @param value - The value to copy.
+   * @param seen - Already-copied objects, for cyclic data.
+   * @returns The copy.
+   */
+  private static deepCopy_<V>(value: V, seen = new Map<object, unknown>()): V {
+    if (typeof value !== 'object' || value === null) {
+      return value;
+    }
+    if (seen.has(value)) {
+      return seen.get(value) as V;
+    }
+    if (value instanceof Date) {
+      return new Date(value.getTime()) as V;
+    }
+    if (Array.isArray(value)) {
+      const arr: unknown[] = [];
+
+      seen.set(value, arr);
+      for (const item of value) {
+        arr.push(History.deepCopy_(item, seen));
+      }
+
+      return arr as V;
+    }
+    if (ArrayBuffer.isView(value)) {
+      return (value as unknown as { slice: () => unknown }).slice() as V;
+    }
+
+    const copy = Object.create(Object.getPrototypeOf(value) as object | null) as Record<string, unknown>;
+
+    seen.set(value, copy);
+    for (const key of Object.keys(value)) {
+      copy[key] = History.deepCopy_((value as Record<string, unknown>)[key], seen);
+    }
+
+    return copy as V;
   }
 
   /**

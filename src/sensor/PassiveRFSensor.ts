@@ -47,7 +47,7 @@ export interface PassiveRFSensorParams extends SensorParams {
  * @example
  * ```typescript
  * const sigint = new PassiveRFSensor({
- *   id: 'rf-collector-1',
+ *   id: 2,
  *   name: 'RF Collection Site',
  *   sensorType: SensorType.PASSIVE_RF,
  *   frequencyBands: ['UHF', 'L-band', 'S-band'],
@@ -55,12 +55,10 @@ export interface PassiveRFSensorParams extends SensorParams {
  *   maxFrequency: 4e9,      // 4 GHz
  *   sensitivity: -120,      // -120 dBm
  *   fieldOfView: {
+ *     halfAngle: 90 as Degrees, // zenith-pointing hemisphere
  *     minRange: 500 as Kilometers,
  *     maxRange: 45000 as Kilometers,
- *     minAzimuth: 0 as Degrees,
- *     maxAzimuth: 360 as Degrees,
  *     minElevation: 5 as Degrees,
- *     maxElevation: 90 as Degrees,
  *   },
  * });
  * ```

@@ -13,12 +13,13 @@ describe('Satellite sccNum derivation from TLE construction', () => {
     const tle1 = '1 25544U 98067A   22203.46960946  .00003068  00000+0  61583-4 0  9996' as TleLine1;
     const tle2 = '2 25544  51.6415 161.8339 0005168  35.9781  54.7009 15.50067047350657' as TleLine2;
 
-    it('round-trips sccNum/sccNum5/sccNum6 to the same 5-digit numeric', () => {
+    it('derives sccNum, the 5-char sccNum5 and the zero-padded 6-digit sccNum6', () => {
       const sat = new Satellite({ tle1, tle2 });
 
       expect(sat.sccNum).toBe('25544');
       expect(sat.sccNum5).toBe('25544');
-      expect(sat.sccNum6).toBe('25544');
+      // v8: sccNum6 is the fixed-width 6-digit form
+      expect(sat.sccNum6).toBe('025544');
     });
   });
 
@@ -70,7 +71,7 @@ describe('Satellite sccNum derivation from TLE construction', () => {
     it('keeps the TLE satnum independent of the canonical sccNum', () => {
       const sat = new Satellite({ sccNum: '799500766', tle1, tle2 });
 
-      // TLE cols 3-7 carry whatever was in the input — separate from sccNum.
+      // TLE cols 3-7 carry whatever was in the input, separate from sccNum.
       expect(sat.tle1.substring(2, 7)).toBe('99999');
       expect(sat.tle2.substring(2, 7)).toBe('99999');
     });
@@ -191,7 +192,7 @@ describe('Satellite sccNum derivation from TLE construction', () => {
 
   describe('toTle preserves the TLE satnum independent of canonical sccNum', () => {
     // Satellite.toTle returns the raw stored tle1/tle2 strings (no rewriting).
-    // The TLE satnum and Satellite.sccNum can diverge — extended IDs use that
+    // The TLE satnum and Satellite.sccNum can diverge: extended IDs use that
     // gap to keep the full 9-digit canonical id while still emitting 69-char
     // TLE lines for SGP4.
     it('returns a Tle with line1/line2 carrying the input TLE satnum even when sccNum is extended', () => {

@@ -172,6 +172,7 @@ describe('Transmitter link budget noise bandwidth', () => {
     const date = new Date('2024-01-01T00:00:00Z');
     const tx = new Transmitter({
       id: 2001,
+      name: 'Link Budget Tx',
       frequency: 2.2e9 as Hertz,
       power: 10 as Watts,
       bandwidth: 10e3 as Hertz,
@@ -179,6 +180,7 @@ describe('Transmitter link budget noise bandwidth', () => {
     });
     const rx = new Receiver({
       id: 2002,
+      name: 'Link Budget Rx',
       frequency: 2.2e9 as Hertz,
       bandwidth: 5e6 as Hertz,
       noiseFigure: 2 as Decibels,

@@ -6,13 +6,13 @@ exports[`ClassicalElements > should calculate inclination in degrees 1`] = `43.0
 
 exports[`ClassicalElements > should calculate right ascension in degrees 1`] = `1.6180073591471598`;
 
-exports[`ClassicalElements > should calculate the apogee of ClassicalElements 1`] = `580.3415297612491`;
+exports[`ClassicalElements > should calculate the apogee of ClassicalElements 1`] = `573.2126019586321`;
 
 exports[`ClassicalElements > should calculate the mean motion of ClassicalElements 1`] = `0.0010911808567933578`;
 
 exports[`ClassicalElements > should calculate the orbit regime of ClassicalElements 1`] = `"Low Earth Orbit"`;
 
-exports[`ClassicalElements > should calculate the perigee of ClassicalElements 1`] = `564.7380332899556`;
+exports[`ClassicalElements > should calculate the perigee of ClassicalElements 1`] = `557.6091054873386`;
 
 exports[`ClassicalElements > should calculate the period of ClassicalElements 1`] = `95.96920113444682`;
 

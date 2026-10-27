@@ -13,7 +13,7 @@ npx tsx ./examples/lambert-state-vector.ts
 
 ## Basic Lambert
 
-`lambert.estimate(p1, p2, t1, t2, options)` returns a `J2000` state at `t1`, or `undefined` when no solution converges, so always check the result. `toClassicalElements()` converts the state to orbital elements; the `*Degrees` getters avoid manual radian conversion and `period` is already in minutes.
+`lambert.estimate(p1, p2, t1, t2, options)` returns a `J2000` state at `t1`, or `null` when no solution converges, so always check the result. `toClassicalElements()` converts the state to orbital elements; the `*Degrees` getters avoid manual radian conversion and `period` is already in minutes.
 
 <<< ../../examples/lambert-state-vector.ts#basic-lambert
 
@@ -25,7 +25,7 @@ The Lambert-derived `J2000` state can seed `RungeKutta89Propagator` for high-pre
 
 ## Lambert to Satellite
 
-`Tle.fromClassicalElements(elements)` fits a TLE to the solution, which can then construct a `Satellite` object and use its convenience methods such as `lla(date)`. Note that this treats osculating elements as mean elements, so SGP4 positions from the generated TLE will not exactly match the Lambert state.
+`Tle.fromClassicalElements(elements)` fits a TLE to the solution, which can then construct a `Satellite` object and use its convenience methods such as `lla(date)`. Note that this treats osculating elements as mean elements, so SGP4 positions from the generated TLE will not exactly match the Lambert state. `Satellite.apogee` and `perigee` are altitudes above the WGS-84 equatorial radius (6378.137 km); `apogeeRadius` and `perigeeRadius` are geocentric. The 90-minute flight time in this script is far from a quarter of the 500 km orbit period, so the fitted orbit is very eccentric and its perigee altitude is negative (see the output): the solution is a valid conic but not a physical orbit, which is what the Validation section below checks for.
 
 <<< ../../examples/lambert-state-vector.ts#lambert-to-satellite
 
@@ -37,19 +37,19 @@ Lambert's problem is the general form of transfer planning: fix the departure an
 
 ## Multi revolution
 
-For long flight times the transfer can complete whole revolutions before arrival. The `nRev` option selects the number of complete revolutions; higher `nRev` solutions here need less departure velocity at the cost of a more constrained geometry.
+For long flight times the transfer can complete whole revolutions before arrival. The `nRev` option selects the number of complete revolutions; higher `nRev` solutions here need less departure velocity at the cost of a more constrained geometry. For `|nRev| >= 1` two solutions exist for the same flight time and the sign of `nRev` selects the branch (a negative value returns the other one).
 
 <<< ../../examples/lambert-state-vector.ts#multi-revolution
 
 ## Short vs long path
 
-The `posigrade` flag chooses which way around the central body the transfer sweeps. Between nearly opposite points the two paths converge toward the same half-orbit geometry, so their delta-V difference is small.
+The `shortWay` option (named `posigrade` before ootk 8) chooses which transfer angle is swept: `true` takes the angle between the two positions that is below 180 deg, `false` takes 360 deg minus it. It is not a prograde/retrograde switch; `LambertIOD.useShortPath(interceptor, target)` picks the value that keeps an interceptor's current direction of motion. The old `posigrade` key is silently ignored, so update any call that still passes it. Between nearly opposite points the two paths converge toward the same half-orbit geometry, so their delta-V difference is small.
 
 <<< ../../examples/lambert-state-vector.ts#short-vs-long-path
 
 ## Validation
 
-`estimate()` returning `undefined` is the failure signal, but a returned solution can still be physically useless: very short flight times force hyperbolic-scale velocities, and the resulting ellipse may dip below the Earth's surface. Check perigee radius and eccentricity before trusting a solution.
+`estimate()` returning `null` is the failure signal, but a returned solution can still be physically useless: very short flight times force hyperbolic-scale velocities, and the resulting ellipse may dip below the Earth's surface. Check perigee radius (`elements.perigeeRadius`, geocentric) and eccentricity before trusting a solution.
 
 <<< ../../examples/lambert-state-vector.ts#validation
 
@@ -108,8 +108,8 @@ Satellite created from Lambert solution:
   Name: Lambert-Derived Satellite
   Inclination: 0.000 deg
   Period: 113.72 minutes
-  Apogee: 7426.696 km
-  Perigee: -4617.697 km
+  Apogee: 7419.559 km
+  Perigee: -4624.834 km
 
 ... (truncated)
 

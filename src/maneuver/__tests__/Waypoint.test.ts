@@ -1,17 +1,23 @@
 import { vi } from 'vitest';
 import { StateInterpolator } from '@src/interpolator/StateInterpolator';
 import {
+  ClassicalElements,
   EpochUTC,
   ForceModel,
   J2000,
   Kilometers,
   KilometersPerSecond,
   MetersPerSecond,
+  Radians,
+  RIC,
+  Seconds,
   SecondsPerMeterPerSecond,
   Thrust,
   Vector3D,
 } from '@src/main';
 import { LambertIOD } from '@src/orbit-determination/LambertIOD';
+import { KeplerPropagator } from '@src/propagator/KeplerPropagator';
+import { RungeKutta89Propagator } from '@src/propagator/RungeKutta89Propagator';
 import { Waypoint } from '../Waypoint';
 
 
@@ -112,7 +118,7 @@ describe('Waypoint', () => {
         epoch: mockEpoch,
         position: new Vector3D(7000 as Kilometers, 0 as Kilometers, 0 as Kilometers),
         velocity: new Vector3D(0 as KilometersPerSecond, 7.5 as KilometersPerSecond, 0 as KilometersPerSecond),
-        period: 5400,
+        period: 90, // minutes, like StateVector.period
       } as J2000;
       const mockPivot = mockEpoch;
       const preManeuver = new Thrust(mockEpoch, 0 as MetersPerSecond, 0 as MetersPerSecond, 0 as MetersPerSecond, 0 as SecondsPerMeterPerSecond);
@@ -428,5 +434,45 @@ describe('Waypoint', () => {
         expect(result).toEqual([]);
       });
     });
+  });
+});
+
+describe('Waypoint QA 2026-10 regression: revolution count uses period in minutes', () => {
+  /*
+   * Report section 1 item 3 (Waypoint.ts:179). Independent property: after the computed burn the
+   * interceptor must arrive at the waypoint (two-body Lambert), whatever the number of complete
+   * revolutions. A waypoint 1 km radially above a co-orbiting target is reached after 30 min
+   * (0 revolutions) and after 140 min (1 revolution of a 92.6 min orbit).
+   */
+  beforeEach(() => {
+    // Earlier tests in this file spy on LambertIOD.prototype.estimate without restoring it.
+    vi.restoreAllMocks();
+  });
+
+  it.each([1800, 8400])('reaches a 1 km radial offset waypoint %i s after the pivot', (tofSec) => {
+    const start = EpochUTC.fromDateTimeString('2024-01-01T12:00:00.000Z');
+    const elements = new ClassicalElements({
+      epoch: start,
+      semimajorAxis: 6778 as Kilometers,
+      eccentricity: 0,
+      inclination: ((51.6 * Math.PI) / 180) as Radians,
+      argPerigee: 0 as Radians,
+      rightAscension: ((45 * Math.PI) / 180) as Radians,
+      trueAnomaly: 0 as Radians,
+    });
+    const interceptor = J2000.fromClassicalElements(elements);
+    const target = new KeplerPropagator(elements).ephemeris(start, start.roll((tofSec + 600) as Seconds), 60 as Seconds);
+    const wpEpoch = start.roll(tofSec as Seconds);
+    const offset = new Vector3D(1 as Kilometers, 0 as Kilometers, 0 as Kilometers);
+    const waypoint = new Waypoint(wpEpoch, offset);
+
+    const [burn] = Waypoint.toManeuvers(interceptor, start, [waypoint], target, null, null);
+    const prop = new RungeKutta89Propagator(interceptor);
+
+    prop.maneuver(burn);
+    const arrival = prop.propagate(wpEpoch).position;
+    const aim = new RIC(offset, Vector3D.origin as Vector3D<KilometersPerSecond>).toJ2000(target.interpolate(wpEpoch)!).position;
+
+    expect(arrival.distance(aim)).toBeLessThan(0.01);
   });
 });

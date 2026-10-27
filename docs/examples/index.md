@@ -32,6 +32,7 @@ npx tsx ./examples/satellite-passes.ts
 | [Lambert State Vectors](./lambert-state-vector) | State vectors without TLEs, transfer planning, multi-rev solutions |
 | [Maneuvers](./maneuvers) | Hohmann and two-burn transfers, delta-V budgets |
 | [Conjunction Assessment](./conjunction-assessment-example) | High-fidelity conjunction screening with probability of collision |
-| [Covariance Matrix](./covariance-matrix) | RIC-frame covariance from TLE history |
+| [Breakup Epoch Estimation](./breakup-epoch) | Dating a fragmentation from fragment element sets by orbit-plane convergence |
+| [Covariance Matrix](./covariance-matrix) | RIC-frame covariance from TLEs, sigma-point sampling |
 | [Sun](./sun) | Sunrise/sunset and solar event times |
 | [Moon](./moon) | Lunar position, rise/set, phase, and illumination |

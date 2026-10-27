@@ -7,7 +7,7 @@
 
 > An Orbital Object Toolkit in Your Web Browser
 
-**ootk** is a collection libraries for doing math related to orbital objects written in TypeScript. **ootk** was
+**ootk** is a collection of libraries for doing math related to orbital objects written in TypeScript. **ootk** was
 developed to simplify the math and let you focus on using the results.
 
 Most of the functionality was originally written for [KeepTrack](https://github.com/thkruz/keeptrack.space) and then
@@ -21,81 +21,118 @@ Install the library with [NPM](https://www.npmjs.com/):
 npm i ootk
 ```
 
+ootk requires Node.js 20 or later (or any modern browser bundler). It ships as ES modules with a CommonJS
+build and full TypeScript types.
+
+> **Upgrading from ootk 7?** Version 8 fixes a number of silently wrong results and changes a few API contracts
+> (`mag2db` is now `pow2db`, Lambert `posigrade` is now `shortWay`, zenith field-of-view roll, CDM units and more).
+> Read the [v8 migration guide](./docs/migration-v8.md) before upgrading.
+
 ### Example Usage
 
+Units are carried in the types. The branded types (`Degrees`, `Radians`, `Kilometers`, `TleLine1`, ...) tell you
+what each parameter expects and make the compiler catch a mix-up: `GroundStation`, sensor and `FieldOfView`
+parameters are in degrees, while lower-level classes such as `Geodetic`, `RAE` and `ClassicalElements` take
+radians. Distances are kilometres throughout.
+
 ```ts
-import { DetailedSatellite, DetailedSensor, Degrees, Kilometers, SpaceObjectType, TleLine1, TleLine2 } from "ootk";
+import {
+  Degrees,
+  GroundStation,
+  Kilometers,
+  PassType,
+  PhasedArrayRadar,
+  Satellite,
+  SensorType,
+  TleLine1,
+  TleLine2,
+} from 'ootk';
 
-// Using api.keeptrack.space API
-fetch('https://api.keeptrack.space/v1/sat/25544')
-  .then((res) => res.json())
-  .then((satData) => {
-    const satellite = new DetailedSatellite({
-      id: satData.id,
-      tle1: satData.tle1 as TleLine1,
-      tle2: satData.tle2 as TleLine2,
-    });
+// A satellite from a TLE. SGP4 is only accurate near the TLE epoch, so use a
+// current TLE (or a date close to its epoch, as here).
+const iss = new Satellite({
+  name: 'ISS',
+  tle1: '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991' as TleLine1,
+  tle2: '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741' as TleLine2,
+});
+const date = new Date('2024-01-28T12:00:00Z');
 
-    // Get the satellite's position at the current time
-    const eci = satellite.eci();
+console.log(iss.inclination); // deg
+console.log(iss.period); // min
 
-    // Log the satellite's position - y component only
-    console.log(eci.position.y);
+// Position: eci() is TEME in km and km/s; lla() is degrees and km. Both return
+// null if SGP4 fails (for example a decayed orbit), so check the result.
+const eci = iss.eci(date);
+const lla = iss.lla(date);
 
-    // Access other satellite properties
-    console.log(satellite.inclination); // inclination in degrees
-    console.log(satellite.eccentricity); // eccentricity
-    console.log(satellite.period); // period in minutes
+if (eci && lla) {
+  console.log(eci.position.x, eci.velocity.x);
+  console.log(lla.lat, lla.lon, lla.alt);
+}
 
-    // Get LLA (Latitude, Longitude, Altitude)
-    const lla = satellite.lla();
+// A ground site. Latitude and longitude are degrees, altitude km above WGS-84.
+const capeCod = new GroundStation({
+  name: 'Cape Cod',
+  lat: 41.754785 as Degrees,
+  lon: -70.539151 as Degrees,
+  alt: 0.060966 as Kilometers,
+});
 
-    console.log(lla); // { lat: degrees, lon: degrees, alt: kilometers }
+// Look angles from the site (azimuth and elevation in degrees, range in km).
+const rae = iss.rae(capeCod, date);
 
-    const sensor = new DetailedSensor({
-      lat: 41.754785 as Degrees,
-      lon: -70.539151 as Degrees,
-      alt: 0.060966 as Kilometers,
-      minAz: 347 as Degrees,
-      maxAz: 227 as Degrees,
-      minEl: 3 as Degrees,
-      maxEl: 85 as Degrees,
-      minRng: 0 as Kilometers,
-      maxRng: 5556 as Kilometers,
-      name: 'Cape Cod',
-      type: SpaceObjectType.PHASED_ARRAY_RADAR,
-    });
+if (rae) {
+  console.log(rae.az, rae.el, rae.rng);
+}
 
-    // Assuming we have a satellite object from the previous example
-    const rae = sensor.rae(satellite);
+// A sensor is a component attached to a platform. Its field of view is a cone
+// around each face boresight; halfAngle is required.
+const radar = new PhasedArrayRadar({
+  id: 1,
+  name: 'Cape Cod Radar',
+  sensorType: SensorType.PHASED_ARRAY_RADAR,
+  beamwidth: 2 as Degrees,
+  boresightAz: [47 as Degrees, 167 as Degrees],
+  boresightEl: [20 as Degrees, 20 as Degrees],
+  fieldOfView: {
+    halfAngle: 60 as Degrees,
+    minRange: 200 as Kilometers,
+    maxRange: 5556 as Kilometers,
+    minElevation: 3 as Degrees,
+  },
+});
 
-    // Log the azimuth from sensor to satellite
-    console.log(rae.az);
+capeCod.addSensor(radar);
+radar.setParent(capeCod);
 
-    // Check if a satellite is in the sensor's field of view right now
-    const isSatInFov = sensor.isSatInFov(satellite);
+console.log(radar.canObserve(iss, date)); // inside the field of view right now?
 
-    console.log(isSatInFov); // true or false
+// Pass events over the next 24 hours (1 s steps): ENTER and EXIT look angles.
+const passes = radar.calculatePasses(iss, 24 * 60 * 60, date);
 
-    // Calculate passes for a satellite (in 30 second intervals)
-    const passes = sensor.calculatePasses(30, satellite);
-
-    console.log(passes); // Array of pass information
-
-    // Convert sensor position to J2000 coordinates
-    const j2000 = sensor.toJ2000();
-
-    console.log(j2000); // J2000 object with position and velocity
-  });
+for (const pass of passes) {
+  if (pass.type === PassType.ENTER) {
+    console.log(`Enter ${pass.time.toISOString()} az ${pass.az.toFixed(1)} el ${pass.el.toFixed(1)}`);
+  }
+}
 ```
+
+More runnable scripts live in [`examples/`](./examples) (orbital elements, coordinate transforms, time systems,
+passes, sensors, observations, Doppler, integrators, IOD, Lambert, maneuvers, conjunction assessment, covariance,
+Sun and Moon). Each one is walked through on the documentation site.
 
 ## :books: Documentation
 
-**New to OOTK?** Check out our comprehensive documentation:
+The documentation site is built from [`docs/`](./docs) with VitePress (`pnpm run docs:dev`):
 
-- **[Getting Started Guide](./docs/getting-started.md)** - Perfect for beginners! Learn the basics with step-by-step tutorials
-- **[User Guide](./docs/user-guide.md)** - Complete reference for all features and advanced capabilities
-- **[Documentation Index](./docs/README.md)** - Browse all available documentation
+- **[Getting Started Guide](./docs/getting-started.md)** - installation and first steps
+- **[User Guide](./docs/user-guide.md)** - reference for the main features
+- **[Advanced Features](./docs/advanced-features-guide.md)** - force models, numerical propagation, covariance,
+  conjunction assessment, orbit determination and optimizers
+- **[Lambert and Satellite Integration](./docs/lambert-satellite-integration-guide.md)** - from Lambert solutions to
+  propagated satellites
+- **[Migrating to v8](./docs/migration-v8.md)** - every breaking change in 8.0.0, with before/after code
+- **[Documentation Index](./docs/README.md)** - all documentation pages
 
 The documentation covers:
 - Installation and setup
@@ -109,7 +146,7 @@ The documentation covers:
 
 ## :desktop_computer: Building
 
-1. Install [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/) (`corepack enable pnpm` is enough — the
+1. Install [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/) (`corepack enable pnpm` is enough; the
    required version is pinned by the `packageManager` field in `package.json`);
 
 2. Install all required packages by running the following command from repository's root directory:
@@ -126,12 +163,14 @@ The documentation covers:
 
 ## :gem: Scripts
 
-- `build` compiles TypeScript into ES6 Modules and combines them into a single file in the `dist` directory.
-- `lint` lints source code located in `src` directory with [ESLint](http://eslint.org/)
-- `lint:fix` lints tests located in `src` directory with ESLint and attempts to auto-fix errors
-- `lint:test` lints tests located in `test` directory with ESLint
-- `test` runs jest to verify code remains functional
-- `test:coverage` generates lcov report to view code coverage
+- `build` bundles `src/main.ts` with tsup into ES module and CommonJS builds (plus type declarations) in `dist`.
+- `typecheck` runs `tsc --noEmit` over `src` and `test`.
+- `lint` lints the `src` directory with [ESLint](https://eslint.org/); `lint:fix` also applies automatic fixes.
+- `test` runs the unit tests with [Vitest](https://vitest.dev/).
+- `test:coverage` runs the unit tests and writes a coverage report.
+- `test:integration` builds the package and runs the integration tests against `dist`.
+- `docs:dev` serves the VitePress documentation site locally; `docs:build` builds it.
+- `bench` builds the package and runs the benchmarks in `benchmark/`.
 
 ## :man_teacher: Contributing
 
@@ -153,7 +192,7 @@ Make sure that your changes don't break the existing code by running:
 pnpm test
 ```
 
-Check that your code follows the rules established in eslint.rc:
+Check that your code follows the rules in `eslint.config.js`:
 
 ```bash
 pnpm run lint
@@ -174,5 +213,5 @@ the previous work of the following:
 
 ## :balance_scale: License
 
-I have placed the code under the [AGPL License](LICENSE.md) in order to ensure that good ideas can be shared and that
+I have placed the code under the [AGPL License](LICENSE.MD) in order to ensure that good ideas can be shared and that
 the code is open for everyone to use. [Learn more here](https://www.gnu.org/philosophy/philosophy.html).

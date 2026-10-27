@@ -73,25 +73,18 @@ export interface OemMetadata {
 }
 
 /**
- * Covariance matrix data from OEM file.
- * Stores the lower triangular portion of a 6x6 covariance matrix.
- *
- * @deferred Full covariance processing deferred to future enhancement.
- * Currently only parsed and stored, not processed.
+ * One covariance matrix from an OEM COVARIANCE_START ... COVARIANCE_STOP section
+ * (CCSDS 502.0-B-3 section 5.2.5): an EPOCH, an optional COV_REF_FRAME, and the 21 lower-triangular
+ * terms of the 6x6 position-velocity covariance, row by row (km^2, km^2/s, km^2/s^2).
  */
 export interface OemCovarianceMatrix {
-  /** Epoch of the covariance matrix */
+  /** Epoch of the covariance matrix (UTC) */
   epoch: Date;
-  /** Optional reference frame for covariance */
+  /** COV_REF_FRAME, when given (otherwise the block's REF_FRAME applies) */
   refFrame?: string;
-  /** 6x6 lower triangular matrix stored as 21 values */
+  /** Lower triangle of the 6x6 matrix, 21 values: [C11, C21, C22, C31, C32, C33, ...] */
   values: number[];
 }
-
-// TODO: Future enhancement - add covariance processing utilities
-// - CovarianceMatrix class with proper 6x6 operations
-// - Uncertainty propagation along ephemeris
-// - Covariance visualization helpers (uncertainty ellipsoids)
 
 /**
  * A single OEM data block containing metadata and ephemeris.
@@ -99,9 +92,13 @@ export interface OemCovarianceMatrix {
 export interface OemDataBlock {
   /** Metadata for this block */
   metadata: OemMetadata;
-  /** Array of J2000 state vectors */
+  /**
+   * State vectors (km, km/s) with epochs converted to UTC from the block's TIME_SYSTEM. They are
+   * stored in J2000 objects, but the coordinates are in the block's REF_FRAME as written; see
+   * EphemerisSatellite.fromParsedOem for the frame conversion.
+   */
   ephemeris: J2000[];
-  /** Optional covariance data (parsed but not processed) */
+  /** Covariance matrices from the block's COVARIANCE section, one per EPOCH */
   covariance?: OemCovarianceMatrix[];
 }
 

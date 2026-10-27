@@ -291,8 +291,16 @@ export class SunBody extends CelestialBody {
   /**
    * Calculates the lighting ratio for a satellite position.
    *
-   * Returns 1.0 for full illumination, 0.0 for full eclipse (umbra),
-   * and intermediate values for penumbra.
+   * Treats the Earth and Sun as uniform disks of apparent radius aCent and aSun separated by
+   * the angle rho, and returns the visible fraction of the solar disk (Montenbruck and Gill,
+   * Satellite Orbits, section 3.4.2, conical shadow model):
+   *
+   * - rho >= aCent + aSun: no overlap, 1.
+   * - rho <= aCent - aSun (Earth disk covers the Sun): umbra, 0.
+   * - rho <= aSun - aCent (Earth disk inside the solar disk): annular eclipse,
+   *   1 - aCent^2 / aSun^2. This happens beyond the tip of the umbra cone, about
+   *   1.38e6 km anti-sunward of Earth (for example near Sun-Earth L2).
+   * - otherwise: partial overlap of two circles (penumbra).
    *
    * @param satPos - The satellite's ECI position in kilometers
    * @param sunPos - The Sun's ECI position in kilometers
@@ -301,27 +309,34 @@ export class SunBody extends CelestialBody {
   lightingRatio(satPos: Vector3D<Kilometers>, sunPos: Vector3D<Kilometers>): number {
     const [sunSatAngle, aCent, aSun] = this.eclipseAngles(satPos, sunPos);
 
-    if (sunSatAngle - aCent + aSun <= 1e-10) {
+    if (sunSatAngle - aCent - aSun >= -1e-10) {
+      return 1.0;
+    }
+    if (sunSatAngle <= aCent - aSun + 1e-10) {
       return 0.0;
-    } else if (sunSatAngle - aCent - aSun < -1e-10) {
-      const ssa2 = sunSatAngle * sunSatAngle;
-      const ssaInv = 1.0 / (2.0 * sunSatAngle);
-      const ac2 = aCent * aCent;
-      const as2 = aSun * aSun;
-      const acAsDiff = ac2 - as2;
-      const a1 = (ssa2 - acAsDiff) * ssaInv;
-      const a2 = (ssa2 + acAsDiff) * ssaInv;
-      const asr1 = a1 / aSun;
-      const asr2 = as2 - a1 * a1;
-      const acr1 = a2 / aCent;
-      const acr2 = ac2 - a2 * a2;
-      const p1 = as2 * Math.acos(asr1) - a1 * Math.sqrt(asr2);
-      const p2 = ac2 * Math.acos(acr1) - a2 * Math.sqrt(acr2);
-
-      return 1.0 - (p1 + p2) / (Math.PI * as2);
+    }
+    if (sunSatAngle <= aSun - aCent + 1e-10) {
+      // Annular: the whole Earth disk is in front of the solar disk.
+      return 1.0 - (aCent * aCent) / (aSun * aSun);
     }
 
-    return 1.0;
+    // Partial overlap: a1, a2 are the distances from the Sun and Earth disk centres to the
+    // common chord; p1 + p2 is the overlap area (circle-segment areas).
+    const ssa2 = sunSatAngle * sunSatAngle;
+    const ssaInv = 1.0 / (2.0 * sunSatAngle);
+    const ac2 = aCent * aCent;
+    const as2 = aSun * aSun;
+    const acAsDiff = ac2 - as2;
+    const a1 = (ssa2 - acAsDiff) * ssaInv;
+    const a2 = (ssa2 + acAsDiff) * ssaInv;
+    const asr1 = Math.min(1, Math.max(-1, a1 / aSun));
+    const asr2 = Math.max(0, as2 - a1 * a1);
+    const acr1 = Math.min(1, Math.max(-1, a2 / aCent));
+    const acr2 = Math.max(0, ac2 - a2 * a2);
+    const p1 = as2 * Math.acos(asr1) - a1 * Math.sqrt(asr2);
+    const p2 = ac2 * Math.acos(acr1) - a2 * Math.sqrt(acr2);
+
+    return 1.0 - (p1 + p2) / (Math.PI * as2);
   }
 
   /**

@@ -67,6 +67,12 @@ export class DormandPrince54Propagator extends RungeKuttaAdaptive {
     return this.c_;
   }
 
+  /**
+   * Order of the local error estimate, used as the step-control exponent 1/order.
+   * The embedded pair is 5(4), so the error estimate |y5 - y4| is O(h^5) and the exponent is
+   * 1/5 (Hairer, Norsett and Wanner, Solving ODEs I, section II.4, automatic step size control, with q = 4).
+   * @returns 5
+   */
   get order(): number {
     return 5;
   }

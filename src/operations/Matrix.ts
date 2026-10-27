@@ -23,6 +23,7 @@
 
 import type { Radians } from '../types/types';
 import { Vector } from './Vector';
+import { SingularMatrixError } from './SingularMatrixError';
 import { Vector3D } from './Vector3D';
 
 /**
@@ -372,24 +373,53 @@ export class Matrix {
   }
 
   /**
-   * Performs the Cholesky decomposition on the matrix.
-   * @returns A new Matrix object representing the Cholesky decomposition of the
-   * original matrix.
+   * Performs the Cholesky decomposition A = L * L^T of a symmetric positive
+   * (semi-)definite matrix and returns the lower-triangular factor L.
+   *
+   * Uses the Cholesky-Banachiewicz row-by-row recurrence (Golub and Van Loan,
+   * Matrix Computations, 4th ed., Algorithm 4.2.1):
+   * L_kk = sqrt(A_kk - sum_{j<k} L_kj^2) and
+   * L_ik = (A_ik - sum_{j<k} L_ij L_kj) / L_kk for i > k.
+   *
+   * Positive semi-definite input is accepted: a diagonal residual within
+   * n * eps * max|A_ii| of zero is treated as exactly zero, and the column
+   * below it is set to zero when its numerators are also within that
+   * tolerance (so an all-zero covariance factors to an all-zero L).
+   * @returns The lower-triangular Cholesky factor L, whose elements carry the
+   * square root of the input units.
+   * @throws {Error} If the matrix is not square, contains non-finite values, or
+   * is not positive semi-definite (a negative diagonal residual, or a nonzero
+   * entry in a column whose pivot is zero).
    */
   cholesky(): Matrix {
-    const result = Matrix.zero(this.rows, this.rows);
+    if (this.rows !== this.columns) {
+      throw new Error(`Matrix.cholesky: matrix must be square, got ${this.rows}x${this.columns}`);
+    }
+    const n = this.rows;
+    const result = Matrix.zero(n, n);
+    let maxDiag = 0;
 
-    for (let i = 0; i < this.rows; i++) {
+    for (let i = 0; i < n; i++) {
+      maxDiag = Math.max(maxDiag, Math.abs(this.elements[i][i]));
+    }
+    const tol = n * Number.EPSILON * maxDiag;
+
+    for (let i = 0; i < n; i++) {
       for (let k = 0; k < i + 1; k++) {
         let total = 0.0;
 
         for (let j = 0; j < k; j++) {
-          total += (result.elements[i]?.[j]) * (result.elements[k]?.[j]);
+          total += result.elements[i][j] * result.elements[k][j];
         }
-        (result.elements[i])[k] =
-          i === k
-            ? Math.sqrt((this.elements[i]?.[i]) - total)
-            : (1 / (result.elements[k]?.[k])) * ((this.elements[i]?.[k]) - total);
+        const residual = this.elements[i][k] - total;
+
+        if (!Number.isFinite(residual)) {
+          throw new Error('Matrix.cholesky: matrix contains non-finite values');
+        }
+
+        result.elements[i][k] = i === k
+          ? Matrix.choleskyDiagonal_(residual, tol, i)
+          : Matrix.choleskyOffDiagonal_(residual, result.elements[k][k], tol, k);
       }
     }
 
@@ -397,79 +427,195 @@ export class Matrix {
   }
 
   /**
-   * Swaps two rows in the matrix.
-   * @param i - The index of the first row.
-   * @param j - The index of the second row.
+   * Diagonal Cholesky entry L_ii = sqrt(residual), with residuals within tol of
+   * zero treated as exactly zero (positive semi-definite input).
+   * @param residual A_ii - sum_{j<i} L_ij^2.
+   * @param tol Round-off tolerance n * eps * max|A_ii|.
+   * @param i Row index, for the error message.
+   * @returns L_ii.
    */
-  private _swapRows(i: number, j: number): void {
-    if (i === j) {
-      return;
+  private static choleskyDiagonal_(residual: number, tol: number, i: number): number {
+    if (residual < -tol) {
+      throw new Error(`Matrix.cholesky: matrix is not positive semi-definite (pivot ${i} residual ${residual})`);
     }
-    const tmp = this.elements[i];
 
-    this.elements[i] = this.elements[j];
-    this.elements[j] = tmp;
+    return residual > tol ? Math.sqrt(residual) : 0;
   }
 
   /**
-   * Converts the matrix to reduced row echelon form using the Gaussian
-   * elimination method. This method modifies the matrix in-place.
+   * Off-diagonal Cholesky entry L_ik = residual / L_kk. When L_kk is zero the
+   * entry must itself be zero (to within tol) for a positive semi-definite
+   * matrix, and is set to zero.
+   * @param residual A_ik - sum_{j<k} L_ij L_kj.
+   * @param lkk The diagonal entry L_kk.
+   * @param tol Round-off tolerance n * eps * max|A_ii|.
+   * @param k Column index, for the error message.
+   * @returns L_ik.
    */
-  private toReducedRowEchelonForm_(): void {
-    for (let lead = 0, row = 0; row < this.rows && lead < this.columns; ++row, ++lead) {
-      let i = row;
-
-      while ((this.elements[i]?.[lead]) === 0) {
-        if (++i === this.rows) {
-          i = row;
-          if (++lead === this.columns) {
-            return;
-          }
-        }
-      }
-      this._swapRows(i, row);
-      if ((this.elements[row]?.[lead]) !== 0) {
-        const f = this.elements[row]?.[lead];
-
-        for (let column = 0; column < this.columns; ++column) {
-          (this.elements[row])[column] /= f;
-        }
-      }
-      for (let j = 0; j < this.rows; ++j) {
-        if (j === row) {
-          continue;
-        }
-        const f = (this.elements[j]?.[lead]);
-
-        for (let column = 0; column < this.columns; ++column) {
-          ((this.elements[j])[column]) -= f * (this.elements[row]?.[column]);
-        }
-      }
+  private static choleskyOffDiagonal_(residual: number, lkk: number, tol: number, k: number): number {
+    if (lkk !== 0) {
+      return residual / lkk;
     }
+    if (Math.abs(residual) > tol) {
+      throw new Error(`Matrix.cholesky: matrix is not positive semi-definite (zero pivot ${k} with a nonzero column)`);
+    }
+
+    return 0;
   }
 
   /**
-   * Calculates the inverse of the matrix.
-   * @returns The inverse of the matrix.
+   * Calculates the inverse of a square matrix by Gauss-Jordan elimination with
+   * partial (row) pivoting on an equilibrated copy of the matrix.
+   *
+   * Rows and then columns are scaled by exact powers of two so that every row
+   * and column has a largest magnitude in [1, 2): B = R * A * C, so
+   * inv(A) = C * inv(B) * R. This keeps the singularity test meaningful for
+   * covariance-like matrices whose entries span many orders of magnitude.
+   * At each step the remaining row with the largest magnitude in the pivot
+   * column is swapped in (Golub and Van Loan, Matrix Computations, 4th ed.,
+   * section 3.4), so a zero or tiny leading diagonal entry does not destroy
+   * the result.
+   *
+   * The matrix is declared singular when a pivot of the equilibrated matrix is
+   * not larger than n * eps, i.e. it is singular to double-precision working
+   * accuracy.
+   * @returns The inverse matrix.
+   * @throws {SingularMatrixError} If the matrix is singular to working precision
+   * or contains non-finite values.
+   * @throws {Error} If the matrix is not square.
+   * @see Matrix.tryInverse for a variant that returns null instead of throwing.
    */
   inverse(): Matrix {
-    const tmp = Matrix.zero(this.rows, this.columns * 2);
-
-    for (let row = 0; row < this.rows; ++row) {
-      for (let column = 0; column < this.columns; ++column) {
-        (tmp.elements[row])[column] = (this.elements[row])[column];
-      }
-      (tmp.elements[row])[row + this.columns] = 1.0;
+    if (this.rows !== this.columns) {
+      throw new Error(`Matrix.inverse: matrix must be square, got ${this.rows}x${this.columns}`);
     }
-    tmp.toReducedRowEchelonForm_();
-    const inv = Matrix.zero(this.rows, this.columns);
+    const n = this.rows;
+    const rowScale = new Array<number>(n).fill(1);
+    const colScale = new Array<number>(n).fill(1);
+    const a: number[][] = this.elements.map((row) => row.slice(0, n));
 
-    for (let row = 0; row < this.rows; ++row) {
-      for (let column = 0; column < this.columns; ++column) {
-        ((inv.elements[row])[column]) = (tmp.elements[row]?.[column + this.columns]);
+    // Row equilibration by powers of two (exact in floating point).
+    for (let i = 0; i < n; i++) {
+      let m = 0;
+
+      for (let j = 0; j < n; j++) {
+        m = Math.max(m, Math.abs(a[i][j]));
+      }
+      if (!Number.isFinite(m)) {
+        throw new SingularMatrixError('Matrix.inverse: matrix contains non-finite values');
+      }
+      if (m === 0) {
+        throw new SingularMatrixError(`Matrix.inverse: matrix is singular (row ${i} is zero)`);
+      }
+      rowScale[i] = Matrix.pow2Scale_(m);
+      for (let j = 0; j < n; j++) {
+        a[i][j] *= rowScale[i];
+      }
+    }
+    // Column equilibration by powers of two.
+    for (let j = 0; j < n; j++) {
+      let m = 0;
+
+      for (let i = 0; i < n; i++) {
+        m = Math.max(m, Math.abs(a[i][j]));
+      }
+      if (m === 0) {
+        throw new SingularMatrixError(`Matrix.inverse: matrix is singular (column ${j} is zero)`);
+      }
+      colScale[j] = Matrix.pow2Scale_(m);
+      for (let i = 0; i < n; i++) {
+        a[i][j] *= colScale[j];
       }
     }
 
-    return inv;
+    // Augment with the identity and run Gauss-Jordan with partial pivoting.
+    const inv: number[][] = [];
+
+    for (let i = 0; i < n; i++) {
+      inv[i] = new Array<number>(n).fill(0);
+      inv[i][i] = 1;
+    }
+    const tol = n * Number.EPSILON;
+
+    for (let col = 0; col < n; col++) {
+      let pivotRow = col;
+      let pivotMag = Math.abs(a[col][col]);
+
+      for (let r = col + 1; r < n; r++) {
+        const mag = Math.abs(a[r][col]);
+
+        if (mag > pivotMag) {
+          pivotMag = mag;
+          pivotRow = r;
+        }
+      }
+      if (!(pivotMag > tol)) {
+        throw new SingularMatrixError(`Matrix.inverse: matrix is singular to working precision (pivot ${col} = ${pivotMag})`);
+      }
+      if (pivotRow !== col) {
+        [a[col], a[pivotRow]] = [a[pivotRow], a[col]];
+        [inv[col], inv[pivotRow]] = [inv[pivotRow], inv[col]];
+      }
+      const pivot = a[col][col];
+
+      for (let j = 0; j < n; j++) {
+        a[col][j] /= pivot;
+        inv[col][j] /= pivot;
+      }
+      for (let r = 0; r < n; r++) {
+        if (r === col) {
+          continue;
+        }
+        const f = a[r][col];
+
+        if (f === 0) {
+          continue;
+        }
+        for (let j = 0; j < n; j++) {
+          a[r][j] -= f * a[col][j];
+          inv[r][j] -= f * inv[col][j];
+        }
+      }
+    }
+
+    // Undo the equilibration: inv(A) = C * inv(B) * R.
+    const out = Matrix.zero(n, n);
+
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        out.elements[i][j] = colScale[i] * inv[i][j] * rowScale[j];
+      }
+    }
+
+    return out;
+  }
+
+  /**
+   * Calculates the inverse of a square matrix, returning null instead of
+   * throwing when the matrix is singular to working precision.
+   * @returns The inverse matrix, or null if the matrix is singular.
+   * @throws {Error} If the matrix is not square.
+   * @see Matrix.inverse for the algorithm and the singularity criterion.
+   */
+  tryInverse(): Matrix | null {
+    try {
+      return this.inverse();
+    } catch (e) {
+      if (e instanceof SingularMatrixError) {
+        return null;
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Returns the power of two 2^-floor(log2(m)), so that m times the result
+   * lies in [1, 2). Multiplying by a power of two is exact in IEEE 754
+   * arithmetic (barring overflow or underflow).
+   * @param m A positive finite magnitude.
+   * @returns The power-of-two scale factor.
+   */
+  private static pow2Scale_(m: number): number {
+    return 2 ** -Math.floor(Math.log2(m));
   }
 }

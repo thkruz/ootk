@@ -4,9 +4,10 @@
  */
 import {
   ClassicalElements,
-  Degrees,
+  DEG2RAD,
   EpochUTC,
   Kilometers,
+  Radians,
   TwoBurnOrbitTransfer,
 } from '../../dist/main.js';
 
@@ -20,10 +21,10 @@ describe('Orbital Maneuvers', () => {
         epoch: EpochUTC.fromDateTime(date),
         semimajorAxis: 6778 as Kilometers,
         eccentricity: 0.001,
-        inclination: 28.5 as Degrees,
-        rightAscension: 0 as Degrees,
-        argPerigee: 0 as Degrees,
-        trueAnomaly: 0 as Degrees,
+        inclination: (28.5 * DEG2RAD) as Radians,
+        rightAscension: 0 as Radians,
+        argPerigee: 0 as Radians,
+        trueAnomaly: 0 as Radians,
       });
 
       expect(leoOrbit.semimajorAxis).toBe(6778);
@@ -37,10 +38,10 @@ describe('Orbital Maneuvers', () => {
         epoch: EpochUTC.fromDateTime(date),
         semimajorAxis: 42164 as Kilometers,
         eccentricity: 0.001,
-        inclination: 0 as Degrees,
-        rightAscension: 0 as Degrees,
-        argPerigee: 0 as Degrees,
-        trueAnomaly: 0 as Degrees,
+        inclination: 0 as Radians,
+        rightAscension: 0 as Radians,
+        argPerigee: 0 as Radians,
+        trueAnomaly: 0 as Radians,
       });
 
       expect(geoOrbit.semimajorAxis).toBe(42164);
@@ -54,10 +55,10 @@ describe('Orbital Maneuvers', () => {
         epoch: EpochUTC.fromDateTime(date),
         semimajorAxis: 26554 as Kilometers,
         eccentricity: 0.74,
-        inclination: 63.4 as Degrees,
-        rightAscension: 0 as Degrees,
-        argPerigee: 270 as Degrees,
-        trueAnomaly: 0 as Degrees,
+        inclination: (63.4 * DEG2RAD) as Radians,
+        rightAscension: 0 as Radians,
+        argPerigee: (270 * DEG2RAD) as Radians,
+        trueAnomaly: 0 as Radians,
       });
 
       expect(molniyaOrbit.eccentricity).toBeCloseTo(0.74);

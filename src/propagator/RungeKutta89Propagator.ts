@@ -125,7 +125,17 @@ export class RungeKutta89Propagator extends RungeKuttaAdaptive {
     return this.c_;
   }
 
+  /**
+   * Order of the local error estimate, used as the step-control exponent 1/order.
+   * The propagated solution (weights ch) is 8th order and the embedded comparison solution
+   * (weights c) 9th order: the ch weights satisfy the quadrature conditions sum b_i c_i^(k-1) = 1/k
+   * through k = 8 and the c weights through k = 9. The per-step (local) error estimate
+   * |y8 - y9| is therefore O(h^9), the local error of the 8th-order solution (its global error is
+   * O(h^8)), and the exponent is 1/(q + 1) = 1/9 (Hairer, Norsett and Wanner, Solving ODEs I,
+   * section II.4, automatic step size control, with q = min(p, p^) = 8).
+   * @returns 9
+   */
   get order(): number {
-    return 8;
+    return 9;
   }
 }

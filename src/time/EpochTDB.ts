@@ -57,10 +57,12 @@ import { Epoch } from './Epoch';
  * const utc = EpochUTC.now();
  * const tdb = utc.toTDB();
  *
- * // Use TDB for querying planetary ephemerides
- * const sunPosition = solarSystem.getSunPosition(tdb);
- * const moonPosition = solarSystem.getMoonPosition(tdb);
+ * // TDB seconds past J2000, e.g. as the argument of a JPL-style ephemeris
+ * const tdbSeconds = tdb.posix - 946728000;
  * ```
+ *
+ * Note: ootk's body APIs (`Sun.eci(date)`, `Moon.eci(date)`, ...) take a JavaScript `Date`
+ * interpreted as UTC, not an EpochTDB.
  *
  * ## Technical Note
  * The conversion from TT to TDB uses a simplified formula based on Earth's

@@ -116,7 +116,7 @@ describe('Sgp4 wasm backend hook', () => {
     expect(pv.position).not.toBe(false);
     expect(stub.calls.propagate).toBe(0);
 
-    // Marked failed — no repeated add attempts
+    // Marked failed: no repeated add attempts
     Sgp4.propagate(satrec, 60);
     expect(satrec.wasmSatKey).toBe(-1n);
   });

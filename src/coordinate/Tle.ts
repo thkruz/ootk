@@ -43,7 +43,7 @@ import {
   TleLine1,
   TleLine2,
 } from '../types/types';
-import { DEG2RAD, earthGravityParam, RAD2DEG, secondsPerDay, TAU } from '../utils/constants';
+import { DEG2RAD, RAD2DEG, secondsPerDay, TAU } from '../utils/constants';
 import { newtonNu, toPrecision } from '../utils/functions';
 import { ALPHA5, convert6DigitToA5, convertA5to6Digit } from './alpha5';
 import type { ClassicalElements } from './ClassicalElements';
@@ -54,13 +54,13 @@ import { TleFormatData } from './tle-format-data';
 /**
  * Classification of a satellite catalog number by its representation.
  *
- * - `numeric5` — 1-5 numeric digits, value 0-99 999.
- * - `alpha5` — 5 chars, leading letter (A-Z, excl. I/O), value 100 000-339 999.
- * - `numeric6` — 6 numeric digits, value 100 000-339 999.
- * - `extended` — 7+ numeric digits (e.g. CelesTrak supplemental 9-digit IDs).
+ * - `numeric5`: 1-5 numeric digits, value 0-99 999.
+ * - `alpha5`: 5 chars, leading letter (A-Z, excl. I/O), value 100 000-339 999.
+ * - `numeric6`: 6 numeric digits, value 100 000-339 999.
+ * - `extended`: 7+ numeric digits (e.g. CelesTrak supplemental 9-digit IDs).
  *   Cannot be encoded in TLE cols 3-7 without truncation; canonical ID lives
  *   on `Satellite.sccNum`.
- * - `invalid` — empty, malformed, or otherwise unclassifiable.
+ * - `invalid`: empty, malformed, or otherwise unclassifiable.
  */
 export type SatNumKind = 'numeric5' | 'alpha5' | 'numeric6' | 'extended' | 'invalid';
 
@@ -141,8 +141,9 @@ export class Tle {
   }
 
   /**
-   * Gets the semimajor axis of the TLE.
-   * @returns The semimajor axis value.
+   * Keplerian semimajor axis (km) from the TLE mean motion with the WGS-72 mu SGP4 uses
+   * (398600.8 km^3/s^2). Not the SGP4 internal (Brouwer/Kozai) mean semimajor axis.
+   * @returns The semimajor axis in kilometers.
    */
   get semimajorAxis(): number {
     return Tle.tleSma_(this.line2);
@@ -158,7 +159,7 @@ export class Tle {
 
   /**
    * Gets the inclination of the TLE.
-   * @returns The inclination in degrees.
+   * @returns The inclination in radians (use {@link inclinationDegrees} for degrees).
    */
   get inclination(): number {
     return Tle.tleInc_(this.line2);
@@ -173,23 +174,37 @@ export class Tle {
   }
 
   /**
-   * Gets the apogee of the TLE (Two-Line Elements) object.
-   * Apogee is the point in an orbit that is farthest from the Earth.
-   * It is calculated as the product of the semimajor axis and (1 + eccentricity).
-   * @returns The apogee value.
+   * Apogee altitude: geocentric apogee radius a (1 + e) minus the WGS-84 equatorial radius 6378.137 km, with a the
+   * Keplerian semimajor axis from the TLE mean motion. For the geocentric distance use {@link apogeeRadius}.
+   * @returns The apogee altitude in kilometers above the equatorial radius.
    */
-  get apogee(): number {
-    return this.semimajorAxis * (1 + this.eccentricity);
+  get apogee(): Kilometers {
+    return (this.apogeeRadius - 6378.137) as Kilometers;
   }
 
   /**
-   * Gets the perigee of the TLE (Two-Line Element Set).
-   * The perigee is the point in the orbit of a satellite or other celestial body where it is closest to the Earth.
-   * It is calculated as the product of the semimajor axis and the difference between 1 and the eccentricity.
-   * @returns The perigee value.
+   * Perigee altitude: geocentric perigee radius a (1 - e) minus the WGS-84 equatorial radius 6378.137 km, with a the
+   * Keplerian semimajor axis from the TLE mean motion. For the geocentric distance use {@link perigeeRadius}.
+   * @returns The perigee altitude in kilometers above the equatorial radius.
    */
-  get perigee(): number {
-    return this.semimajorAxis * (1 - this.eccentricity);
+  get perigee(): Kilometers {
+    return (this.perigeeRadius - 6378.137) as Kilometers;
+  }
+
+  /**
+   * Geocentric apogee radius a (1 + e), measured from the Earth's center.
+   * @returns The apogee radius in kilometers.
+   */
+  get apogeeRadius(): Kilometers {
+    return (this.semimajorAxis * (1 + this.eccentricity)) as Kilometers;
+  }
+
+  /**
+   * Geocentric perigee radius a (1 - e), measured from the Earth's center.
+   * @returns The perigee radius in kilometers.
+   */
+  get perigeeRadius(): Kilometers {
+    return (this.semimajorAxis * (1 - this.eccentricity)) as Kilometers;
   }
 
   /**
@@ -197,7 +212,8 @@ export class Tle {
    * @returns The period of the TLE in minutes.
    */
   get period(): Minutes {
-    const periodSec = (TAU * Math.sqrt(this.semimajorAxis ** 3 / earthGravityParam)) as Seconds;
+    // Same mu as semimajorAxis, so this is exactly 1440 / mean motion
+    const periodSec = (TAU * Math.sqrt(this.semimajorAxis ** 3 / Tle.WGS72_MU)) as Seconds;
 
     return (periodSec / 60) as Minutes;
   }
@@ -315,14 +331,34 @@ export class Tle {
   }
 
   /**
-   * Calculates the Semi-Major Axis (SMA) from the second line of a TLE.
+   * WGS-72 Earth gravitational parameter, 398600.8 km^3/s^2. TLE mean motions are defined in the
+   * SGP4 theory, which uses WGS-72 constants (Hoots and Roehrich, Spacetrack Report No. 3, 1980;
+   * Vallado et al., "Revisiting Spacetrack Report #3", AIAA 2006-6753), so every semimajor axis
+   * ootk derives from a TLE or OMM mean motion uses this mu.
+   */
+  static readonly WGS72_MU = 398600.8;
+
+  /**
+   * Keplerian semimajor axis from a TLE/OMM mean motion: a = (mu / n^2)^(1/3) with n in rad/s and
+   * mu = {@link Tle.WGS72_MU}. Shared by {@link Tle.semimajorAxis} and `Satellite.semiMajorAxis` so
+   * both report the same apogee and perigee.
+   * @param revsPerDay Mean motion in revolutions per day
+   * @returns Semimajor axis in km
+   */
+  static semimajorAxisFromMeanMotion(revsPerDay: number): Kilometers {
+    return (Tle.WGS72_MU ** (1 / 3) / ((TAU * revsPerDay) / secondsPerDay) ** (2 / 3)) as Kilometers;
+  }
+
+  /**
+   * Calculates the Semi-Major Axis (SMA) from the second line of a TLE (WGS-72 mu, see
+   * {@link Tle.semimajorAxisFromMeanMotion}).
    * @param line2 The second line of the TLE.
    * @returns The Semi-Major Axis (SMA) in kilometers.
    */
   private static tleSma_(line2: string): number {
     const n = parseFloat(line2.substring(52, 63));
 
-    return earthGravityParam ** (1 / 3) / ((TAU * n) / secondsPerDay) ** (2 / 3);
+    return Tle.semimajorAxisFromMeanMotion(n);
   }
 
   /**
@@ -346,12 +382,14 @@ export class Tle {
   /**
    * Creates a TLE (Two-Line Element) object from classical orbital elements.
    * @param elements - The classical orbital elements.
+   * @param ids - Optional catalog number (5-digit, alpha-5, or 6-digit numeric) and
+   * international designator to stamp on both lines. Defaults to "00001" / "58001A".
    * @returns A TLE object.
    */
-  static fromClassicalElements(elements: ClassicalElements): Tle {
+  static fromClassicalElements(elements: ClassicalElements, ids: { scc?: string; intl?: string } = {}): Tle {
     const { epochYr, epochDay } = elements.epoch.toEpochYearAndDay();
-    const intl = '58001A  ';
-    const scc = '00001';
+    const intl = (ids.intl ?? '58001A').padEnd(8, ' ').substring(0, 8);
+    const scc = ids.scc ?? '00001';
 
     const tles = FormatTle.createTle({
       inc: FormatTle.inclination(elements.inclinationDegrees),
@@ -522,7 +560,7 @@ export class Tle {
    * Fractional day of the year when the Tle was generated (Tle epoch).
    * @example 206.18396726
    * @param tleLine1 The first line of the Tle to parse.
-   * @returns The day of the year the Tle was generated. (1 to 365.99999999)
+   * @returns The day of the year the Tle was generated. (1 to 366.99999999; day 366 occurs in leap years)
    */
   static epochDay(tleLine1: string): number {
     const epochDay = parseFloat(tleLine1.substring(Tle.epochDay_.start, Tle.epochDay_.stop));
@@ -691,24 +729,39 @@ export class Tle {
   }
 
   /**
-   * Second Time Derivative of Mean Motion divided by six (decimal point assumed). Measures rate of change in the Mean
-   * Motion Dot so software can make reasonable guesses when times are distant from the original Tle epoch. Usually
-   * zero, unless the satellite is manuevering or in a decaying orbit. This is recorded in units of orbits per day per
-   * day per day.
-   * @example 0
-   * '00000-0' in the original Tle or 0.00000 * 10 ^ 0
+   * Second time derivative of mean motion divided by six, in revolutions per day cubed (rev/day^3). Usually zero
+   * unless the object is maneuvering or decaying.
+   *
+   * Columns 45-52 of line 1 hold `SMMMMMEX`: S the mantissa sign (space, + or -; a digit there is read as an
+   * overflowed integer part, as in {@link Tle.bstar}), MMMMM five digits with an assumed
+   * leading decimal point, E the exponent sign and X one exponent digit. The value is S 0.MMMMM x 10^(EX)
+   * (Vallado, Crawford, Hujsak and Kelso, "Revisiting Spacetrack Report #3", AIAA 2006-6753, appendix; python-sgp4
+   * `io.twoline2rv` parses the same field as float(line[44] + '.' + line[45:50]) * 10 ** int(line[50:52])).
+   * @example ' 12345-5' is 0.12345e-5 = 1.2345e-6; ' 00000-0' is 0.
    * @param tleLine1 The first line of the Tle to parse.
-   * @returns The second derivative of the mean motion.
+   * @returns The second derivative of the mean motion divided by six, in rev/day^3.
+   * @throws {ParseError} If the field is not in the `SMMMMMEX` form.
    */
   static meanMoDev2(tleLine1: string): number {
-    const meanMoDev2 = parseFloat(tleLine1.substring(Tle.meanMoDev2_.start, Tle.meanMoDev2_.stop));
+    const field = tleLine1.substring(Tle.meanMoDev2_.start, Tle.meanMoDev2_.stop);
+    const match = (/^(?<sign>[ +\-\d])(?<mantissa>[\d ]{5})(?<expSign>[ +-])(?<exp>\d)$/u).exec(field);
 
-    if (isNaN(meanMoDev2)) {
-      throw new ParseError('Invalid second derivative of mean motion', 'TLE');
+    if (!match?.groups) {
+      throw new ParseError(`Invalid second derivative of mean motion: '${field}'`, 'TLE');
+    }
+    const { sign, mantissa, expSign, exp } = match.groups;
+    // As in Tle.bstar, a digit in the sign column is an overflowed integer part of the mantissa.
+    const signPart = sign === '-' ? '-' : '';
+    const integerPart = (/\d/u).test(sign) ? sign : '0';
+    const expPart = expSign === '-' ? '-' : '';
+    const value = parseFloat(`${signPart}${integerPart}.${mantissa.replace(/ /gu, '0')}e${expPart}${exp}`);
+
+    if (isNaN(value)) {
+      throw new ParseError(`Invalid second derivative of mean motion: '${field}'`, 'TLE');
     }
 
-    // NOTE: Should this limit to a specific number of decimals?
-    return meanMoDev2;
+    // Normalise -0 to 0 for a '-00000-0' field.
+    return value === 0 ? 0 : value;
   }
 
   /**
@@ -774,7 +827,7 @@ export class Tle {
    * Total satellite revolutions when this Tle was generated. This number rolls over (e.g. 99999 -> 0).
    * @example 6766
    * @param tleLine2 The second line of the Tle to parse.
-   * @returns The revolutions around the Earth per day (mean motion). (0 to 99999)
+   * @returns The revolution number at epoch. (0 to 99999)
    */
   static revNum(tleLine2: TleLine2): number {
     return parseInt(tleLine2.substring(Tle.revNum_.start, Tle.revNum_.stop));
@@ -793,7 +846,7 @@ export class Tle {
 
     // JSC Vimpel TLEs leave the catalog-number field blank (they carry their
     // designator elsewhere and are flagged by a 'V' in the classification
-    // column). A blank field is not a number — return NaN rather than letting
+    // column). A blank field is not a number; return NaN rather than letting
     // the strict alpha-5 validator throw. Genuinely malformed (non-blank)
     // fields still throw so real corruption is caught.
     if (satNumStr.trim().length === 0) {

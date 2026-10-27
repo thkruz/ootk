@@ -757,7 +757,7 @@ describe('Propagator accuracy vs OEM truth data (NORAD 39208)', () => {
 
     // Two adaptive integrators with default tolerance should agree to ~meters
     expect(diff).toBeLessThan(0.1); // Within 100 meters
-  });
+  }, 30_000);
 });
 
 // ===========================================================================

@@ -16,14 +16,14 @@
  */
 
 export {
-  ConjunctionAssessment, type ConjunctionAssessmentOptions, type ConjunctionSpaceObjectInput,
+  ConjunctionAssessment, type ConjunctionAssessmentOptions, type ConjunctionSpaceObjectInput, DEFAULT_TCA_COARSE_STEP_CAP, type TcaSearchMode,
 } from './ConjunctionAssessment';
-export { ConjunctionEvent } from './ConjunctionEvent';
-export { ProbabilityOfCollision } from './ProbabilityOfCollision';
+export { ConjunctionEvent, type ConjunctionManeuverable, type ConjunctionScreenVolume } from './ConjunctionEvent';
+export { PC_NEGLIGIBLE, ProbabilityOfCollision } from './ProbabilityOfCollision';
 export {
   CatalogScreener, type CatalogObject, type CatalogScreeningOptions, type ScreeningResult,
 } from './CatalogScreener';
-export { ScreeningFilter, type OrbitalShell } from './ScreeningFilter';
+export { DEFAULT_SHELL_PAD_KM, ScreeningFilter, type OrbitalShell } from './ScreeningFilter';
 export {
   CovarianceRealism,
   type CovarianceRealismResult,
@@ -33,3 +33,16 @@ export {
   type ScaleFactorResult,
 } from './CovarianceRealism';
 
+export {
+  ENCOUNTER_PLANE_FALLBACK_REFERENCE,
+  ENCOUNTER_PLANE_RADIAL_REFERENCE,
+  encounterPlaneBasis,
+  encounterPlaneNormalOffset,
+  encounterPlaneSigmaEllipse,
+  projectToEncounterPlane,
+  sampleEncounterPlaneEllipse,
+  type EncounterPlaneBasis,
+  type EncounterPlaneEllipse,
+  type EncounterPlanePoint,
+  type EncounterPlaneVec3,
+} from './EncounterPlane';

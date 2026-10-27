@@ -31,7 +31,7 @@ npx tsx ./examples/maneuvers.ts
 
 ## Plane change
 
-A launch from 28.5 degrees inclination still needs a plane change to reach equatorial GEO. `PlaneChangeBurn.computeDeltaV(velocityAtNode, deltaIncRad)` implements dv = 2 v sin(di/2); doing the rotation at GEO, where velocity is lowest, keeps the cost down. In practice the plane change is combined vectorially with the apogee burn, so the separate-burn figure shown here is an upper bound.
+A launch from 28.5 degrees inclination still needs a plane change to reach equatorial GEO. `PlaneChangeBurn.computeDeltaV(velocityAtNode, deltaIncRad)` implements dv = 2 v cos(gamma) sin(di/2), where the optional third argument gamma is the flight-path angle at the node (default 0, exact for a circular orbit such as GEO); doing the rotation at GEO, where velocity is lowest, keeps the cost down. In practice the plane change is combined vectorially with the apogee burn, so the separate-burn figure shown here is an upper bound.
 
 <<< ../../examples/maneuvers.ts#plane-change
 

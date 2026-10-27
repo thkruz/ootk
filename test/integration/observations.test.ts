@@ -14,6 +14,7 @@ import {
   TleLine1,
   TleLine2,
 } from '../../dist/main.js';
+import { expectNotNull } from './lib/assert';
 import { ISS_TLE } from './lib/testData';
 
 describe('Observation Formats', () => {
@@ -109,6 +110,8 @@ describe('Observation Formats', () => {
       // Topocentric and geocentric observations should generally differ
       // due to the observer's offset from Earth's center
       // Range will definitely differ
+      expectNotNull(topoRadec.range);
+      expectNotNull(geoRadec.range);
       expect(topoRadec.range).not.toBeCloseTo(geoRadec.range, 0);
     });
 
@@ -118,6 +121,9 @@ describe('Observation Formats', () => {
       const topoRadec = RadecTopocentric.fromStateVector(satState, siteState);
 
       const rae = observatory.rae(satellite, observationTime);
+
+      expectNotNull(rae);
+      expectNotNull(topoRadec.range);
 
       // Both should have valid range values
       expect(topoRadec.range).toBeGreaterThan(0);
@@ -179,6 +185,7 @@ describe('Observation Formats', () => {
         const siteState = observatory.toJ2000(trackTime);
         const trackRadec = RadecTopocentric.fromStateVector(trackState, siteState);
 
+        expectNotNull(trackRadec.range);
         positions.push({
           ra: trackRadec.rightAscension,
           dec: trackRadec.declination,

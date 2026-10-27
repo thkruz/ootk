@@ -43,9 +43,17 @@ export class CovarianceSample {
    * and optional force models for the origin state and samples.
    *
    * Two-body physics will be used if a force model is not provided.
+   *
+   * When a TLE is given, the covariance is inflated by TLE quality and regime aging factors
+   * ({@link evaluateTleQuality}, {@link getRegimeAgingFactor}). The TLE age is |state epoch - TLE epoch| in days,
+   * so the result depends only on the inputs (never on the wall clock) and grows for propagation in either
+   * direction. The factors are radial, in-track and cross-track factors, so they are always applied in the RIC
+   * frame of `state`: for an RIC covariance the Cholesky factor L becomes D L, with D = diag(fR, fI, fC, fR, fI, fC);
+   * for an ECI covariance it becomes M L with M = blockdiag(Q^T D3 Q, Q^T D3 Q), Q the ECI-to-RIC rotation of `state`,
+   * which is the same as scaling the RIC-rotated covariance and rotating back.
    * @param state The origin state.
-   * @param covariance The covariance.
-   * @param tle The TLE object.
+   * @param covariance The covariance (position in km, velocity in km/s), in ECI or in the RIC frame of `state`.
+   * @param tle The TLE the state came from, used for the quality and aging scale factors.
    * @param originForceModel The force model for the origin state.
    * @param sampleForceModel The force model for the samples.
    */
@@ -59,7 +67,7 @@ export class CovarianceSample {
     let scale = [1, 1, 1];
 
     if (tle) {
-      const tleAgeDays = Tle.calcElsetAge(tle.line1, new Date(), 'days');
+      const tleAgeDays = Math.abs(state.epoch.difference(tle.epoch)) / 86400;
 
       const quality = this.evaluateTleQuality(tle);
       const aging = this.getRegimeAgingFactor(tle, tleAgeDays);
@@ -75,15 +83,26 @@ export class CovarianceSample {
     const s = covariance.matrix.cholesky().elements;
     const sqrt6 = Math.sqrt(6.0);
 
-    for (let i = 0; i < 6; i++) {
-      for (let j = 0; j < 6; j++) {
-        /*
-         * Apply scale[0] to R, scale[1] to I, scale[2] to C (x, y, z)
-         * Position: i = 0,1,2; Velocity: i = 3,4,5
-         */
-        const scaleIdx = i % 3;
+    if (covariance.frame === CovarianceFrame.RIC) {
+      // Rows 0-2 and 3-5 are R, I, C components: scale each row by its factor.
+      for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 6; j++) {
+          s[i][j] *= sqrt6 * scale[i % 3];
+        }
+      }
+    } else {
+      // ECI rows: left-multiply each 3-row block by Q^T diag(scale) Q.
+      const q = RelativeState.createMatrix(state.position, state.velocity).elements;
+      const m = [0, 1, 2].map((a) => [0, 1, 2].map((b) => [0, 1, 2].reduce((sum, k) => sum + q[k][a] * scale[k] * q[k][b], 0)));
 
-        s[i][j] *= sqrt6 * scale[scaleIdx];
+      for (const offset of [0, 3]) {
+        for (let j = 0; j < 6; j++) {
+          const col = [s[offset][j], s[offset + 1][j], s[offset + 2][j]];
+
+          for (let a = 0; a < 3; a++) {
+            s[offset + a][j] = sqrt6 * (m[a][0] * col[0] + m[a][1] * col[1] + m[a][2] * col[2]);
+          }
+        }
       }
     }
 
@@ -225,7 +244,7 @@ export class CovarianceSample {
     /* ---- Mean–motion first derivative (rev/day²) ---- */
     const mm1 = Math.abs(Tle.meanMoDev1(tle.line1));
 
-    if (mm1 > 1e-3) { // clear manoeuvre or very low-drag orbit
+    if (mm1 > 1e-3) { // clear manoeuvre or very high-drag (decaying) orbit
       i *= 3.0;
       r *= 2.0;
       c *= 1.2;

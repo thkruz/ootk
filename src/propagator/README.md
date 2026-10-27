@@ -1,6 +1,6 @@
 # Propagators
 
-This directory contains orbital propagators for computing satellite positions over time. Each propagator implements the abstract `Propagator` base class and offers different trade-offs between accuracy, speed, and capability.
+This directory contains orbital propagators for computing satellite positions over time. Each propagator implements the abstract `Propagator` base class and balances accuracy, speed, and capability differently.
 
 ## Quick Reference
 
@@ -18,7 +18,7 @@ This directory contains orbital propagators for computing satellite positions ov
 
 **Type:** Analytical (SGP4/SDP4 model)
 
-The SGP4 propagator uses Two-Line Element (TLE) sets and the SGP4/SDP4 analytical theory to propagate satellite states. This is the industry standard for space catalog tracking.
+The SGP4 propagator uses Two-Line Element (TLE) sets and the SGP4/SDP4 analytical theory to propagate satellite states. This is the industry standard for space catalog tracking. SGP4 itself produces TEME states; `Sgp4Propagator` converts them and returns `J2000` states like every other propagator here.
 
 **Pros:**
 
@@ -42,9 +42,18 @@ The SGP4 propagator uses Two-Line Element (TLE) sets and the SGP4/SDP4 analytica
 - Pass prediction for ground stations
 
 ```typescript
-const tle = new Tle(line1, line2);
+import { EpochUTC, Seconds, Sgp4Propagator, Tle } from 'ootk';
+
+const tle = new Tle(
+  '1 25544U 98067A   24028.54545847  .00031576  00000-0  57240-3 0  9991',
+  '2 25544  51.6418 292.2590 0002595 167.5319 252.0460 15.49326324436741',
+);
 const propagator = new Sgp4Propagator(tle);
-const state = propagator.propagate(epoch);
+
+// SGP4 runs in TEME; the propagator returns J2000 states (km, km/s)
+const state = propagator.propagate(tle.epoch.roll(3600 as Seconds));
+
+console.log(state.position.magnitude());
 ```
 
 ---
@@ -77,9 +86,22 @@ The simplest propagator, using Kepler's two-body equations to analytically propa
 - Scenarios where perturbations are negligible
 
 ```typescript
-const elements = new ClassicalElements(...);
+import { ClassicalElements, DEG2RAD, EpochUTC, KeplerPropagator, Kilometers, Radians, Seconds } from 'ootk';
+
+// Angles are radians; semimajor axis is km.
+const elements = new ClassicalElements({
+  epoch: EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00Z')),
+  semimajorAxis: 6878.137 as Kilometers,
+  eccentricity: 0.001,
+  inclination: (51.6 * DEG2RAD) as Radians,
+  rightAscension: (120 * DEG2RAD) as Radians,
+  argPerigee: (30 * DEG2RAD) as Radians,
+  trueAnomaly: 0 as Radians,
+});
 const propagator = new KeplerPropagator(elements);
-const state = propagator.propagate(epoch);
+const state = propagator.propagate(elements.epoch.roll(1800 as Seconds));
+
+console.log(state.position.magnitude());
 ```
 
 ---
@@ -100,7 +122,7 @@ Classic 4th-order Runge-Kutta numerical integrator with a fixed step size. Integ
 **Cons:**
 
 - Fixed step size may be inefficient (too small for smooth orbits, too large for dynamic periods)
-- Requires tuning step size for accuracy vs. speed trade-off
+- Requires tuning the step size to balance accuracy and speed
 - No automatic error control
 
 **Use Cases:**
@@ -116,12 +138,22 @@ Classic 4th-order Runge-Kutta numerical integrator with a fixed step size. Integ
 - Adjustable via `setStepSize()`
 
 ```typescript
+import { EpochUTC, ForceModel, J2000, Kilometers, KilometersPerSecond, RungeKutta4Propagator, Seconds, Vector3D } from 'ootk';
+
+const initialState = new J2000(
+  EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00Z')),
+  new Vector3D(6878.137 as Kilometers, 0 as Kilometers, 0 as Kilometers),
+  new Vector3D(0 as KilometersPerSecond, 4.735 as KilometersPerSecond, 5.961 as KilometersPerSecond),
+);
+
 const propagator = new RungeKutta4Propagator(
   initialState,
-  new ForceModel().setGravity().setDrag(),
-  15.0  // step size in seconds
+  new ForceModel().setEarthGravity(8, 8).setAtmosphericDrag(500, 10), // mass (kg), area (m^2)
+  15, // fixed step size in seconds (default 15)
 );
-const state = propagator.propagate(epoch);
+const state = propagator.propagate(initialState.epoch.roll(5400 as Seconds));
+
+console.log(state.position.magnitude());
 ```
 
 ---
@@ -159,12 +191,22 @@ const state = propagator.propagate(epoch);
 - Tolerance adjustable in constructor
 
 ```typescript
+import { EpochUTC, ForceModel, J2000, Kilometers, KilometersPerSecond, DormandPrince54Propagator, Seconds, Vector3D } from 'ootk';
+
+const initialState = new J2000(
+  EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00Z')),
+  new Vector3D(6878.137 as Kilometers, 0 as Kilometers, 0 as Kilometers),
+  new Vector3D(0 as KilometersPerSecond, 4.735 as KilometersPerSecond, 5.961 as KilometersPerSecond),
+);
+
 const propagator = new DormandPrince54Propagator(
   initialState,
-  new ForceModel().setGravity().setDrag(),
-  1e-9  // error tolerance
+  new ForceModel().setEarthGravity(8, 8).setAtmosphericDrag(500, 10), // mass (kg), area (m^2)
+  1e-9, // local error tolerance (default 1e-9)
 );
-const state = propagator.propagate(epoch);
+const state = propagator.propagate(initialState.epoch.roll(5400 as Seconds));
+
+console.log(state.position.magnitude());
 ```
 
 ---
@@ -203,12 +245,26 @@ const state = propagator.propagate(epoch);
 - Tolerance adjustable in constructor
 
 ```typescript
+import { EpochUTC, ForceModel, J2000, Kilometers, KilometersPerSecond, RungeKutta89Propagator, Seconds, Vector3D } from 'ootk';
+
+const initialState = new J2000(
+  EpochUTC.fromDateTime(new Date('2024-01-01T00:00:00Z')),
+  new Vector3D(6878.137 as Kilometers, 0 as Kilometers, 0 as Kilometers),
+  new Vector3D(0 as KilometersPerSecond, 4.735 as KilometersPerSecond, 5.961 as KilometersPerSecond),
+);
+
 const propagator = new RungeKutta89Propagator(
   initialState,
-  new ForceModel().setGravity().setDrag().setSolarRadiationPressure(),
-  1e-12  // tighter tolerance for maximum accuracy
+  new ForceModel()
+    .setEarthGravity(20, 20)
+    .setThirdBodyGravity({ moon: true, sun: true })
+    .setAtmosphericDrag(500, 10) // mass (kg), area (m^2)
+    .setSolarRadiationPressure(500, 10), // mass (kg), area (m^2)
+  1e-12, // tighter tolerance for maximum accuracy
 );
-const state = propagator.propagate(epoch);
+const state = propagator.propagate(initialState.epoch.roll(5400 as Seconds));
+
+console.log(state.position.magnitude());
 ```
 
 ---
@@ -217,11 +273,12 @@ const state = propagator.propagate(epoch);
 
 All propagators share these capabilities from the base `Propagator` class:
 
-- **`propagate(epoch)`** - Propagate state to a specific epoch
-- **`ephemeris(start, stop, interval)`** - Generate ephemeris over a time span
-- **`checkpoint()` / `restore(index)`** - Save and restore propagator state
+- **`propagate(epoch)`** - Propagate to an `EpochUTC` and return a `J2000` state (km, km/s)
+- **`ephemeris(start, stop, interval?)`** - Sample from `start` to `stop` every `interval` seconds (default 60; the last sample is exactly at `stop`) and return a `VerletBlendInterpolator`
+- **`maneuver(thrust, interval?)`** / **`ephemerisManeuver(start, finish, maneuvers, interval?)`** - Apply `Thrust` maneuvers (`Sgp4Propagator` cannot)
+- **`checkpoint()` / `restore(index)` / `clearCheckpoints()`** - Save and restore propagator state
 - **`reset()`** - Reset to initial state
-- **`ascendingNodeEpoch(start)`** - Find next ascending node
+- **`ascendingNodeEpoch(start)`** - Find the next ascending node after `start` (searches one orbital period)
 - **`descendingNodeEpoch(start)`** - Find next descending node
 - **`apogeeEpoch(start)`** - Find next apogee
 - **`perigeeEpoch(start)`** - Find next perigee

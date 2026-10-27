@@ -4,7 +4,7 @@
  */
 import {
   ClassicalElements,
-  Degrees,
+  DEG2RAD,
   EpochUTC,
   J2000,
   Kilometers,
@@ -97,10 +97,10 @@ describe('Orbital Elements and Conversions', () => {
         epoch: EpochUTC.fromDateTime(date),
         semimajorAxis: 8000 as Kilometers,
         eccentricity: 0.1,
-        inclination: 45 as Degrees,
-        rightAscension: 90 as Degrees,
-        argPerigee: 30 as Degrees,
-        trueAnomaly: 0 as Degrees,
+        inclination: (45 * DEG2RAD) as Radians,
+        rightAscension: (90 * DEG2RAD) as Radians,
+        argPerigee: (30 * DEG2RAD) as Radians,
+        trueAnomaly: 0 as Radians,
       });
 
       expect(customElements.semimajorAxis).toBe(8000);
@@ -112,10 +112,10 @@ describe('Orbital Elements and Conversions', () => {
         epoch: EpochUTC.fromDateTime(date),
         semimajorAxis: 8000 as Kilometers,
         eccentricity: 0.1,
-        inclination: 45 as Degrees,
-        rightAscension: 90 as Degrees,
-        argPerigee: 30 as Degrees,
-        trueAnomaly: 0 as Degrees,
+        inclination: (45 * DEG2RAD) as Radians,
+        rightAscension: (90 * DEG2RAD) as Radians,
+        argPerigee: (30 * DEG2RAD) as Radians,
+        trueAnomaly: 0 as Radians,
       });
 
       const stateVector = customElements.toJ2000();
@@ -197,10 +197,10 @@ describe('Orbital Elements and Conversions', () => {
         epoch: EpochUTC.fromDateTime(date),
         semimajorAxis: 42164 as Kilometers,
         eccentricity: 0.0001,
-        inclination: 0.1 as Degrees,
-        rightAscension: 0 as Degrees,
-        argPerigee: 0 as Degrees,
-        trueAnomaly: 0 as Degrees,
+        inclination: (0.1 * DEG2RAD) as Radians,
+        rightAscension: 0 as Radians,
+        argPerigee: 0 as Radians,
+        trueAnomaly: 0 as Radians,
       });
 
       const tle = Tle.fromClassicalElements(geoElements);
@@ -217,10 +217,10 @@ describe('Orbital Elements and Conversions', () => {
         epoch: EpochUTC.fromDateTime(date),
         semimajorAxis: 42164 as Kilometers,
         eccentricity: 0.0001,
-        inclination: 0.1 as Degrees,
-        rightAscension: 0 as Degrees,
-        argPerigee: 0 as Degrees,
-        trueAnomaly: 0 as Degrees,
+        inclination: (0.1 * DEG2RAD) as Radians,
+        rightAscension: 0 as Radians,
+        argPerigee: 0 as Radians,
+        trueAnomaly: 0 as Radians,
       });
 
       const tle = Tle.fromClassicalElements(geoElements);
@@ -247,7 +247,7 @@ describe('Orbital Elements and Conversions', () => {
         name: 'LEO (Circular)',
         sma: 6778 as Kilometers,
         ecc: 0.001,
-        inc: 51.6 as Degrees,
+        inc: (51.6 * DEG2RAD) as Radians,
         expectedAltMin: 390,
         expectedAltMax: 410,
       },
@@ -255,7 +255,7 @@ describe('Orbital Elements and Conversions', () => {
         name: 'MEO (GPS-like)',
         sma: 26560 as Kilometers,
         ecc: 0.01,
-        inc: 55 as Degrees,
+        inc: (55 * DEG2RAD) as Radians,
         expectedAltMin: 19900,
         expectedAltMax: 20500,
       },
@@ -263,7 +263,7 @@ describe('Orbital Elements and Conversions', () => {
         name: 'HEO (Molniya)',
         sma: 26554 as Kilometers,
         ecc: 0.74,
-        inc: 63.4 as Degrees,
+        inc: (63.4 * DEG2RAD) as Radians,
         expectedAltMin: 500, // Perigee
         expectedAltMax: 40000, // Apogee
       },
@@ -276,9 +276,9 @@ describe('Orbital Elements and Conversions', () => {
           semimajorAxis: config.sma,
           eccentricity: config.ecc,
           inclination: config.inc,
-          rightAscension: 0 as Degrees,
-          argPerigee: 0 as Degrees,
-          trueAnomaly: 0 as Degrees,
+          rightAscension: 0 as Radians,
+          argPerigee: 0 as Radians,
+          trueAnomaly: 0 as Radians,
         });
 
         const apogee = elements.semimajorAxis * (1 + elements.eccentricity);
@@ -299,10 +299,10 @@ describe('Orbital Elements and Conversions', () => {
         epoch: EpochUTC.fromDateTime(date),
         semimajorAxis: 7500 as Kilometers,
         eccentricity: 0.05,
-        inclination: 45 as Degrees,
-        rightAscension: 90 as Degrees,
-        argPerigee: 30 as Degrees,
-        trueAnomaly: 60 as Degrees,
+        inclination: (45 * DEG2RAD) as Radians,
+        rightAscension: (90 * DEG2RAD) as Radians,
+        argPerigee: (30 * DEG2RAD) as Radians,
+        trueAnomaly: (60 * DEG2RAD) as Radians,
       });
 
       const stateVector = originalElements.toJ2000();

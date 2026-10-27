@@ -124,10 +124,14 @@ export class Antenna {
 
   /**
    * Calculates gain reduction for off-axis pointing.
-   * Uses a simple Gaussian approximation based on beamwidth.
+   *
+   * Main lobe: Gaussian approximation, loss = -3 (theta / (beamwidth / 2))^2 dB, which is -3 dB
+   * at the half-power half-width. Far off axis the Gaussian falls without bound, so the effective
+   * gain is floored at -10 dBi, the far-sidelobe level of the ITU-R S.465 reference pattern
+   * (theta >= 48 deg). The loss is therefore never below -(gain + 10) dB (and never positive).
    *
    * @param offAxisAngleDegrees - Angle off boresight in degrees
-   * @returns Gain reduction in dB (negative value)
+   * @returns Gain reduction in dB (zero or negative)
    */
   getOffAxisLoss(offAxisAngleDegrees: number): Decibels {
     if (this.beamwidth === undefined || this.beamwidth >= 360) {
@@ -139,9 +143,11 @@ export class Antenna {
     // This gives -3 dB at the half-power beamwidth
     const halfPowerAngle = this.beamwidth / 2;
     const normalizedAngle = offAxisAngleDegrees / halfPowerAngle;
-    const loss = -3 * normalizedAngle ** 2;
+    const mainLobeLoss = -3 * normalizedAngle ** 2;
+    // Sidelobe floor: effective gain >= -10 dBi
+    const floorLoss = Math.min(0, -10 - this.gain);
 
-    return loss as Decibels;
+    return Math.max(mainLobeLoss, floorLoss) as Decibels;
   }
 
   /**

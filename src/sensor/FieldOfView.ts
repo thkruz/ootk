@@ -28,6 +28,12 @@ const RAD2DEG = (180 / Math.PI) as Degrees;
 const HALF_PI = (Math.PI / 2) as Radians;
 /** Small epsilon for floating point comparisons */
 const EPS = 1e-10;
+/**
+ * Relative round-off allowance for the cone boundary test, so a direction built at exactly the
+ * half-angle (for example by directionAt(t, 1)) counts as inside. 1e-10 of the half-angle is
+ * below 1e-11 rad for any cone and far below any physical pointing accuracy.
+ */
+const BOUNDARY_TOL = 1e-10;
 
 /**
  * Deep space range threshold in kilometers.
@@ -35,18 +41,125 @@ const EPS = 1e-10;
  */
 const DEEP_SPACE_THRESHOLD_KM = 6000 as Kilometers;
 
+/** Fewest vertices an interpolated horizon mask may have. */
+export const MIN_INTERPOLATED_MASK_VERTICES = 2;
+/** Most vertices an interpolated horizon mask may have (one every 5 degrees). */
+export const MAX_INTERPOLATED_MASK_VERTICES = 72;
+/** Highest elevation an interpolated mask vertex may have, in degrees. */
+export const MAX_INTERPOLATED_MASK_EL = 89;
+
 /**
  * Azimuth-dependent elevation mask for terrain/obstructions.
  * Used to define regions where the minimum elevation is higher than the global minimum
  * due to buildings, mountains, or other obstructions.
+ *
+ * In step mode (the default) each entry is a sector from `startAz` to `stopAz`. In
+ * interpolated mode (`FieldOfViewParams.interpolate`) each entry is a vertex at
+ * (`startAz`, `minEl`), joined to the next vertex by a straight line that wraps at 360 degrees;
+ * `stopAz` is ignored.
  */
 export interface ElevationMask {
-  /** Start of azimuth range in degrees (inclusive) */
+  /** Start of azimuth range in degrees (inclusive); the vertex azimuth when interpolated */
   startAz: Degrees;
-  /** End of azimuth range in degrees (inclusive), handles wraparound */
+  /** End of azimuth range in degrees (inclusive), handles wraparound; ignored when interpolated */
   stopAz: Degrees;
-  /** Minimum elevation in degrees for this azimuth range */
+  /** Minimum elevation in degrees for this azimuth range, or at this vertex */
   minEl: Degrees;
+}
+
+/**
+ * Returns a copy of the masks sorted by ascending `startAz`, the order
+ * {@link maskMinElevation} requires in interpolated mode. Call once, never per lookup.
+ */
+export function sortElevationMasks(masks: readonly ElevationMask[]): ElevationMask[] {
+  return [...masks].sort((a, b) => a.startAz - b.startAz);
+}
+
+/**
+ * Effective minimum elevation at an azimuth: `max(floorEl, mask(az))`.
+ *
+ * Step mode returns the highest `minEl` of every sector containing `az`. Interpolated mode
+ * finds the vertices either side of `az` (wrapping at 360 degrees) and interpolates linearly
+ * between them. Interpolated mode requires `masks` sorted by `startAz`
+ * (see {@link sortElevationMasks}); it does no sorting or allocation, so it is safe on hot paths.
+ *
+ * @param masks - Mask entries (sorted by startAz when interpolating)
+ * @param az - Azimuth in degrees (normalised to [0, 360) in both modes)
+ * @param interpolate - True for piecewise-linear vertices, false for step sectors
+ * @param floorEl - Global minimum elevation in degrees
+ * @returns Effective minimum elevation in degrees
+ */
+export function maskMinElevation(
+  masks: readonly ElevationMask[],
+  az: number,
+  interpolate: boolean,
+  floorEl: number,
+): number {
+  const n = masks.length;
+
+  if (n === 0) {
+    return floorEl;
+  }
+
+  if (!interpolate) {
+    let effectiveMinEl = floorEl;
+    // Normalise to [0, 360) so az = 360 or a negative azimuth matches the same sectors as az mod 360
+    let a = az % 360;
+
+    if (a < 0) {
+      a += 360;
+    }
+
+    for (const mask of masks) {
+      const inRange = mask.startAz <= mask.stopAz
+        ? a >= mask.startAz && a <= mask.stopAz
+        : a >= mask.startAz || a <= mask.stopAz;
+
+      // Use the most restrictive (highest) minimum elevation
+      if (inRange && mask.minEl > effectiveMinEl) {
+        effectiveMinEl = mask.minEl;
+      }
+    }
+
+    return effectiveMinEl;
+  }
+
+  let a = az % 360;
+
+  if (a < 0) {
+    a += 360;
+  }
+
+  // Binary search for the first vertex with startAz > a (n when there is none)
+  let lo = 0;
+  let hi = n;
+
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+
+    if (masks[mid].startAz <= a) {
+      lo = mid + 1;
+    } else {
+      hi = mid;
+    }
+  }
+
+  const next = masks[lo % n];
+  const prev = masks[(lo - 1 + n) % n];
+  let span = next.startAz - prev.startAz;
+
+  if (span <= 0) {
+    span += 360;
+  }
+  let offset = a - prev.startAz;
+
+  if (offset < 0) {
+    offset += 360;
+  }
+
+  const el = prev.minEl + ((next.minEl - prev.minEl) * offset) / span;
+
+  return el > floorEl ? el : floorEl;
 }
 
 /**
@@ -74,6 +187,12 @@ export interface FieldOfViewParams {
   minElevation?: Degrees;
   /** Azimuth-specific elevation masks for terrain/buildings */
   elevationMasks?: ElevationMask[];
+  /**
+   * Treat `elevationMasks` as piecewise-linear horizon vertices instead of step sectors
+   * (default: false). Requires 2 to 72 vertices with unique azimuths in [0, 360) and
+   * elevations in [0, 89].
+   */
+  interpolate?: boolean;
 
   /** FOV shape type (default: ELLIPTICAL_CONE) */
   shape?: FovShape;
@@ -102,6 +221,16 @@ export interface BoresightFrame {
  * - Elevation 0° is horizontal, 90° is zenith
  * - Roll 0° means major axis aligns with the projection of "up" onto the
  *   plane perpendicular to boresight
+ * - Positive roll rotates u toward v, where v = (up x b) normalised points to the
+ *   left of the boresight (west for a north-pointing boresight); u x v = -b.
+ *
+ * At the zenith (el = 90°) "up" has no projection, so the frame is the limit of the
+ * general branch as el approaches 90° along the boresight azimuth (ootk v8):
+ * A = (-sin az, -cos az, 0) (the back-azimuth direction), B = (-cos az, sin az, 0),
+ * u = cos(roll) A + sin(roll) B, v = -sin(roll) A + cos(roll) B. Roll at the zenith is
+ * therefore measured from the boresight azimuth line, not from North, and the frame is
+ * continuous through el = 90°. v7 zenith configs measured roll from North; convert them
+ * with {@link FieldOfView.migrateZenithRollFromV7}.
  *
  * @param az - Boresight azimuth in radians
  * @param el - Boresight elevation in radians
@@ -123,12 +252,21 @@ export function boresightFrameFromAzElRoll(az: Radians, el: Radians, roll: Radia
     sinEl, // Up component
   );
 
-  // Handle zenith singularity (elevation = 90°)
+  // Zenith (elevation = 90°): up x b vanishes, so use the limit of the general branch below
   if (Math.abs(el - HALF_PI) < EPS) {
-    // Boresight is straight up - use roll to define frame orientation
-    // At zenith, major axis direction is determined by roll from North
-    const u = new Vector3D(Math.sin(roll), Math.cos(roll), 0);
-    const v = new Vector3D(Math.cos(roll), -Math.sin(roll), 0);
+    /*
+     * As el -> 90° along azimuth az, b -> (0, 0, 1) and the general branch gives
+     * vTemp = (up x b) / |up x b| -> B = (-cos az, sin az, 0) and u = b x vTemp -> A =
+     * (-sin az, -cos az, 0). Applying the same roll rotation keeps the frame continuous.
+     */
+    const cosRoll = Math.cos(roll);
+    const sinRoll = Math.sin(roll);
+    const ax = -sinAz;
+    const ay = -cosAz;
+    const bx = -cosAz;
+    const by = sinAz;
+    const u = new Vector3D(cosRoll * ax + sinRoll * bx, cosRoll * ay + sinRoll * by, 0);
+    const v = new Vector3D(cosRoll * bx - sinRoll * ax, cosRoll * by - sinRoll * ay, 0);
 
     return { b, u, v };
   }
@@ -136,7 +274,7 @@ export function boresightFrameFromAzElRoll(az: Radians, el: Radians, roll: Radia
   // Normal case: construct frame using "up" as reference
   const up = Vector3D.zAxis;
 
-  // v_temp points "right" when looking along boresight (perpendicular to both boresight and up)
+  // v_temp = up x b points "left" when looking along the boresight (west for a north boresight)
   let vTemp = up.cross(b).normalize();
 
   // u points in the "up" direction relative to boresight (perpendicular to both boresight and v_temp)
@@ -232,8 +370,10 @@ export class FieldOfView {
   readonly maxRange: Kilometers;
   /** Global minimum elevation in degrees */
   readonly minElevation: Degrees;
-  /** Azimuth-specific elevation masks */
+  /** Azimuth-specific elevation masks (sorted by startAz when interpolated) */
   readonly elevationMasks: ElevationMask[];
+  /** True when elevationMasks are interpolated horizon vertices */
+  readonly interpolateMask: boolean;
   /** FOV shape type */
   readonly shape: FovShape;
   /** Reference frame for boresight */
@@ -256,7 +396,14 @@ export class FieldOfView {
     this.minRange = params.minRange;
     this.maxRange = params.maxRange;
     this.minElevation = params.minElevation ?? (0 as Degrees);
-    this.elevationMasks = params.elevationMasks ?? [];
+    this.interpolateMask = params.interpolate ?? false;
+    /*
+     * Sorted once here so getMinElevation never sorts on the hot path. Both modes store a copy
+     * of the caller's array and entries, so mutating the input after construction has no effect.
+     */
+    const masksCopy = (params.elevationMasks ?? []).map((m) => ({ ...m }));
+
+    this.elevationMasks = this.interpolateMask ? sortElevationMasks(masksCopy) : masksCopy;
     this.shape = params.shape ?? FovShape.ELLIPTICAL_CONE;
     this.frame = params.frame ?? FovFrame.TOPOCENTRIC;
 
@@ -270,6 +417,40 @@ export class FieldOfView {
     // Cache half angles in radians
     this.halfAngleRad_ = (this.halfAngle * DEG2RAD) as Radians;
     this.minorHalfAngleRad_ = (this.minorHalfAngle * DEG2RAD) as Radians;
+  }
+
+  /**
+   * Converts a v7 zenith FOV configuration to the v8 roll convention.
+   *
+   * ootk v7 measured roll at the zenith (boresightEl = 90°) from North; v8 measures it from the
+   * boresight azimuth line (see {@link boresightFrameFromAzElRoll}). The v7 major axis was
+   * (sin roll, cos roll, 0); the v8 axis at roll r' is -(sin(az + r'), cos(az + r'), 0), so
+   * r' = (roll - az - 180) mod 360 reproduces the v7 footprint exactly. Because the ellipse is
+   * symmetric under u -> -u, (roll - az) mod 180 is equivalent.
+   *
+   * Only zenith configs that are not circular are changed: boresightEl missing, or within 1e-10 rad
+   * of 90 deg, the same test {@link boresightFrameFromAzElRoll} uses to pick its zenith branch.
+   * Every other config is returned as an unchanged copy.
+   *
+   * @param params - v7 FOV parameters
+   * @returns A copy with `rollAngle` converted to the v8 convention, in [0, 360) degrees
+   */
+  static migrateZenithRollFromV7(params: FieldOfViewParams): FieldOfViewParams {
+    const el = params.boresightEl ?? 90;
+    const isCircular = params.shape === FovShape.CIRCULAR_CONE ||
+      params.minorHalfAngle === undefined ||
+      Math.abs(params.halfAngle - params.minorHalfAngle) < EPS;
+
+    // Same zenith test as boresightFrameFromAzElRoll: |el - pi/2| < 1e-10 in radians
+    if (!(Math.abs(el * DEG2RAD - HALF_PI) < EPS) || isCircular) {
+      return { ...params };
+    }
+
+    const az = params.boresightAz ?? 0;
+    const oldRoll = params.rollAngle ?? 0;
+    const newRoll = (((oldRoll - az - 180) % 360) + 360) % 360;
+
+    return { ...params, rollAngle: newRoll as Degrees };
   }
 
   /**
@@ -323,10 +504,15 @@ export class FieldOfView {
   /**
    * Checks if the given RAE coordinates are within this field of view.
    *
-   * Performs the following checks in order:
+   * Performs the following checks in order, cheapest first:
    * 1. Range bounds
-   * 2. Elevation masking (global and azimuth-specific)
+   * 2. Global minimum elevation
    * 3. Elliptical cone containment
+   * 4. Azimuth-specific elevation mask, only when masks exist
+   *
+   * All four are conjunctive, so the order changes cost, not the result. The mask can only
+   * raise the floor above `minElevation` (see {@link getMinElevation}), so testing it last
+   * skips the mask lookup for every target the cone already rejects.
    *
    * @param rae - The RAE coordinates to check
    * @returns True if the coordinates are within the FOV
@@ -337,28 +523,38 @@ export class FieldOfView {
       return false;
     }
 
-    // Check elevation against effective minimum at this azimuth
-    const effectiveMinEl = this.getMinElevation(rae.az);
-
-    if (rae.el < effectiveMinEl) {
+    // Global floor, no mask lookup
+    if (rae.el < this.minElevation) {
       return false;
     }
 
     // Check if within cone geometry
-    return this.isWithinCone(rae.az, rae.el);
+    if (!this.isWithinCone(rae.az, rae.el)) {
+      return false;
+    }
+
+    // Horizon mask last: it is the only azimuth-dependent lookup
+    return this.elevationMasks.length === 0 || rae.el >= this.getMinElevation(rae.az);
   }
 
   /**
    * Checks if a direction vector is within the FOV angular bounds.
    * For body-frame sensors receiving body-frame directions.
    *
-   * @param direction - Direction vector to target (will be normalized)
+   * @param direction - Direction vector to target (will be normalized). A zero or non-finite
+   *   vector has no direction and is never contained.
    * @param range - Range to target in kilometers
    * @returns True if within FOV
    */
   containsDirection(direction: Vector3D, range: Kilometers): boolean {
     // Check range bounds
     if (range < this.minRange || range > this.maxRange) {
+      return false;
+    }
+
+    const mag = direction.magnitude();
+
+    if (!(mag > 0) || !Number.isFinite(mag)) {
       return false;
     }
 
@@ -371,7 +567,8 @@ export class FieldOfView {
    * Samples a unit direction on or inside the FOV cone.
    *
    * The cone cross-section is parameterized like a standard 2D ellipse in
-   * angular (gnomonic) space: x = halfAngle * cos(t), y = minorHalfAngle * sin(t),
+   * angular (azimuthal-equidistant) space, where the radial coordinate is the
+   * off-boresight angle itself: x = halfAngle * cos(t), y = minorHalfAngle * sin(t),
    * where x is the off-boresight angle along the major axis (u) and y along the
    * minor axis (v). Uniform steps in t produce well-distributed boundary points
    * even for highly eccentric fans (e.g., an 80° x 1° fence radar), unlike
@@ -412,24 +609,14 @@ export class FieldOfView {
 
   /**
    * Gets the effective minimum elevation at a given azimuth.
-   * Considers all applicable elevation masks and returns the most restrictive.
+   * Step masks: the most restrictive sector containing `az`. Interpolated masks: the
+   * linear interpolation between the neighbouring vertices. Never below `minElevation`.
    *
    * @param az - Azimuth in degrees
    * @returns Effective minimum elevation in degrees
    */
   getMinElevation(az: Degrees): Degrees {
-    let effectiveMinEl = this.minElevation;
-
-    for (const mask of this.elevationMasks) {
-      if (this.isAzimuthInMaskRange(az, mask)) {
-        // Use the most restrictive (highest) minimum elevation
-        if (mask.minEl > effectiveMinEl) {
-          effectiveMinEl = mask.minEl;
-        }
-      }
-    }
-
-    return effectiveMinEl;
+    return maskMinElevation(this.elevationMasks, az, this.interpolateMask, this.minElevation) as Degrees;
   }
 
   /**
@@ -463,8 +650,9 @@ export class FieldOfView {
   }
 
   /**
-   * Gets the full angular coverage (2 * halfAngle) in degrees.
-   * For scanning radars, this represents the sweep width.
+   * Gets the full cone width along the major axis (2 * halfAngle) in degrees.
+   * This is an off-boresight cone angle, not an azimuth span: a zenith hemisphere has an
+   * angular coverage of 180 deg but spans 360 deg of azimuth.
    */
   get angularCoverage(): Degrees {
     return (2 * this.halfAngle) as Degrees;
@@ -500,6 +688,7 @@ export class FieldOfView {
       maxRange: this.maxRange,
       minElevation: this.minElevation,
       elevationMasks: this.elevationMasks.length > 0 ? [...this.elevationMasks] : undefined,
+      interpolate: this.interpolateMask ? true : undefined,
       shape: this.shape,
       frame: this.frame,
     };
@@ -524,24 +713,12 @@ export class FieldOfView {
     ];
 
     if (this.elevationMasks.length > 0) {
-      lines.push(`  Elevation Masks: ${this.elevationMasks.length} defined`);
+      const kind = this.interpolateMask ? 'interpolated vertices' : 'defined';
+
+      lines.push(`  Elevation Masks: ${this.elevationMasks.length} ${kind}`);
     }
 
     return lines.join('\n');
-  }
-
-  /**
-   * Checks if an azimuth falls within an elevation mask's range.
-   * Handles wraparound (e.g., 350° to 10°).
-   */
-  private isAzimuthInMaskRange(az: Degrees, mask: ElevationMask): boolean {
-    if (mask.startAz <= mask.stopAz) {
-      // Normal case: startAz <= az <= stopAz
-      return az >= mask.startAz && az <= mask.stopAz;
-    }
-
-    // Wraparound case: az >= startAz OR az <= stopAz
-    return az >= mask.startAz || az <= mask.stopAz;
   }
 
   /**
@@ -575,9 +752,9 @@ export class FieldOfView {
       return false;
     }
 
-    // For circular cone, simple angle check
+    // For circular cone, simple angle check (boundary inclusive)
     if (this.isCircular || this.shape === FovShape.CIRCULAR_CONE) {
-      return theta <= this.halfAngleRad_;
+      return theta <= this.halfAngleRad_ * (1 + BOUNDARY_TOL);
     }
 
     // For elliptical cone, project onto u-v plane and check ellipse equation
@@ -608,22 +785,22 @@ export class FieldOfView {
     const normalizedMajor = (theta * cosPhi) / this.halfAngleRad_;
     const normalizedMinor = (theta * sinPhi) / this.minorHalfAngleRad_;
 
-    return (normalizedMajor * normalizedMajor + normalizedMinor * normalizedMinor) <= 1.0;
+    // Boundary inclusive, with a round-off allowance (see BOUNDARY_TOL)
+    return (normalizedMajor * normalizedMajor + normalizedMinor * normalizedMinor) <= 1.0 + 2 * BOUNDARY_TOL;
   }
 
   /**
    * Validates FOV parameters.
    */
   private validate(params: FieldOfViewParams): void {
-    // Validate half angle. A missing halfAngle is allowed: sector-style sensors (min/max
-    // azimuth and elevation, e.g. PhasedArrayRadar) construct their FOV without one.
-    if (params.halfAngle <= 0 || params.halfAngle > 90) {
+    // Validate half angle: required, finite, in (0, 90]
+    if (!Number.isFinite(params.halfAngle) || params.halfAngle <= 0 || params.halfAngle > 90) {
       throw new ValidationError('Half angle must be between 0 and 90 degrees', 'halfAngle', params.halfAngle);
     }
 
     // Validate minor half angle if provided
     if (params.minorHalfAngle !== undefined) {
-      if (params.minorHalfAngle <= 0 || params.minorHalfAngle > 90) {
+      if (!Number.isFinite(params.minorHalfAngle) || params.minorHalfAngle <= 0 || params.minorHalfAngle > 90) {
         throw new ValidationError(
           'Minor half angle must be between 0 and 90 degrees',
           'minorHalfAngle',
@@ -681,7 +858,9 @@ export class FieldOfView {
     }
 
     // Validate elevation masks
-    if (params.elevationMasks) {
+    if (params.interpolate) {
+      FieldOfView.validateInterpolatedMask_(params.elevationMasks ?? []);
+    } else if (params.elevationMasks) {
       for (const mask of params.elevationMasks) {
         if (mask.startAz < 0 || mask.startAz >= 360) {
           throw new ValidationError(
@@ -705,6 +884,43 @@ export class FieldOfView {
           );
         }
       }
+    }
+  }
+
+  /**
+   * Validates an interpolated horizon mask: 2 to 72 vertices, unique azimuths in [0, 360),
+   * elevations in [0, 89].
+   */
+  private static validateInterpolatedMask_(masks: readonly ElevationMask[]): void {
+    if (masks.length < MIN_INTERPOLATED_MASK_VERTICES || masks.length > MAX_INTERPOLATED_MASK_VERTICES) {
+      throw new ValidationError(
+        `Interpolated elevation mask needs ${MIN_INTERPOLATED_MASK_VERTICES} to ${MAX_INTERPOLATED_MASK_VERTICES} vertices`,
+        'elevationMasks',
+        masks.length,
+      );
+    }
+
+    const seen = new Set<number>();
+
+    for (const mask of masks) {
+      if (!Number.isFinite(mask.startAz) || mask.startAz < 0 || mask.startAz >= 360) {
+        throw new ValidationError(
+          'Elevation mask vertex azimuth must be at least 0 and less than 360',
+          'elevationMasks.startAz',
+          mask.startAz,
+        );
+      }
+      if (!Number.isFinite(mask.minEl) || mask.minEl < 0 || mask.minEl > MAX_INTERPOLATED_MASK_EL) {
+        throw new ValidationError(
+          `Elevation mask vertex elevation must be between 0 and ${MAX_INTERPOLATED_MASK_EL} degrees`,
+          'elevationMasks.minEl',
+          mask.minEl,
+        );
+      }
+      if (seen.has(mask.startAz)) {
+        throw new ValidationError('Elevation mask vertex azimuths must be unique', 'elevationMasks.startAz', mask.startAz);
+      }
+      seen.add(mask.startAz);
     }
   }
 }

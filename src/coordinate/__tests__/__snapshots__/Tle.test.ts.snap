@@ -147,7 +147,7 @@ exports[`Tle > should return the TLE as a string 1`] = `
 2 56006 143.0043  13.3620 0001137 267.5965  92.4747 15.02542972 44491"
 `;
 
-exports[`Tle > should return the apogee 1`] = `6937.9838309710485`;
+exports[`Tle > should return the apogee 1`] = `559.8489109708007`;
 
 exports[`Tle > should return the eccentricity 1`] = `0.0001137`;
 
@@ -155,11 +155,11 @@ exports[`Tle > should return the inclination 1`] = `2.495895879509727`;
 
 exports[`Tle > should return the inclination in degrees 1`] = `143.0043`;
 
-exports[`Tle > should return the perigee 1`] = `6936.406312811701`;
+exports[`Tle > should return the perigee 1`] = `558.2713923385145`;
 
 exports[`Tle > should return the period 1`] = `95.83752523784717`;
 
-exports[`Tle > should return the semi-major axis 1`] = `6937.195071891375`;
+exports[`Tle > should return the semi-major axis 1`] = `6937.197151654657`;
 
 exports[`Tle > should return the state vector 1`] = `
 TEME {

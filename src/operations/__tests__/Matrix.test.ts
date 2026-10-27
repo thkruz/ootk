@@ -1,4 +1,4 @@
-import { Matrix, Radians, Vector } from '../../main';
+import { Matrix, Radians, SingularMatrixError, Vector } from '../../main';
 
 describe('Matrix', () => {
   // should create a matrix with the correct number of rows and columns
@@ -193,15 +193,29 @@ describe('Matrix', () => {
 
   // should calculate the inverse of a matrix correctly
   it('should calculate the inverse of a matrix correctly', () => {
-    const elements = [
+    // [[2, 1], [1, 3]] has determinant 5, so its inverse is [[3, -1], [-1, 2]] / 5.
+    const inverse = new Matrix([
+      [2, 1],
+      [1, 3],
+    ]).inverse();
+
+    expect(inverse.elements[0][0]).toBeCloseTo(0.6, 15);
+    expect(inverse.elements[0][1]).toBeCloseTo(-0.2, 15);
+    expect(inverse.elements[1][0]).toBeCloseTo(-0.2, 15);
+    expect(inverse.elements[1][1]).toBeCloseTo(0.4, 15);
+  });
+
+  // The singular matrix [[1,2,3],[4,5,6],[7,8,9]] (row3 = 2*row2 - row1) used to return a finite
+  // snapshot; per the v8 decision (QA report 2.8) it now throws and tryInverse returns null.
+  it('should throw on the singular matrix [[1,2,3],[4,5,6],[7,8,9]]', () => {
+    const matrix = new Matrix([
       [1, 2, 3],
       [4, 5, 6],
       [7, 8, 9],
-    ];
-    const matrix = new Matrix(elements);
-    const inverse = matrix.inverse();
+    ]);
 
-    expect(inverse.elements).toMatchSnapshot();
+    expect(() => matrix.inverse()).toThrow(SingularMatrixError);
+    expect(matrix.tryInverse()).toBeNull();
   });
 
   // allZeros
@@ -270,8 +284,13 @@ describe('Matrix', () => {
 
   // cholesky
   it('should create a cholesky matrix', () => {
+    // The zero matrix is positive semi-definite and L = 0 satisfies L * L^T = 0 (was NaN before QA report 2.8).
     const matrix = Matrix.allZeros(3, 3).cholesky();
 
-    expect(matrix.elements).toMatchSnapshot();
+    expect(matrix.elements).toEqual([
+      [0, 0, 0],
+      [0, 0, 0],
+      [0, 0, 0],
+    ]);
   });
 });

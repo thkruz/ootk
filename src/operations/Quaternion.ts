@@ -73,7 +73,8 @@ export class Quaternion {
     const m = this.magnitude();
 
     if (m === 0) {
-      return Quaternion.zero;
+      // Return a fresh instance: handing out the shared Quaternion.zero would let callers mutate the global.
+      return new Quaternion(0, 0, 0, 0);
     }
 
     return this.scale(1 / m);
@@ -163,10 +164,22 @@ export class Quaternion {
     return new Vector3D(this.x, this.y, this.z);
   }
 
+  /**
+   * Shortest-arc rotation angle between the attitudes represented by this
+   * quaternion and q.
+   *
+   * With c = this * conj(q) normalized, the relative rotation angle is
+   * 2 * atan2(|c_v|, c_w). Because q and -q represent the same rotation, |c_w|
+   * is used so the result is the shortest arc in [0, pi] (Markley and
+   * Crassidis, Fundamentals of Spacecraft Attitude Determination and Control,
+   * 2014, chapter 2).
+   * @param q The other attitude quaternion.
+   * @returns The shortest-arc angle between the two attitudes, in radians, in [0, pi].
+   */
   angle(q: Quaternion): Radians {
     const c = this.multiply(q.conjugate()).normalize();
 
-    return 2 * Math.atan2(c.toVector3D().magnitude(), c.w) as Radians;
+    return 2 * Math.atan2(c.toVector3D().magnitude(), Math.abs(c.w)) as Radians;
   }
 
   geodesicAngle(q: Quaternion): Radians {

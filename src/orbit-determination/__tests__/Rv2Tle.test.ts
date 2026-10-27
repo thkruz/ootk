@@ -1,3 +1,4 @@
+import { FormatTle } from '../../coordinate/FormatTle';
 import { Tle } from '../../coordinate/Tle';
 import { Sgp4 } from '../../main';
 import { rv2tle, RvVector } from '../Rv2Tle';
@@ -97,8 +98,79 @@ describe('rv2tle', () => {
     expect(distKm(fitted.velocity as RvVector, postBurnVelocity)).toBeLessThan(0.005);
   });
 
+  /*
+   * Near-circular targets: SGP4's short-period terms give a mean e of 0 a
+   * non-zero osculating e, so a target below that used to clamp the mean e at 0
+   * and stall the fit kilometres off. Sweep small burns around an exactly
+   * circular state, the case a breakup cloud hits every few hundred fragments.
+   */
+  it('converges for near-circular targets (eccentricity close to zero)', () => {
+    const mu = 398600.4418;
+    const r0 = 6378.137 + 420;
+    const v0 = Math.sqrt(mu / r0);
+    const inc = (51.6 * Math.PI) / 180;
+    const position = { x: r0, y: 0, z: 0 };
+    const time = new Date(Date.UTC(2026, 9, 18));
+    let worstKm = 0;
+
+    for (const radialMps of [-20, -5, 0, 5, 20]) {
+      for (const inTrackMps of [-20, -5, 0, 5, 20]) {
+        const vt = v0 + inTrackMps / 1000;
+        const velocity = { x: radialMps / 1000, y: vt * Math.cos(inc), z: vt * Math.sin(inc) };
+        const result = rv2tle(time, position, velocity, { toleranceKm: 0.05 });
+
+        expect(result).not.toBeNull();
+        worstKm = Math.max(worstKm, result!.positionErrorKm);
+      }
+    }
+
+    expect(worstKm).toBeLessThan(0.05);
+  });
+
   it('returns null for a state vector that SGP4 cannot represent', () => {
     // Position inside the Earth
     expect(rv2tle(new Date(Date.UTC(2025, 0, 19)), { x: 100, y: 0, z: 0 }, { x: 0, y: 1, z: 0 })).toBeNull();
+  });
+  describe('catalog number and international designator options', () => {
+    const checksumOk = (line: string): boolean => FormatTle.tleChecksum(line) === Number(line[68]);
+
+    it('keeps the default "00001" / "58001A" stamp when no ids are given', () => {
+      const { time, position, velocity } = stateAt(BURN_MINUTES);
+      const result = rv2tle(time, position, velocity)!;
+
+      expect(result.tle1.substring(2, 7)).toBe('00001');
+      expect(result.tle2.substring(2, 7)).toBe('00001');
+      expect(result.tle1.substring(9, 17)).toBe('58001A  ');
+      expect(checksumOk(result.tle1)).toBe(true);
+      expect(checksumOk(result.tle2)).toBe(true);
+    });
+
+    it('stamps the given scc and intl on both lines with valid checksums', () => {
+      const { time, position, velocity } = stateAt(BURN_MINUTES);
+      const plain = rv2tle(time, position, velocity)!;
+      const result = rv2tle(time, position, velocity, { scc: '90123', intl: '26 999A' })!;
+
+      expect(result.tle1).toHaveLength(69);
+      expect(result.tle2).toHaveLength(69);
+      expect(result.tle1.substring(2, 7)).toBe('90123');
+      expect(result.tle2.substring(2, 7)).toBe('90123');
+      expect(result.tle1.substring(9, 17)).toBe('26 999A ');
+      expect(checksumOk(result.tle1)).toBe(true);
+      expect(checksumOk(result.tle2)).toBe(true);
+      // The ids are labels only: the fitted elements and residual are unchanged.
+      expect(result.tle2.substring(7, 68)).toBe(plain.tle2.substring(7, 68));
+      expect(result.positionErrorKm).toBe(plain.positionErrorKm);
+      expect(() => new Tle(result.tle1 as never, result.tle2 as never)).not.toThrow();
+    });
+
+    it('converts a 6-digit catalog number to alpha-5', () => {
+      const { time, position, velocity } = stateAt(BURN_MINUTES);
+      const result = rv2tle(time, position, velocity, { scc: '100001' })!;
+
+      expect(result.tle1.substring(2, 7)).toBe('A0001');
+      expect(result.tle2.substring(2, 7)).toBe('A0001');
+      expect(checksumOk(result.tle1)).toBe(true);
+      expect(checksumOk(result.tle2)).toBe(true);
+    });
   });
 });

@@ -19,7 +19,7 @@ npx tsx ./examples/coordinate-transforms.ts
 
 ## ECI and geodetic (LLA)
 
-`eci2lla` returns WGS84 geodetic latitude and longitude in degrees with altitude in kilometers. To go back, `lla2ecef` puts the point on the same WGS84 ellipsoid (it takes degrees) and `ecef2eci` rotates it by GMST, so the round trip reproduces the input. (`lla2eci` is a spherical-Earth drawing helper: with these coordinates it would land about 7 km short at the equator and up to ~21 km off elsewhere.)
+`eci2lla` returns WGS84 geodetic latitude and longitude in degrees with altitude in kilometers. To go back, `lla2ecef` puts the point on the same WGS84 ellipsoid (it takes degrees) and `ecef2eci` rotates it by GMST, so the round trip reproduces the input. (`lla2eci` is a spherical-Earth drawing helper: with these coordinates it would be about 7 km off at the equator and up to ~21 km off elsewhere.)
 
 <<< ../../examples/coordinate-transforms.ts#eci-lla
 
@@ -83,7 +83,7 @@ Converted back to ECI:
 
 J2000 Frame (ECI):
   Position: [-1536.88, 6490.06, 1295.88] km
-  Velocity: [-4.988100, -0.011607, -5.818747] km/s
+  Velocity: [-4.988101, -0.011608, -5.818746] km/s
 
 TEME Frame:
   Position: [-1574.82, 6481.63, 1292.52] km

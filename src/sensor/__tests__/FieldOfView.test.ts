@@ -23,14 +23,16 @@ const enuToAzEl = (dir: { x: number; y: number; z: number }) => {
 describe('FieldOfView.directionAt', () => {
   /**
    * Space Fence style fan: boresight at zenith, 80° half-angle along the
-   * east-west major axis (roll 90°), 1° half-angle across it.
+   * east-west major axis, 1° half-angle across it. ootk v8 measures zenith roll from the
+   * boresight azimuth line, so the east-west fan facing az 270 is roll 0 (v7 used roll 90,
+   * measured from North; FieldOfView.migrateZenithRollFromV7 maps 90 to 0).
    */
   const fenceFov = new FieldOfView({
     boresightAz: 270 as Degrees,
     boresightEl: 90 as Degrees,
     halfAngle: 80 as Degrees,
     minorHalfAngle: 1 as Degrees,
-    rollAngle: 90 as Degrees,
+    rollAngle: 0 as Degrees,
     minRange: 50 as Kilometers,
     maxRange: 3000 as Kilometers,
     minElevation: 10 as Degrees,

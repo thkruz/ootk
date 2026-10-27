@@ -65,7 +65,7 @@ Time: 2024-01-28T12:00:00.000Z
 Look Angles:
   Azimuth:   309.51°
   Elevation: -54.65°
-  Range:     10918.10 km
+  Range:     10918.15 km
 
 Satellite is BELOW HORIZON
 

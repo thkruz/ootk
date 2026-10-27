@@ -21,14 +21,28 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Horizon, MakeTime, Observer } from 'astronomy-engine';
-import { Degrees, GreenwichMeanSiderealTime, Kilometers, LlaVec3, Radians, RaeVec3, SpaceObjectType, TemeVec3 } from '../types/types';
-import { MILLISECONDS_TO_DAYS, RAD2DEG } from '../utils/constants';
-import { Sgp4 } from '../sgp4/sgp4';
+// eslint-disable-next-line camelcase -- astronomy-engine's exported name
+import { EquatorFromVector, Horizon, MakeTime, Observer, RotateVector, Rotation_EQJ_EQD, Vector } from 'astronomy-engine';
+import { J2000 } from '../coordinate/J2000';
+import { Vector3D } from '../operations/Vector3D';
+import { EpochUTC } from '../time/EpochUTC';
+import { Degrees, Kilometers, KilometersPerSecond, LlaVec3, RaeVec3, Radians, SpaceObjectType, TemeVec3 } from '../types/types';
 import { StarObjectParams } from '../interfaces/StarObjectParams';
-import { ecef2eci, jday, rae2ecef } from '../transforms/transforms';
 import { BaseObject } from './BaseObject';
 
+/** Default observer for {@link Star.rae} and {@link Star.eci}: on the equator at the prime meridian. */
+const DEFAULT_OBSERVER: LlaVec3<Degrees, Kilometers> = { lat: 0 as Degrees, lon: 0 as Degrees, alt: 0 as Kilometers };
+
+/**
+ * Distance (km) at which {@link Star.eci} places a star and that {@link Star.rae} reports as
+ * range. It is a rendering convenience, not a physical distance.
+ */
+const STAR_RENDER_DISTANCE_KM = 250000 as Kilometers;
+
+/**
+ * A star with a catalog position: `ra` and `dec` are the J2000 (ICRS) right ascension and
+ * declination in radians. Proper motion, parallax and aberration are not modeled.
+ */
 export class Star extends BaseObject {
   ra: Radians;
   dec: Radians;
@@ -60,27 +74,58 @@ export class Star extends BaseObject {
     this.bayer = info.bayer;
   }
 
-  eci(lla: LlaVec3 = { lat: <Degrees>180, lon: <Degrees>0, alt: <Kilometers>0 }, date: Date = new Date()): TemeVec3 {
-    const rae = this.rae(lla, date);
-    const { gmst } = Star.calculateTimeVariables_(date);
+  /**
+   * Position of the star in TEME, placed {@link STAR_RENDER_DISTANCE_KM} from the Earth's center
+   * along its catalog direction.
+   *
+   * The J2000 unit vector (cos dec cos ra, cos dec sin ra, sin dec) is scaled to 250000 km and
+   * rotated J2000 to TEME at `date` (precession and nutation) with `J2000.toTEME()`, the frame of
+   * `Satellite.eci()`. A star has no measurable geocentric parallax, so the result does not
+   * depend on the observer.
+   * @param _lla - Unused; kept for call compatibility (the direction is geocentric).
+   * @param date - The date (defaults to now).
+   * @returns TEME position in km.
+   */
+  eci(_lla: LlaVec3 = DEFAULT_OBSERVER, date: Date = new Date()): TemeVec3 {
+    const r = STAR_RENDER_DISTANCE_KM;
+    const cd = Math.cos(this.dec);
+    const position = new Vector3D(
+      (r * cd * Math.cos(this.ra)) as Kilometers,
+      (r * cd * Math.sin(this.ra)) as Kilometers,
+      (r * Math.sin(this.dec)) as Kilometers,
+    );
+    const teme = new J2000(
+      EpochUTC.fromDateTime(date),
+      position,
+      Vector3D.origin as Vector3D<KilometersPerSecond>,
+    ).toTEME();
 
-    // Arbitrary distance to enable using ECI coordinates
-    return ecef2eci(rae2ecef(rae, { lat: <Degrees>0, lon: <Degrees>0, alt: <Kilometers>0 }), gmst);
+    return { x: teme.position.x, y: teme.position.y, z: teme.position.z };
   }
 
+  /**
+   * Geometric azimuth and elevation of the star from an observer.
+   *
+   * The J2000 catalog direction is precessed and nutated to the true equator and equinox of
+   * `date` (astronomy-engine `Rotation_EQJ_EQD`) and converted to horizontal coordinates with
+   * no atmospheric refraction, which matches the geometric elevations `Satellite.rae()` returns.
+   * @param lla - Observer latitude/longitude in degrees and altitude in km (defaults to 0, 0, 0).
+   * @param date - The date (defaults to now).
+   * @returns Azimuth (deg, from north through east) and elevation (deg); range is the fixed
+   * rendering distance of 250000 km.
+   */
   rae(
-    lla: LlaVec3<Degrees, Kilometers> = { lat: <Degrees>180, lon: <Degrees>0, alt: <Kilometers>0 },
+    lla: LlaVec3<Degrees, Kilometers> = DEFAULT_OBSERVER,
     date: Date = new Date(),
   ): RaeVec3 {
-    // Convert RA from radians to sidereal hours (RA is in radians, need hours for astronomy-engine)
-    const raHours = (this.ra * RAD2DEG) / 15; // degrees / 15 = hours
-    const decDegrees = this.dec * RAD2DEG;
-
     const time = MakeTime(date);
+    const cd = Math.cos(this.dec);
+    const j2000Dir = new Vector(cd * Math.cos(this.ra), cd * Math.sin(this.ra), Math.sin(this.dec), time);
+    const ofDate = EquatorFromVector(RotateVector(Rotation_EQJ_EQD(time), j2000Dir));
     const observer = new Observer(lla.lat, lla.lon, lla.alt * 1000); // Convert km to meters
-    const horizontal = Horizon(time, observer, raHours, decDegrees, 'normal');
+    const horizontal = Horizon(time, observer, ofDate.ra, ofDate.dec);
 
-    return { az: horizontal.azimuth as Degrees, el: horizontal.altitude as Degrees, rng: <Kilometers>250000 };
+    return { az: horizontal.azimuth as Degrees, el: horizontal.altitude as Degrees, rng: STAR_RENDER_DISTANCE_KM };
   }
 
   /**
@@ -123,21 +168,5 @@ export class Star extends BaseObject {
       flamsteed: this.flamsteed,
       bayer: this.bayer,
     };
-  }
-
-  private static calculateTimeVariables_(date: Date): { gmst: GreenwichMeanSiderealTime; j: number } {
-    const j =
-      jday(
-        date.getUTCFullYear(),
-        date.getUTCMonth() + 1,
-        date.getUTCDate(),
-        date.getUTCHours(),
-        date.getUTCMinutes(),
-        date.getUTCSeconds(),
-      ) +
-      date.getUTCMilliseconds() * MILLISECONDS_TO_DAYS;
-    const gmst = Sgp4.gstime(j);
-
-    return { gmst, j };
   }
 }

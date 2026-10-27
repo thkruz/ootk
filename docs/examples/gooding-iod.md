@@ -46,15 +46,15 @@ Observation 3: 2025-11-22T09:00:00.000Z RA 334.89 deg, Dec -5.51 deg
 
 Solved State Vector (TEME) at middle observation epoch:
   Epoch: 2025-11-22T08:00:00.000Z
-  Position: [261029.45, -121146.91, -25021.18] km
-  Velocity: [0.798135, 0.522975, 0.447411] km/s
+  Position: [262229.03, -121683.24, -25164.69] km
+  Velocity: [0.810771, 0.522976, 0.449185] km/s
 
 Classical Orbital Elements:
-  Semi-major axis: 241702.57 km
-  Eccentricity: 0.473120
-  Inclination: 31.4378 deg
-  Right Ascension: 343.1596 deg
-  Arg of Perigee: 212.3778 deg
-  True Anomaly: 137.8107 deg
-  Period: 19709.77 minutes
+  Semi-major axis: 246865.24 km
+  Eccentricity: 0.472638
+  Inclination: 31.4193 deg
+  Right Ascension: 343.1790 deg
+  Arg of Perigee: 214.2903 deg
+  True Anomaly: 135.8818 deg
+  Period: 20344.62 minutes
 ```

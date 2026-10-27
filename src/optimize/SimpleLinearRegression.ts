@@ -68,7 +68,7 @@ export class SimpleLinearRegression {
   /** Y-axis intercept (b in y = mx + b). */
   private intercept_ = 0.0;
 
-  /** Standard error of the regression (root mean square of residuals). */
+  /** Residual standard error of the regression, sqrt(SSE / (n - 2)). */
   private error_ = 0.0;
 
   /**
@@ -92,11 +92,13 @@ export class SimpleLinearRegression {
   }
 
   /**
-   * The standard error of the regression.
+   * The residual standard error of the regression, in the units of y.
    *
    * This measures the typical distance between observed y values and
    * the predicted y values on the regression line. Lower values indicate
-   * a better fit. Calculated as the sample standard deviation of the residuals.
+   * a better fit. Calculated as sqrt(SSE / (n - 2)), the unbiased estimator
+   * for a two-parameter fit. With two or fewer points the fit is exact and
+   * the error is reported as 0.
    */
   get error(): number {
     return this.error_;
@@ -112,21 +114,31 @@ export class SimpleLinearRegression {
   }
 
   /**
-   * Calculate the standard error of the regression.
+   * Calculate the residual standard error of the regression.
    *
-   * Computes the sample standard deviation of the residuals (differences
-   * between observed and predicted y values). Uses (n-1) as the denominator
-   * for Bessel's correction to provide an unbiased estimate.
+   * s = sqrt(SSE / (n - 2)), where SSE is the sum of squared residuals. The
+   * n - 2 denominator accounts for the two fitted parameters (slope and
+   * intercept), which makes s^2 an unbiased estimator of the noise variance
+   * (Montgomery, Peck and Vining, Introduction to Linear Regression Analysis,
+   * 5th ed., section 2.2.3). For n <= 2 the line passes through every point
+   * and the error is set to 0.
    */
   private calcError_(): void {
+    const n = this.length;
+
+    if (n <= 2) {
+      this.error_ = 0.0;
+
+      return;
+    }
     let total = 0.0;
 
-    for (let i = 0; i < this.length; i++) {
+    for (let i = 0; i < n; i++) {
       const delta = this.ys[i] - this.evaluate(this.xs[i]);
 
       total += delta * delta;
     }
-    this.error_ = Math.sqrt(total / (this.length - 1));
+    this.error_ = Math.sqrt(total / (n - 2));
   }
 
   /**
@@ -135,12 +147,15 @@ export class SimpleLinearRegression {
    * This method is called automatically by the constructor, but can be called
    * manually if you modify the xs or ys arrays directly after construction.
    *
-   * The algorithm:
+   * The algorithm (ordinary least squares):
    * 1. Computes means of x and y values (xMu, yMu)
-   * 2. Calculates the Pearson correlation coefficient (p)
-   * 3. Computes sample standard deviations (xSig, ySig)
-   * 4. Derives slope as: m = p * (ySig / xSig)
-   * 5. Derives intercept as: b = yMu - m * xMu
+   * 2. Computes Sxy = sum((x - xMu)(y - yMu)) and Sxx = sum((x - xMu)^2)
+   * 3. Derives slope as: m = Sxy / Sxx
+   * 4. Derives intercept as: b = yMu - m * xMu
+   *
+   * Sxy / Sxx is algebraically equal to the correlation form r * sy / sx but
+   * stays defined when y is constant (sy = 0 gives m = 0). If every x is equal
+   * (Sxx = 0) the slope is undefined and is NaN.
    */
   update(): void {
     const n = Math.min(this.xs.length, this.ys.length);
@@ -153,23 +168,17 @@ export class SimpleLinearRegression {
     }
     xMu /= n;
     yMu /= n;
-    let pa = 0.0;
-    let xSig = 0.0;
-    let ySig = 0.0;
+    let sxy = 0.0;
+    let sxx = 0.0;
 
     for (let i = 0; i < n; i++) {
       const xd = this.xs[i] - xMu;
       const yd = this.ys[i] - yMu;
 
-      pa += xd * yd;
-      xSig += xd * xd;
-      ySig += yd * yd;
+      sxy += xd * yd;
+      sxx += xd * xd;
     }
-    const p = pa / (Math.sqrt(xSig) * Math.sqrt(ySig));
-
-    xSig = Math.sqrt(xSig / (n - 1));
-    ySig = Math.sqrt(ySig / (n - 1));
-    this.slope_ = p * (ySig / xSig);
+    this.slope_ = sxx === 0 ? NaN : sxy / sxx;
     this.intercept_ = yMu - this.slope_ * xMu;
     this.calcError_();
   }
@@ -191,8 +200,9 @@ export class SimpleLinearRegression {
    * Create a new SimpleLinearRegression with outlier data points removed.
    *
    * Points are considered outliers if their residual (distance from the
-   * regression line) exceeds `sigma` times the standard error. This is
-   * useful for cleaning noisy data to get a more robust fit.
+   * regression line) exceeds `sigma` times the standard error. Points whose
+   * residual equals the limit are kept, so a perfect fit (error 0) keeps
+   * every point. This is useful for cleaning noisy data to get a more robust fit.
    *
    * @param sigma - The number of standard deviations to use as the threshold.
    *                Points with residuals > sigma * error are removed. Default is 1.0.
@@ -216,7 +226,7 @@ export class SimpleLinearRegression {
     const ysOut: number[] = [];
 
     for (let i = 0; i < this.length; i++) {
-      if (Math.abs(this.ys[i] - this.evaluate(this.xs[i])) < limit) {
+      if (Math.abs(this.ys[i] - this.evaluate(this.xs[i])) <= limit) {
         xsOut.push(this.xs[i]);
         ysOut.push(this.ys[i]);
       }

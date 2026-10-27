@@ -62,10 +62,26 @@ export class ObservationRadar extends Observation {
     return Vector.fromList([this.observation.rng, this.observation.azRad, this.observation.elRad]);
   }
 
+  /**
+   * Cross line-of-sight residual (km), as in {@link ObservationOptical.clos}: the chord
+   * 2 rho sin(theta / 2) between the observed az/el direction and the direction to the
+   * propagated state, at the predicted slant range rho. The range residual is not included.
+   * @param propagator Propagator to compare against.
+   * @returns The cross line-of-sight distance in km.
+   */
   clos(propagator: Propagator): number {
-    const ri = propagator.propagate(this.epoch).position.subtract(this.site.position);
+    const offset = propagator.propagate(this.epoch).position.subtract(this.site.position);
+    const slantRange = offset.magnitude();
+    // Observed line of sight: the observed az/el at unit range, rotated into J2000 like the site
+    const unitObs = new RAE(this.epoch, 1 as Kilometers, this.observation.azRad, this.observation.elRad);
+    const actual = unitObs.position(this.site).subtract(this.site.position);
+    const theta = actual.angle(offset);
 
-    return Math.abs(this.observation.rng - ri.magnitude());
+    if (isNaN(theta)) {
+      return 0.0;
+    }
+
+    return 2.0 * slantRange * Math.sin(theta * 0.5);
   }
 
   ricDiff(propagator: Propagator): Vector3D {

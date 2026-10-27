@@ -184,9 +184,11 @@ export function dbwToDbm(dbw: Dbw): Dbm {
 }
 
 /**
- * Calculates Free Space Path Loss.
- * FSPL = 20*log10(d) + 20*log10(f) + 20*log10(4*pi/c)
- * Simplified: FSPL(dB) = 20*log10(d_km) + 20*log10(f_Hz) - 147.55
+ * Calculates Free Space Path Loss (Friis).
+ * FSPL = 20*log10(4*pi*d*f/c)
+ * With d in metres and c in m/s: FSPL(dB) = 20*log10(d_m) + 20*log10(f_Hz) - 147.55.
+ * With d in kilometres (this function): FSPL(dB) = 20*log10(d_km) + 20*log10(f_Hz) - 87.55,
+ * since 20*log10(1000) = 60. Example: 1000 km at 1 GHz is 152.45 dB.
  *
  * @param distanceKm - Distance in kilometers
  * @param frequencyHz - Frequency in Hertz

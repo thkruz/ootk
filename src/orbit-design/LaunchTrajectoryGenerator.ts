@@ -35,11 +35,11 @@ export interface LaunchTrajectoryConfig {
   launchLonDeg: number;
   /** Launch site altitude in km (default 0). */
   launchAltKm?: number;
-  /** Target orbit perigee altitude in km. */
+  /** Target orbit perigee altitude in km above the WGS-84 equatorial radius 6378.137 km. */
   perigeeAltKm: number;
-  /** Target orbit apogee altitude in km. */
+  /** Target orbit apogee altitude in km above the WGS-84 equatorial radius 6378.137 km. */
   apogeeAltKm: number;
-  /** Target orbit inclination in degrees. */
+  /** Target orbit inclination in degrees, met by the J2000 insertion state. */
   inclinationDeg: number;
   /** Launch direction: 'N' for northbound, 'S' for southbound. */
   direction: 'N' | 'S';
@@ -81,6 +81,15 @@ const LEO_DIRECT_APOGEE_THRESHOLD_KM = 2000;
 const LEO_DIRECT_ECC_THRESHOLD = 0.1;
 /** Default parking orbit altitude for transfer scenarios. */
 const PARKING_ORBIT_ALT_KM = 185;
+/**
+ * Reference radius for `perigeeAltKm` / `apogeeAltKm`: the WGS-84 equatorial radius, the same
+ * reference as `ClassicalElements.apogee` / `perigee`.
+ */
+const ALTITUDE_REFERENCE_RADIUS_KM = 6378.137;
+/** Inclination tolerance (deg) for the launch azimuth search. */
+const AZIMUTH_SEARCH_TOL_DEG = 1e-6;
+/** Maximum secant iterations for the launch azimuth search. */
+const AZIMUTH_SEARCH_MAX_ITER = 20;
 
 /**
  * Generates realistic launch trajectories from ground to orbit.
@@ -121,24 +130,33 @@ export class LaunchTrajectoryGenerator {
     } = config;
 
     const launchEpoch = EpochUTC.fromDateTime(launchTime);
-    const rPerigee = perigeeAltKm + Earth.radiusMean;
-    const rApogee = apogeeAltKm + Earth.radiusMean;
+    const rPerigee = perigeeAltKm + ALTITUDE_REFERENCE_RADIUS_KM;
+    const rApogee = apogeeAltKm + ALTITUDE_REFERENCE_RADIUS_KM;
     const eccentricity = (rApogee - rPerigee) / (rApogee + rPerigee);
     const isLeoDirect = apogeeAltKm < LEO_DIRECT_APOGEE_THRESHOLD_KM && eccentricity < LEO_DIRECT_ECC_THRESHOLD;
 
-    // Determine the altitude we ascend to
-    const insertionAltKm = isLeoDirect ? (perigeeAltKm + apogeeAltKm) / 2 : PARKING_ORBIT_ALT_KM;
-    const rInsertion = insertionAltKm + Earth.radiusMean;
+    /*
+     * LEO direct: ascend to the perigee altitude and insert horizontally with the perigee speed
+     * of the requested orbit, so the insertion point is the perigee and the apogee radius is
+     * rApogee. Transfer cases: ascend to a circular parking orbit.
+     */
+    const insertionAltKm = isLeoDirect ? perigeeAltKm : PARKING_ORBIT_ALT_KM;
+    const insertionApoapsisRadiusKm = isLeoDirect ? rApogee : null;
 
     // Phase 1: Ascent
-    const azimuthRad = LaunchTrajectoryGenerator.computeLaunchAzimuth(inclinationDeg, launchLatDeg, direction);
     const ascentDurationSec = LaunchTrajectoryGenerator.estimateAscentDuration_(insertionAltKm);
     const downrangeAtInsertionKm = LaunchTrajectoryGenerator.estimateDownrange_(insertionAltKm, ascentDurationSec);
 
-    const ascentStates = LaunchTrajectoryGenerator.generateAscentProfile_({
-      launchEpoch, launchLatDeg, launchLonDeg, launchAltKm, insertionAltKm,
-      azimuthRad, ascentDurationSec, downrangeKm: downrangeAtInsertionKm, stepSec: ascentStepSec,
-    });
+    const ascentStates = LaunchTrajectoryGenerator.solveAscentForInclination_(
+      (azimuthRad: number) => LaunchTrajectoryGenerator.generateAscentProfile_({
+        launchEpoch, launchLatDeg, launchLonDeg, launchAltKm, insertionAltKm,
+        azimuthRad, ascentDurationSec, downrangeKm: downrangeAtInsertionKm, stepSec: ascentStepSec,
+        apoapsisRadiusKm: insertionApoapsisRadiusKm,
+      }),
+      inclinationDeg,
+      launchLatDeg,
+      direction,
+    );
 
     if (ascentStates.length === 0) {
       return { states: [], insertionIndex: -1 };
@@ -160,7 +178,7 @@ export class LaunchTrajectoryGenerator {
 
     // Transfer required: parking orbit → transfer → final orbit
     const transferAndOrbit = LaunchTrajectoryGenerator.generateTransferPhase_(
-      insertionElements, rInsertion, rPerigee, rApogee, orbitDurationHours, orbitalStepSec,
+      insertionElements, insertionState.position.magnitude(), rPerigee, rApogee, orbitDurationHours, orbitalStepSec,
     );
 
     return { states: [...ascentStates, ...transferAndOrbit], insertionIndex };
@@ -219,8 +237,8 @@ export class LaunchTrajectoryGenerator {
     const insertionState = baseResult.states[insertionIndex];
 
     // Detect transfer orbit (GEO/HEO) vs LEO direct insertion
-    const rPerigee = config.perigeeAltKm + Earth.radiusMean;
-    const rApogee = config.apogeeAltKm + Earth.radiusMean;
+    const rPerigee = config.perigeeAltKm + ALTITUDE_REFERENCE_RADIUS_KM;
+    const rApogee = config.apogeeAltKm + ALTITUDE_REFERENCE_RADIUS_KM;
     const ecc = (rApogee - rPerigee) / (rApogee + rPerigee);
     const isLeoDirect = config.apogeeAltKm < LEO_DIRECT_APOGEE_THRESHOLD_KM && ecc < LEO_DIRECT_ECC_THRESHOLD;
 
@@ -229,7 +247,7 @@ export class LaunchTrajectoryGenerator {
 
     if (!isLeoDirect) {
       // Compute transfer duration analytically so we know when the circularization occurs
-      const rInsertion = PARKING_ORBIT_ALT_KM + Earth.radiusMean;
+      const rInsertion = insertionState.position.magnitude();
       const { tTransfer } = LaunchTrajectoryGenerator.computeGeneralizedTransfer(rInsertion, rPerigee, rApogee);
       const transferEndPosix = insertionState.epoch.posix + tTransfer;
 
@@ -257,12 +275,12 @@ export class LaunchTrajectoryGenerator {
     const burnPosix = burnResult.burnEpoch.posix;
     const lastBasePosix = baseResult.states[baseResult.states.length - 1].epoch.posix;
 
-    // Build states before the burn — either truncate base or extend with coast
+    // Build states before the burn: either truncate base or extend with coast
     let statesBeforeBurn: J2000[];
     let planeChangeIndex: number;
 
     if (burnPosix <= lastBasePosix) {
-      // Burn falls within the base trajectory — truncate at the burn point
+      // Burn falls within the base trajectory: truncate at the burn point
       let truncIdx = baseResult.states.length - 1;
 
       for (let i = 0; i < baseResult.states.length; i++) {
@@ -280,7 +298,7 @@ export class LaunchTrajectoryGenerator {
       statesBeforeBurn = baseResult.states.slice(0, truncIdx + 1);
       planeChangeIndex = truncIdx;
     } else {
-      // Burn is beyond the base trajectory — coast from last base state to burn
+      // Burn is beyond the base trajectory: coast from last base state to burn
       const lastBaseElements = baseResult.states[baseResult.states.length - 1].toClassicalElements();
       const coastSec = burnPosix - lastBasePosix;
       const coastHours = coastSec / 3600;
@@ -292,7 +310,7 @@ export class LaunchTrajectoryGenerator {
       planeChangeIndex = statesBeforeBurn.length - 1;
     }
 
-    // Corrected orbit after the burn — fill remaining duration
+    // Corrected orbit after the burn: fill remaining duration
     const ascentDurationSec = insertionState.epoch.posix - baseResult.states[0].epoch.posix;
     const plannedEndPosix = baseResult.states[0].epoch.posix + ascentDurationSec + orbitDurationHours * 3600;
     const remainingSec = Math.max(plannedEndPosix - burnPosix, 3600);
@@ -312,7 +330,10 @@ export class LaunchTrajectoryGenerator {
   }
 
   /**
-   * Compute launch azimuth from inclination and launch site latitude.
+   * Compute the inertial launch azimuth from inclination and launch site latitude,
+   * sin(azimuth) = cos(i) / cos(latitude), for a non-rotating Earth. The trajectory generator
+   * starts from this value and then corrects it for Earth rotation during ascent
+   * (see {@link LaunchTrajectoryGenerator.generateWithBoundary}).
    * @param incDeg Target inclination in degrees.
    * @param latDeg Launch site latitude in degrees.
    * @param direction 'N' for northbound, 'S' for southbound.
@@ -359,11 +380,83 @@ export class LaunchTrajectoryGenerator {
   }
 
   /**
-   * Estimate ascent duration based on target insertion altitude.
-   * Loosely calibrated: ~480s for 200km, ~540s for 400km, ~600s for 800km.
+   * Estimate ascent duration based on target insertion altitude: 420 s + 0.225 s/km.
+   * Gives 465 s for 200 km, 510 s for 400 km, 600 s for 800 km.
    */
   private static estimateAscentDuration_(insertionAltKm: number): number {
     return 420 + insertionAltKm * 0.225;
+  }
+
+  /**
+   * Fly the ascent with the azimuth that puts the J2000 insertion state on the requested
+   * inclination.
+   *
+   * The ascent ground track is a great circle on the rotating Earth, so flying the inertial
+   * azimuth of {@link computeLaunchAzimuth} adds Earth rotation to the insertion velocity and
+   * leaves the inclination about 1 deg low from KSC to 51.6 deg (and about 3 deg low from
+   * Vandenberg to 98.2 deg). The azimuth is therefore corrected by a secant search on the
+   * inclination of the insertion state, which is computed from its angular momentum
+   * h = r x v: cos(i) = h_z / |h|. When the requested inclination is below |latitude| (not
+   * reachable) the analytic, clamped azimuth is used unchanged. The search stays in the
+   * quadrant of the requested direction and keeps the best azimuth found.
+   * @param build Builds the ascent states for a given azimuth (radians from north)
+   * @param incDeg Requested inclination in degrees
+   * @param latDeg Launch site latitude in degrees
+   * @param direction 'N' or 'S'
+   * @returns Ascent states for the corrected azimuth
+   */
+  private static solveAscentForInclination_(
+    build: (azimuthRad: number) => J2000[],
+    incDeg: number,
+    latDeg: number,
+    direction: 'N' | 'S',
+  ): J2000[] {
+    const az0 = LaunchTrajectoryGenerator.computeLaunchAzimuth(incDeg, latDeg, direction);
+    const states0 = build(az0);
+    const cosRatio = Math.cos(incDeg * DEG2RAD) / Math.cos(latDeg * DEG2RAD);
+
+    if (states0.length < 2 || Math.abs(cosRatio) >= 1) {
+      return states0;
+    }
+
+    const insertionIncErr = (states: J2000[]): number => {
+      const last = states[states.length - 1];
+      const h = last.position.cross(last.velocity);
+
+      return Math.acos(Math.max(-1, Math.min(1, h.z / h.magnitude()))) * RAD2DEG - incDeg;
+    };
+    // Northbound azimuths lie in [-90, 90] deg, southbound in [90, 270] deg.
+    const azMin = direction === 'N' ? -Math.PI / 2 : Math.PI / 2;
+    const azMax = azMin + Math.PI;
+    const clampAz = (az: number) => Math.max(azMin, Math.min(azMax, az));
+
+    let best = { states: states0, err: Math.abs(insertionIncErr(states0)) };
+    let azA = az0;
+    let fA = insertionIncErr(states0);
+    let azB = clampAz(az0 + 0.01);
+    let statesB = build(azB);
+    let fB = insertionIncErr(statesB);
+
+    for (let iter = 0; iter < AZIMUTH_SEARCH_MAX_ITER; iter++) {
+      if (Math.abs(fB) < best.err) {
+        best = { states: statesB, err: Math.abs(fB) };
+      }
+      if (best.err < AZIMUTH_SEARCH_TOL_DEG || fB === fA) {
+        break;
+      }
+      const azNext = clampAz(azB - (fB * (azB - azA)) / (fB - fA));
+
+      if (!Number.isFinite(azNext) || azNext === azB) {
+        break;
+      }
+      azA = azB;
+      fA = fB;
+      azB = azNext;
+      statesB = build(azB);
+      fB = insertionIncErr(statesB);
+    }
+
+    return best.states;
   }
 
   /**
@@ -394,13 +487,17 @@ export class LaunchTrajectoryGenerator {
     ascentDurationSec: number;
     downrangeKm: number;
     stepSec: number;
+    /** Apoapsis radius (km) of the orbit entered at insertion; null for a circular orbit. */
+    apoapsisRadiusKm?: number | null;
   }): J2000[] {
     const {
       launchEpoch, launchLatDeg, launchLonDeg, launchAltKm, insertionAltKm,
-      azimuthRad, ascentDurationSec, downrangeKm, stepSec,
+      azimuthRad, ascentDurationSec, downrangeKm, stepSec, apoapsisRadiusKm = null,
     } = params;
     const states: J2000[] = [];
     const nSteps = Math.ceil(ascentDurationSec / stepSec);
+    // Actual sample spacing (the duration is split into nSteps equal steps)
+    const dtStep = ascentDurationSec / nSteps;
 
     // Compute the orbital velocity at insertion for downrange derivative matching
     const rInsert = (insertionAltKm + Earth.radiusMean);
@@ -440,7 +537,7 @@ export class LaunchTrajectoryGenerator {
 
       if (i === 0) {
         // Forward difference
-        const dt = stepSec;
+        const dt = dtStep;
         const next = positions[i + 1].pos;
 
         vel = new Vector3D<KilometersPerSecond>(
@@ -449,33 +546,33 @@ export class LaunchTrajectoryGenerator {
           (next.z - pos.z) / dt as KilometersPerSecond,
         );
       } else if (i === positions.length - 1) {
-        // Backward difference for direction — stays consistent with the
-        // ascent trajectory so there is no "dogleg" at insertion.  The
-        // local bearing drifts from the launch azimuth over 1000+ km of
-        // great-circle travel, so reusing the launch azimuth here would
-        // introduce a sudden heading change.
+        /*
+         * Insertion. The direction comes from the backward difference so it stays consistent
+         * with the ascent trajectory (no "dogleg"; the local bearing drifts from the launch
+         * azimuth over 1000+ km of travel). The radial component is removed so the insertion
+         * is horizontal, i.e. at perigee (or apogee) of the entered orbit, and the speed is the
+         * vis-viva speed at the actual insertion radius r for an orbit whose other apsis is
+         * apoapsisRadiusKm (circular when null): v = sqrt(mu (2/r - 1/a)), a = (r + rApsis) / 2.
+         */
         const prev = positions[i - 1].pos;
-        const rawVx = (pos.x - prev.x) / stepSec;
-        const rawVy = (pos.y - prev.y) / stepSec;
-        const rawVz = (pos.z - prev.z) / stepSec;
-        const rawMag = Math.sqrt(rawVx * rawVx + rawVy * rawVy + rawVz * rawVz);
+        const raw = pos.subtract(prev).scale(1 / dtStep);
+        const rMag = pos.magnitude();
+        const rHat = pos.scale(1 / rMag);
+        const horizontal = raw.subtract(rHat.scale(raw.dot(rHat)));
+        const horizontalMag = horizontal.magnitude();
+        const rApsis = apoapsisRadiusKm ?? rMag;
+        const sma = (rMag + rApsis) / 2;
+        const vInsert = Math.sqrt(Earth.mu * (2 / rMag - 1 / sma));
 
-        if (rawMag > 1e-10) {
-          // Scale to correct orbital speed while preserving trajectory direction
-          const scale = vOrbital / rawMag;
-
-          vel = new Vector3D<KilometersPerSecond>(
-            rawVx * scale as KilometersPerSecond,
-            rawVy * scale as KilometersPerSecond,
-            rawVz * scale as KilometersPerSecond,
-          );
+        if (horizontalMag > 1e-10) {
+          vel = horizontal.scale(vInsert / horizontalMag) as Vector3D<KilometersPerSecond>;
         } else {
-          // Degenerate case — fall back to azimuth-based computation
-          vel = LaunchTrajectoryGenerator.computeInsertionVelocity_(pos, azimuthRad, positions[i].epoch, vOrbital);
+          // Degenerate case: fall back to azimuth-based computation
+          vel = LaunchTrajectoryGenerator.computeInsertionVelocity_(pos, azimuthRad, positions[i].epoch, vInsert);
         }
       } else {
         // Central difference
-        const dt = 2 * stepSec;
+        const dt = 2 * dtStep;
         const prev = positions[i - 1].pos;
         const next = positions[i + 1].pos;
 
@@ -600,7 +697,7 @@ export class LaunchTrajectoryGenerator {
     const eastMag = Math.sqrt(east.x * east.x + east.y * east.y + east.z * east.z);
 
     if (eastMag < 1e-10) {
-      // Polar launch — velocity is purely along Z-cross-R
+      // Polar launch: velocity is purely along Z-cross-R
       return new Vector3D<KilometersPerSecond>(
         0 as KilometersPerSecond,
         0 as KilometersPerSecond,

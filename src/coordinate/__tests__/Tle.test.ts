@@ -107,8 +107,17 @@ describe('convert6DigitToA5', () => {
     expect(Tle.convert6DigitToA5('A2345')).toBe('A2345');
     expect(Tle.convert6DigitToA5('Z2345')).toBe('Z2345');
 
-    // Edge case - exactly 6 characters but first is already a letter
-    expect(Tle.convert6DigitToA5('B12345')).toBe('B12345');
+    /*
+     * Exactly 6 characters with a leading letter is an alpha-5 form with 5 trailing digits, which
+     * would decode to 1 112 345, above Z9999 = 339 999 (verifier fix M.11): a range error, not a
+     * silent pass-through. The inverse throws the same range message.
+     */
+    expect(() => Tle.convert6DigitToA5('B12345')).toThrow(/capacity \(max Z9999 = 339999\)/u);
+    expect(() => Tle.convertA5to6Digit('Z99999')).toThrow(/capacity \(max Z9999 = 339999\)/u);
+    expect(() => Tle.convertA5to6Digit('Z999')).not.toThrow();
+    expect(() => Tle.convertA5to6Digit('Z99A9')).toThrow(/4 trailing digits/u);
+    // Largest valid alpha-5 round-trips
+    expect(Tle.convertA5to6Digit(Tle.convert6DigitToA5('339999'))).toBe('339999');
   });
 
   it('should throw ValidationError when 6-digit input exceeds alpha-5 range', () => {

@@ -207,7 +207,15 @@ export class Sgp4 {
    * satKeys are attached to satrecs lazily on first propagation, so the
    * backend can be activated before or after satrecs are created. Satrecs
    * without TLE lines (e.g. built from an OMM) and TLEs the wasm library
-   * rejects fall back to the TypeScript implementation permanently.
+   * rejects fall back to the TypeScript implementation for as long as this
+   * backend stays active. After `clearWasmBackend()` and a new
+   * `useWasmBackend()`, satrecs re-attach to the new backend; old satKeys are
+   * never reused.
+   *
+   * Under the wasm backend the `whichconst` and `opsmode` arguments of
+   * `createSatrec` have no effect on propagation: the Astro Standards library
+   * uses its own constants and mode. A wasm failure returns false
+   * position/velocity and sets `satrec.error` to `WASM_PROPAGATION_FAILED`.
    * @param wasm A loaded wasm SGP4 instance.
    */
   static useWasmBackend(wasm: Sgp4WasmBackendLike): void {
@@ -410,11 +418,14 @@ export class Sgp4 {
      * ---- convert to sgp4 units ----
      * satrec.a = (satrec.no * tumin) ** (-2.0 / 3.0);
      */
-    /** Ootk -- Not sure why the following two lines are added. 1st and 2nd derivatives aren't even used anymore */
     /*
-     * Satrec.ndot /= xpdotp * 1440.0; // ? * minperday
-     * satrec.nddot /= xpdotp * 1440.0 * 1440;
+     * Store ndot in rad/min^2 and nddot in rad/min^3 like Vallado twoline2rv and python-sgp4.
+     * The TLE / OMM fields are ndot/2 in rev/day^2 and nddot/6 in rev/day^3; dividing by
+     * xpdotp = 1440 / 2pi converts rev/day to rad/min and each extra 1440 converts one /day to
+     * /min. The values are carried for reference only: SGP4 does not use them.
      */
+    satrec.ndot /= xpdotp * 1440.0;
+    satrec.nddot /= xpdotp * 1440.0 * 1440.0;
 
     // ---- find standard orbital elements ----
     satrec.inclo *= DEG2RAD;
@@ -517,11 +528,14 @@ export class Sgp4 {
      * ---- convert to sgp4 units ----
      * satrec.a = (satrec.no * tumin) ** (-2.0 / 3.0);
      */
-    /** Ootk -- Not sure why the following two lines are added. 1st and 2nd derivatives aren't even used anymore */
     /*
-     * Satrec.ndot /= xpdotp * 1440.0; // ? * minperday
-     * satrec.nddot /= xpdotp * 1440.0 * 1440;
+     * Store ndot in rad/min^2 and nddot in rad/min^3 like Vallado twoline2rv and python-sgp4.
+     * The TLE / OMM fields are ndot/2 in rev/day^2 and nddot/6 in rev/day^3; dividing by
+     * xpdotp = 1440 / 2pi converts rev/day to rad/min and each extra 1440 converts one /day to
+     * /min. The values are carried for reference only: SGP4 does not use them.
      */
+    satrec.ndot /= xpdotp * 1440.0;
+    satrec.nddot /= xpdotp * 1440.0 * 1440.0;
 
     // ---- find standard orbital elements ----
     satrec.inclo *= DEG2RAD;
@@ -1182,8 +1196,12 @@ export class Sgp4 {
       templ = templ + satrec.t3cof * t3 + t4 * (satrec.t4cof + satrec.t * satrec.t5cof);
     }
 
-    // Catch decayed satellites where tempa has gone negative.
-    // tempa^2 hides the sign, producing plausible position but absurd velocity.
+    /*
+     * Ootk deviation from Vallado sgp4.cpp and python-sgp4 (neither has this check): catch
+     * decayed satellites where tempa has gone non-positive. am uses tempa^2, which hides the
+     * sign, so the reference code continues with a plausible position but an absurd velocity
+     * until a later check trips. Here such a state reports SATELLITE_DECAYED (6) immediately.
+     */
     if (tempa <= 0) {
       satrec.error = Sgp4ErrorCode.SATELLITE_DECAYED;
 
@@ -1221,9 +1239,9 @@ export class Sgp4 {
      * Fix tolerance for error recognition
      * sgp4fix am is fixed from the previous nm check
      */
-    /* istanbul ignore next | This is no longer possible*/
+    // Eccentricity driven out of range by drag (tempe): Vallado sgp4.cpp sets error 1 here.
     if (em >= 1.0 || em < -0.001) {
-      satrec.error = Sgp4ErrorCode.MEAN_MOTION_NEGATIVE;
+      satrec.error = Sgp4ErrorCode.MEAN_ELEMENTS_INVALID;
 
       return { position: false, velocity: false };
     }
@@ -3086,6 +3104,15 @@ export class Sgp4 {
         dndt = nm - no;
       }
       nm = no + dndt;
+
+      /*
+       * Cache the resonance integrator state on the satrec, as Vallado's dspace does through its
+       * reference arguments, so the next call continues from atime instead of re-integrating from
+       * epoch. The restart test above still resets to epoch when t changes sign or moves back.
+       */
+      satrec.atime = atime;
+      satrec.xli = xli;
+      satrec.xni = xni;
     }
 
     return [em, argpm, inclm, mm, nodem, nm];

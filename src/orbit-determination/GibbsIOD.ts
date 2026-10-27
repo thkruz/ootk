@@ -39,7 +39,8 @@ export class GibbsIOD {
   /**
    * Attempt to create a state estimate from three inertial position vectors.
    *
-   * Throws an error if the positions are not coplanar.
+   * Throws an error if r1 lies more than 5 deg from the plane of r2 and r3, or if r2 and r3
+   * are collinear.
    * @param r1 Position vector 1.
    * @param r2 Position vector 2.
    * @param r3 Position vector 3.
@@ -54,7 +55,18 @@ export class GibbsIOD {
     t2: EpochUTC,
     t3: EpochUTC,
   ): J2000 {
-    const num = r1.normalize().dot(r2.normalize().cross(r3.normalize()));
+    /*
+     * Coplanarity angle of r1 from the r2/r3 plane (Vallado, 4th ed., Algorithm 54):
+     * alpha = 90 deg - acos(r1 . (r2 x r3) / (|r1| |r2 x r3|)). The cross product must be
+     * normalised; r2hat x r3hat alone has magnitude sin(theta23) and understates alpha.
+     */
+    const z23 = r2.cross(r3);
+    const z23m = z23.magnitude();
+
+    if (z23m === 0) {
+      throw new OrbitDeterminationError('Positions 2 and 3 are collinear; the orbit plane is undefined', 'Gibbs');
+    }
+    const num = Math.max(-1, Math.min(1, r1.dot(z23) / (r1.magnitude() * z23m)));
     const alpha = halfPi - Math.acos(num);
 
     if (Math.abs(alpha) > GibbsIOD.coplanarThreshold_) {

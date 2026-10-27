@@ -69,12 +69,31 @@ export class DataHandler {
   }
 
   /**
-   * Retrieves the number of leap seconds for a given Julian date.
-   * @param jd The Julian date.
-   * @returns The number of leap seconds.
+   * Number of terms in the IAU 1980 nutation series (106).
+   * @returns The row count of the IAU 1980 table.
+   */
+  getIau1980Count(): number {
+    return iau1980Data.count;
+  }
+
+  /**
+   * Retrieves TAI - UTC (seconds) for a Julian date on the UTC scale.
+   * @param jd The Julian date in UTC.
+   * @returns TAI - UTC in seconds.
    */
   getLeapSeconds(jd: number): number {
     return leapSecondData.getLeapSeconds(jd);
+  }
+
+  /**
+   * Retrieves TAI - UTC (seconds) for a Julian date on the TAI scale. Use this when
+   * converting a TAI, TT or GPS instant back to UTC; the UTC-scale lookup is off by one
+   * second for up to TAI - UTC seconds after each leap second.
+   * @param jdTai The Julian date in TAI.
+   * @returns TAI - UTC in seconds.
+   */
+  getLeapSecondsFromTai(jdTai: number): number {
+    return leapSecondData.getLeapSecondsFromTai(jdTai);
   }
 
   /**

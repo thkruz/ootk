@@ -64,7 +64,9 @@ export class RungeKutta4Propagator extends Propagator {
     interval = 60.0 as Seconds,
   ): VerletBlendInterpolator {
     // Compare raw POSIX seconds; relational operators on Epoch objects coerce via toISOString().
-    const tMvr = maneuvers.slice(0).filter((mvr) => mvr.start.posix <= finish.posix && mvr.stop.posix >= start.posix);
+    const tMvr = maneuvers
+      .filter((mvr) => mvr.start.posix <= finish.posix && mvr.stop.posix >= start.posix)
+      .sort((a, b) => a.start.posix - b.start.posix);
     const ephemeris: J2000[] = [];
 
     if (tMvr.length === 0 || tMvr[0].start.posix > start.posix) {

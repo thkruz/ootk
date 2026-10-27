@@ -13,7 +13,9 @@ import {
   RadecTopocentric,
   Radians,
   Seconds,
+  Vector3D,
 } from '@src/main';
+import { SingularMatrixError } from '@src/operations/SingularMatrixError';
 import { GroundStation } from '../../objects/GroundStation';
 import { Observation } from '@src/observation/Observation';
 import { ObservationOptical } from '@src/observation/ObservationOptical';
@@ -273,5 +275,51 @@ describe('BatchLeastSquaresOD - Covariance Output', () => {
     }
 
     expect(trace20).toBeLessThan(trace6);
+  });
+});
+
+/*
+ * QA 2026-10 regression (report 2.5, BatchLeastSquaresOD.ts:51 and 132-174).
+ * The "varying numbers of observations" tests above used to run all 250 iterations: with
+ * noiseless data the weighted RMS sits at round-off (about 5e-12) and changes by tens of
+ * percent per iteration, so the purely relative tolerance never triggered and the radar case
+ * took about 2.6 s alone (over the 5 s default timeout under full-suite load).
+ */
+describe('BatchLeastSquaresOD - convergence reporting', () => {
+  const startEpoch = EpochUTC.fromDateTimeString('2024-01-01T12:00:00.000Z');
+  const propagator = new KeplerPropagator(createLeoOrbit(startEpoch));
+  const sensor = createSensor('eastCoast');
+  const truthState = propagator.propagate(startEpoch);
+
+  it('converges in a few iterations on noiseless data instead of exhausting maxIter', () => {
+    const observations = generateRadarObservations(propagator, sensor, generateEpochs(startEpoch, 20, 30));
+    const result = new BatchLeastSquaresOD(observations, truthState).solve({ tolerance: 1e-6, maxIter: 5 });
+
+    expect(result.converged).toBe(true);
+    expect(result.rms).toBeLessThan(1e-5);
+  });
+
+  it('returns an rms that belongs to the returned state', () => {
+    const observations = generateRadarObservations(propagator, sensor, generateEpochs(startEpoch, 10, 30));
+    const apriori = new J2000(
+      truthState.epoch,
+      truthState.position.add(new Vector3D(5 as Kilometers, -3 as Kilometers, 2 as Kilometers)),
+      truthState.velocity,
+    );
+
+    for (const maxIter of [2, 250]) {
+      const result = new BatchLeastSquaresOD(observations, apriori).solve({ tolerance: 1e-3, maxIter });
+      // maxIter = 0 evaluates the residuals once at the apriori without stepping.
+      const check = new BatchLeastSquaresOD(observations, result.state).solve({ maxIter: 0 });
+
+      expect(check.converged).toBe(false);
+      expect(Math.abs(check.rms - result.rms)).toBeLessThanOrEqual(1e-6 * Math.max(result.rms, 1e-6));
+    }
+  });
+
+  it('throws SingularMatrixError when one radar observation cannot determine six state components', () => {
+    const observations = generateRadarObservations(propagator, sensor, [startEpoch]);
+
+    expect(() => new BatchLeastSquaresOD(observations, truthState).solve()).toThrow(SingularMatrixError);
   });
 });

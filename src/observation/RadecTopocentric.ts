@@ -26,9 +26,9 @@ import { AngularDistanceMethod } from '../enums/AngularDistanceMethod';
 import { Degrees, DegreesPerSecond, Kilometers, KilometersPerSecond, Radians, RadiansPerSecond } from '../types/types';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
-import { DEG2RAD, RAD2DEG, TAU } from '../utils/constants';
+import { DEG2RAD, RAD2DEG } from '../utils/constants';
 import { angularDistance } from '../utils/functions';
-import { radecToPosition, radecToVelocity } from './ObservationUtils';
+import { radecToPosition, radecToVelocity, wrapTwoPi } from './ObservationUtils';
 
 /**
  * Represents a topocentric right ascension and declination observation.
@@ -78,8 +78,8 @@ export class RadecTopocentric {
       ? declinationRateDegrees * DEG2RAD as RadiansPerSecond
       : null;
 
-    // Normalize right ascension to [-pi, pi)
-    const normalizedRA = (((rightAscensionDegrees * DEG2RAD + Math.PI) % TAU + TAU) % TAU - Math.PI) as Radians;
+    // Normalize right ascension to [0, 2pi), the same convention as RadecGeocentric
+    const normalizedRA = wrapTwoPi(rightAscensionDegrees * DEG2RAD);
 
     return new RadecTopocentric(
       epoch,
@@ -123,7 +123,8 @@ export class RadecTopocentric {
 
     return new RadecTopocentric(
       state.epoch,
-      rightAscension % TAU as Radians,
+      // [0, 2pi), the same convention as RadecGeocentric (atan2 returns (-pi, pi])
+      wrapTwoPi(rightAscension),
       declination as Radians,
       pMag,
       rightAscensionRate as RadiansPerSecond,
