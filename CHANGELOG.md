@@ -3,7 +3,16 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
+#### [v8.0.0](https://github.com/thkruz/ootk/compare/v7.2.0...v8.0.0)
+
+- Release 8.0.0: correctness release with breaking API and output changes [`#53`](https://github.com/thkruz/ootk/pull/53)
+- docs(upgrade): add the 8.0.0 upgrade guide and cut the major release [`ba9d022`](https://github.com/thkruz/ootk/commit/ba9d022db23ca3982b25e276cb1664aceef52f4a)
+- test(setup): :white_check_mark: pin the test timezone to a fixed UTC-5 zone [`964d7d2`](https://github.com/thkruz/ootk/commit/964d7d22ed3a7167ab004154eef4776b05ec1083)
+- build(deps): :wrench: override minimatch to clear the pnpm audit gate [`e23a56b`](https://github.com/thkruz/ootk/commit/e23a56bf926e2eb4589851be28e55c2e8f0d49f3)
+
 #### [v7.2.0](https://github.com/thkruz/ootk/compare/v7.1.0...v7.2.0)
+
+> 14 October 2026 
 
 - Enhance field of view with interpolated masks and geometry helpers [`#52`](https://github.com/thkruz/ootk/pull/52)
 - feat(ootk): :boom: release 8.0.0 with the QA deep-dive fixes [`9e6f249`](https://github.com/thkruz/ootk/commit/9e6f2492314e501771d00314b4364d0538a5bf1b)
@@ -14,6 +23,7 @@ messages, it details updates like bug fixes and new features, providing a clear 
 - perf(conjunction): :zap: add opt-in coarse-to-fine TCA search for long windows [`9108cdd`](https://github.com/thkruz/ootk/commit/9108cddfa54b2086b8e27a706b5b5ac81ccc5bcf)
 - perf(conjunction): :zap: stop 2D Pc quadrature stall with a narrow-interval normal integral, analytic Pc bound and absolute error floor [`bf6225e`](https://github.com/thkruz/ootk/commit/bf6225eabfe7544e20716fdd3aebe44d4c3cc0dc)
 - feat(breakup): :sparkles: anchor the epoch search on the launch date, report none in final windows and floor flat-valley sigma [`e31f5a9`](https://github.com/thkruz/ootk/commit/e31f5a91589a7b3ce4ef34ab6ccf1982000f2391)
+- chore(release): :wrench: 7.2.0 [skip ci] [`8db6c8e`](https://github.com/thkruz/ootk/commit/8db6c8e5609d3956459b5054aeccd17d92fb0403)
 - feat(photometry): :sparkles: add solar phase angle and apparent magnitude from standard magnitude [`7e75df6`](https://github.com/thkruz/ootk/commit/7e75df652be81cd16d4e3a9d3e452cec7f738354)
 - test(integration): :white_check_mark: fix unit types in orbital elements and sensor tests [`1ec25f8`](https://github.com/thkruz/ootk/commit/1ec25f8314fa0370ab4cae1a6eea3716b95cf82c)
 - test(integration): :white_check_mark: fix unit types in lambert and iod tests [`8f3844e`](https://github.com/thkruz/ootk/commit/8f3844ea0bc37f67d30745916e05df2ec679adb0)
