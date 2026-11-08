@@ -136,7 +136,7 @@ describe('jamming resistance factor Q', () => {
   const fs = GPS_L1_CA.carrierFrequencyHz;
   const bw = GPS_L1_CA.defaultReceiverBandwidthHz;
 
-  it('narrowband jammer at the spectral peak: Q = 1 (Kaplan Table 6.2 / Eq. 6.13)', () => {
+  it('narrowband jammer at the spectral peak: Q = 1 (Kaplan Table 6.3 / Eq. 6.13)', () => {
     const r = calculateJammingResistanceFactor(GPS_L1_CA, { centerFrequencyHz: fs, bandwidthHz: 0, spectralType: 'narrowband' }, bw);
 
     expect(r.q).toBeCloseTo(1, 12);

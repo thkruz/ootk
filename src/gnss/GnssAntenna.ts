@@ -111,8 +111,9 @@ export class GnssAntenna extends Antenna {
    * Hegarty give: about -3 dBic at the 5 degree elevation mask and +1.5 dBic at zenith (Understanding
    * GPS: Principles and Applications, 2nd ed., 2006, pp. 262 to 263). Kaplan states that between
    * these elevations the gain "tends to increase slightly" and gives no curve, so the straight line
-   * in dB between the anchors is an assumption of this library, and gain below 5 degrees is held at
-   * -3 dBic (a floor, not a Kaplan value). For anything else build a {@link GnssAntenna} from the
+   * in dB between the anchors is an assumption of this library, and gain below 5 degrees, including
+   * below the horizon, is held at -3 dBic (a floor, not a Kaplan value; a real antenna rolls off
+   * further, so low-elevation and below-horizon jammer power is overestimated). For anything else build a {@link GnssAntenna} from the
    * antenna's measured pattern.
    */
   static typicalFrpa(): GnssAntenna {

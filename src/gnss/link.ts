@@ -265,7 +265,10 @@ export interface JammingResistance {
  * The in-band fraction is `overlap / bandwidth` of the interferer band with the receiver band;
  * a narrowband or matched interferer is wholly in band when its center is inside the receiver band
  * and wholly out of band otherwise. Out-of-band leakage through the receiver filter skirts is not
- * modelled.
+ * modelled. Not modelled either: the offset of the jammer within the receiver band (the in-band
+ * power is assumed to pass at full gain, so the receiver filter shape is ignored), and for
+ * matched-spectrum interferers the Q = 1.5 value assumes the interferer spectrum equals the
+ * signal's, regardless of the stated bandwidth or center offset.
  *
  * @param signal - Desired signal.
  * @param interferer - Interferer spectrum fields (center frequency, bandwidth, type, optional Q).

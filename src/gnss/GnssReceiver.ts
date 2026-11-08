@@ -260,8 +260,10 @@ export class GnssReceiver {
         { signal: this.signal, rxGainDbic: gain, implementationLossDb: this.implementationLossDb, powerOffsetDb: sat.powerOffsetDb },
         this.systemTemperatureK,
       );
-      // C = C/N0 + N0 (dBW); J/C in dB for each in-band interferer.
-      const cDbw = cn0 + noiseDbw;
+      // J/C in dB for each in-band interferer. Implementation loss L degrades signal and jammer alike
+      // (Kaplan and Hegarty 2006, Eq. 6.24, p. 263, where L cancels in J/S), so J/C uses the signal
+      // power before L: C = C/N0 + N0 + L (dBW). C/N0 itself already carries L.
+      const cDbw = cn0 + noiseDbw + this.implementationLossDb;
       const terms = jammers.filter((j) => j.inBandFraction > 0).map((j) => ({ jOverCDb: j.jammerPowerDbw - cDbw, q: j.q }));
       const eff = calculateEffectiveCn0(cn0, terms, this.signal.chipRateHz);
 

@@ -12,7 +12,7 @@ import type { Degrees, Kilometers, TleLine1, TleLine2 } from '../../types/types'
 import { GnssAntenna } from '../GnssAntenna';
 import { GnssReceiver, type GnssSatellite, type GnssReceiverParams } from '../GnssReceiver';
 import { GPS_L1_CA } from '../GnssSignal';
-import { BOLTZMANN_J_PER_K, systemNoiseTemperatureK } from '../link';
+import { BOLTZMANN_J_PER_K, calculateInterfererAtReceiver, calculateJammingResistanceFactor, systemNoiseTemperatureK } from '../link';
 import { GPS_TLES } from './gps-tles.fixture';
 
 const C_M_S = 299792458;
@@ -217,6 +217,96 @@ describe('jammer range (Kaplan and Hegarty 2006 Eq. 6.8 with FSPL solved analyti
     };
 
     expect(rx.step(T0, site, sats, [jam]).timeSinceLastFixSec).toBeNull();
+  });
+});
+
+describe('implementation loss cancels in J/C (Kaplan and Hegarty 2006, Eq. 6.24, p. 263)', () => {
+  const fs = GPS_L1_CA.carrierFrequencyHz;
+  const bw = GPS_L1_CA.defaultReceiverBandwidthHz;
+  const tsys = systemNoiseTemperatureK(NOISE);
+  const n0Dbw = 10 * Math.log10(BOLTZMANN_J_PER_K * tsys);
+  const lossDb = 2; // Kaplan's worked example uses L = 2 dB
+
+  /** One tracked satellite, receiver with L = 2 dB, optional powerOffsetDb on the satellite. */
+  const firstTracked = (offset: number): { rx: GnssReceiver; id: string; cn0: number; az: number; el: number; sat: GnssSatellite } => {
+    const rx = makeReceiver({ implementationLossDb: lossDb, noise: NOISE });
+    const probe = rx.step(T0, site, sats);
+    const t = probe.satellites.find((s) => s.state === 'tracking')!;
+    const sat: GnssSatellite = { ...sats.find((s) => s.id === t.id)!, powerOffsetDb: offset };
+
+    rx.reset();
+
+    return { rx, id: t.id, cn0: t.cn0DbHz!, az: t.az!, el: t.el!, sat };
+  };
+
+  // Table 6.4, BLWN row: unjammed C/N0 = 41.9 dB-Hz (with L = 2 dB), 28 dB-Hz threshold, Q = 2.22, J/S at the
+  // antenna input 39.9 dB with Gsv - Gj = 4.5 dB, so the inside-receiver J/C is 39.9 - 4.5 = 35.4 dB
+  // (calculateJammingToSignalForCn0(41.9, 28, 2.22) is checked against this in link.test.ts). Here the whole receiver
+  // path is run: the satellite power offset tunes C/N0 to 41.9 exactly, the jammer is set so J/C measured against the
+  // signal BEFORE L equals 35.4 dB, and the effective C/N0 must come out at 28.0 dB-Hz. Published to 0.1 dB.
+  it('reproduces Table 6.4 (J/S 39.9 dB, Q 2.22 gives 28 dB-Hz) with L = 2 dB', () => {
+    const { rx, cn0, sat } = firstTracked(0);
+    const shifted = firstTracked(41.9 - cn0);
+    const q = calculateJammingResistanceFactor(GPS_L1_CA, { centerFrequencyHz: fs, bandwidthHz: 2 * GPS_L1_CA.chipRateHz, spectralType: 'bandlimited-noise' }, bw);
+    const base = { position: { lat: site.lat, lon: site.lon, alt: (site.alt + 10) as Kilometers }, eirpDbw: 0, centerFrequencyHz: fs, bandwidthHz: 2 * GPS_L1_CA.chipRateHz, spectralType: 'bandlimited-noise' as const };
+    const p0 = calculateInterfererAtReceiver(base, site.lla(), GnssAntenna.typicalFrpa(), GPS_L1_CA, bw, T0).jammerPowerDbw;
+
+    expect(sat.id).toBe(shifted.id);
+    const rx2 = shifted.rx;
+    const unjammed = rx2.step(T0, site, [shifted.sat]);
+
+    expect(unjammed.satellites[0].cn0DbHz).toBeCloseTo(41.9, 9);
+    expect(q.q).toBeCloseTo(2.22, 2);
+    rx2.reset();
+    const cRawDbw = 41.9 + n0Dbw + lossDb; // signal power before L
+    const jammer = { ...base, eirpDbw: cRawDbw + 35.4 - p0 };
+    const jammed = rx2.step(T0, site, [shifted.sat], [jammer]);
+
+    expect(rx).toBeDefined();
+    expect(Math.abs(jammed.satellites[0].effectiveCn0DbHz! - 28)).toBeLessThan(0.1);
+  });
+
+  // The old code put L on the signal only, so J/C was 2 dB too large and the effective C/N0 about 1 dB low here.
+  // Independent check of the same case through Eq. 6.8 directly with Craw.
+  it('J/C seen by the receiver equals Jraw/Craw regardless of L', () => {
+    const a = firstTracked(0);
+    const cn0 = a.cn0;
+    const rawC = cn0 + n0Dbw + lossDb;
+    const base = { position: { lat: site.lat, lon: site.lon, alt: (site.alt + 10) as Kilometers }, eirpDbw: -10, centerFrequencyHz: fs, bandwidthHz: 0, spectralType: 'narrowband' as const };
+    const p = calculateInterfererAtReceiver(base, site.lla(), GnssAntenna.typicalFrpa(), GPS_L1_CA, bw, T0).jammerPowerDbw;
+    const eff = a.rx.step(T0, site, sats, [base]).satellites.find((s) => s.id === a.id)!.effectiveCn0DbHz!;
+    const expected = -10 * Math.log10(10 ** (-cn0 / 10) + (10 ** ((p - rawC) / 10)) / (1 * GPS_L1_CA.chipRateHz));
+
+    expect(eff).toBeCloseTo(expected, 6);
+  });
+
+  // Lock-loss distance: the analytic threshold uses J/C = J/S-type ratio against the signal before L, so the
+  // distance depends on L only through the unjammed C/N0 it produces. Solve it analytically with Craw = C/N0 + N0 + L.
+  it('the lock-loss jammer distance brackets the analytic threshold computed with the signal before L', () => {
+    const eirpDbw = -12;
+    const probe = firstTracked(0);
+    const cn0 = probe.cn0;
+    const jc = GPS_L1_CA.chipRateHz * (10 ** -2.8 - 10 ** (-cn0 / 10));
+    const jThr = cn0 + n0Dbw + lossDb + 10 * Math.log10(jc);
+    const fspl = eirpDbw + 1.5 - jThr;
+    const dKm = ((C_M_S / (4 * Math.PI * fs)) * 10 ** (fspl / 20)) / 1000;
+    const stateAt = (scale: number): string => {
+      const t = firstTracked(0);
+      const jammer = {
+        position: { lat: site.lat, lon: site.lon, alt: (site.alt + dKm * scale) as Kilometers },
+        eirpDbw,
+        centerFrequencyHz: fs,
+        bandwidthHz: 0,
+        spectralType: 'narrowband' as const,
+      };
+
+      t.rx.step(T0, site, sats);
+
+      return t.rx.step(at(1), site, sats, [jammer]).satellites.find((s) => s.id === t.id)!.state;
+    };
+
+    expect(stateAt(0.98)).toBe('lost');
+    expect(stateAt(1.02)).toBe('tracking');
   });
 });
 

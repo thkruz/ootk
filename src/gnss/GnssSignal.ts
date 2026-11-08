@@ -131,7 +131,9 @@ export const GPS_L2C: GnssSignal = Object.freeze<GnssSignal>({
 
 /**
  * GPS L1C (composite of L1CD data and L1CP pilot). Minimum received power -157.0 dBW terrestrial
- * for the composite signal (pilot -158.25 dBW, data -163 dBW). Source: IS-GPS-800H (13 Apr 2021)
+ * for the composite signal (pilot -158.25 dBW, data -163 dBW, read in IS-GPS-800H Table 3.2-1). A
+ * receiver that tracks only the L1CP pilot sees about -158.25 dBW, 1.25 dB below the composite value
+ * used here, so subtract that from a pilot-only C/N0 budget (use `powerOffsetDb`). Source: IS-GPS-800H (13 Apr 2021)
  * Table 3.2-1, p. 7, and Para. 3.2.1.9, p. 6: 3 dBi linearly polarized antenna, SV above 5
  * degrees, 0.5 dB atmospheric loss assumed. Chip rate 1.023 Mcps, 30.69 MHz band (Para. 3.2.1.1).
  * Modulation BOC(1,1) data and TMBOC pilot; Q values are the lower bounds of Kaplan's BOC ranges
@@ -174,8 +176,9 @@ export const GPS_L5: GnssSignal = Object.freeze<GnssSignal>({
 /**
  * Galileo E1 Open Service (E1-B and E1-C combined). Minimum received power -157.25 dBW at an ideally
  * matched 0 dBi RHCP antenna, user elevation above 5 degrees. Source: Galileo OS SIS ICD Issue 2.1
- * (Nov 2023), Table 12, p. 13, as read in earlier project research, not re-read from the PDF in
- * this package: secondary. CBOC(6,1,1/11) modulation; Q values are the lower bounds of Kaplan's BOC
+ * (Nov 2023), Table 12, p. 13, read directly: "E1-B/C (total B+C)" minimum -157.25 dBW, maximum
+ * -152 dBW, for user elevation angles above 5 degrees, measured at the output of an ideally matched
+ * RHCP 0 dBi user antenna. Secondary because the bandwidth is assumed. CBOC(6,1,1/11) modulation; Q values are the lower bounds of Kaplan's BOC
  * ranges (approximation). Receiver bandwidth 24.552 MHz is an assumption (the E1 reference band
  * of the ICD is not verified here).
  */
@@ -189,7 +192,7 @@ export const GALILEO_E1_OS: GnssSignal = Object.freeze<GnssSignal>({
   referenceAntennaGainDbic: 0,
   minimumElevationDeg: 5,
   defaultReceiverBandwidthHz: 24.552 * MHZ,
-  source: 'Galileo OS SIS ICD v2.1 Table 12 p.13 (earlier project research, not re-read); bandwidth assumed; Q per Kaplan BOC lower bounds',
+  source: 'Galileo OS SIS ICD v2.1 Table 12 p.13 (E1-B/C total -157.25 dBW, above 5 deg, ideally matched RHCP 0 dBi; read); bandwidth assumed; Q per Kaplan BOC lower bounds',
   sourceQuality: 'secondary',
 });
 
