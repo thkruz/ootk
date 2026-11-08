@@ -17,6 +17,7 @@
 
 import type { GroundObject } from '../objects/GroundObject';
 import type { SpaceObject } from '../objects/SpaceObject';
+import type { Degrees, Kilometers } from '../types/types';
 
 // ==================== Unit Type Aliases ====================
 
@@ -98,6 +99,65 @@ export interface LinkBudget {
   distance: number;
   /** Frequency used for calculation (Hz) */
   frequency: Hertz;
+  /** Transmit antenna gain toward the receiver (dBi). Peak gain unless the antenna has a pattern. */
+  txAntennaGain?: Decibels;
+  /** Receive antenna gain toward the transmitter (dBi). Peak gain unless the antenna has a pattern. */
+  rxAntennaGain?: Decibels;
+  /** Additional loss terms applied (fixed caller terms, then model terms), each a positive loss in dB */
+  losses?: LinkLossTerm[];
+  /** Sum of `losses` (dB, positive = loss) */
+  totalAdditionalLoss?: Decibels;
+  /** Geometry the budget was computed from */
+  geometry?: LinkGeometry;
+}
+
+/** One named loss contribution to a link budget. */
+export interface LinkLossTerm {
+  /** Label, for example "rain" or "pointing" */
+  name: string;
+  /** Loss in dB; positive reduces received power */
+  db: Decibels;
+}
+
+/** Look direction and position of a ground-mounted link end. */
+export interface LinkEndGeometry {
+  /** Azimuth from this end toward the other end (deg, clockwise from north) */
+  lookAz: Degrees;
+  /** Elevation from this end toward the other end (deg above local horizon) */
+  lookEl: Degrees;
+  /** Geodetic latitude of this end (deg) */
+  latitude: Degrees;
+  /** Altitude above the WGS84 ellipsoid (km) */
+  altitude: Kilometers;
+}
+
+/**
+ * Geometry between the two ends of a link, computed once per link budget call.
+ * An end that is a space platform has no entry (its body-frame attitude is not modelled).
+ */
+export interface LinkGeometry {
+  /** Straight-line distance between the ends (km) */
+  distance: Kilometers;
+  /** Transmit end geometry, present only when the transmitter is on a ground object */
+  tx?: LinkEndGeometry;
+  /** Receive end geometry, present only when the receiver is on a ground object */
+  rx?: LinkEndGeometry;
+}
+
+/**
+ * Function producing extra loss terms (atmosphere, rain, ...) for a link.
+ * @param geometry - Link geometry for this call
+ * @param frequency - Carrier frequency in Hz
+ * @returns Loss terms in dB (positive = loss)
+ */
+export type LinkLossModel = (geometry: LinkGeometry, frequency: Hertz) => LinkLossTerm[];
+
+/** Options for `Transmitter.calculateLinkBudget`. */
+export interface LinkBudgetOptions {
+  /** Fixed caller-supplied loss terms */
+  losses?: LinkLossTerm[];
+  /** Models evaluated against the link geometry; their terms follow the fixed terms */
+  lossModels?: LinkLossModel[];
 }
 
 /**

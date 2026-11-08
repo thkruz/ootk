@@ -16,6 +16,7 @@
  */
 
 import { ValidationError } from '../errors';
+import type { Degrees } from '../types/types';
 import { Decibels, SerializedAntenna } from './CommTypes';
 
 /**
@@ -148,6 +149,25 @@ export class Antenna {
     const floorLoss = Math.min(0, -10 - this.gain);
 
     return Math.max(mainLobeLoss, floorLoss) as Decibels;
+  }
+
+  /**
+   * Gain toward a look direction, in the local topocentric (ENU azimuth/elevation) frame of the
+   * platform the antenna is mounted on (azimuth clockwise from true north, elevation above the
+   * local horizon).
+   *
+   * The base antenna has no pattern model and returns its peak {@link gain} for every direction,
+   * so existing link budgets are unchanged. Subclasses with a direction-dependent pattern (a phased
+   * array, a patch antenna) override this. Link budgets call it only for an end mounted on a
+   * ground object; a space platform's body-frame attitude is not modelled, so its antenna is
+   * evaluated at peak gain.
+   *
+   * @param _lookAz - Azimuth of the look direction in degrees (0 to 360, clockwise from north)
+   * @param _lookEl - Elevation of the look direction in degrees (-90 to 90)
+   * @returns Antenna gain toward that direction in dBi
+   */
+  getGainToward(_lookAz: Degrees, _lookEl: Degrees): Decibels {
+    return this.gain;
   }
 
   /**
