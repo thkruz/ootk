@@ -42,6 +42,10 @@ export const rainHeightFromIsotherm = (isothermHeight: Kilometers): Kilometers =
  * Map-free rain height estimate from station latitude, the model of ITU-R P.839-2 (10/1999), which was superseded
  * by the map in P.839-3 and P.839-4. With latitude phi in degrees:
  *
+ * ITU-R P.839-2 recommends 1 approximates the mean rain height h_R by h_0, the mean 0 degC isotherm height,
+ * with no offset; the +0.36 km of {@link rainHeightFromIsotherm} was introduced in P.839-3. So the values below
+ * are h_0 used directly as h_R, as in P.839-2.
+ *
  * - phi > 23 (north): h_R = 5.0 - 0.075 (phi - 23)
  * - 0 <= phi <= 23: h_R = 5.0
  * - -21 <= phi < 0: h_R = 5.0

@@ -25,7 +25,11 @@ const DEG2RAD = Math.PI / 180;
 /** Default far-sidelobe gain outside the scan limit: -10 dBi, the ITU-R S.465 far-sidelobe level used by {@link Antenna}. */
 export const DEFAULT_PHASED_ARRAY_SIDELOBE_FLOOR_DBI = -10;
 
-/** Default total scan-loss exponent (see {@link PhasedArrayAntennaParams.scanLossExponent}). */
+/**
+ * Default total scan-loss exponent (see {@link PhasedArrayAntennaParams.scanLossExponent}). 1.3 is
+ * taken from the 1.2 to 1.5 range typical of real arrays given in the originating feature request
+ * (ootk issue); it is a modelling default, not a value from a cited standard or paper.
+ */
 export const DEFAULT_SCAN_LOSS_EXPONENT = 1.3;
 
 /** Parameters for constructing a PhasedArrayAntenna. */
@@ -84,7 +88,8 @@ export interface SerializedPhasedArrayAntenna extends SerializedAntenna {
  *
  * where n is the TOTAL roll-off exponent. n = 1 is the physical projected-aperture loss (the
  * effective area of a flat aperture is A cos theta; Balanis, Antenna Theory, 4th ed., ch. 2 and
- * ch. 12). n greater than 1 adds element-pattern roll-off, as seen on real arrays. Beyond
+ * ch. 12). n greater than 1 adds element-pattern roll-off, as seen on real arrays. Inside the scan
+ * limit the gain is clamped to not fall below the sidelobe floor. Beyond
  * maxScanAngle, or for a target behind the panel, the gain is the sidelobe floor.
  *
  * Directions are in the topocentric ENU look frame used by {@link Antenna.getGainToward}, so the
@@ -218,7 +223,9 @@ export class PhasedArrayAntenna extends Antenna {
       return (this.sidelobeFloor - this.gain) as Decibels;
     }
 
-    return (10 * this.scanLossExponent * Math.log10(c)) as Decibels;
+    // Never below the sidelobe floor inside the scan limit, so the gain does not dip under the floor
+    // (e.g. a 5 dBi peak scanned to 89 degrees) and then jump up past maxScanAngle.
+    return Math.max(10 * this.scanLossExponent * Math.log10(c), this.sidelobeFloor - this.gain) as Decibels;
   }
 
   /**

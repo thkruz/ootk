@@ -17,6 +17,7 @@
 
 import type { J2000 } from '../coordinate/J2000';
 import { ValidationError } from '../errors';
+import { DynamicGroundObject } from '../objects/DynamicGroundObject';
 import type { CommunicationDeviceInterface } from '../objects/ObjectTypes';
 import { CommDeviceType, CommPlatform, SerializedCommDevice } from './CommTypes';
 
@@ -128,9 +129,23 @@ export abstract class CommunicationDevice implements CommunicationDeviceInterfac
    * @param date - Time for position calculation (defaults to now)
    * @returns J2000 state vector
    * @throws Error if no parent platform assigned
+   * @throws ValidationError if the parent is a moving ground object with no position at `date`
    */
   getJ2000(date: Date = new Date()): J2000 {
-    return this.parent.toJ2000(date);
+    const parent = this.parent;
+
+    // A moving ground object's toJ2000() would use its first waypoint; evaluate it at `date` instead.
+    if (parent instanceof DynamicGroundObject) {
+      const state = parent.getJ2000(date);
+
+      if (!state) {
+        throw new ValidationError('Moving ground object has no position at this time', 'date', date);
+      }
+
+      return state;
+    }
+
+    return parent.toJ2000(date);
   }
 
   /**

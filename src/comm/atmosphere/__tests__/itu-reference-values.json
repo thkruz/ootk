@@ -449,71 +449,63 @@
  },
  "P839": {
   "version": "P.839-4",
-  "note": "hR = h0 + 0.36 km. h0 needs the P.839-4 map. fallback_P839_2_h0_km is the map-free latitude formula from P.839-2 (hR = h0 there, no +0.36).",
+  "note": "hR = h0 + 0.36 km. h0 needs the P.839-4 map.",
   "cases": [
    {
     "source": "sheet P.839-4 Rain_Height row 22",
     "lat": 3.133,
     "lon": 101.7,
     "h0_km": 4.5979744,
-    "hR_km": 4.9579744,
-    "fallback_P839_2_h0_km": 5
+    "hR_km": 4.9579744
    },
    {
     "source": "sheet P.839-4 Rain_Height row 23",
     "lat": 22.9,
     "lon": -43.23,
     "h0_km": 3.79877866666667,
-    "hR_km": 4.15877866666667,
-    "fallback_P839_2_h0_km": 5
+    "hR_km": 4.15877866666667
    },
    {
     "source": "sheet P.839-4 Rain_Height row 24",
     "lat": 23,
     "lon": 30,
     "h0_km": 4.168,
-    "hR_km": 4.528,
-    "fallback_P839_2_h0_km": 5
+    "hR_km": 4.528
    },
    {
     "source": "sheet P.839-4 Rain_Height row 25",
     "lat": 25.78,
     "lon": -80.22,
     "h0_km": 4.20946133333333,
-    "hR_km": 4.56946133333334,
-    "fallback_P839_2_h0_km": 4.7915
+    "hR_km": 4.56946133333334
    },
    {
     "source": "sheet P.839-4 Rain_Height row 26",
     "lat": 28.717,
     "lon": 77.3,
     "h0_km": 4.89820404444444,
-    "hR_km": 5.25820404444445,
-    "fallback_P839_2_h0_km": 4.571225
+    "hR_km": 5.25820404444445
    },
    {
     "source": "sheet P.839-4 Rain_Height row 27",
     "lat": 33.94,
     "lon": 18.43,
     "h0_km": 2.20330275555556,
-    "hR_km": 2.56330275555556,
-    "fallback_P839_2_h0_km": 4.1795
+    "hR_km": 2.56330275555556
    },
    {
     "source": "sheet P.839-4 Rain_Height row 28",
     "lat": 41.9,
     "lon": 12.49,
     "h0_km": 2.68749333333333,
-    "hR_km": 3.04749333333333,
-    "fallback_P839_2_h0_km": 3.5825000000000005
+    "hR_km": 3.04749333333333
    },
    {
     "source": "sheet P.839-4 Rain_Height row 29",
     "lat": 51.5,
     "lon": -0.14,
     "h0_km": 2.09273333333333,
-    "hR_km": 2.45273333333333,
-    "fallback_P839_2_h0_km": 2.8625000000000003
+    "hR_km": 2.45273333333333
    }
   ]
  },

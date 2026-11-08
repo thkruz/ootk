@@ -17,6 +17,7 @@ import {
   Watts,
   wattsToDbw,
 } from '../../main';
+import { DynamicGroundObject } from '../../objects/DynamicGroundObject';
 import { ecef2rae, llaRad2ecef } from '../../transforms/transforms';
 
 const DATE = new Date('2024-03-01T12:00:00Z');
@@ -227,5 +228,54 @@ describe('calculateLinkBudget loss terms', () => {
     expect(seenGeo?.tx?.latitude).toBe(30);
     expect(seenGeo?.tx?.altitude).toBeCloseTo(0.2, 9);
     expect(seenGeo?.tx?.lookEl).toBeGreaterThan(89.9);
+  });
+});
+
+describe('moving ground terminal (DynamicGroundObject)', () => {
+  const t0 = new Date('2024-03-01T12:00:00Z');
+  const t1 = new Date('2024-03-01T13:00:00Z');
+  const WGS84_A_KM = 6378.137;
+  // Equatorial terminal moves from lon 0 to lon 10 over one hour (linear interpolation).
+  const mover = new DynamicGroundObject({
+    name: 'mover',
+    interpolationMethod: 'linear',
+    waypoints: [
+      { time: t0, lat: 0 as Degrees, lon: 0 as Degrees, alt: 0 as Kilometers },
+      { time: t1, lat: 0 as Degrees, lon: 10 as Degrees, alt: 0 as Kilometers },
+    ],
+  });
+  const fixed = gs(0, 0, 0);
+  const tx = makeTx(new Antenna({ gain: 20 as Decibels }), 4e9, 10, 0);
+  const rx = makeRx(new Antenna({ gain: 20 as Decibels }), 4e9, 0);
+
+  tx.setParent(fixed);
+  rx.setParent(mover);
+
+  // Two points on the equator (altitude 0) separated by a central angle of 10 degrees are one chord
+  // 2 a sin(5 deg) apart, a = 6378.137 km (WGS84 equatorial radius). Pure geometry, rotation-invariant.
+  // Tolerance 0.01 km covers the FSPL-independent J2000 rotation round-off.
+  const chordKm = 2 * WGS84_A_KM * Math.sin(5 * DEG);
+
+  it('uses the terminal position at the requested time for the distance', () => {
+    expect(Math.abs(tx.getDistanceTo(rx, t1) - chordKm)).toBeLessThan(0.01);
+    expect(tx.getDistanceTo(rx, t0)).toBeLessThan(0.01);
+  });
+
+  it('link budget distance and look angles follow the moving terminal', () => {
+    const b = tx.calculateLinkBudget(rx, t1);
+
+    expect(Math.abs(b.distance - chordKm)).toBeLessThan(0.01);
+    // Chord between equatorial points 10 degrees apart sits 5 degrees below each local horizontal.
+    expect(Math.abs((b.geometry?.rx?.lookEl ?? Number.NaN) - -5)).toBeLessThan(0.01);
+    expect(Math.abs((b.geometry?.tx?.lookEl ?? Number.NaN) - -5)).toBeLessThan(0.01);
+    // Halfway through the hour the terminal is at lon 5: central angle 5 degrees, elevation -2.5.
+    const mid = tx.calculateLinkBudget(rx, new Date((t0.getTime() + t1.getTime()) / 2));
+
+    expect(Math.abs((mid.geometry?.rx?.lookEl ?? Number.NaN) - -2.5)).toBeLessThan(0.01);
+  });
+
+  it('isVisible evaluates the moving terminal at the date (below the horizon at 10 degrees; false outside its path)', () => {
+    expect(tx.isVisible(rx, t1)).toBe(false);
+    expect(tx.isVisible(rx, new Date('2024-03-01T20:00:00Z'))).toBe(false);
   });
 });

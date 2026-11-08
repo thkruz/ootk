@@ -313,3 +313,32 @@ describe('link budget integration', () => {
     expect(budget.rxAntennaGain).toBe(33);
   });
 });
+
+describe('PhasedArrayAntenna sidelobe floor clamp', () => {
+  // 5 dBi peak, n = 1.3, scan limit 89 deg: unclamped 5 + 13 log10(cos 88 deg) = 5 + 13 * (-1.4573) = -13.9 dBi,
+  // below the -10 dBi floor. The clamp holds it at -10 so the gain is monotonic across the scan limit.
+  // cos(88 deg) = 0.0348995 (exact trig value), so the expected unclamped value is checked to 0.01 dB.
+  const a = new PhasedArrayAntenna({ gain: dB(5), maxScanAngle: 89, scanLossExponent: 1.3 });
+
+  it('would be below the floor unclamped, and is held at the floor inside the scan limit', () => {
+    const unclamped = 5 + 13 * Math.log10(Math.cos(88 * DEG));
+
+    expect(unclamped).toBeLessThan(-10);
+    expect(Math.abs(unclamped - -13.9)).toBeLessThan(0.05);
+    expect(a.getOffAxisLoss(88)).toBeCloseTo(-10 - 5, 9);
+    expect(a.getEffectiveGain(d(88))).toBeCloseTo(-10, 9);
+  });
+
+  it('is never below the floor anywhere and does not jump up past the scan limit', () => {
+    for (let t = 0; t <= 89; t += 0.5) {
+      expect(a.getEffectiveGain(d(t))).toBeGreaterThanOrEqual(-10 - 1e-12);
+    }
+    expect(a.getEffectiveGain(d(89.5))).toBeCloseTo(-10, 9);
+    expect(a.getEffectiveGain(d(88.9))).toBeCloseTo(-10, 9);
+  });
+
+  it('does not change the gain where the scan loss is above the floor', () => {
+    // 5 + 13 log10(cos 60) = 5 - 3.913 = 1.087 dBi, well above the floor.
+    expect(a.getEffectiveGain(d(60))).toBeCloseTo(5 + 13 * Math.log10(0.5), 9);
+  });
+});

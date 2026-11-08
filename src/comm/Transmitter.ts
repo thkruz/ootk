@@ -19,7 +19,7 @@ import { Earth } from '../body/Earth';
 import { ValidationError } from '../errors';
 import { GroundObject } from '../objects/GroundObject';
 import { SpaceObject } from '../objects/SpaceObject';
-import { ecef2rae } from '../transforms/transforms';
+import { ecef2rae, lla2ecef } from '../transforms/transforms';
 import { Degrees, Kilometers } from '../types/types';
 import { Antenna } from './Antenna';
 import { deserializeAntenna } from './PhasedArrayAntenna';
@@ -231,12 +231,18 @@ export class Transmitter extends CommunicationDevice {
     const txParent = this.parent;
     const rxParent = receiver.parent;
     const endGeometry = (ground: GroundObject, other: typeof txParent): LinkEndGeometry | undefined => {
-      const otherEcef = other instanceof GroundObject ? other.ecef() : other.ecef(date);
+      // Positions are taken at `date` so a moving ground object (DynamicGroundObject) is where it is at that time.
+      const lla = ground.llaAt(date);
+      const otherLla = other instanceof GroundObject ? other.llaAt(date) : null;
+      let otherEcef = other instanceof GroundObject ? null : other.ecef(date);
 
-      if (!otherEcef) {
+      if (otherLla) {
+        otherEcef = lla2ecef(otherLla);
+      }
+
+      if (!otherEcef || !lla) {
         return undefined;
       }
-      const lla = ground.lla();
       const rae = ecef2rae(lla, otherEcef);
 
       return { lookAz: rae.az as Degrees, lookEl: rae.el as Degrees, latitude: lla.lat, altitude: lla.alt };
@@ -285,7 +291,14 @@ export class Transmitter extends CommunicationDevice {
 
     // Ground-to-Ground: each station must see the other above its horizon
     if (txParent instanceof GroundObject && rxParent instanceof GroundObject) {
-      return ecef2rae(txParent.lla(), rxParent.ecef()).el > 0 && ecef2rae(rxParent.lla(), txParent.ecef()).el > 0;
+      const txLla = txParent.llaAt(date);
+      const rxLla = rxParent.llaAt(date);
+
+      if (!txLla || !rxLla) {
+        return false;
+      }
+
+      return ecef2rae(txLla, lla2ecef(rxLla)).el > 0 && ecef2rae(rxLla, lla2ecef(txLla)).el > 0;
     }
 
     // Ground-to-Space or Space-to-Ground: check elevation above horizon
@@ -299,7 +312,12 @@ export class Transmitter extends CommunicationDevice {
         return false;
       }
 
-      const rae = ecef2rae(ground.lla(), spaceEcef);
+      const groundLla = ground.llaAt(date);
+
+      if (!groundLla) {
+        return false;
+      }
+      const rae = ecef2rae(groundLla, spaceEcef);
 
       // Visible if elevation is above horizon (0 degrees)
       return rae.el > 0;

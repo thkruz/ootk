@@ -91,8 +91,9 @@ describe('P.839 rain height', () => {
   });
 
   it('latitude formula follows the P.839-2 piecewise form with its published breakpoints', () => {
-    // P.839-2: 5.0 km for |lat| <= 23, 5 - 0.075(|lat|-23) for lat > 23, 5 + 0.1 lat for -21 <= lat < 0,
-    // 0 km clamp at the poles. Values below are computed by hand from those lines.
+    // P.839-2 (recommends 1: hR approximated by h0, no +0.36 km): 5.0 km for -21 <= lat <= 23,
+    // 5 - 0.075 (lat - 23) for lat > 23, 5 + 0.1 (lat + 21) for -71 <= lat < -21, 0 km below -71.
+    // Values below are computed by hand from those lines.
     expect(rainHeightFromLatitude(0 as Degrees)).toBeCloseTo(5, 12);
     expect(rainHeightFromLatitude(23 as Degrees)).toBeCloseTo(5, 12);
     expect(rainHeightFromLatitude(43 as Degrees)).toBeCloseTo(5 - 0.075 * 20, 12);
