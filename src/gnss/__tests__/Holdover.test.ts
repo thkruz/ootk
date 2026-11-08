@@ -167,6 +167,53 @@ describe('preset values and the ITU-T G.8262 Option 2 holdover mask', () => {
   });
 });
 
+describe('primary ITU-T holdover masks', () => {
+  // ITU-T G.8262.1 (11/2025) cl. 11.2, constant temperature: T(t) <= a1 t + 0.5 b t^2 + c [ns],
+  // a1 = 10 ns/s, b = 1.16e-4 ns/s^2, c = 10 ns.
+  const esecNs = (t: number): number => 10 * t + 0.5 * 1.16e-4 * t * t + 10;
+  // ITU-T G.812 (11/1988) cl. 2.2.3 / Table 1/G.812: MRTIE(S) = a S + 0.5 b S^2 + c [ns], S >= 100 s, c = 1000 ns.
+  const transitNs = (s: number): number => 0.5 * s + 0.5 * 1.16e-5 * s * s + 1000;
+  const localNs = (s: number): number => 10 * s + 0.5 * 2.3e-4 * s * s + 1000;
+
+  it('eSEC preset reproduces the G.8262.1 cl. 11.2 constant-temperature mask', () => {
+    // Hand values: t = 100 s -> 1000 + 0.58 + 10 = 1010.58 ns; t = 86400 s -> 8.64e5 + 4.329e5 + 10 (see below).
+    expect(esecNs(100)).toBeCloseTo(1010.58, 9);
+    for (const t of [100, 1000, 3600, DAY]) {
+      // Tolerance 1e-9 relative: float rounding only (ns <-> s conversion).
+      expect(ClockModel.ESEC_G8262_1.timeErrorAt(t) * 1e9).toBeCloseTo(esecNs(t), 3);
+    }
+    // 1.16e-4 ns/s^2 equals 1e-8/day (G.8262.1 Note 3): 1e-8 / 86400 s = 1.1574e-13 /s = 1.1574e-4 ns/s^2.
+    expect(1e-8 / DAY * 1e9).toBeCloseTo(1.16e-4, 6);
+  });
+
+  it('G.812 (1988) transit node preset reproduces Table 1/G.812', () => {
+    for (const s of [100, 1000, 3600, DAY]) {
+      expect(ClockModel.TRANSIT_NODE_G812_1988.timeErrorAt(s) * 1e9).toBeCloseTo(transitNs(s), 3);
+    }
+    // At S = 100 s: 50 + 0.058 + 1000 = 1050.058 ns.
+    expect(transitNs(100)).toBeCloseTo(1050.058, 9);
+    // Note 1: 0.5 ns/s = 5e-10 initial offset. Note 2: 1.16e-5 ns/s^2 = 1e-9/day (1e-9/86400 s = 1.157e-14 /s).
+    expect(ClockModel.TRANSIT_NODE_G812_1988.initialFrequencyOffset).toBeCloseTo(5e-10, 20);
+    expect(1e-9 / DAY * 1e9).toBeCloseTo(1.16e-5, 7);
+  });
+
+  it('G.812 (1988) local node preset reproduces Table 1/G.812', () => {
+    for (const s of [100, 1000, 3600, DAY]) {
+      expect(ClockModel.LOCAL_NODE_G812_1988.timeErrorAt(s) * 1e9).toBeCloseTo(localNs(s), 3);
+    }
+    // Note 3: 10 ns/s = 1e-8. Note 4: 2.3e-4 ns/s^2 = 2e-8/day (2e-8/86400 s = 2.315e-13 /s).
+    expect(ClockModel.LOCAL_NODE_G812_1988.initialFrequencyOffset).toBeCloseTo(1e-8, 20);
+    expect(2e-8 / DAY * 1e9).toBeCloseTo(2.3e-4, 5); // table rounds 2.315e-4 to 2 digits
+  });
+
+  it('is ordered: transit node < eSEC < local node at one day', () => {
+    const t = DAY;
+
+    expect(ClockModel.TRANSIT_NODE_G812_1988.timeErrorAt(t)).toBeLessThan(ClockModel.ESEC_G8262_1.timeErrorAt(t));
+    expect(ClockModel.ESEC_G8262_1.timeErrorAt(t)).toBeLessThan(ClockModel.LOCAL_NODE_G812_1988.timeErrorAt(t));
+  });
+});
+
 describe('validation and serialization', () => {
   it('rejects bad inputs', () => {
     expect(() => new ClockModel({ initialFrequencyOffset: Number.NaN })).toThrow(ValidationError);
