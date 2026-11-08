@@ -7,7 +7,7 @@ import { Sgp4 } from '../../sgp4/sgp4';
 import { eci2ecef } from '../../transforms/transforms';
 import { EpochUTC } from '../../time/EpochUTC';
 import type { TleLine1, TleLine2 } from '../../types/types';
-import { PositionSource, type Sgp4WasmPropagator } from '../PositionSource';
+import { PositionSource, type Sgp4WasmBatchLike } from '../PositionSource';
 
 const tle1 = '1 25544U 98067A   22203.51722222  .00016717  00000-0  10270-3 0  9002' as TleLine1;
 const tle2 = '2 25544  51.6400 208.9163 0006730 358.5720 122.3372 15.50104550 10001' as TleLine2;
@@ -66,7 +66,7 @@ describe('PositionSource', () => {
     const calls: { keys: readonly SatKey[]; ds50: number; n: number; step: number }[] = [];
 
     // The fake returns what the real wasm documents: TEME position in km per record (Sgp4WasmPosVel).
-    const fake: Sgp4WasmPropagator = {
+    const fake: Sgp4WasmBatchLike = {
       propagateDs50UtcPosVel(satKeys, ds50, n, step) {
         calls.push({ keys: satKeys, ds50, n, step });
 

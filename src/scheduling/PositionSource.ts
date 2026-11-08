@@ -50,7 +50,7 @@ export interface PositionSource {
  * Structural subset of `Sgp4Wasm` used by {@link PositionSource.fromSgp4Wasm}. Declared here so
  * this module never imports the wasm class (the wasm is licensed and optional).
  */
-export interface Sgp4WasmPropagator {
+export interface Sgp4WasmBatchLike {
   propagateDs50UtcPosVel(
     satKeys: readonly SatKey[],
     startTimeDs50Utc: number,
@@ -133,7 +133,7 @@ function fromSatellites(sats: readonly SpaceObject[], ids?: readonly number[]): 
  * @param satKeys - Initialized satellite keys (`addSat` then `initSats`).
  * @param ids - Optional ids, one per key. Default: the keys converted to Number.
  */
-function fromSgp4Wasm(wasm: Sgp4WasmPropagator, satKeys: readonly SatKey[], ids?: readonly number[]): PositionSource {
+function fromSgp4Wasm(wasm: Sgp4WasmBatchLike, satKeys: readonly SatKey[], ids?: readonly number[]): PositionSource {
   if (ids && ids.length !== satKeys.length) {
     throw new ValidationError('ids must have one entry per satKey', 'ids', ids.length);
   }

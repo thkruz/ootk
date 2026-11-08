@@ -23,4 +23,4 @@ export type {
   SkyTraceEntry,
 } from './ServingSatelliteScheduler';
 export { PositionSource } from './PositionSource';
-export type { Sgp4WasmPropagator } from './PositionSource';
+export type { Sgp4WasmBatchLike } from './PositionSource';
