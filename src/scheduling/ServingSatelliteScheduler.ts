@@ -167,7 +167,10 @@ export interface ServingSchedulerOptions {
    * of every minute. Default 0. The first instant of the span is always an evaluation point.
    */
   reassignmentPhaseSec?: number;
-  /** Interval for checking that the serving satellite stays usable and for lookahead, seconds. Default 1. */
+  /**
+   * Interval for checking that the serving satellite stays usable and for lookahead, seconds.
+   * Default 1. Must round to at least 1 ms (>= 0.0005 s). The sample grid is anchored at `start`.
+   */
   sampleStepSec?: number;
   /** Minimum elevation, degrees. Default 0. */
   minElevation?: number;
@@ -245,9 +248,12 @@ function newAssessment_(): Assessment {
  * highest-elevation in-view satellite is reported. With nothing above the horizon the reason is
  * NOTHING_IN_VIEW. A user callback that declines gives NO_SELECTION.
  *
- * Time is sampled on a grid of `sampleStepSec` from `start`, plus every tick, so ticks are exact.
+ * Time is sampled on a global grid of `sampleStepSec` anchored at `start` (start, start + step,
+ * start + 2 step, ...), plus every tick, so ticks are exact. The grid does not restart at a tick:
+ * with step 10 s and interval 15 s from :00 the samples are 0, 10, 15, 20, 30, 40, 45, 50 s.
  * Segment and gap edges therefore have `sampleStepSec` resolution (a satellite is declared lost at
- * the first sample where it is unusable).
+ * the first sample where it is unusable). In fixed-interval mode a serving satellite that is usable
+ * at a tick is always a candidate in that tick's selection, judged by the same rules as the others.
  *
  * @example
  * ```ts
@@ -382,8 +388,16 @@ class Run_ {
     if (o.sampleStepSec !== undefined && !(o.sampleStepSec > 0)) {
       bad('sampleStepSec must be positive', 'sampleStepSec', o.sampleStepSec);
     }
+    // Time is kept in whole milliseconds; a step that rounds to 0 ms could never advance.
+    if (o.sampleStepSec !== undefined && Math.round(o.sampleStepSec * 1000) < 1) {
+      bad('sampleStepSec must be at least 0.001 s (1 ms resolution)', 'sampleStepSec', o.sampleStepSec);
+    }
     if (o.reassignmentIntervalSec !== undefined && !(o.reassignmentIntervalSec > 0)) {
       bad('reassignmentIntervalSec must be positive', 'reassignmentIntervalSec', o.reassignmentIntervalSec);
+    }
+    // An interval that rounds to 0 ms would silently turn into continuous mode.
+    if (o.reassignmentIntervalSec !== undefined && Math.round(o.reassignmentIntervalSec * 1000) < 1) {
+      bad('reassignmentIntervalSec must be at least 0.001 s (1 ms resolution)', 'reassignmentIntervalSec', o.reassignmentIntervalSec);
     }
     if (o.strategy === ServingStrategy.BEST_LINK_MARGIN && !(o.frequencyHz && o.frequencyHz > 0)) {
       bad('BEST_LINK_MARGIN requires frequencyHz', 'frequencyHz', o.frequencyHz);
@@ -734,7 +748,15 @@ class Run_ {
       return;
     }
     const servingIdx = this.serving_;
-    const cur = full.cands.findIndex((c) => c.index === servingIdx);
+    let cur = full.cands.findIndex((c) => c.index === servingIdx);
+
+    if (cur < 0) {
+      // The serving satellite is usable by its own assessment but absent from the full evaluation
+      // (the subset and full position paths can differ at a mask or scan edge). Judge it like any
+      // other candidate instead of treating it as lost, which would force a handover.
+      full.cands.push({ id: this.servingId_, index: servingIdx, az: sAz, el: sEl, rangeKm: a.rng });
+      cur = full.cands.length - 1;
+    }
     let target = -1;
 
     if (isCallback) {
@@ -768,7 +790,9 @@ class Run_ {
 
     this.process_(t, true);
     for (;;) {
-      const next = Math.min(t + this.stepMs_, this.nextTick_(t), endMs);
+      // Global grid anchored at start, so the grid does not restart at each tick.
+      const nextGrid = startMs + (Math.floor((t - startMs) / this.stepMs_) + 1) * this.stepMs_;
+      const next = Math.min(nextGrid, this.nextTick_(t), endMs);
 
       this.flushTrace_(next);
       if (next >= endMs) {
