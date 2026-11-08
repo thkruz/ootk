@@ -49,6 +49,18 @@ export type {
 export { Antenna } from './Antenna';
 export type { AntennaParams } from './Antenna';
 
+export {
+  PhasedArrayAntenna,
+  deserializeAntenna,
+  DEFAULT_PHASED_ARRAY_SIDELOBE_FLOOR_DBI,
+  DEFAULT_SCAN_LOSS_EXPONENT,
+} from './PhasedArrayAntenna';
+export type {
+  PhasedArrayAntennaParams,
+  PhasedArrayApertureParams,
+  SerializedPhasedArrayAntenna,
+} from './PhasedArrayAntenna';
+
 export { CommunicationDevice } from './CommunicationDevice';
 export type { CommunicationDeviceParams } from './CommunicationDevice';
 

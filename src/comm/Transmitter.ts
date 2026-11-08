@@ -22,6 +22,7 @@ import { SpaceObject } from '../objects/SpaceObject';
 import { ecef2rae } from '../transforms/transforms';
 import { Degrees, Kilometers } from '../types/types';
 import { Antenna } from './Antenna';
+import { deserializeAntenna } from './PhasedArrayAntenna';
 import {
   calculateFspl,
   calculatePropagationDelay,
@@ -35,6 +36,7 @@ import {
   LinkGeometry,
   LinkLossTerm,
   ModulationType,
+  SerializedAntenna,
   wattsToDbw,
   Watts,
 } from './CommTypes';
@@ -374,7 +376,7 @@ export class Transmitter extends CommunicationDevice {
       frequency: data.frequency as Hertz,
       power: data.power as Watts,
       bandwidth: data.bandwidth as Hertz,
-      antenna: Antenna.deserialize(data.antenna as ReturnType<Antenna['serialize']>),
+      antenna: deserializeAntenna(data.antenna as SerializedAntenna),
       modulation: data.modulation as ModulationType | undefined,
       lineLoss: data.lineLoss as Decibels | undefined,
       metadata: data.metadata as Record<string, unknown> | undefined,
