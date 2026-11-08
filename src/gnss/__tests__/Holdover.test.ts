@@ -140,9 +140,8 @@ describe('stochastic growth against the textbook formulas', () => {
 });
 
 describe('preset values and the ITU-T G.8262 Option 2 holdover mask', () => {
-  // G.8262 Option 2 holdover mask as quoted in TI SNAA345 Table 7-1 (secondary source for "Table 15 in G.8262"):
-  //   x(S) = (a1 + a2) S + 0.5 b S^2 + c  [ns], a1 = 50 ns/s, a2 = 300 ns/s, b = 4.63e-4 ns/s^2, c = 1000 ns.
-  // The quadratic form of the mask is the standard G.812 holdover form, not verified against the ITU text.
+  // ITU-T G.8262 (10/2024) cl. 11.2.2 eq. 11-3 and Table 15 (Option 2): T(S) <= (a1 + a2) S + 0.5 b S^2 + c [ns],
+  // a1 = 50 ns/s, a2 = 300 ns/s, b = 4.63e-4 ns/s^2, c = 1000 ns. (a1 + a2 = 350 ns/s; confirmed by derivative eq. 11-4: (a1 + a2) + bS).
   // 24 h: 350 * 86400 = 3.024e7 ns; 0.5 * 4.63e-4 * 86400^2 = 1.72814e6 ns; + 1000 -> 3.19694e7 ns (31.97 ms).
   const maskNs = (s: number): number => 350 * s + 0.5 * 4.63e-4 * s * s + 1000;
 
@@ -150,14 +149,16 @@ describe('preset values and the ITU-T G.8262 Option 2 holdover mask', () => {
     expect(maskNs(DAY)).toBeCloseTo(3.19694e7, -3);
   });
 
-  it('OCXO preset (mask without its temperature term) meets the mask at 24 h', () => {
-    // a1 S = 4.32e6 ns; + 1.72814e6 + 1000 = 6.04914e6 ns = 6.049 ms. Meeting the limit is a fair check only because
-    // the preset is the mask minus the 300 ns/s temperature allowance, so it must lie below it; the test guards the
-    // ns -> s conversion and the aging term.
+  it('OCXO preset (mask without its temperature term) reproduces Table 15 and meets the full mask at 24 h', () => {
+    // a1 S = 4.32e6 ns; + 1.72814e6 + 1000 = 6.04914e6 ns = 6.049 ms (hand arithmetic, float rounding only).
     const err = ClockModel.OCXO.timeErrorAt(DAY);
 
     expect(err).toBeCloseTo(6.04914e-3, 6);
     expect(err * 1e9).toBeLessThanOrEqual(maskNs(DAY));
+    // Table 15 a1, b, c; G.812 (06/2004) Table A.18 Type IV has the same numbers.
+    expect(ClockModel.OCXO.initialFrequencyOffset).toBeCloseTo(50e-9, 20);
+    expect(ClockModel.OCXO.initialTimeOffsetSec).toBeCloseTo(1000e-9, 20);
+    expect(ClockModel.OCXO.agingPerSec).toBeCloseTo(4.63e-13, 22);
   });
 
   it('TCXO preset (0.5 ppm, Kaplan Sec. 9.4.4) does not meet the EEC mask at 24 h', () => {
@@ -171,7 +172,7 @@ describe('primary ITU-T holdover masks', () => {
   // ITU-T G.8262.1 (11/2025) cl. 11.2, constant temperature: T(t) <= a1 t + 0.5 b t^2 + c [ns],
   // a1 = 10 ns/s, b = 1.16e-4 ns/s^2, c = 10 ns.
   const esecNs = (t: number): number => 10 * t + 0.5 * 1.16e-4 * t * t + 10;
-  // ITU-T G.812 (11/1988) cl. 2.2.3 / Table 1/G.812: MRTIE(S) = a S + 0.5 b S^2 + c [ns], S >= 100 s, c = 1000 ns.
+  // ITU-T G.812 (06/2004) Table A.18 Types V and VI (= Table 1/G.812, 11/1988): x(S) = a1 S + 0.5 b S^2 + c [ns], S > 100 s.
   const transitNs = (s: number): number => 0.5 * s + 0.5 * 1.16e-5 * s * s + 1000;
   const localNs = (s: number): number => 10 * s + 0.5 * 2.3e-4 * s * s + 1000;
 
@@ -186,31 +187,49 @@ describe('primary ITU-T holdover masks', () => {
     expect(1e-8 / DAY * 1e9).toBeCloseTo(1.16e-4, 6);
   });
 
-  it('G.812 (1988) transit node preset reproduces Table 1/G.812', () => {
+  it('G.812 (2004) Type V transit node preset reproduces Table A.18', () => {
     for (const s of [100, 1000, 3600, DAY]) {
-      expect(ClockModel.TRANSIT_NODE_G812_1988.timeErrorAt(s) * 1e9).toBeCloseTo(transitNs(s), 3);
+      expect(ClockModel.TRANSIT_NODE_G812_TYPE_V.timeErrorAt(s) * 1e9).toBeCloseTo(transitNs(s), 3);
     }
     // At S = 100 s: 50 + 0.058 + 1000 = 1050.058 ns.
     expect(transitNs(100)).toBeCloseTo(1050.058, 9);
-    // Note 1: 0.5 ns/s = 5e-10 initial offset. Note 2: 1.16e-5 ns/s^2 = 1e-9/day (1e-9/86400 s = 1.157e-14 /s).
-    expect(ClockModel.TRANSIT_NODE_G812_1988.initialFrequencyOffset).toBeCloseTo(5e-10, 20);
+    // Table A.18 Type V: 0.5 ns/s = 5e-10; 1.16e-5 ns/s^2 = 1e-9/day (1e-9/86400 s = 1.157e-14 /s).
+    expect(ClockModel.TRANSIT_NODE_G812_TYPE_V.initialFrequencyOffset).toBeCloseTo(5e-10, 20);
     expect(1e-9 / DAY * 1e9).toBeCloseTo(1.16e-5, 7);
   });
 
-  it('G.812 (1988) local node preset reproduces Table 1/G.812', () => {
+  it('G.812 (2004) Type VI local node preset reproduces Table A.18', () => {
     for (const s of [100, 1000, 3600, DAY]) {
-      expect(ClockModel.LOCAL_NODE_G812_1988.timeErrorAt(s) * 1e9).toBeCloseTo(localNs(s), 3);
+      expect(ClockModel.LOCAL_NODE_G812_TYPE_VI.timeErrorAt(s) * 1e9).toBeCloseTo(localNs(s), 3);
     }
-    // Note 3: 10 ns/s = 1e-8. Note 4: 2.3e-4 ns/s^2 = 2e-8/day (2e-8/86400 s = 2.315e-13 /s).
-    expect(ClockModel.LOCAL_NODE_G812_1988.initialFrequencyOffset).toBeCloseTo(1e-8, 20);
+    // Table A.18 Type VI: 10 ns/s = 1e-8; 2.3e-4 ns/s^2 = 2e-8/day (2e-8/86400 s = 2.315e-13 /s).
+    expect(ClockModel.LOCAL_NODE_G812_TYPE_VI.initialFrequencyOffset).toBeCloseTo(1e-8, 20);
     expect(2e-8 / DAY * 1e9).toBeCloseTo(2.3e-4, 5); // table rounds 2.315e-4 to 2 digits
+  });
+
+  it('G.8262 (10/2024) Option 1 EEC preset reproduces cl. 11.2.1 at constant temperature', () => {
+    // eq. 11-2: T(S) <= a1 S + 0.5 b S^2 + c, a1 = 50, b = 1.16e-4, c = 120 ns. S = 100 s: 5000 + 0.58 + 120 = 5120.58 ns.
+    // S = 86400 s: 4.32e6 + 0.5 * 1.16e-4 * 86400^2 (= 4.32968e5) + 120 = 4.753088e6 ns.
+    expect(ClockModel.EEC_OPTION1_G8262.timeErrorAt(100) * 1e9).toBeCloseTo(5120.58, 3);
+    expect(ClockModel.EEC_OPTION1_G8262.timeErrorAt(DAY) * 1e9).toBeCloseTo(4.753088e6, -1);
+  });
+
+  it('G.812 (06/2004) Type I and Type III presets reproduce Table 24 at constant temperature', () => {
+    // Type I: a1 0.5, b 2.3e-6, c 60. S = 100 s: 50 + 0.0115 + 60 = 110.0115 ns.
+    // S = 86400: 43200 + 0.5 * 2.3e-6 * 86400^2 (= 8584.704) + 60 = 51844.704 ns.
+    expect(ClockModel.G812_TYPE_I.timeErrorAt(100) * 1e9).toBeCloseTo(110.0115, 4);
+    expect(ClockModel.G812_TYPE_I.timeErrorAt(DAY) * 1e9).toBeCloseTo(51844.704, 2);
+    // Type III: a1 1.0, b 1.16e-5, c 150. S = 100 s: 100 + 0.058 + 150 = 250.058 ns.
+    // S = 86400: 86400 + 0.5 * 1.16e-5 * 86400^2 (= 43296.768) + 150 = 129846.768 ns.
+    expect(ClockModel.G812_TYPE_III.timeErrorAt(100) * 1e9).toBeCloseTo(250.058, 4);
+    expect(ClockModel.G812_TYPE_III.timeErrorAt(DAY) * 1e9).toBeCloseTo(129846.768, 2);
   });
 
   it('is ordered: transit node < eSEC < local node at one day', () => {
     const t = DAY;
 
-    expect(ClockModel.TRANSIT_NODE_G812_1988.timeErrorAt(t)).toBeLessThan(ClockModel.ESEC_G8262_1.timeErrorAt(t));
-    expect(ClockModel.ESEC_G8262_1.timeErrorAt(t)).toBeLessThan(ClockModel.LOCAL_NODE_G812_1988.timeErrorAt(t));
+    expect(ClockModel.TRANSIT_NODE_G812_TYPE_V.timeErrorAt(t)).toBeLessThan(ClockModel.ESEC_G8262_1.timeErrorAt(t));
+    expect(ClockModel.ESEC_G8262_1.timeErrorAt(t)).toBeLessThan(ClockModel.LOCAL_NODE_G812_TYPE_VI.timeErrorAt(t));
   });
 });
 

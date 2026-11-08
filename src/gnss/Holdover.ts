@@ -146,17 +146,15 @@ export class ClockModel {
   }
 
   /**
-   * OCXO-class preset from the ITU-T G.8262 Option 2 EEC holdover mask (Table 7-1 as reproduced in
-   * Texas Instruments application note SNAA345, which cites "Table 15 in G.8262"): a1 = 50 ns/s
-   * initial frequency offset, b = 4.63e-4 ns/s^2 aging, c = 1000 ns phase offset at holdover entry.
-   * The temperature term a2 = 300 ns/s is excluded (constant-temperature case). This is the mask
-   * minus its temperature allowance, i.e. a worst-case-compliant OCXO-based EEC, not a measured OCXO.
-   *
-   * SECONDARY source. Primary documents checked and NOT containing these numbers: ITU-T G.8262.1
-   * (11/2025) clause 11.2 (it states a1 = 10 ns/s, b = 1.16e-4 ns/s^2, c = 10 ns for the enhanced
-   * eSEC, see {@link ClockModel.ESEC_G8262_1}, and only says the eSEC is compatible with the G.8262
-   * Option 1 clock); ITU-T G.812 (11/1988) Table 1/G.812 (a = 0.5 or 10 ns/s). The primary G.8262
-   * (Option 1 / Option 2 table) was not available. Non-primary: the OCXO label.
+   * OCXO-class preset, PRIMARY source: ITU-T G.8262 (10/2024) clause 11.2.2 Table 15 (Option 2 EEC)
+   * and, with identical numbers, ITU-T G.812 (06/2004) Table A.18 (Type IV): a1 = 50 ns/s initial
+   * frequency offset, b = 4.63e-4 ns/s^2 aging (equation 11-3: T(S) <= (a1 + a2) S + 0.5 b S^2 + c),
+   * c = 1000 ns phase offset at holdover entry. The temperature term a2 = 300 ns/s is excluded
+   * (constant-temperature case, Note 2: "the term a2 S should not contribute"). This is the mask minus
+   * its temperature allowance, i.e. a worst-case-compliant OCXO-based EEC, not a measured OCXO; the
+   * "OCXO" label is an interpretation, the Recommendation does not name the oscillator technology.
+   * Table 15 marks the applicable S as TBD. For the Option 1 mask (a1 = 50, b = 1.16e-4, c = 120 ns)
+   * see {@link ClockModel.EEC_OPTION1_G8262}. Not the same as {@link ClockModel.ESEC_G8262_1}.
    */
   static get OCXO(): ClockModel {
     return new ClockModel({ initialTimeOffsetSec: 1000e-9, initialFrequencyOffset: 50e-9, agingPerSec: 4.63e-13 });
@@ -193,25 +191,50 @@ export class ClockModel {
   }
 
   /**
-   * Transit node clock (stratum 2 class) holdover limit, PRIMARY source but a SUPERSEDED edition:
-   * ITU-T G.812 (11/1988, Fascicle III.5) clause 2.2.3 and Table 1/G.812, "Transit node clock":
-   * a = 0.5 ns/s (Note 1: initial frequency offset 5e-10), b = 1.16e-5 ns/s^2 (Note 2: drift
-   * 1e-9/day), c = 1000 ns (Note 6). Limits are labelled "provisional" in the 1988 text, apply for
-   * S >= 100 s, and Note 5 leaves temperature effects for further study. The edition is withdrawn;
-   * later G.812 editions changed the masks. The text does not name rubidium, so no RUBIDIUM label is
-   * applied; the numbers are a limit, not a measured rubidium clock.
+   * ITU-T G.8262 (10/2024) clause 11.2.1 Option 1 EEC holdover limit at constant temperature, PRIMARY:
+   * a1 = 50 ns/s (Note 1: 5e-8), b = 1.16e-4 ns/s^2 (Note 3: 1e-8/day), c = 120 ns (Note 4), from
+   * equation 11-1 T(S) <= (a1 + a2) S + 0.5 b S^2 + c with the temperature term a2 = 2000 ns/s
+   * excluded (Note 2). Applies for S > 15 s; the clause also caps the frequency offset at +-4.6 ppm,
+   * which this class does not enforce. A limit, not a measured clock.
    */
-  static get TRANSIT_NODE_G812_1988(): ClockModel {
+  static get EEC_OPTION1_G8262(): ClockModel {
+    return new ClockModel({ initialTimeOffsetSec: 120e-9, initialFrequencyOffset: 50e-9, agingPerSec: 1.16e-13 });
+  }
+
+  /**
+   * G.812 Type I holdover limit at constant temperature, PRIMARY: ITU-T G.812 (06/2004) clause 11.2.1
+   * Table 24: a1 = 0.5 ns/s, b = 2.3e-6 ns/s^2, c = 60 ns; temperature term a2 = 2 ns/s excluded.
+   * Form: dx(S) <= (a1 + a2) S + 0.5 b S^2 + c. A limit, not a measured clock.
+   */
+  static get G812_TYPE_I(): ClockModel {
+    return new ClockModel({ initialTimeOffsetSec: 60e-9, initialFrequencyOffset: 0.5e-9, agingPerSec: 2.3e-15 });
+  }
+
+  /**
+   * G.812 Type III holdover limit at constant temperature, PRIMARY: ITU-T G.812 (06/2004) clause 11.2.1
+   * Table 24: a1 = 1.0 ns/s, b = 1.16e-5 ns/s^2, c = 150 ns; temperature term a2 = 10 ns/s excluded.
+   * A limit, not a measured clock.
+   */
+  static get G812_TYPE_III(): ClockModel {
+    return new ClockModel({ initialTimeOffsetSec: 150e-9, initialFrequencyOffset: 1e-9, agingPerSec: 1.16e-14 });
+  }
+
+  /**
+   * Transit node clock holdover limit, PRIMARY: ITU-T G.812 (06/2004) Annex A, Type V ("the transit
+   * node clock from the 1988 version"), Table A.18 (equals Table 1/G.812 of 11/1988): a1 = 0.5 ns/s,
+   * b = 1.16e-5 ns/s^2, c = 1000 ns, applies for S > 100 s; a2 and d not applicable. A limit, not a
+   * measured clock. The Recommendation does not name rubidium for any Type, so there is no RUBIDIUM label.
+   */
+  static get TRANSIT_NODE_G812_TYPE_V(): ClockModel {
     return new ClockModel({ initialTimeOffsetSec: 1000e-9, initialFrequencyOffset: 0.5e-9, agingPerSec: 1.16e-14 });
   }
 
   /**
-   * Local node clock (stratum 3 class) holdover limit, PRIMARY source but a SUPERSEDED edition:
-   * ITU-T G.812 (11/1988) Table 1/G.812, "Local node clock": a = 10 ns/s (Note 3: initial frequency
-   * offset 1e-8), b = 2.3e-4 ns/s^2 (Note 4: drift 2e-8/day), c = 1000 ns (Note 6). Same caveats as
-   * {@link ClockModel.TRANSIT_NODE_G812_1988}.
+   * Local node clock holdover limit, PRIMARY: ITU-T G.812 (06/2004) Annex A, Type VI, Table A.18:
+   * a1 = 10 ns/s, b = 2.3e-4 ns/s^2, c = 1000 ns, applies for S > 100 s. See
+   * {@link ClockModel.TRANSIT_NODE_G812_TYPE_V}.
    */
-  static get LOCAL_NODE_G812_1988(): ClockModel {
+  static get LOCAL_NODE_G812_TYPE_VI(): ClockModel {
     return new ClockModel({ initialTimeOffsetSec: 1000e-9, initialFrequencyOffset: 10e-9, agingPerSec: 2.3e-13 });
   }
 
