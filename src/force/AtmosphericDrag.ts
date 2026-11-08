@@ -20,7 +20,7 @@ import { DataHandler } from '../data/DataHandler';
 import { Earth } from '../body/Earth';
 import { ITRF } from '../coordinate/ITRF';
 import { J2000 } from '../coordinate/J2000';
-import { Kilometers, KilometersPerSecond, Radians } from '../types/types';
+import { KilometersPerSecond, Radians } from '../types/types';
 import { Vector3D } from '../operations/Vector3D';
 import { Sun } from '../body/SunBody';
 import { Force } from './Force';
@@ -220,13 +220,17 @@ export class AtmosphericDrag implements Force {
     if (density === 0) {
       return Vector3D.origin;
     }
-    const rotation = new ITRF(
-      state.epoch,
-      Earth.rotation as unknown as Vector3D<Kilometers>,
-      Vector3D.origin as Vector3D<KilometersPerSecond>,
-    ).toJ2000().position;
-    const vRel = state.velocity.subtract(rotation.cross(state.position) as unknown as Vector3D<KilometersPerSecond>)
-      .scale(1000.0 as KilometersPerSecond);
+    // Earth rotation vector (rad/s) in J2000, rotated as a free vector (no fake state).
+    const omega = ITRF.rotateToJ2000(Earth.rotation, state.epoch);
+    // omega x r, written out per component: rad/s times km is km/s (the radian is dimensionless),
+    // so the result is labelled KilometersPerSecond here, in one place.
+    const r = state.position;
+    const vEarth = new Vector3D<KilometersPerSecond>(
+      (omega.y * r.z - omega.z * r.y) as KilometersPerSecond,
+      (omega.z * r.x - omega.x * r.z) as KilometersPerSecond,
+      (omega.x * r.y - omega.y * r.x) as KilometersPerSecond,
+    );
+    const vRel = state.velocity.subtract(vEarth).scale(1000.0 as KilometersPerSecond);
     const vm = vRel.magnitude();
     const fScale = -0.5 * density * ((this.dragCoeff * this.area) / this.mass) * vm;
 
