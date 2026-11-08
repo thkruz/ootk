@@ -75,3 +75,5 @@ export type { TransponderParams } from './Transponder';
 
 export { Beacon } from './Beacon';
 export type { BeaconParams } from './Beacon';
+
+export * from './atmosphere';
