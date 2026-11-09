@@ -17,6 +17,7 @@
 
 import type { J2000 } from '../coordinate/J2000';
 import { ValidationError } from '../errors';
+import type { DynamicGroundObject } from '../objects/DynamicGroundObject';
 import type { CommunicationDeviceInterface } from '../objects/ObjectTypes';
 import { CommDeviceType, CommPlatform, SerializedCommDevice } from './CommTypes';
 
@@ -128,9 +129,23 @@ export abstract class CommunicationDevice implements CommunicationDeviceInterfac
    * @param date - Time for position calculation (defaults to now)
    * @returns J2000 state vector
    * @throws Error if no parent platform assigned
+   * @throws ValidationError if the parent is a moving ground object with no position at `date`
    */
   getJ2000(date: Date = new Date()): J2000 {
-    return this.parent.toJ2000(date);
+    const parent = this.parent;
+
+    // A moving ground object's toJ2000() would use its first waypoint; evaluate it at `date` instead.
+    if (isMovingGroundObject_(parent)) {
+      const state = parent.getJ2000(date);
+
+      if (!state) {
+        throw new ValidationError('Moving ground object has no position at this time', 'date', date);
+      }
+
+      return state;
+    }
+
+    return parent.toJ2000(date);
   }
 
   /**
@@ -196,4 +211,14 @@ export abstract class CommunicationDevice implements CommunicationDeviceInterfac
 
     return lines.join('\n');
   }
+}
+
+/**
+ * Structural check for a DynamicGroundObject. An `instanceof` test would need a value import of
+ * DynamicGroundObject, which creates an import cycle (objects/DynamicGroundObject imports comm).
+ * @param platform - The device's parent platform.
+ * @returns True when the platform has a time-bounded path and a time-dependent J2000 state.
+ */
+function isMovingGroundObject_(platform: CommPlatform): platform is CommPlatform & DynamicGroundObject {
+  return 'startTime' in platform && 'endTime' in platform && typeof (platform as Partial<DynamicGroundObject>).getJ2000 === 'function';
 }

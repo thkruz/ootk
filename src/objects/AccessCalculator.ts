@@ -339,7 +339,15 @@ export class AccessCalculator {
     constraints: AccessConstraints,
   ): boolean {
     // 1. Elevation check (default: 0°)
-    const minEl = constraints.minElevation ?? (0 as Degrees);
+    let minEl = constraints.minElevation ?? (0 as Degrees);
+
+    if (constraints.horizon) {
+      const horizonEl = constraints.horizon.elevationAt(rae.az);
+
+      if (horizonEl > minEl) {
+        minEl = horizonEl;
+      }
+    }
 
     if (rae.el < minEl) {
       return false;

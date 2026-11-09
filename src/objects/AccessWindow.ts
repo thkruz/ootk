@@ -17,6 +17,7 @@
 
 import type { Degrees, Kilometers } from '../types/types';
 import type { GroundObject } from './GroundObject';
+import type { HorizonProfile } from './HorizonProfile';
 import type { SpaceObject } from './SpaceObject';
 
 /**
@@ -106,6 +107,11 @@ export class AccessWindow {
 export interface AccessConstraints {
   /** Minimum elevation angle above horizon (default: 0°) */
   minElevation?: Degrees;
+  /**
+   * Azimuth-dependent horizon (obstructions). The effective elevation floor is
+   * max(minElevation ?? 0, horizon.elevationAt(az)); rise and set times are clipped to it.
+   */
+  horizon?: HorizonProfile;
   /** Maximum slant range (default: unlimited) */
   maxRange?: Kilometers;
   /** Minimum slant range (default: 0) */

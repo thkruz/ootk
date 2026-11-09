@@ -296,29 +296,41 @@ export class ITRF extends StateVector {
   }
 
   /**
+   * Rotates a free vector from ITRF to J2000 at an epoch, without building a state. Applies the
+   * same chain as {@link ITRF.toJ2000} (Greenwich apparent sidereal time about Z, nutation, then
+   * IAU-76 precession; Vallado, Fundamentals of Astrodynamics and Applications, 4th ed.,
+   * section 3.7) to the vector only. No velocity transport term (omega x r) is added, so this is
+   * the right call for directions and angular velocities, e.g. the Earth rotation vector.
+   * The unit type is preserved.
+   * @param vector Vector expressed in ITRF (any unit).
+   * @param epoch Epoch of the rotation.
+   * @returns The same vector expressed in J2000, in the same unit.
+   */
+  static rotateToJ2000<U extends number>(vector: Vector3D<U>, epoch: EpochUTC): Vector3D<U> {
+    const p = Earth.precession(epoch);
+    const n = Earth.nutation(epoch);
+    const ast = epoch.gmstAngle() + n.eqEq;
+    const vTOD = vector.rotZ(-ast as Radians);
+    const vMOD = vTOD.rotX(n.eps).rotZ(n.dPsi).rotX(-n.mEps);
+
+    return vMOD
+      .rotZ(p.zed)
+      .rotY(-p.theta as Radians)
+      .rotZ(p.zeta) as Vector3D<U>;
+  }
+
+  /**
    * Converts the current coordinate to the J2000 coordinate system. This is an Earth-Centered Inertial (ECI) coordinate
    * system with the origin at the center of the Earth.
    * @see https://en.wikipedia.org/wiki/Epoch_(astronomy)#Julian_years_and_J2000
    * @returns The coordinate in the J2000 coordinate system.
    */
   toJ2000(): J2000 {
-    const p = Earth.precession(this.epoch);
-    const n = Earth.nutation(this.epoch);
-    const ast = this.epoch.gmstAngle() + n.eqEq;
-    const rTOD = this.position.rotZ(-ast as Radians);
-    const vTOD = this.velocity
-      .add(Earth.rotation.cross(this.position) as unknown as Vector3D<KilometersPerSecond>)
-      .rotZ(-ast as Radians);
-    const rMOD = rTOD.rotX(n.eps).rotZ(n.dPsi).rotX(-n.mEps);
-    const vMOD = vTOD.rotX(n.eps).rotZ(n.dPsi).rotX(-n.mEps);
-    const rJ2000 = rMOD
-      .rotZ(p.zed)
-      .rotY(-p.theta as Radians)
-      .rotZ(p.zeta) as Vector3D<Kilometers>;
-    const vJ2000 = vMOD
-      .rotZ(p.zed)
-      .rotY(-p.theta as Radians)
-      .rotZ(p.zeta) as Vector3D<KilometersPerSecond>;
+    const rJ2000 = ITRF.rotateToJ2000(this.position, this.epoch);
+    const vJ2000 = ITRF.rotateToJ2000(
+      this.velocity.add(Earth.rotation.cross(this.position) as unknown as Vector3D<KilometersPerSecond>),
+      this.epoch,
+    );
 
     return new J2000(this.epoch, rJ2000, vJ2000);
   }
