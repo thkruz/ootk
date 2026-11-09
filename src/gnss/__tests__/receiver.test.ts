@@ -385,6 +385,35 @@ describe('lock hysteresis and acquisition', () => {
     expect(rx.step(at(22), site, [sat]).satellites[0].state).toBe('tracking');
   });
 
+  it('counts acquisition time from the first strong sample, not from the previous step', () => {
+    // A weak sample at 0 s then the first strong one at 20 s: the satellite was not acquiring
+    // during 0-20 s, so with a 10 s acquisition time it must not lock until 30 s.
+    const rx = makeReceiver({ reacquisitionTimeSec: 10 });
+    const sat = first(rx);
+    const o30 = offsetTo(rx, sat, 30);
+
+    expect(rx.step(T0, site, [{ ...sat, powerOffsetDb: o30 }]).satellites[0].state).toBe('lost');
+    expect(rx.step(at(20), site, [sat]).satellites[0].state).toBe('lost');
+    expect(rx.step(at(29), site, [sat]).satellites[0].state).toBe('lost');
+    expect(rx.step(at(30), site, [sat]).satellites[0].state).toBe('tracking');
+  });
+
+  it('is not affected by the caller mutating a reused Date', () => {
+    const rx = makeReceiver();
+    const clock = new Date(T0.getTime());
+
+    expect(rx.step(clock, site, sats).hasFix).toBe(true);
+    clock.setTime(clock.getTime() + 60_000);
+    const r = rx.step(clock, site, []);
+
+    expect(r.hasFix).toBe(false);
+    expect(r.timeSinceLastFixSec).toBe(60);
+    expect(r.date).not.toBe(clock);
+    // Going back in time is still detected after the mutation.
+    clock.setTime(clock.getTime() - 30_000);
+    expect(() => rx.step(clock, site, sats)).toThrow(ValidationError);
+  });
+
   it('reports a satellite below a raised elevation mask as unseen', () => {
     const rx = makeReceiver({ elevationMaskDeg: 5 });
     const sat = first(rx);

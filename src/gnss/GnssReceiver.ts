@@ -167,9 +167,11 @@ export class GnssReceiver {
   readonly maxPdop: number;
 
   private tracked_ = new Set<string>();
-  private acquireTimers_ = new Map<string, number>();
-  private lastDate_: Date | null = null;
-  private lastFixDate_: Date | null = null;
+  /** Time (ms since epoch) of the first sample in each satellite's current run above the acquisition threshold. */
+  private acquireStartMs_ = new Map<string, number>();
+  /** Step and fix times as numbers, so a caller that reuses and mutates one Date cannot change them. */
+  private lastStepMs_: number | null = null;
+  private lastFixMs_: number | null = null;
 
   constructor(params: GnssReceiverParams) {
     this.signal = params.signal;
@@ -207,9 +209,9 @@ export class GnssReceiver {
   /** Forgets all tracking state, as after a power cycle. */
   reset(): void {
     this.tracked_.clear();
-    this.acquireTimers_.clear();
-    this.lastDate_ = null;
-    this.lastFixDate_ = null;
+    this.acquireStartMs_.clear();
+    this.lastStepMs_ = null;
+    this.lastFixMs_ = null;
   }
 
   /**
@@ -222,10 +224,11 @@ export class GnssReceiver {
    * @throws ValidationError if time goes backwards or the receiver has no position at `date`.
    */
   step(date: Date, receiver: GroundObject, satellites: readonly GnssSatellite[], interferers: readonly GnssInterferer[] = []): GnssStepResult {
-    if (this.lastDate_ && date.getTime() < this.lastDate_.getTime()) {
+    const nowMs = date.getTime();
+
+    if (this.lastStepMs_ !== null && nowMs < this.lastStepMs_) {
       throw new ValidationError('Step time must not go backwards', 'date', date);
     }
-    const dt = this.lastDate_ ? (date.getTime() - this.lastDate_.getTime()) / 1000 : 0;
     const lla = receiver.llaAt(date);
 
     if (!lla) {
@@ -242,7 +245,7 @@ export class GnssReceiver {
 
       if (!rae || rae.el < this.elevationMaskDeg) {
         this.tracked_.delete(sat.id);
-        this.acquireTimers_.delete(sat.id);
+        this.acquireStartMs_.delete(sat.id);
         statuses.push({
           id: sat.id,
           state: 'unseen',
@@ -272,16 +275,18 @@ export class GnssReceiver {
           this.tracked_.delete(sat.id);
         }
       } else if (eff >= this.acquisitionThresholdDbHz) {
-        const held = (this.acquireTimers_.get(sat.id) ?? 0) + dt;
+        // Acquisition time counts from the first qualifying sample, not from the previous step.
+        const startMs = this.acquireStartMs_.get(sat.id) ?? nowMs;
+        const heldSec = (nowMs - startMs) / 1000;
 
-        if (held >= this.reacquisitionTimeSec) {
+        if (heldSec >= this.reacquisitionTimeSec) {
           this.tracked_.add(sat.id);
-          this.acquireTimers_.delete(sat.id);
+          this.acquireStartMs_.delete(sat.id);
         } else {
-          this.acquireTimers_.set(sat.id, held);
+          this.acquireStartMs_.set(sat.id, startMs);
         }
       } else {
-        this.acquireTimers_.delete(sat.id);
+        this.acquireStartMs_.delete(sat.id);
       }
 
       const isTracked = this.tracked_.has(sat.id);
@@ -304,17 +309,17 @@ export class GnssReceiver {
     const hasFix = lookAngles.length >= this.minSatellitesForFix && Number.isFinite(dop.pdop) && dop.pdop <= this.maxPdop;
 
     if (hasFix) {
-      this.lastFixDate_ = date;
+      this.lastFixMs_ = nowMs;
     }
-    this.lastDate_ = date;
+    this.lastStepMs_ = nowMs;
 
     return {
-      date,
+      date: new Date(nowMs),
       satellites: statuses,
       trackedCount: lookAngles.length,
       dop,
       hasFix,
-      timeSinceLastFixSec: this.lastFixDate_ ? (date.getTime() - this.lastFixDate_.getTime()) / 1000 : null,
+      timeSinceLastFixSec: this.lastFixMs_ === null ? null : (nowMs - this.lastFixMs_) / 1000,
     };
   }
 
