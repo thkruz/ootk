@@ -19,6 +19,7 @@ import { ValidationError } from '../errors';
 import type { Degrees } from '../types/types';
 import { Antenna, AntennaParams } from './Antenna';
 import { Decibels, SPEED_OF_LIGHT_KM_S, SerializedAntenna } from './CommTypes';
+import { GnssAntenna, type SerializedGnssAntenna } from '../gnss/GnssAntenna';
 
 const DEG2RAD = Math.PI / 180;
 
@@ -303,13 +304,17 @@ export class PhasedArrayAntenna extends Antenna {
 
 /**
  * Deserializes any antenna, dispatching on the `type` discriminator: `'phased-array'` produces a
- * {@link PhasedArrayAntenna}, anything else a plain {@link Antenna}.
+ * {@link PhasedArrayAntenna}, `'gnss'` a {@link GnssAntenna} (keeping its elevation-gain table),
+ * anything else a plain {@link Antenna}.
  * @param data - Serialized antenna
  * @returns The reconstructed antenna
  */
-export function deserializeAntenna(data: SerializedAntenna | SerializedPhasedArrayAntenna): Antenna {
+export function deserializeAntenna(data: SerializedAntenna | SerializedPhasedArrayAntenna | SerializedGnssAntenna): Antenna {
   if ('type' in data && data.type === 'phased-array') {
     return PhasedArrayAntenna.deserialize(data);
+  }
+  if ('type' in data && data.type === 'gnss') {
+    return GnssAntenna.deserialize(data);
   }
 
   return Antenna.deserialize(data);

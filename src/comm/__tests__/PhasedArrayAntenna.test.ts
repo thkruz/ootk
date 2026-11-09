@@ -18,6 +18,7 @@ import {
   Watts,
   deserializeAntenna,
 } from '../../main';
+import { GnssAntenna } from '../../gnss/GnssAntenna';
 import { llaRad2ecef } from '../../transforms/transforms';
 
 const DEG = Math.PI / 180;
@@ -219,6 +220,15 @@ describe('serialization', () => {
     expect(back).toBeInstanceOf(Antenna);
     expect(back).not.toBeInstanceOf(PhasedArrayAntenna);
     expect(Antenna.deserialize(s).serialize()).toEqual(s);
+  });
+
+  it('GnssAntenna keeps its elevation-gain table through deserializeAntenna', () => {
+    const g = GnssAntenna.typicalFrpa();
+    const back = deserializeAntenna(JSON.parse(JSON.stringify(g.serialize())));
+
+    expect(back).toBeInstanceOf(GnssAntenna);
+    expect(back.serialize()).toEqual(g.serialize());
+    expect(back.getGainToward(d(0), d(5))).toBe(g.getGainToward(d(0), d(5)));
   });
 
   it('toString mentions the key parameters', () => {
