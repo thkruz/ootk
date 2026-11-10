@@ -464,4 +464,21 @@ describe('ServingSatelliteScheduler', () => {
       expect(() => ServingSatelliteScheduler.schedule(base(dup, 10))).toThrow(ValidationError);
     });
   });
+
+  describe('segment end geometry', () => {
+    it('records the azimuth where the serving satellite set, not a stale value', () => {
+      // Moves from az 90 / el 0.9 toward az 180 over 10 s; el is 0.1 at 4 s and -0.1 at 5 s.
+      const src = synthetic({ 7: (t) => ({ az: 90 + 9 * t, el: 0.9 - 0.2 * t, rng: 2000 }) });
+      const r = ServingSatelliteScheduler.schedule(base(src, 10, { sampleStepSec: 1 }));
+
+      expect(r.segments).toHaveLength(1);
+      const seg = r.segments[0];
+
+      expect(seg.startAz).toBeCloseTo(90, 6);
+      // The segment ends at the first sample below the horizon (t = 5 s, az 135).
+      expect(sec(seg.end)).toBe(5);
+      expect(seg.endAz).toBeCloseTo(135, 6);
+      expect(seg.endEl).toBeCloseTo(-0.1, 6);
+    });
+  });
 });

@@ -131,13 +131,16 @@ function fromSatellites(sats: readonly SpaceObject[], ids?: readonly number[]): 
  * become NaN. One wasm call is made per instant for the whole batch.
  * @param wasm - A loaded `Sgp4Wasm` (any object with `propagateDs50UtcPosVel`).
  * @param satKeys - Initialized satellite keys (`addSat` then `initSats`).
- * @param ids - Optional ids, one per key. Default: the keys converted to Number.
+ * @param ids - Optional ids, one per key (e.g. NORAD numbers). Default: the index of each key
+ *   (0, 1, 2, ...). Keys are not used as ids: real SatKeys are 19-digit bigints, and converting them
+ *   to Number merges distinct satellites (both 2605000002600000011n and 2605000002600000021n become
+ *   2605000002600000000).
  */
 function fromSgp4Wasm(wasm: Sgp4WasmBatchLike, satKeys: readonly SatKey[], ids?: readonly number[]): PositionSource {
   if (ids && ids.length !== satKeys.length) {
     throw new ValidationError('ids must have one entry per satKey', 'ids', ids.length);
   }
-  const resolved = ids ?? satKeys.map((k) => Number(k));
+  const resolved = ids ?? satKeys.map((_k, i) => i);
 
   const run = (date: Date, keys: readonly SatKey[], out: Float64Array): void => {
     const ds50 = date.getTime() / MS_PER_DAY + UNIX_EPOCH_JD - DS50_UTC_JD_EPOCH;

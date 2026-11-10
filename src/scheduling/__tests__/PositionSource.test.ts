@@ -113,6 +113,13 @@ describe('PositionSource', () => {
       });
     });
 
+    it('defaults ids to key indices, so 19-digit keys do not collide as Numbers', () => {
+      const big = [2605000002600000011n, 2605000002600000021n];
+
+      expect(Number(big[0])).toBe(Number(big[1]));
+      expect(PositionSource.fromSgp4Wasm(fake, big).ids).toEqual([0, 1]);
+    });
+
     it('maps nonzero error codes to NaN and supports subsets and custom ids', () => {
       const src = PositionSource.fromSgp4Wasm(fake, [101n, 103n], [11, 13]);
       const out = new Float64Array(6);

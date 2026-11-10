@@ -412,7 +412,12 @@ class Run_ {
 
   // ---------- geometry ----------
 
-  private assess_(x: number, y: number, z: number, a: Assessment): Assessment {
+  /**
+   * @param alwaysAzimuth - Compute `az` even when the cone prefilter rejects the satellite. The
+   *   serving satellite needs it, since its segment end records the azimuth as it sets; the bulk
+   *   scan skips it to keep the prefilter cheap.
+   */
+  private assess_(x: number, y: number, z: number, a: Assessment, alwaysAzimuth = false): Assessment {
     a.inCone = false;
     a.usable = false;
     a.maskFail = false;
@@ -431,13 +436,14 @@ class Run_ {
     a.el = Math.asin(Math.max(-1, Math.min(1, u / rng))) * RAD2DEG;
     // Cheap cone test before the horizontal components and atan2.
     if (u < this.sinThr_ * rng) {
+      if (alwaysAzimuth) {
+        a.az = this.azimuth_(dx, dy, dz);
+      }
+
       return a;
     }
-    const e = this.rowE_[0] * dx + this.rowE_[1] * dy;
-    const nn = this.rowN_[0] * dx + this.rowN_[1] * dy + this.rowN_[2] * dz;
-
     a.inCone = true;
-    a.az = mod_(Math.atan2(e, nn) * RAD2DEG, 360);
+    a.az = this.azimuth_(dx, dy, dz);
     const o = this.o_;
     let floor = this.minEl_;
 
@@ -474,10 +480,18 @@ class Run_ {
     }
   }
 
+  /** Azimuth (deg, 0-360) of an ECF offset from the ground site. */
+  private azimuth_(dx: number, dy: number, dz: number): number {
+    const e = this.rowE_[0] * dx + this.rowE_[1] * dy;
+    const nn = this.rowN_[0] * dx + this.rowN_[1] * dy + this.rowN_[2] * dz;
+
+    return mod_(Math.atan2(e, nn) * RAD2DEG, 360);
+  }
+
   private assessOne_(idx: number, tMs: number): Assessment {
     this.subset_(tMs, [idx], this.one_);
 
-    return this.assess_(this.one_[0], this.one_[1], this.one_[2], this.lastA_);
+    return this.assess_(this.one_[0], this.one_[1], this.one_[2], this.lastA_, true);
   }
 
   private fullEval_(tMs: number): FullEval {
