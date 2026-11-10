@@ -72,6 +72,7 @@ export * from './sensor/index';
 export * from './parsers/index';
 
 export * from './comm/index';
+export * from './gnss/index';
 
 export * from './interpolator/index';
 

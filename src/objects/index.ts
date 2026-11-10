@@ -13,6 +13,8 @@ export type { GroundStationParams } from './GroundStation';
 export { History } from './History';
 export type { HistoryConfig, HistoryEntry } from './History';
 export { DEFAULT_INTERPOLATOR, DEFAULT_LAGRANGE_ORDER, InterpolatorType } from './InterpolatorType';
+export { HorizonProfile } from './HorizonProfile';
+export type { HorizonPoint, SerializedHorizonProfile } from './HorizonProfile';
 export { LandObject } from './LandObject';
 export { Marker } from './Marker';
 export type {
@@ -24,6 +26,8 @@ export type {
 export { Satellite } from './Satellite';
 export { SpaceObject } from './SpaceObject';
 export type { SpaceObjectParams } from './SpaceObject';
+export { SkyUsageGrid } from './SkyUsageGrid';
+export type { SerializedSkyUsageGrid, SkyUsageCell } from './SkyUsageGrid';
 export { Star } from './Star';
 export { VisualizationHelpers } from './VisualizationHelpers';
 export type { FovBoundaryPoint, GroundTrackPoint, OrbitTrackPoint } from './VisualizationHelpers';

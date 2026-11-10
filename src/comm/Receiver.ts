@@ -17,7 +17,8 @@
 
 import { ValidationError } from '../errors';
 import { Antenna } from './Antenna';
-import { CommDeviceType, Decibels, Hertz } from './CommTypes';
+import { deserializeAntenna } from './PhasedArrayAntenna';
+import { CommDeviceType, Decibels, Hertz, SerializedAntenna } from './CommTypes';
 import { CommunicationDevice, CommunicationDeviceParams } from './CommunicationDevice';
 import type { Transmitter } from './Transmitter';
 
@@ -238,7 +239,7 @@ export class Receiver extends CommunicationDevice {
       bandwidth: data.bandwidth as Hertz,
       noiseFigure: data.noiseFigure as Decibels,
       minimumSnr: data.minimumSnr as Decibels,
-      antenna: Antenna.deserialize(data.antenna as ReturnType<Antenna['serialize']>),
+      antenna: deserializeAntenna(data.antenna as SerializedAntenna),
       lineLoss: data.lineLoss as Decibels | undefined,
       metadata: data.metadata as Record<string, unknown> | undefined,
     });

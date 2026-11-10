@@ -19,9 +19,10 @@ import { Earth } from '../body/Earth';
 import { ValidationError } from '../errors';
 import { GroundObject } from '../objects/GroundObject';
 import { SpaceObject } from '../objects/SpaceObject';
-import { ecef2rae } from '../transforms/transforms';
-import { Kilometers } from '../types/types';
+import { ecef2rae, lla2ecef } from '../transforms/transforms';
+import { Degrees, Kilometers } from '../types/types';
 import { Antenna } from './Antenna';
+import { deserializeAntenna } from './PhasedArrayAntenna';
 import {
   calculateFspl,
   calculatePropagationDelay,
@@ -30,7 +31,12 @@ import {
   Decibels,
   Hertz,
   LinkBudget,
+  LinkBudgetOptions,
+  LinkEndGeometry,
+  LinkGeometry,
+  LinkLossTerm,
   ModulationType,
+  SerializedAntenna,
   wattsToDbw,
   Watts,
 } from './CommTypes';
@@ -164,37 +170,92 @@ export class Transmitter extends CommunicationDevice {
   /**
    * Calculates the link budget to a receiver.
    *
+   * Received power = EIRP(toward rx) - FSPL - additional losses + Rx gain(toward tx) - Rx line loss.
+   * An antenna on a ground object is evaluated with `Antenna.getGainToward` at the look angle
+   * toward the other end; an antenna on a space platform uses peak gain. With a plain
+   * {@link Antenna} and no options the result equals the classic peak-gain budget.
+   *
    * @param receiver - The target receiver
    * @param date - Time for calculation (defaults to now)
+   * @param options - Extra fixed loss terms and loss models (see {@link LinkBudgetOptions})
    * @returns Link budget with EIRP, FSPL, received power, and SNR
    */
-  calculateLinkBudget(receiver: Receiver, date: Date = new Date()): LinkBudget {
+  calculateLinkBudget(receiver: Receiver, date: Date = new Date(), options?: LinkBudgetOptions): LinkBudget {
     const distance = this.getDistanceTo(receiver, date);
     const fspl = calculateFspl(distance, this.frequency);
+    const geometry = this.computeLinkGeometry_(receiver, date, distance as Kilometers);
 
-    // Received power = EIRP - FSPL + Rx Antenna Gain - Rx Line Loss
-    const receivedPower = (
-      this.eirp - fspl + receiver.antenna.gain - receiver.lineLoss
-    ) as Dbw;
+    const txAntennaGain = geometry.tx
+      ? this.antenna.getGainToward(geometry.tx.lookAz, geometry.tx.lookEl)
+      : this.antenna.gain;
+    const rxAntennaGain = geometry.rx
+      ? receiver.antenna.getGainToward(geometry.rx.lookAz, geometry.rx.lookEl)
+      : receiver.antenna.gain;
+    const eirp = (wattsToDbw(this.power) + txAntennaGain - this.lineLoss) as Dbw;
 
-    // Noise power = k * T * B (in dBW)
-    // k = -228.6 dBW/K/Hz (Boltzmann constant)
-    // For simplicity, we use the receiver's noise figure directly
-    // SNR = Received Power - Noise Floor
-    // Noise Floor = -174 dBm/Hz + 10*log10(BW) + Noise Figure
-    // In dBW: Noise Floor = -204 dBW/Hz + 10*log10(BW) + Noise Figure
+    const losses: LinkLossTerm[] = [...(options?.losses ?? [])];
+
+    for (const model of options?.lossModels ?? []) {
+      losses.push(...model(geometry, this.frequency));
+    }
+    const totalAdditionalLoss = losses.reduce((sum, term) => sum + term.db, 0) as Decibels;
+
+    // Received power = EIRP - FSPL - extra losses + Rx Antenna Gain - Rx Line Loss
+    const receivedPower = (eirp - fspl - totalAdditionalLoss + rxAntennaGain - receiver.lineLoss) as Dbw;
+
     // The noise is what the receiver lets through: its bandwidth, not the transmitter's
     const noiseFloorDbw = receiver.noiseFloor;
     const snr = (receivedPower - noiseFloorDbw) as Decibels;
 
     return {
-      eirp: this.eirp,
+      eirp,
       fspl,
       receivedPower,
       snr,
       distance,
       frequency: this.frequency,
+      txAntennaGain,
+      rxAntennaGain,
+      losses,
+      totalAdditionalLoss,
+      geometry,
     };
+  }
+
+  /**
+   * Builds the link geometry: distance, plus look angle and geodetic position for every end that
+   * is mounted on a ground object. Look angles come from `ecef2rae` (WGS84 ENU frame).
+   */
+  private computeLinkGeometry_(receiver: Receiver, date: Date, distance: Kilometers): LinkGeometry {
+    const geometry: LinkGeometry = { distance };
+    const txParent = this.parent;
+    const rxParent = receiver.parent;
+    const endGeometry = (ground: GroundObject, other: typeof txParent): LinkEndGeometry | undefined => {
+      // Positions are taken at `date` so a moving ground object (DynamicGroundObject) is where it is at that time.
+      const lla = ground.llaAt(date);
+      const otherLla = other instanceof GroundObject ? other.llaAt(date) : null;
+      let otherEcef = other instanceof GroundObject ? null : other.ecef(date);
+
+      if (otherLla) {
+        otherEcef = lla2ecef(otherLla);
+      }
+
+      if (!otherEcef || !lla) {
+        return undefined;
+      }
+      const rae = ecef2rae(lla, otherEcef);
+
+      return { lookAz: rae.az as Degrees, lookEl: rae.el as Degrees, latitude: lla.lat, altitude: lla.alt };
+    };
+
+    if (txParent instanceof GroundObject) {
+      geometry.tx = endGeometry(txParent, rxParent);
+    }
+    if (rxParent instanceof GroundObject) {
+      geometry.rx = endGeometry(rxParent, txParent);
+    }
+
+    return geometry;
   }
 
   /**
@@ -230,7 +291,14 @@ export class Transmitter extends CommunicationDevice {
 
     // Ground-to-Ground: each station must see the other above its horizon
     if (txParent instanceof GroundObject && rxParent instanceof GroundObject) {
-      return ecef2rae(txParent.lla(), rxParent.ecef()).el > 0 && ecef2rae(rxParent.lla(), txParent.ecef()).el > 0;
+      const txLla = txParent.llaAt(date);
+      const rxLla = rxParent.llaAt(date);
+
+      if (!txLla || !rxLla) {
+        return false;
+      }
+
+      return ecef2rae(txLla, lla2ecef(rxLla)).el > 0 && ecef2rae(rxLla, lla2ecef(txLla)).el > 0;
     }
 
     // Ground-to-Space or Space-to-Ground: check elevation above horizon
@@ -244,7 +312,12 @@ export class Transmitter extends CommunicationDevice {
         return false;
       }
 
-      const rae = ecef2rae(ground.lla(), spaceEcef);
+      const groundLla = ground.llaAt(date);
+
+      if (!groundLla) {
+        return false;
+      }
+      const rae = ecef2rae(groundLla, spaceEcef);
 
       // Visible if elevation is above horizon (0 degrees)
       return rae.el > 0;
@@ -321,7 +394,7 @@ export class Transmitter extends CommunicationDevice {
       frequency: data.frequency as Hertz,
       power: data.power as Watts,
       bandwidth: data.bandwidth as Hertz,
-      antenna: Antenna.deserialize(data.antenna as ReturnType<Antenna['serialize']>),
+      antenna: deserializeAntenna(data.antenna as SerializedAntenna),
       modulation: data.modulation as ModulationType | undefined,
       lineLoss: data.lineLoss as Decibels | undefined,
       metadata: data.metadata as Record<string, unknown> | undefined,

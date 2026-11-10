@@ -34,6 +34,11 @@ export type {
   Decibels,
   Hertz,
   LinkBudget,
+  LinkBudgetOptions,
+  LinkEndGeometry,
+  LinkGeometry,
+  LinkLossModel,
+  LinkLossTerm,
   RelayLinkBudget,
   SerializedAntenna,
   SerializedCommDevice,
@@ -43,6 +48,18 @@ export type {
 // Classes
 export { Antenna } from './Antenna';
 export type { AntennaParams } from './Antenna';
+
+export {
+  PhasedArrayAntenna,
+  deserializeAntenna,
+  DEFAULT_PHASED_ARRAY_SIDELOBE_FLOOR_DBI,
+  DEFAULT_SCAN_LOSS_EXPONENT,
+} from './PhasedArrayAntenna';
+export type {
+  PhasedArrayAntennaParams,
+  PhasedArrayApertureParams,
+  SerializedPhasedArrayAntenna,
+} from './PhasedArrayAntenna';
 
 export { CommunicationDevice } from './CommunicationDevice';
 export type { CommunicationDeviceParams } from './CommunicationDevice';
@@ -58,3 +75,5 @@ export type { TransponderParams } from './Transponder';
 
 export { Beacon } from './Beacon';
 export type { BeaconParams } from './Beacon';
+
+export * from './atmosphere';

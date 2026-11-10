@@ -36,6 +36,8 @@
  */
 
 import { Earth } from '../body/Earth';
+import type { NutationAngles } from '../body/NutationAngles';
+import type { PrecessionAngles } from '../body/PrecessionAngles';
 import { ClassicalElements } from './ClassicalElements';
 import { Geodetic } from './Geodetic';
 import { EpochUTC } from '../time/EpochUTC';
@@ -296,29 +298,57 @@ export class ITRF extends StateVector {
   }
 
   /**
+   * Rotates a free vector from ITRF to J2000 at an epoch, without building a state. Applies the
+   * same chain as {@link ITRF.toJ2000} (Greenwich apparent sidereal time about Z, nutation, then
+   * IAU-76 precession; Vallado, Fundamentals of Astrodynamics and Applications, 4th ed.,
+   * section 3.7) to the vector only. No velocity transport term (omega x r) is added, so this is
+   * the right call for directions and angular velocities, e.g. the Earth rotation vector.
+   * The unit type is preserved.
+   * @param vector Vector expressed in ITRF (any unit).
+   * @param epoch Epoch of the rotation.
+   * @returns The same vector expressed in J2000, in the same unit.
+   */
+  static rotateToJ2000<U extends number>(vector: Vector3D<U>, epoch: EpochUTC): Vector3D<U> {
+    return ITRF.rotateWithAngles_(vector, ITRF.j2000Angles_(epoch));
+  }
+
+  /**
+   * Epoch-dependent angles for the ITRF to J2000 chain. The nutation series is the expensive part,
+   * so {@link ITRF.toJ2000} computes these once and reuses them for position and velocity.
+   */
+  private static j2000Angles_(epoch: EpochUTC): { ast: number; n: NutationAngles; p: PrecessionAngles } {
+    const p = Earth.precession(epoch);
+    const n = Earth.nutation(epoch);
+
+    return { ast: epoch.gmstAngle() + n.eqEq, n, p };
+  }
+
+  private static rotateWithAngles_<U extends number>(
+    vector: Vector3D<U>,
+    { ast, n, p }: { ast: number; n: NutationAngles; p: PrecessionAngles },
+  ): Vector3D<U> {
+    const vTOD = vector.rotZ(-ast as Radians);
+    const vMOD = vTOD.rotX(n.eps).rotZ(n.dPsi).rotX(-n.mEps);
+
+    return vMOD
+      .rotZ(p.zed)
+      .rotY(-p.theta as Radians)
+      .rotZ(p.zeta) as Vector3D<U>;
+  }
+
+  /**
    * Converts the current coordinate to the J2000 coordinate system. This is an Earth-Centered Inertial (ECI) coordinate
    * system with the origin at the center of the Earth.
    * @see https://en.wikipedia.org/wiki/Epoch_(astronomy)#Julian_years_and_J2000
    * @returns The coordinate in the J2000 coordinate system.
    */
   toJ2000(): J2000 {
-    const p = Earth.precession(this.epoch);
-    const n = Earth.nutation(this.epoch);
-    const ast = this.epoch.gmstAngle() + n.eqEq;
-    const rTOD = this.position.rotZ(-ast as Radians);
-    const vTOD = this.velocity
-      .add(Earth.rotation.cross(this.position) as unknown as Vector3D<KilometersPerSecond>)
-      .rotZ(-ast as Radians);
-    const rMOD = rTOD.rotX(n.eps).rotZ(n.dPsi).rotX(-n.mEps);
-    const vMOD = vTOD.rotX(n.eps).rotZ(n.dPsi).rotX(-n.mEps);
-    const rJ2000 = rMOD
-      .rotZ(p.zed)
-      .rotY(-p.theta as Radians)
-      .rotZ(p.zeta) as Vector3D<Kilometers>;
-    const vJ2000 = vMOD
-      .rotZ(p.zed)
-      .rotY(-p.theta as Radians)
-      .rotZ(p.zeta) as Vector3D<KilometersPerSecond>;
+    const angles = ITRF.j2000Angles_(this.epoch);
+    const rJ2000 = ITRF.rotateWithAngles_(this.position, angles);
+    const vJ2000 = ITRF.rotateWithAngles_(
+      this.velocity.add(Earth.rotation.cross(this.position) as unknown as Vector3D<KilometersPerSecond>),
+      angles,
+    );
 
     return new J2000(this.epoch, rJ2000, vJ2000);
   }
