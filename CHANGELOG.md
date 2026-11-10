@@ -3,10 +3,40 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
-#### [v8.0.0](https://github.com/thkruz/ootk/compare/v7.2.0...v8.0.0)
+#### [v8.1.0](https://github.com/thkruz/ootk/compare/v8.0.0...v8.1.0)
+
+- Release 8.1.0: link budget geometry, phased arrays, horizon profiles, serving satellite, propagation losses, GNSS receiver [`#61`](https://github.com/thkruz/ootk/pull/61)
+- feat: link budget, phased array, atmosphere, serving-satellite scheduler, horizon profiles, GNSS receiver and holdover [`#60`](https://github.com/thkruz/ootk/pull/60)
+- feat(gnss): :sparkles: add ITU-T G.8262.1 and G.812 holdover presets with primary-source mask tests [`#59`](https://github.com/thkruz/ootk/issues/59)
+- feat(gnss): :sparkles: GNSS receiver model with C/N0, interference J/S and loss of fix [`#58`](https://github.com/thkruz/ootk/issues/58)
+- feat(comm): :sparkles: rain, gaseous and cloud attenuation for link budgets [`#57`](https://github.com/thkruz/ootk/issues/57)
+- feat(scheduling): :sparkles: serving-satellite selection and handover for a ground terminal [`#55`](https://github.com/thkruz/ootk/issues/55)
+- feat(comm): :sparkles: phased-array antenna with scan loss and max scan angle [`#54`](https://github.com/thkruz/ootk/issues/54)
+- feat(objects): :sparkles: horizon profiles for access and a sky-usage grid [`#56`](https://github.com/thkruz/ootk/issues/56)
+- refactor(force): :recycle: rotate Earth rotation vector without a fake ITRF state [`#26`](https://github.com/thkruz/ootk/issues/26)
+- feat(gnss): :sparkles: holdover clock model and tracker [`4538354`](https://github.com/thkruz/ootk/commit/4538354963c59773748fc12694e0fb3d1ede9def)
+- feat(comm): :sparkles: pointing-aware link budget with loss terms [`49d2b54`](https://github.com/thkruz/ootk/commit/49d2b545bfde3da674c253c947ba810ba1c4461e)
+- fix(comm): :bug: use the position at the link date for moving ground terminals [`45b8981`](https://github.com/thkruz/ootk/commit/45b898144c74127665bfe62b8e7adedb9b70062d)
+- feat(gnss): :sparkles: source holdover presets from G.8262 (10/2024) and G.812 (06/2004) [`a1867d7`](https://github.com/thkruz/ootk/commit/a1867d731ea9d832960afe9ae63bd19943c601b1)
+- fix(scheduling): :bug: anchor the sample grid at start, reject sub-millisecond steps, judge the serving satellite with the candidates [`ee5dde7`](https://github.com/thkruz/ootk/commit/ee5dde7e33f7a2031ad2268a147bdf368899cdeb)
+- fix(gnss): :bug: apply implementation loss to signal and jammer alike so it cancels in J/C (Kaplan Eq 6.24) [`1a48a8c`](https://github.com/thkruz/ootk/commit/1a48a8c1032c904d9c1c94dc5cdd9ed610e40c1a)
+- fix(gnss): :bug: reset receiver state for satellites left out of a step and search holdover crossings from the current time [`178eb89`](https://github.com/thkruz/ootk/commit/178eb89e089f4f31475be0a9ab276b0ed8e04013)
+- fix(gnss): :bug: count acquisition from the first strong sample and store step times as numbers [`e7825da`](https://github.com/thkruz/ootk/commit/e7825da9cc2e77e0e1741c93686ae701f71953ce)
+- test(exports): :white_check_mark: add new comm, objects, scheduling and gnss exports to the API snapshot [`e9f19e9`](https://github.com/thkruz/ootk/commit/e9f19e93170c643010ce5ed04aa13bc250201f02)
+- fix(scheduling): :bug: record the azimuth at serving-satellite set and default wasm source ids to key indices [`64ba107`](https://github.com/thkruz/ootk/commit/64ba1071a250ccfa4753645c55af46834e22497f)
+- fix(comm): :bug: apply the phased-array scan limit to negative angles and reject terrestrial links in the atmospheric loss model [`331b167`](https://github.com/thkruz/ootk/commit/331b167dfee8588e7127f726f840e88e21f3bd43)
+- perf(coordinate): :zap: compute J2000 precession and nutation angles once per ITRF.toJ2000 call [`61a8ccb`](https://github.com/thkruz/ootk/commit/61a8ccbd392cc9aa4742397684f7fa776b2ae8da)
+- fix(comm): :bug: deserialize GnssAntenna through deserializeAntenna so its elevation-gain table survives [`5903bcc`](https://github.com/thkruz/ootk/commit/5903bcceaf0a310ef2a6717c2cba32bb6e1038d4)
+- fix(comm): :bug: detect moving ground objects structurally to avoid a new import cycle [`d385bf6`](https://github.com/thkruz/ootk/commit/d385bf6c5dbc56139f35c777247cb67f304d40eb)
+- fix(scheduling): :bug: rename structural wasm interface to avoid export clash [`8b8461f`](https://github.com/thkruz/ootk/commit/8b8461ffbd1a3c83f67f4e3d0d66d5f0f9cb9eaf)
+
+### [v8.0.0](https://github.com/thkruz/ootk/compare/v7.2.0...v8.0.0)
+
+> 5 November 2026 
 
 - Release 8.0.0: correctness release with breaking API and output changes [`#53`](https://github.com/thkruz/ootk/pull/53)
 - docs(upgrade): add the 8.0.0 upgrade guide and cut the major release [`ba9d022`](https://github.com/thkruz/ootk/commit/ba9d022db23ca3982b25e276cb1664aceef52f4a)
+- chore(release): :wrench: 8.0.0 [skip ci] [`7f83419`](https://github.com/thkruz/ootk/commit/7f8341950baa3b7087450e691fd944e8d2e30a88)
 - test(setup): :white_check_mark: pin the test timezone to a fixed UTC-5 zone [`964d7d2`](https://github.com/thkruz/ootk/commit/964d7d22ed3a7167ab004154eef4776b05ec1083)
 - build(deps): :wrench: override minimatch to clear the pnpm audit gate [`e23a56b`](https://github.com/thkruz/ootk/commit/e23a56bf926e2eb4589851be28e55c2e8f0d49f3)
 
