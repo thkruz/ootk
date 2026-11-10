@@ -82,8 +82,9 @@ const checkBand_ = (fGHz: number, lo: number, hi: number, term: string, frequenc
  * section 2.5 combination with A_S = 0; see {@link totalAttenuation} for the full rule.
  *
  * Geometry: the terms apply to ground ends only, using the end's look elevation, latitude and altitude. A link with
- * no ground end (space to space) returns no terms. If both ends are on the ground each end is evaluated and the
- * per-term values are summed under the same name.
+ * no ground end (space to space) returns no terms. A link with two ground ends throws: these are Earth-space models
+ * that integrate the whole atmospheric column above an end, so they do not describe a finite terrestrial path
+ * (summing two columns would overstate the loss).
  *
  * Station altitude is the WGS84 altitude and is used as the height above mean sea level (a geoid undulation of tens of
  * metres is far below the model accuracy). Negative altitudes are treated as sea level.
@@ -187,6 +188,13 @@ export const atmosphericLossModel = (params: AtmosphericLossParams = {}): LinkLo
   };
 
   return (geometry: LinkGeometry, frequency: Hertz): LinkLossTerm[] => {
+    if (geometry.tx && geometry.rx) {
+      throw new ValidationError(
+        'The atmospheric loss model covers Earth-space links only; both ends are on the ground (terrestrial path)',
+        'geometry',
+        geometry.distance,
+      );
+    }
     const ends = [geometry.tx, geometry.rx].filter((e): e is LinkEndGeometry => e !== undefined);
     const totals: { rain?: number; gas?: number; cloud?: number } = {};
 

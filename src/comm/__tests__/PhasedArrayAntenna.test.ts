@@ -116,6 +116,13 @@ describe('scan loss', () => {
     expect(p.getOffAxisLoss(-40)).toBeCloseTo(p.getOffAxisLoss(40), 12);
   });
 
+  it('applies the scan limit to negative angles too', () => {
+    const p = new PhasedArrayAntenna({ gain: dB(30) });
+
+    expect(p.getOffAxisLoss(-80)).toBe(p.getOffAxisLoss(80));
+    expect(p.getEffectiveGain(-80)).toBe(p.getEffectiveGain(80));
+  });
+
   it('pointing error adds to the scan angle inside the loss term only', () => {
     const base = new PhasedArrayAntenna({ gain: dB(30), scanLossExponent: 1, maxScanAngle: 75 });
     const err = new PhasedArrayAntenna({ gain: dB(30), scanLossExponent: 1, maxScanAngle: 75, pointingError: 5 });

@@ -116,15 +116,12 @@ describe('atmosphericLossModel behaviour', () => {
     expect(atmosphericLossModel({ rainRate: 50, cloudLiquidWater: 1 })({ distance: 1000 as Kilometers }, hz(20))).toEqual([]);
   });
 
-  it('sums the per-end terms under the same names when both ends are on the ground', () => {
+  it('rejects a terrestrial link (both ends on the ground) instead of summing two Earth-space columns', () => {
     const m = atmosphericLossModel({ rainRate: 20, rainHeight: 3 as Kilometers });
-    const a = m({ distance: 100 as Kilometers, tx: end(40, 20) }, hz(20));
-    const b = m({ distance: 100 as Kilometers, rx: end(50, 35) }, hz(20));
-    const both = m({ distance: 100 as Kilometers, tx: end(40, 20), rx: end(50, 35) }, hz(20));
 
-    expect(both.map((t) => t.name)).toEqual(['rain', 'gas']);
-    expectRel(both[0].db, (a[0].db) + (b[0].db), 1e-14);
-    expectRel(both[1].db, (a[1].db) + (b[1].db), 1e-14);
+    expect(() => m({ distance: 100 as Kilometers, tx: end(40, 20), rx: end(50, 35) }, hz(20))).toThrow(ValidationError);
+    // One ground end is still an Earth-space link.
+    expect(m({ distance: 100 as Kilometers, rx: end(50, 35) }, hz(20)).map((t) => t.name)).toEqual(['rain', 'gas']);
   });
 
   it('can disable the gas term', () => {

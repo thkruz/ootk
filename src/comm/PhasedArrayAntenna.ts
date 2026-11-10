@@ -215,10 +215,13 @@ export class PhasedArrayAntenna extends Antenna {
    * @returns Gain change in dB relative to broadside
    */
   getOffAxisLoss(scanAngleDegrees: number): Decibels {
-    if (scanAngleDegrees > this.maxScanAngle) {
+    // Signed angles are symmetric about broadside, so the scan limit applies to the magnitude.
+    const scan = Math.abs(scanAngleDegrees);
+
+    if (scan > this.maxScanAngle) {
       return (this.sidelobeFloor - this.gain) as Decibels;
     }
-    const c = Math.cos((Math.abs(scanAngleDegrees) + this.pointingError) * DEG2RAD);
+    const c = Math.cos((scan + this.pointingError) * DEG2RAD);
 
     if (c <= 0) {
       return (this.sidelobeFloor - this.gain) as Decibels;
