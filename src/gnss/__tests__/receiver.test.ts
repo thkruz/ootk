@@ -398,6 +398,27 @@ describe('lock hysteresis and acquisition', () => {
     expect(rx.step(at(30), site, [sat]).satellites[0].state).toBe('tracking');
   });
 
+  it('restarts acquisition when a satellite is left out of a step', () => {
+    const rx = makeReceiver({ reacquisitionTimeSec: 5 });
+    const sat = first(rx);
+
+    rx.step(T0, site, [sat]);
+    rx.step(at(1), site, []);
+    expect(rx.step(at(6), site, [sat]).satellites[0].state).toBe('lost');
+    expect(rx.step(at(11), site, [sat]).satellites[0].state).toBe('tracking');
+  });
+
+  it('drops lock when a tracked satellite is left out of a step', () => {
+    const rx = makeReceiver();
+    const sat = first(rx);
+    const o30 = offsetTo(rx, sat, 30);
+
+    expect(rx.step(T0, site, [sat]).satellites[0].state).toBe('tracking');
+    rx.step(at(1), site, []);
+    // Back between the tracking (28) and acquisition (32) thresholds: a held lock would keep tracking.
+    expect(rx.step(at(2), site, [{ ...sat, powerOffsetDb: o30 }]).satellites[0].state).toBe('lost');
+  });
+
   it('is not affected by the caller mutating a reused Date', () => {
     const rx = makeReceiver();
     const clock = new Date(T0.getTime());

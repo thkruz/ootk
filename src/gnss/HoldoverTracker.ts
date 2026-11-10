@@ -69,13 +69,16 @@ export class HoldoverTracker {
       return { inHoldover: false, secondsInHoldover: 0, timeErrorSec: 0, thresholdExceeded: false, secondsUntilThreshold: exceedAt };
     }
     const err = this.clock.timeErrorAt(t);
+    // Next crossing at or after now: the bound can dip back under the threshold (signed offset
+    // with opposing drift), so the first-ever crossing would say 0 s remain while not exceeded.
+    const nextExceedAt = this.clock.timeToExceed(this.thresholdSec, t);
 
     return {
       inHoldover: true,
       secondsInHoldover: t,
       timeErrorSec: err,
       thresholdExceeded: err >= this.thresholdSec,
-      secondsUntilThreshold: Math.max(0, exceedAt - t),
+      secondsUntilThreshold: nextExceedAt - t,
     };
   }
 }

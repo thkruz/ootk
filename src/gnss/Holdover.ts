@@ -268,25 +268,28 @@ export class ClockModel {
   }
 
   /**
-   * First time at which the holdover bound reaches a threshold.
-   * Closed form (smallest positive root of x(t) = +-threshold) without a stochastic term, otherwise
-   * a geometric scan with bisection on the bracketing step.
+   * First time, at or after `fromSec`, at which the holdover bound reaches a threshold.
+   * The bound need not be monotonic: a signed offset and an opposing drift can start above the
+   * threshold, fall below it and cross it again later, so the search starts at `fromSec` rather
+   * than at loss of fix. Closed form (smallest root of x(t) = +-threshold after `fromSec`) without
+   * a stochastic term, otherwise a geometric scan with bisection on the bracketing step.
    * @param thresholdSeconds - Time-error threshold, s (> 0).
-   * @returns Seconds since loss of fix, 0 if already at or above it, Infinity if never reached.
-   * @throws ValidationError if the threshold is not positive.
+   * @param fromSec - Earliest time to consider, s since loss of fix (>= 0, default 0).
+   * @returns Seconds since loss of fix, `fromSec` if already at or above it then, Infinity if never reached.
+   * @throws ValidationError if the threshold is not positive or `fromSec` is negative or not finite.
    */
-  timeToExceed(thresholdSeconds: number): number {
+  timeToExceed(thresholdSeconds: number, fromSec = 0): number {
     if (!(thresholdSeconds > 0)) {
       throw new ValidationError('thresholdSeconds must be > 0', 'thresholdSeconds', thresholdSeconds);
     }
-    if (this.timeErrorAt(0) >= thresholdSeconds) {
-      return 0;
+    if (this.timeErrorAt(fromSec) >= thresholdSeconds) {
+      return fromSec;
     }
     if (!this.noise || this.sigmaMultiplier === 0) {
-      return this.deterministicRoot_(thresholdSeconds);
+      return this.deterministicRoot_(thresholdSeconds, fromSec);
     }
 
-    return this.numericRoot_(thresholdSeconds);
+    return this.numericRoot_(thresholdSeconds, fromSec);
   }
 
   /** Plain-object form for storage. */
@@ -305,7 +308,7 @@ export class ClockModel {
     return new ClockModel({ ...data, noise: data.noise ?? undefined });
   }
 
-  private deterministicRoot_(threshold: number): number {
+  private deterministicRoot_(threshold: number, fromSec: number): number {
     const a = 0.5 * this.agingPerSec;
     const b = this.initialFrequencyOffset;
     let best = Infinity;
@@ -322,7 +325,7 @@ export class ClockModel {
         roots = disc < 0 ? [] : [(-b - Math.sqrt(disc)) / (2 * a), (-b + Math.sqrt(disc)) / (2 * a)];
       }
       for (const r of roots) {
-        if (r > 0 && r < best) {
+        if (r > fromSec && r < best) {
           best = r;
         }
       }
@@ -331,10 +334,10 @@ export class ClockModel {
     return best;
   }
 
-  private numericRoot_(threshold: number): number {
-    const tMax = 1e12;
-    let lo = 0;
-    let hi = 1e-3;
+  private numericRoot_(threshold: number, fromSec: number): number {
+    const tMax = fromSec + 1e12;
+    let lo = fromSec;
+    let hi = fromSec + 1e-3;
 
     while (hi <= tMax) {
       if (this.timeErrorAt(hi) >= threshold) {
@@ -351,7 +354,7 @@ export class ClockModel {
         return hi;
       }
       lo = hi;
-      hi *= 1.05;
+      hi = fromSec + (hi - fromSec) * 1.05;
     }
 
     return Infinity;

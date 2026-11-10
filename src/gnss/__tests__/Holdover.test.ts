@@ -312,3 +312,33 @@ describe('HoldoverTracker with a jammed GnssReceiver', () => {
     expect(status.inHoldover).toBe(false);
   });
 });
+
+describe('non-monotonic bound: offset and drift of opposite sign', () => {
+  // x(t) = 2e-6 - 1e-9 t: |x| is 2 us at 0, 1 us at 1000 s, 0 at 2000 s and 1 us again at 3000 s.
+  const clock = new ClockModel({ initialTimeOffsetSec: 2e-6, initialFrequencyOffset: -1e-9 });
+
+  it('timeToExceed finds the next crossing at or after fromSec', () => {
+    expect(clock.timeToExceed(1e-6)).toBe(0);
+    expect(clock.timeToExceed(1e-6, 500)).toBe(500);
+    expect(clock.timeToExceed(1e-6, 1500)).toBeCloseTo(3000, 6);
+    expect(() => clock.timeToExceed(1e-6, -1)).toThrow(ValidationError);
+  });
+
+  it('the tracker reports time until the next crossing, not 0, while under the threshold', () => {
+    const status = new HoldoverTracker(clock, 1e-6).evaluate({ hasFix: false, timeSinceLastFixSec: 1500 });
+
+    expect(status.thresholdExceeded).toBe(false);
+    expect(status.secondsUntilThreshold).toBeCloseTo(1500, 6);
+  });
+
+  it('the numeric search (with noise) also starts at fromSec', () => {
+    const noisy = new ClockModel({
+      initialTimeOffsetSec: 2e-6, initialFrequencyOffset: -1e-9, noise: { h0: 1e-30, hMinus2: 1e-40 }, sigmaMultiplier: 1,
+    });
+    const next = noisy.timeToExceed(1e-6, 1500);
+
+    expect(next).toBeGreaterThan(1500);
+    expect(noisy.timeErrorAt(next)).toBeGreaterThanOrEqual(1e-6);
+    expect(noisy.timeErrorAt(next - 1)).toBeLessThan(1e-6);
+  });
+});

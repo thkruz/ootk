@@ -305,6 +305,21 @@ export class GnssReceiver {
       });
     }
 
+    // A satellite left out of this step has no observation: it loses lock and its acquisition run
+    // restarts, so a gap in the input can neither keep a track alive nor count toward reacquisition.
+    const offered = new Set(satellites.map((s) => s.id));
+
+    for (const id of [...this.tracked_]) {
+      if (!offered.has(id)) {
+        this.tracked_.delete(id);
+      }
+    }
+    for (const id of [...this.acquireStartMs_.keys()]) {
+      if (!offered.has(id)) {
+        this.acquireStartMs_.delete(id);
+      }
+    }
+
     const dop = calculateDop(lookAngles);
     const hasFix = lookAngles.length >= this.minSatellitesForFix && Number.isFinite(dop.pdop) && dop.pdop <= this.maxPdop;
 
