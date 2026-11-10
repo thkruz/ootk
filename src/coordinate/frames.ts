@@ -36,6 +36,8 @@
  */
 
 import { Earth } from '../body/Earth';
+import type { NutationAngles } from '../body/NutationAngles';
+import type { PrecessionAngles } from '../body/PrecessionAngles';
 import { ClassicalElements } from './ClassicalElements';
 import { Geodetic } from './Geodetic';
 import { EpochUTC } from '../time/EpochUTC';
@@ -307,9 +309,24 @@ export class ITRF extends StateVector {
    * @returns The same vector expressed in J2000, in the same unit.
    */
   static rotateToJ2000<U extends number>(vector: Vector3D<U>, epoch: EpochUTC): Vector3D<U> {
+    return ITRF.rotateWithAngles_(vector, ITRF.j2000Angles_(epoch));
+  }
+
+  /**
+   * Epoch-dependent angles for the ITRF to J2000 chain. The nutation series is the expensive part,
+   * so {@link ITRF.toJ2000} computes these once and reuses them for position and velocity.
+   */
+  private static j2000Angles_(epoch: EpochUTC): { ast: number; n: NutationAngles; p: PrecessionAngles } {
     const p = Earth.precession(epoch);
     const n = Earth.nutation(epoch);
-    const ast = epoch.gmstAngle() + n.eqEq;
+
+    return { ast: epoch.gmstAngle() + n.eqEq, n, p };
+  }
+
+  private static rotateWithAngles_<U extends number>(
+    vector: Vector3D<U>,
+    { ast, n, p }: { ast: number; n: NutationAngles; p: PrecessionAngles },
+  ): Vector3D<U> {
     const vTOD = vector.rotZ(-ast as Radians);
     const vMOD = vTOD.rotX(n.eps).rotZ(n.dPsi).rotX(-n.mEps);
 
@@ -326,10 +343,11 @@ export class ITRF extends StateVector {
    * @returns The coordinate in the J2000 coordinate system.
    */
   toJ2000(): J2000 {
-    const rJ2000 = ITRF.rotateToJ2000(this.position, this.epoch);
-    const vJ2000 = ITRF.rotateToJ2000(
+    const angles = ITRF.j2000Angles_(this.epoch);
+    const rJ2000 = ITRF.rotateWithAngles_(this.position, angles);
+    const vJ2000 = ITRF.rotateWithAngles_(
       this.velocity.add(Earth.rotation.cross(this.position) as unknown as Vector3D<KilometersPerSecond>),
-      this.epoch,
+      angles,
     );
 
     return new J2000(this.epoch, rJ2000, vJ2000);
