@@ -77,3 +77,5 @@ export { Beacon } from './Beacon';
 export type { BeaconParams } from './Beacon';
 
 export * from './atmosphere';
+
+export { ebN0FromCno, marginAtRange, thresholdRangeKm } from './LinkBudgetSweep';
