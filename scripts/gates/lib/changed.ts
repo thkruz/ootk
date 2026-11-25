@@ -3,8 +3,6 @@
  * into per-file changed line ranges, then intersected with function ranges.
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import path from 'node:path';
 import { REPO_ROOT, toPosix } from './functions';
 
 export interface LineRange { start: number; end: number }
