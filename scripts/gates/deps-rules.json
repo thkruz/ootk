@@ -1,0 +1,32 @@
+{
+  "_note": "Starting rules for ootk, none confirmed with Ted yet, so violations report as warn ('unconfirmed rule') and never fail. Set confirmed:true per rule once agreed. Globs: ** any depth, * within one segment, paths repo-relative. 'to' is matched against the resolved import path (alias-expanded) or the raw specifier for packages.",
+  "rules": [
+    {
+      "id": "src-never-imports-test-or-scripts",
+      "description": "Library source never imports tests or scripts.",
+      "from": ["src/**"],
+      "exceptFrom": [],
+      "to": ["test/**", "scripts/**"],
+      "exceptTo": [],
+      "confirmed": false
+    },
+    {
+      "id": "library-no-dev-dependencies",
+      "description": "Shipped source never imports dev-only packages (they are not in dependencies).",
+      "from": ["src/**"],
+      "exceptFrom": ["src/external/**"],
+      "to": ["vitest", "fast-check", "satellite.js"],
+      "exceptTo": [],
+      "confirmed": false
+    },
+    {
+      "id": "leaf-modules-do-not-import-high-level",
+      "description": "Low-level modules (sgp4, time, utils, enums, types, interfaces) do not import high-level domain modules (operations, scheduling, conjunction, maneuver, breakup, constellation, orbit-design).",
+      "from": ["src/sgp4/**", "src/time/**", "src/utils/**", "src/enums/**", "src/types/**", "src/interfaces/**"],
+      "exceptFrom": [],
+      "to": ["src/operations/**", "src/scheduling/**", "src/conjunction/**", "src/maneuver/**", "src/breakup/**", "src/constellation/**", "src/orbit-design/**"],
+      "exceptTo": [],
+      "confirmed": false
+    }
+  ]
+}

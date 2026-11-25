@@ -99,6 +99,7 @@
     "auto-changelog": "^2.5.0",
     "conventional-changelog-conventionalcommits": "^10.2.1",
     "eslint": "^10.8.0",
+    "fast-check": "^4.11.0",
     "husky": "^9.1.7",
     "madge": "^8.0.0",
     "satellite.js": "^7.0.1",

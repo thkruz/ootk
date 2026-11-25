@@ -41,3 +41,5 @@ src/external/Sgp4Prop.js
 src/external/Sgp4Prop.wasm
 src/external/Sgp4Prop.xp.js
 src/external/Sgp4Prop.xp.wasm
+# quality gate output
+.metrics/

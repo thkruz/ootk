@@ -14,6 +14,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: [
+      'scripts/gates/**/*.test.ts',
       '**/test/**/*.test.ts',
       '**/test/**/*.spec.ts',
       '**/__tests__/**/*.test.ts',
