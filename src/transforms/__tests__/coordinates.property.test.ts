@@ -1,7 +1,7 @@
 import fc from 'fast-check';
 import { deg2rad, rad2deg } from '../conversions';
 import { calcGmst, ecef2eci, ecef2rae, eci2ecef, eci2lla, eci2rae, lla2ecef, rae2ecef, rae2eci } from '../transforms';
-import { Degrees, EcefVec3, Kilometers, LlaVec3, Radians, RaeVec3, TemeVec3 } from '../../types/types';
+import { Degrees, EcefVec3, Kilometers, RaeVec3, TemeVec3 } from '../../types/types';
 
 /** Property tests (fast-check) for the coordinate transforms. Tolerances are absolute km / degrees. */
 
