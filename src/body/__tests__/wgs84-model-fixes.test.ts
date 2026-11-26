@@ -74,6 +74,14 @@ describe('SunBody shadow against the WGS84 ellipsoid', () => {
 
     expect(aCent).toBeCloseTo(Math.asin(WGS84_A / 7000), 6);
   });
+
+  it('eclipseAngles uses WGS84_A, not Earth.radiusEquator, in the apparent radius (hand value)', () => {
+    // sin(aCent) = 6378.137 / 7000 = 0.91116242857, aCent = 1.14609642480 rad. Earth.radiusEquator (6378.1363)
+    // would give 1.14609618211 rad, 2.4e-7 rad lower, so 9 digits tell the two apart.
+    const [, aCent] = Sun.eclipseAngles(km(7000, 0, 0), km(1.496e8, 0, 0));
+
+    expect(aCent).toBeCloseTo(1.1460964248, 9);
+  });
 });
 
 describe('Transmitter space-to-space visibility against the WGS84 ellipsoid', () => {

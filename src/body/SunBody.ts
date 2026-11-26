@@ -25,10 +25,9 @@ import { GroundObject } from '../objects/GroundObject';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { Degrees, Kilometers, Meters, Radians, SpaceObjectType, SunTime } from '../types/types';
-import { cKmPerSec, DEG2RAD, MS_PER_DAY, RAD2DEG } from '../utils/constants';
+import { cKmPerSec, DEG2RAD, MS_PER_DAY, RAD2DEG, WGS84_A, WGS84_B } from '../utils/constants';
 import { CelestialBody, CelestialBodyParams } from './CelestialBody';
 import { CelestialBodyType } from './CelestialBodyType';
-import { Earth } from './Earth';
 
 // Re-export SunTime for convenience
 export type { SunTime } from '../types/types';
@@ -264,7 +263,7 @@ export class SunBody extends CelestialBody {
       const r = scaledSat.magnitude();
       const satHoriz = r * Math.cos(angle);
       const satVert = r * Math.sin(angle);
-      const penVert = Earth.radiusEquator + Math.tan(SunBody.PENUMBRA_ANGLE) * satHoriz;
+      const penVert = WGS84_A + Math.tan(SunBody.PENUMBRA_ANGLE) * satHoriz;
 
       if (satVert <= penVert) {
         inShadow = true;
@@ -274,9 +273,10 @@ export class SunBody extends CelestialBody {
     return inShadow;
   }
 
-  /** Stretches z by a/b so the WGS84 ellipsoid becomes a sphere of radius `Earth.radiusEquator`. */
+  /** Stretches z by a/b so the WGS84 ellipsoid becomes a sphere of radius WGS84_A. The angles measured in this space are an approximation (the stretch distorts them by order
+   * the flattening, about 0.3 percent); the occluder itself is exact. */
   private static toScaledSpace_(v: Vector3D<Kilometers>): Vector3D<Kilometers> {
-    return new Vector3D<Kilometers>(v.x, v.y, (v.z * Earth.radiusEquator) / Earth.radiusPolar as Kilometers);
+    return new Vector3D<Kilometers>(v.x, v.y, (v.z * WGS84_A) / WGS84_B as Kilometers);
   }
 
   /**
@@ -293,7 +293,7 @@ export class SunBody extends CelestialBody {
 
     return [
       satSun.angle(scaledSat.negate()),
-      Math.asin(Earth.radiusEquator / r) as Radians,
+      Math.asin(WGS84_A / r) as Radians,
       Math.asin(SunBody.RADIUS / satSun.magnitude()) as Radians,
     ];
   }
