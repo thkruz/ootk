@@ -29,6 +29,7 @@
  */
 
 import { Radians } from '../types/types';
+import { WGS84_A, WGS84_B, WGS84_E2, WGS84_F } from '../utils/constants';
 
 /** Minimal 3-vector accepted and returned by the swath helpers (km or unitless). */
 export interface SwathVec3 {
@@ -53,13 +54,11 @@ export interface SwathRun {
 }
 
 /** WGS84 semi-major axis (km). */
-export const WGS84_A_KM = 6378.137;
-/** WGS84 flattening. */
-export const WGS84_F = 1 / 298.257223563;
+export const WGS84_A_KM = WGS84_A;
+/** WGS84 flattening (same binding as `utils/constants`). */
+export { WGS84_F, WGS84_E2 };
 /** WGS84 semi-minor axis (km). */
-export const WGS84_B_KM = WGS84_A_KM * (1 - WGS84_F);
-/** WGS84 first eccentricity squared. */
-export const WGS84_E2 = 2 * WGS84_F - WGS84_F * WGS84_F;
+export const WGS84_B_KM = WGS84_B;
 /** Mean Earth radius used by the swath-width to FOV conversion (km, IUGG R1). */
 export const SWATH_MEAN_EARTH_RADIUS_KM = 6371.0088;
 /** Margin kept between a look half-angle and the geometric horizon (0.2 deg). */
