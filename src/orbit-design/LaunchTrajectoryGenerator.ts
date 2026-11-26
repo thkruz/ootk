@@ -464,7 +464,7 @@ export class LaunchTrajectoryGenerator {
    * Based on average velocity during ascent being roughly half the orbital velocity.
    */
   private static estimateDownrange_(insertionAltKm: number, ascentDurationSec: number): number {
-    const rInsert = insertionAltKm + Earth.radiusMean;
+    const rInsert = insertionAltKm + ALTITUDE_REFERENCE_RADIUS_KM;
     const vOrbital = Math.sqrt(Earth.mu / rInsert);
 
     // Average downrange velocity ≈ vOrbital / 2 (ramps from 0 to vOrbital)
@@ -500,7 +500,7 @@ export class LaunchTrajectoryGenerator {
     const dtStep = ascentDurationSec / nSteps;
 
     // Compute the orbital velocity at insertion for downrange derivative matching
-    const rInsert = (insertionAltKm + Earth.radiusMean);
+    const rInsert = (insertionAltKm + ALTITUDE_REFERENCE_RADIUS_KM);
     const vOrbital = Math.sqrt(Earth.mu / rInsert); // km/s
 
     // Generate positions at each timestep

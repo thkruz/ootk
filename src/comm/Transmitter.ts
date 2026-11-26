@@ -15,7 +15,7 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth } from '../body/Earth';
+import { segmentIntersectsEllipsoid } from '../body/Ellipsoid';
 import { ValidationError } from '../errors';
 import { GroundObject } from '../objects/GroundObject';
 import { SpaceObject } from '../objects/SpaceObject';
@@ -332,7 +332,7 @@ export class Transmitter extends CommunicationDevice {
 
   /**
    * Checks if a line segment between two points intersects Earth.
-   * Uses ray-sphere intersection test with Earth's mean radius.
+   * Uses a segment-ellipsoid test against the WGS84 ellipsoid (polar axis along z).
    *
    * @param pos1 - First position in km (J2000/ECI)
    * @param pos2 - Second position in km (J2000/ECI)
@@ -342,31 +342,7 @@ export class Transmitter extends CommunicationDevice {
     pos1: { x: Kilometers; y: Kilometers; z: Kilometers },
     pos2: { x: Kilometers; y: Kilometers; z: Kilometers },
   ): boolean {
-    // Direction vector from pos1 to pos2
-    const dx = pos2.x - pos1.x;
-    const dy = pos2.y - pos1.y;
-    const dz = pos2.z - pos1.z;
-
-    // Coefficients for quadratic equation: |pos1 + t*d|^2 = R^2
-    // a*t^2 + b*t + c = 0
-    const a = dx * dx + dy * dy + dz * dz;
-    const b = 2 * (pos1.x * dx + pos1.y * dy + pos1.z * dz);
-    const c = pos1.x * pos1.x + pos1.y * pos1.y + pos1.z * pos1.z - Earth.radiusMean * Earth.radiusMean;
-
-    const discriminant = b * b - 4 * a * c;
-
-    // No intersection with Earth sphere
-    if (discriminant < 0) {
-      return false;
-    }
-
-    // Check if intersection points are within the line segment [0, 1]
-    const sqrtDisc = Math.sqrt(discriminant);
-    const t1 = (-b - sqrtDisc) / (2 * a);
-    const t2 = (-b + sqrtDisc) / (2 * a);
-
-    // Line intersects Earth if either intersection point is within segment
-    return (t1 >= 0 && t1 <= 1) || (t2 >= 0 && t2 <= 1) || (t1 < 0 && t2 > 1);
+    return segmentIntersectsEllipsoid(pos1, pos2);
   }
 
   // ==================== Serialization ====================

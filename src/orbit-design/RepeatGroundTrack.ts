@@ -387,7 +387,7 @@ export class RepeatGroundTrack {
       throw new ValidationError('Altitude must be at least 160 km (above dense atmosphere)', 'altitude', altitude);
     }
 
-    const sma = (altitude + Earth.radiusMean) as Kilometers;
+    const sma = (altitude + ALTITUDE_REFERENCE_RADIUS_KM) as Kilometers;
     const incRad = RepeatGroundTrack.calculateSunSyncInclination_(sma, eccentricity);
 
     return (incRad * RAD2DEG) as Degrees;
@@ -459,9 +459,9 @@ export class RepeatGroundTrack {
     // Check if solution exists
     if (cosI < -1 || cosI > 1) {
       throw new ValidationError(
-        `No sun-synchronous orbit exists at altitude ${(sma - Earth.radiusMean).toFixed(0)} km`,
+        `No sun-synchronous orbit exists at altitude ${(sma - ALTITUDE_REFERENCE_RADIUS_KM).toFixed(0)} km`,
         'altitude',
-        sma - Earth.radiusMean,
+        sma - ALTITUDE_REFERENCE_RADIUS_KM,
       );
     }
 
