@@ -11,6 +11,11 @@ export default defineConfig({
      * of memory". Same cap as the keeptrack-space parent's vitest.config.ts.
      */
     maxWorkers: Math.min(12, Math.max(1, os.availableParallelism() - 1)),
+    /*
+     * The numerical integrator tests take about 1.3 s on a fast desktop and passed the 5 s
+     * default on a shared CI runner only some of the time.
+     */
+    testTimeout: 30_000,
     globals: true,
     environment: 'node',
     include: ['**/*.test.ts'],
