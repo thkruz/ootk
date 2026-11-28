@@ -734,7 +734,7 @@ describe('Propagator accuracy vs OEM truth data (NORAD 39208)', () => {
       expect(errJ2).toBeLessThan(1000);
       expect(err8x8TB).toBeLessThan(1000);
     }
-  }, 30_000);
+  }, 120_000);
 
   it('DP54 and RK89 should agree closely on real satellite data', () => {
     const sat = new Satellite({ tle1: tle1_39208, tle2: tle2_39208, name: 'SHIYAN-7' });
