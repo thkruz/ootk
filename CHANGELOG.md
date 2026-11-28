@@ -3,9 +3,21 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
+#### [v8.3.0](https://github.com/thkruz/ootk/compare/v8.2.0...v8.3.0)
+
+- Merge pull request #63 from thkruz/feat/wgs84-ellipsoid [`#64`](https://github.com/thkruz/ootk/pull/64)
+- feat(body): WGS84 ellipsoid helpers and ellipsoid-based eclipse, occlusion and altitudes [`#63`](https://github.com/thkruz/ootk/pull/63)
+- feat(body): :sparkles: add WGS84 ellipsoid helpers, WGS84 constants and llaRad2eci; deprecate spherical lla2eci [`a12a802`](https://github.com/thkruz/ootk/commit/a12a80267be7477f1b07c8119bc2ce1e3d3563fb)
+- fix(body): :bug: use the WGS84 ellipsoid for eclipse and link occlusion and one reference radius for altitudes [`14c5336`](https://github.com/thkruz/ootk/commit/14c5336011e533e7cf55781f85b44fe6937e47b6)
+- fix(body): :bug: use WGS84_A and WGS84_B for the SunBody scaled-space stretch and apparent radius [`38bd70e`](https://github.com/thkruz/ootk/commit/38bd70e59dc1c37688fd5c9a6885d24ed7d7c39f)
+- test(exports): :white_check_mark: update public API snapshot for the WGS84 ellipsoid exports [`50b350a`](https://github.com/thkruz/ootk/commit/50b350a105781e9e8f5229806e85a884ae22a542)
+
 #### [v8.2.0](https://github.com/thkruz/ootk/compare/v8.1.0...v8.2.0)
 
+> 13 November 2026 
+
 - feat(comm): :sparkles: add LinkBudgetSweep for margin versus range [`#62`](https://github.com/thkruz/ootk/pull/62)
+- chore(release): :wrench: 8.2.0 [skip ci] [`d62df34`](https://github.com/thkruz/ootk/commit/d62df3489f166b69e613bf7afb1f08ea7ef18e68)
 - test(exports): :white_check_mark: update public API snapshot for 8.2.0 [`05de5a4`](https://github.com/thkruz/ootk/commit/05de5a4c52b37f1049d489015a37cf50462e8dcd)
 
 #### [v8.1.0](https://github.com/thkruz/ootk/compare/v8.0.0...v8.1.0)
