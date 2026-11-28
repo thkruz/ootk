@@ -3,7 +3,14 @@
 This is an automatic changelog that automatically records all changes made to the project. Generated from Git commit
 messages, it details updates like bug fixes and new features, providing a clear history of the project's development.
 
+#### [v8.2.0](https://github.com/thkruz/ootk/compare/v8.1.0...v8.2.0)
+
+- feat(comm): :sparkles: add LinkBudgetSweep for margin versus range [`#62`](https://github.com/thkruz/ootk/pull/62)
+- test(exports): :white_check_mark: update public API snapshot for 8.2.0 [`05de5a4`](https://github.com/thkruz/ootk/commit/05de5a4c52b37f1049d489015a37cf50462e8dcd)
+
 #### [v8.1.0](https://github.com/thkruz/ootk/compare/v8.0.0...v8.1.0)
+
+> 8 November 2026 
 
 - Release 8.1.0: link budget geometry, phased arrays, horizon profiles, serving satellite, propagation losses, GNSS receiver [`#61`](https://github.com/thkruz/ootk/pull/61)
 - feat: link budget, phased array, atmosphere, serving-satellite scheduler, horizon profiles, GNSS receiver and holdover [`#60`](https://github.com/thkruz/ootk/pull/60)
@@ -25,6 +32,7 @@ messages, it details updates like bug fixes and new features, providing a clear 
 - test(exports): :white_check_mark: add new comm, objects, scheduling and gnss exports to the API snapshot [`e9f19e9`](https://github.com/thkruz/ootk/commit/e9f19e93170c643010ce5ed04aa13bc250201f02)
 - fix(scheduling): :bug: record the azimuth at serving-satellite set and default wasm source ids to key indices [`64ba107`](https://github.com/thkruz/ootk/commit/64ba1071a250ccfa4753645c55af46834e22497f)
 - fix(comm): :bug: apply the phased-array scan limit to negative angles and reject terrestrial links in the atmospheric loss model [`331b167`](https://github.com/thkruz/ootk/commit/331b167dfee8588e7127f726f840e88e21f3bd43)
+- chore(release): :wrench: 8.1.0 [skip ci] [`7ad319f`](https://github.com/thkruz/ootk/commit/7ad319f7a020b233913f65b3ebf7480c219c6935)
 - perf(coordinate): :zap: compute J2000 precession and nutation angles once per ITRF.toJ2000 call [`61a8ccb`](https://github.com/thkruz/ootk/commit/61a8ccbd392cc9aa4742397684f7fa776b2ae8da)
 - fix(comm): :bug: deserialize GnssAntenna through deserializeAntenna so its elevation-gain table survives [`5903bcc`](https://github.com/thkruz/ootk/commit/5903bcceaf0a310ef2a6717c2cba32bb6e1038d4)
 - fix(comm): :bug: detect moving ground objects structurally to avoid a new import cycle [`d385bf6`](https://github.com/thkruz/ootk/commit/d385bf6c5dbc56139f35c777247cb67f304d40eb)
