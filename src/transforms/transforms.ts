@@ -175,6 +175,10 @@ export function lla2ecef<AltitudeUnits extends number>(lla: LlaVec3<Degrees, Alt
 }
 
 /**
+ * @deprecated Spherical-Earth helper, not a WGS84 position. Use {@link llaRad2eci} (WGS84, equal to
+ * `ecef2eci(llaRad2ecef(lla), gmst)`) for physical positions; keep this only for drawing on a
+ * sphere of radius `Earth.radiusMean`.
+ *
  * Places lat/lon/alt on a SPHERICAL Earth (radius `Earth.radiusMean`) and rotates it into
  * TEME by GMST.
  *
@@ -204,6 +208,16 @@ export function lla2eci(lla: LlaVec3<Radians, Kilometers>, gmst: GreenwichMeanSi
   const z = (Earth.radiusMean + alt) * sinLat;
 
   return { x, y, z } as TemeVec3<Kilometers>;
+}
+
+/**
+ * Converts geodetic coordinates (WGS84) to TEME (inertial) coordinates: `ecef2eci(llaRad2ecef(lla), gmst)`.
+ * @param lla - Geodetic latitude/longitude in radians and altitude above the WGS84 ellipsoid in km
+ * @param gmst - Greenwich Mean Sidereal Time in radians
+ * @returns TEME coordinates (inertial) in km
+ */
+export function llaRad2eci(lla: LlaVec3<Radians, Kilometers>, gmst: number): TemeVec3<Kilometers> {
+  return ecef2eci(llaRad2ecef(lla), gmst);
 }
 
 /**

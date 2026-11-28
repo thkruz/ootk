@@ -48,8 +48,8 @@ describe('ConstellationGenerator', () => {
         const altitude = 550 as Kilometers;
         const sats = ConstellationGenerator.walker(altitude, 53 as Degrees, 1, 1, 0, testEpoch);
 
-        // Earth.radiusMean is ~6371 km
-        const expectedSma = 550 + 6371.00519;
+        // Altitudes are above the WGS84 equatorial radius (6378.137 km), the Tle apogee/perigee convention
+        const expectedSma = 550 + 6378.137;
 
         expect(Math.abs(sats[0].semiMajorAxis - expectedSma)).toBeLessThan(1);
       });

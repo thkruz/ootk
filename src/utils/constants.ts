@@ -110,4 +110,16 @@ export const MILLISECONDS_PER_SECOND = <Milliseconds>1000;
 
 export const RADIUS_OF_EARTH = 6371; // Radius of Earth in kilometers
 
+/** WGS84 semi-major (equatorial) radius in kilometers. */
+export const WGS84_A = 6378.137;
+
+/** WGS84 flattening, 1 / 298.257223563. */
+export const WGS84_F = 1 / 298.257223563;
+
+/** WGS84 semi-minor (polar) radius in kilometers, a * (1 - f), about 6356.752314. */
+export const WGS84_B = WGS84_A * (1 - WGS84_F);
+
+/** WGS84 first eccentricity squared, 2f - f^2. */
+export const WGS84_E2 = 2 * WGS84_F - WGS84_F * WGS84_F;
+
 export const earthGravityParam = 398600.4415;
