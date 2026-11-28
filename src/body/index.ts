@@ -22,7 +22,17 @@
  */
 
 // Core Earth constants (unchanged)
-export { Earth } from './Earth';
+export { Earth, WGS84_A, WGS84_B, WGS84_E2, WGS84_F } from './Earth';
+
+// WGS84 ellipsoid geometry helpers
+export {
+  geodeticSurfaceNormal,
+  scaleToGeodeticSurface,
+  liftToEllipsoid,
+  ellipsoidRadiusAlong,
+  rayEllipsoidIntersection,
+  segmentIntersectsEllipsoid,
+} from './Ellipsoid';
 
 // Celestial body types
 export { CelestialBodyType, bodyTypeLookup } from './CelestialBodyType';

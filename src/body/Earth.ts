@@ -32,6 +32,9 @@ import { NutationAngles } from './NutationAngles';
 import { PrecessionAngles } from './PrecessionAngles';
 
 // / Earth metrics and operations.
+// WGS84 geometry constants (a = 6378.137 km), defined in utils/constants and exported here for geometry code.
+export { WGS84_A, WGS84_B, WGS84_E2, WGS84_F } from '../utils/constants';
+
 export class Earth {
   private constructor() {
     // disable constructor

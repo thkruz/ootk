@@ -25,10 +25,9 @@ import { GroundObject } from '../objects/GroundObject';
 import { Vector3D } from '../operations/Vector3D';
 import { EpochUTC } from '../time/EpochUTC';
 import { Degrees, Kilometers, Meters, Radians, SpaceObjectType, SunTime } from '../types/types';
-import { cKmPerSec, DEG2RAD, MS_PER_DAY, RAD2DEG } from '../utils/constants';
+import { cKmPerSec, DEG2RAD, MS_PER_DAY, RAD2DEG, WGS84_A, WGS84_B } from '../utils/constants';
 import { CelestialBody, CelestialBodyParams } from './CelestialBody';
 import { CelestialBodyType } from './CelestialBodyType';
-import { Earth } from './Earth';
 
 // Re-export SunTime for convenience
 export type { SunTime } from '../types/types';
@@ -253,15 +252,18 @@ export class SunBody extends CelestialBody {
    * @returns True if satellite is in shadow (eclipse)
    */
   shadow(epoch: EpochUTC, satPos: Vector3D<Kilometers>): boolean {
-    const sunPos = this.eciApparent(epoch.toDateTime());
+    // Scaled space (CesiumJS): stretch z by a/b so the WGS84 ellipsoid becomes a sphere of radius a,
+    // then use the cylinder/penumbra model against that sphere.
+    const sunPos = SunBody.toScaledSpace_(this.eciApparent(epoch.toDateTime()));
+    const scaledSat = SunBody.toScaledSpace_(satPos);
     let inShadow = false;
 
-    if (sunPos.dot(satPos) < 0) {
-      const angle = sunPos.angle(satPos);
-      const r = satPos.magnitude();
+    if (sunPos.dot(scaledSat) < 0) {
+      const angle = sunPos.angle(scaledSat);
+      const r = scaledSat.magnitude();
       const satHoriz = r * Math.cos(angle);
       const satVert = r * Math.sin(angle);
-      const penVert = Earth.radiusEquator + Math.tan(SunBody.PENUMBRA_ANGLE) * satHoriz;
+      const penVert = WGS84_A + Math.tan(SunBody.PENUMBRA_ANGLE) * satHoriz;
 
       if (satVert <= penVert) {
         inShadow = true;
@@ -271,6 +273,12 @@ export class SunBody extends CelestialBody {
     return inShadow;
   }
 
+  /** Stretches z by a/b so the WGS84 ellipsoid becomes a sphere of radius WGS84_A. The angles measured in this space are an approximation (the stretch distorts them by order
+   * the flattening, about 0.3 percent); the occluder itself is exact. */
+  private static toScaledSpace_(v: Vector3D<Kilometers>): Vector3D<Kilometers> {
+    return new Vector3D<Kilometers>(v.x, v.y, (v.z * WGS84_A) / WGS84_B as Kilometers);
+  }
+
   /**
    * Calculates eclipse angles for satellite shadow determination.
    * @param satPos - The satellite's ECI position in kilometers
@@ -278,12 +286,14 @@ export class SunBody extends CelestialBody {
    * @returns [central body angle, central body apparent radius, sun apparent radius] in radians
    */
   eclipseAngles(satPos: Vector3D<Kilometers>, sunPos: Vector3D<Kilometers>): [Radians, Radians, Radians] {
-    const satSun = sunPos.subtract(satPos);
-    const r = satPos.magnitude();
+    // Scaled space: z stretched by a/b so the WGS84 ellipsoid is a sphere of radius a.
+    const scaledSat = SunBody.toScaledSpace_(satPos);
+    const satSun = SunBody.toScaledSpace_(sunPos).subtract(scaledSat);
+    const r = scaledSat.magnitude();
 
     return [
-      satSun.angle(satPos.negate()),
-      Math.asin(Earth.radiusEquator / r) as Radians,
+      satSun.angle(scaledSat.negate()),
+      Math.asin(WGS84_A / r) as Radians,
       Math.asin(SunBody.RADIUS / satSun.magnitude()) as Radians,
     ];
   }

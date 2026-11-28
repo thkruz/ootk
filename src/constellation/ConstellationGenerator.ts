@@ -15,14 +15,13 @@
  * Orbital Object ToolKit. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Earth } from '../body/Earth';
 import { ClassicalElements } from '../coordinate/ClassicalElements';
 import { Tle } from '../coordinate/Tle';
 import { ValidationError } from '../errors';
 import { Satellite } from '../objects/Satellite';
 import { EpochUTC } from '../time/EpochUTC';
 import { Degrees, Kilometers, Radians } from '../types/types';
-import { DEG2RAD, TAU } from '../utils/constants';
+import { DEG2RAD, TAU, WGS84_A } from '../utils/constants';
 
 /**
  * Result from parsing a Walker pattern string.
@@ -78,7 +77,7 @@ export class ConstellationGenerator {
    * orbital planes at the same inclination. The phasing factor determines the
    * relative angular offset between satellites in adjacent planes.
    *
-   * @param altitude - Orbital altitude in kilometers above the mean Earth radius `Earth.radiusMean` (about 6371 km)
+   * @param altitude - Orbital altitude in kilometers above the WGS84 equatorial radius (6378.137 km), the same convention as `Tle` apogee and perigee altitudes
    * @param inclination - Orbital inclination in degrees (0-180)
    * @param totalSats - Total number of satellites (T)
    * @param planes - Number of orbital planes (P)
@@ -318,7 +317,7 @@ export class ConstellationGenerator {
     const epochUTC = EpochUTC.fromDateTime(epoch);
 
     // Calculate semi-major axis (altitude + Earth radius)
-    const semimajorAxis = (altitude + Earth.radiusMean) as Kilometers;
+    const semimajorAxis = (altitude + WGS84_A) as Kilometers;
 
     // Convert inclination to radians
     const inclinationRad = (inclination * DEG2RAD) as Radians;
